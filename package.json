@@ -1,0 +1,41 @@
+{
+  "name": "viralpx",
+  "version": "0.1.0",
+  "description": "ViralPX — multi-tenant portfolio-builder SaaS (Next.js + Payload 3 rebuild)",
+  "license": "UNLICENSED",
+  "type": "module",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
+    "build": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap && cross-env NODE_OPTIONS=--no-deprecation next build",
+    "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
+    "lint": "next lint",
+    "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
+    "db:local": "node scripts/dev-db.mjs",
+    "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
+    "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap"
+  },
+  "dependencies": {
+    "@payloadcms/db-postgres": "3.85.2",
+    "@payloadcms/next": "3.85.2",
+    "@payloadcms/plugin-multi-tenant": "3.85.2",
+    "@payloadcms/richtext-lexical": "3.85.2",
+    "@payloadcms/storage-s3": "3.85.2",
+    "cross-env": "^7.0.3",
+    "graphql": "^16.9.0",
+    "next": "16.2.10",
+    "payload": "3.85.2",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "sharp": "^0.34.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "embedded-postgres": "17.10.0-beta.17",
+    "typescript": "^5.7.3"
+  }
+}

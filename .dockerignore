@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+.postgres
+media
+.env
+.env*.local
+npm-debug.log*
+.DS_Store
+README.md
+spec
