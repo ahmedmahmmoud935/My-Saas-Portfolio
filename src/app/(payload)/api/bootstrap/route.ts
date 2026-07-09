@@ -80,41 +80,23 @@ export async function GET(req: Request) {
       })
     ).id
 
-  let r2: string
-  try {
-    // R2 probe (times out instead of hanging)
-    const probeId = (await Promise.race([
-      up(await img(240, 160, [139, 92, 246]), 'probe'),
-      new Promise((_, rej) => setTimeout(() => rej(new Error('R2 upload timed out after 20s')), 20000)),
-    ])) as number
-    r2 = `ok id=${probeId}`
+  const cnt = async (collection: 'projects' | 'achievements' | 'logos' | 'testimonials') =>
+    (await payload.count({ collection, where: { tenant: { equals: t } } })).totalDocs
 
-    // Demo projects/content (idempotent, small images so uploads stay fast).
-    const projCount = await payload.count({ collection: 'projects', where: { tenant: { equals: t } } })
-    if (projCount.totalDocs === 0) {
-      const palette: [number, number, number][] = [
-        [139, 92, 246],
-        [236, 72, 153],
-        [59, 130, 246],
-        [16, 185, 129],
-      ]
-      const cats = ['Brand Identity', 'Social Media', 'Logo Design', 'UI/UX']
-      for (let i = 0; i < 4; i++) {
-        const cover = await up(await img(600, 450, palette[i]), `proj-${i}`)
-        await payload.create({
-          collection: 'projects',
-          data: {
-            tenant: t,
-            title: `Project ${i + 1}`,
-            category: cats[i],
-            description: 'A sample project.',
-            mediaType: 'image',
-            projectType: 'grid',
-            cover,
-            sortOrder: i,
-          } as never,
-        })
-      }
+  // INCREMENTAL: each call adds at most ONE image-upload, so requests stay fast.
+  // Call it repeatedly (e.g. 5×) until everything exists.
+  let step = 'noop'
+  try {
+    const palette: [number, number, number][] = [
+      [139, 92, 246],
+      [236, 72, 153],
+      [59, 130, 246],
+      [16, 185, 129],
+    ]
+    const cats = ['Brand Identity', 'Social Media', 'Logo Design', 'UI/UX']
+
+    if ((await cnt('achievements')) === 0) {
+      // no uploads — instant
       const ach: [string, string][] = [
         ['Completed Projects', '50+'],
         ['Happy Clients', '30+'],
@@ -127,28 +109,65 @@ export async function GET(req: Request) {
           data: { tenant: t, title: ach[i][0], value: ach[i][1], sortOrder: i } as never,
         })
       }
-      const logo = await up(await img(300, 160, [255, 255, 255]), 'logo')
-      await payload.create({
-        collection: 'logos',
-        data: { tenant: t, name: 'Sanadak', logo, websiteUrl: 'https://sanadak.gov.ae/en/', sortOrder: 0 } as never,
-      })
-      await payload.create({
-        collection: 'testimonials',
-        data: {
-          tenant: t,
-          name: 'Sara K.',
-          role: 'Marketing Lead',
-          company: 'Sanadak',
-          content: 'Ahmed delivered outstanding work — fast and exactly what we needed.',
-          rating: 5,
-          approved: true,
-          sortOrder: 0,
-        } as never,
-      })
+      step = 'achievements'
+    } else {
+      const pc = await cnt('projects')
+      if (pc < 4) {
+        const cover = await up(await img(600, 450, palette[pc]), `proj-${pc}`)
+        await payload.create({
+          collection: 'projects',
+          data: {
+            tenant: t,
+            title: `Project ${pc + 1}`,
+            category: cats[pc],
+            description: 'A sample project.',
+            mediaType: 'image',
+            projectType: 'grid',
+            cover,
+            sortOrder: pc,
+          } as never,
+        })
+        step = `project ${pc + 1}`
+      } else if ((await cnt('logos')) === 0) {
+        const logo = await up(await img(300, 160, [255, 255, 255]), 'logo')
+        await payload.create({
+          collection: 'logos',
+          data: { tenant: t, name: 'Sanadak', logo, websiteUrl: 'https://sanadak.gov.ae/en/', sortOrder: 0 } as never,
+        })
+        step = 'logo'
+      } else if ((await cnt('testimonials')) === 0) {
+        await payload.create({
+          collection: 'testimonials',
+          data: {
+            tenant: t,
+            name: 'Sara K.',
+            role: 'Marketing Lead',
+            company: 'Sanadak',
+            content: 'Ahmed delivered outstanding work — fast and exactly what we needed.',
+            rating: 5,
+            approved: true,
+            sortOrder: 0,
+          } as never,
+        })
+        step = 'testimonial'
+      } else {
+        step = 'complete'
+      }
     }
   } catch (e) {
-    r2 = `FAILED: ${(e as Error).message}`
+    step = `FAILED: ${(e as Error).message}`
   }
 
-  return Response.json({ ok: true, tenant: t, login: 'ahmed@viralpx.test / password123', r2 })
+  return Response.json({
+    ok: true,
+    tenant: t,
+    login: 'ahmed@viralpx.test / password123',
+    step,
+    counts: {
+      projects: await cnt('projects'),
+      achievements: await cnt('achievements'),
+      logos: await cnt('logos'),
+      testimonials: await cnt('testimonials'),
+    },
+  })
 }
