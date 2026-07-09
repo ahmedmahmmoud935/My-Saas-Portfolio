@@ -1,0 +1,2 @@
+# Next.js static assets directory (favicon, og images, etc.). Kept in git so the
+# standalone Docker build can COPY it.
