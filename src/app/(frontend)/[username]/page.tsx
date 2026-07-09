@@ -48,9 +48,12 @@ export default async function PortfolioPage({ params }: Params) {
   const brand = settings?.brand ?? {}
 
   // Navbar links
-  const navLinks = (settings?.navbarLinks ?? [])
-    .filter((l) => l.visible !== false)
-    .map((l) => ({ label: l.label || l.linkId || '', href: `#${l.linkId}` }))
+  const navLinks = [
+    ...(settings?.navbarLinks ?? [])
+      .filter((l) => l.visible !== false)
+      .map((l) => ({ label: l.label || l.linkId || '', href: `#${l.linkId}` })),
+    { label: 'المقالات', href: `/${tenant.slug}/articles` },
+  ]
 
   const logoText = tenant.name?.[0]?.toUpperCase() || 'V'
 
