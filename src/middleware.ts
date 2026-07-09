@@ -12,13 +12,21 @@ if (appHost) PRIMARY.add(appHost)
 // Cache the domain→slug map (module scope survives across invocations per instance).
 let cache: { at: number; map: Record<string, string> } = { at: 0, map: {} }
 
-async function getMap(origin: string): Promise<Record<string, string>> {
+async function getMap(fallbackOrigin: string): Promise<Record<string, string>> {
   if (Date.now() - cache.at < 60_000) return cache.map
-  try {
-    const res = await fetch(`${origin}/api/domains`, { cache: 'no-store' })
-    if (res.ok) cache = { at: Date.now(), map: (await res.json()) as Record<string, string> }
-  } catch {
-    /* keep old cache */
+  // Prefer an internal origin so we don't depend on the request host resolving
+  // back to this app (spoofed/unresolved hosts would otherwise break lookup).
+  const internal = process.env.INTERNAL_ORIGIN || `http://127.0.0.1:${process.env.PORT || '3000'}`
+  for (const base of [internal, fallbackOrigin]) {
+    try {
+      const res = await fetch(`${base}/api/domains`, { cache: 'no-store' })
+      if (res.ok) {
+        cache = { at: Date.now(), map: (await res.json()) as Record<string, string> }
+        return cache.map
+      }
+    } catch {
+      /* try next base */
+    }
   }
   return cache.map
 }
