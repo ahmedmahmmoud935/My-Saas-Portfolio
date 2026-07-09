@@ -22,7 +22,10 @@ import {
   Skills,
 } from '@/components/portfolio/MoreSections'
 
-type Params = { params: Promise<{ username: string }> }
+type Params = {
+  params: Promise<{ username: string }>
+  searchParams?: Promise<{ lang?: string }>
+}
 
 const splitTags = (s?: string | null): string[] =>
   (s || '')
@@ -42,6 +45,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   return {
     title: full,
     description,
+    alternates: {
+      languages: { ar: `/${username}?lang=ar`, en: `/${username}?lang=en` },
+    },
     openGraph: {
       title: full,
       description,
@@ -52,9 +58,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   }
 }
 
-export default async function PortfolioPage({ params }: Params) {
+export default async function PortfolioPage({ params, searchParams }: Params) {
   const { username } = await params
-  const data = await getPortfolio(username)
+  const { lang } = (await searchParams) ?? {}
+  const locale: 'ar' | 'en' = lang === 'en' ? 'en' : 'ar'
+  const data = await getPortfolio(username, locale)
   if (!data) notFound()
 
   const { tenant, settings, projects, achievements, logos, testimonials } = data
@@ -244,9 +252,14 @@ export default async function PortfolioPage({ params }: Params) {
   const cssVars = tenantCssVars(settings) as React.CSSProperties
 
   return (
-    <div style={cssVars}>
+    <div style={cssVars} dir={locale === 'en' ? 'ltr' : 'rtl'} lang={locale}>
       <TrackVisit tenant={tenant.id} page="home" />
-      <Navbar logo={logoText} links={navLinks} />
+      <Navbar
+        logo={logoText}
+        links={navLinks}
+        langHref={`/${tenant.slug}?lang=${locale === 'en' ? 'ar' : 'en'}`}
+        langLabel={locale === 'en' ? 'ع' : 'EN'}
+      />
       {ordered.map((id) => (
         <React.Fragment key={id}>{sectionEls[id]}</React.Fragment>
       ))}

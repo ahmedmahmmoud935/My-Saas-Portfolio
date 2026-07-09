@@ -1,17 +1,20 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 
 export type NavLink = { label: string; href: string }
 
 export default function Navbar({
   logo,
   links,
+  langHref,
+  langLabel = 'EN',
 }: {
   logo: string
   links: NavLink[]
+  langHref?: string
+  langLabel?: string
 }) {
-  const [, setOpen] = useState(false)
   return (
     <nav className="nav">
       <div className="nav-logo display">{logo}</div>
@@ -22,9 +25,15 @@ export default function Navbar({
           </li>
         ))}
       </ul>
-      <button className="nav-lang" onClick={() => setOpen((o) => !o)} aria-label="language">
-        EN
-      </button>
+      {langHref ? (
+        <a className="nav-lang" href={langHref} aria-label="language">
+          {langLabel}
+        </a>
+      ) : (
+        <span className="nav-lang" style={{ opacity: 0.4 }}>
+          {langLabel}
+        </span>
+      )}
     </nav>
   )
 }
