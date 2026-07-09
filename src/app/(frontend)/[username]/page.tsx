@@ -13,6 +13,7 @@ import Contact from '@/components/portfolio/Contact'
 import Footer from '@/components/portfolio/Footer'
 import TrackVisit from '@/components/portfolio/TrackVisit'
 import StoryHighlights from '@/components/portfolio/StoryHighlights'
+import MobileBar from '@/components/portfolio/MobileBar'
 import {
   Expertise,
   Experience,
@@ -35,7 +36,20 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   if (!data) return { title: 'Not found' }
   const name = data.settings?.content?.hero?.name || data.tenant.name
   const title = data.settings?.content?.hero?.title || 'Portfolio'
-  return { title: `${name} — ${title}` }
+  const description = data.settings?.content?.about?.text || undefined
+  const cover = mediaUrl(data.settings?.brand?.heroCover, 'card')
+  const full = `${name} — ${title}`
+  return {
+    title: full,
+    description,
+    openGraph: {
+      title: full,
+      description,
+      images: cover ? [cover] : undefined,
+      type: 'profile',
+    },
+    twitter: { card: 'summary_large_image', title: full, description },
+  }
 }
 
 export default async function PortfolioPage({ params }: Params) {
@@ -237,6 +251,32 @@ export default async function PortfolioPage({ params }: Params) {
         <React.Fragment key={id}>{sectionEls[id]}</React.Fragment>
       ))}
       <Footer logo={logoText} name={content.hero?.name || tenant.name} />
+
+      {settings?.social?.whatsapp && (
+        <a
+          className="wa-float"
+          href={`https://wa.me/${settings.social.whatsapp.replace(/[^0-9]/g, '')}`}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="WhatsApp"
+        >
+          💬
+        </a>
+      )}
+
+      {settings?.mobileBar?.enabled !== false && (
+        <MobileBar
+          buttons={(settings?.mobileBar?.buttons ?? []).map((b) => ({
+            pos: b.pos || 'left',
+            type: b.type || 'section',
+            target: b.target || '',
+            icon: b.icon || '',
+            label: b.label || '',
+          }))}
+          whatsapp={settings?.social?.whatsapp || undefined}
+          username={tenant.slug}
+        />
+      )}
     </div>
   )
 }
