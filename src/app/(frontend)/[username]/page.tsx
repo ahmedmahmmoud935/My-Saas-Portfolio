@@ -89,17 +89,24 @@ export default async function PortfolioPage({ params }: Params) {
         />
         <ProjectsGrid
           title={content.projects?.title || 'Selected Work'}
-        subtitle={content.projects?.subtitle || undefined}
-        categories={(settings?.categories?.image ?? [])
-          .map((c) => c.name || '')
-          .filter(Boolean)}
-        username={tenant.slug}
-        projects={projects.map((p) => ({
-          id: p.id,
-          title: p.title,
-          category: p.category,
-          coverUrl: mediaUrl(p.cover, 'card'),
-        }))}
+          subtitle={content.projects?.subtitle || undefined}
+          imageCategories={(settings?.categories?.image ?? []).map((c) => c.name || '').filter(Boolean)}
+          videoCategories={(settings?.categories?.video ?? []).map((c) => c.name || '').filter(Boolean)}
+          username={tenant.slug}
+          tabLabels={{
+            designs: settings?.projTabs?.designs?.label || undefined,
+            reels: settings?.projTabs?.reels?.label || undefined,
+            videos: settings?.projTabs?.videos?.label || undefined,
+          }}
+          projects={projects.map((p) => ({
+            id: p.id,
+            title: p.title,
+            category: p.category,
+            coverUrl: mediaUrl(p.cover, 'card'),
+            mediaType: (p.mediaType as 'image' | 'video') || 'image',
+            videoKind: p.videoKind,
+            videoUrl: p.videoUrl,
+          }))}
         />
       </>
     ),
