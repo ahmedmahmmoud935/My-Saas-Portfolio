@@ -116,11 +116,6 @@ export async function GET(req: Request) {
     const color = palette[0]
     const cover = await upload(await solid(900, 675, color, 'Maaloom'), 'proj-free')
     const big = await upload(await solid(1400, 800, [30, 26, 44], 'Hero shot'), 'free-big')
-    const g1 = await upload(await solid(700, 900, [139, 92, 246], '1'), 'free-g1')
-    const g2 = await upload(await solid(800, 900, [236, 72, 153], '2'), 'free-g2')
-    const g3 = await upload(await solid(760, 900, [59, 130, 246], '3'), 'free-g3')
-    const before = await upload(await solid(1200, 750, [80, 80, 80], 'Before'), 'free-before')
-    const after = await upload(await solid(1200, 750, [139, 92, 246], 'After'), 'free-after')
     await payload.create({
       collection: 'projects',
       data: {
@@ -141,33 +136,16 @@ export async function GET(req: Request) {
               'A full brand identity — logo, palette, and system — for an education startup that wanted to feel warm, credible, and modern.',
           },
           { blockType: 'image', src: big },
-          { blockType: 'grid', items: [{ src: g1 }, { src: g2 }, { src: g3 }] },
           { blockType: 'separator', spacing: 'normal' },
-          { blockType: 'text', textType: 'h2', value: 'Before / After' },
-          {
-            blockType: 'beforeafter',
-            before,
-            after,
-            labelBefore: 'Old',
-            labelAfter: 'New',
-          },
         ],
       },
     })
   }
 
-  // Projects 1..8 = grid galleries.
-  for (let i = 1; i < 9; i++) {
+  // Projects 1..3 = grid covers (kept light so the seed finishes fast).
+  for (let i = 1; i < 4; i++) {
     const color = palette[i % palette.length]
     const cover = await upload(await solid(900, 675, color, `Project ${i + 1}`), `proj-${i}`)
-    const gallery: { image: number }[] = []
-    for (let j = 0; j < 3; j++) {
-      const img = await upload(
-        await solid(900, 1125, palette[(i + j) % palette.length], `${i + 1}.${j + 1}`),
-        `proj-${i}-${j}`,
-      )
-      gallery.push({ image: img })
-    }
     await payload.create({
       collection: 'projects',
       data: {
@@ -178,7 +156,6 @@ export async function GET(req: Request) {
         mediaType: 'image',
         projectType: 'grid',
         cover,
-        images: gallery,
         sortOrder: i,
       },
     })
