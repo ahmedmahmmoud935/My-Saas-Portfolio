@@ -66,21 +66,86 @@ export async function GET(req: Request) {
     })
   }
 
-  // ── R2 probe (timeout so we never hang) ──
+  // small helper: solid-colour webp
+  const img = (w: number, h: number, rgb: [number, number, number]) =>
+    sharp({ create: { width: w, height: h, channels: 3, background: { r: rgb[0], g: rgb[1], b: rgb[2] } } })
+      .webp({ quality: 78 })
+      .toBuffer()
+  const up = async (buf: Buffer, name: string) =>
+    (
+      await payload.create({
+        collection: 'media',
+        data: { alt: name, tenant: t },
+        file: { data: buf, mimetype: 'image/webp', name: `${name}.webp`, size: buf.length },
+      })
+    ).id
+
   let r2: string
   try {
-    const buf = await sharp({ create: { width: 200, height: 150, channels: 3, background: { r: 139, g: 92, b: 246 } } })
-      .webp()
-      .toBuffer()
-    const created = (await Promise.race([
-      payload.create({
-        collection: 'media',
-        data: { alt: 'probe', tenant: t },
-        file: { data: buf, mimetype: 'image/webp', name: 'probe.webp', size: buf.length },
-      }),
-      new Promise((_, rej) => setTimeout(() => rej(new Error('R2 upload timed out after 15s')), 15000)),
-    ])) as { id: number; url?: string }
-    r2 = `ok id=${created.id} url=${created.url}`
+    // R2 probe (times out instead of hanging)
+    const probeId = (await Promise.race([
+      up(await img(240, 160, [139, 92, 246]), 'probe'),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('R2 upload timed out after 20s')), 20000)),
+    ])) as number
+    r2 = `ok id=${probeId}`
+
+    // Demo projects/content (idempotent, small images so uploads stay fast).
+    const projCount = await payload.count({ collection: 'projects', where: { tenant: { equals: t } } })
+    if (projCount.totalDocs === 0) {
+      const palette: [number, number, number][] = [
+        [139, 92, 246],
+        [236, 72, 153],
+        [59, 130, 246],
+        [16, 185, 129],
+      ]
+      const cats = ['Brand Identity', 'Social Media', 'Logo Design', 'UI/UX']
+      for (let i = 0; i < 4; i++) {
+        const cover = await up(await img(600, 450, palette[i]), `proj-${i}`)
+        await payload.create({
+          collection: 'projects',
+          data: {
+            tenant: t,
+            title: `Project ${i + 1}`,
+            category: cats[i],
+            description: 'A sample project.',
+            mediaType: 'image',
+            projectType: 'grid',
+            cover,
+            sortOrder: i,
+          } as never,
+        })
+      }
+      const ach: [string, string][] = [
+        ['Completed Projects', '50+'],
+        ['Happy Clients', '30+'],
+        ['Years Experience', '5+'],
+        ['Satisfaction Rate', '99%'],
+      ]
+      for (let i = 0; i < ach.length; i++) {
+        await payload.create({
+          collection: 'achievements',
+          data: { tenant: t, title: ach[i][0], value: ach[i][1], sortOrder: i } as never,
+        })
+      }
+      const logo = await up(await img(300, 160, [255, 255, 255]), 'logo')
+      await payload.create({
+        collection: 'logos',
+        data: { tenant: t, name: 'Sanadak', logo, websiteUrl: 'https://sanadak.gov.ae/en/', sortOrder: 0 } as never,
+      })
+      await payload.create({
+        collection: 'testimonials',
+        data: {
+          tenant: t,
+          name: 'Sara K.',
+          role: 'Marketing Lead',
+          company: 'Sanadak',
+          content: 'Ahmed delivered outstanding work — fast and exactly what we needed.',
+          rating: 5,
+          approved: true,
+          sortOrder: 0,
+        } as never,
+      })
+    }
   } catch (e) {
     r2 = `FAILED: ${(e as Error).message}`
   }
