@@ -8,6 +8,11 @@ export const dynamic = 'force-dynamic'
 // settings (NO media), so login works even if R2 is misbehaving. Also runs a
 // single R2 upload probe (with a timeout) and reports the result for diagnosis.
 export async function GET(req: Request) {
+  // Off by default — set ENABLE_SEED_ROUTES=true to expose this while seeding,
+  // then unset it before real launch. Returns 404 so the route is invisible.
+  if (process.env.ENABLE_SEED_ROUTES !== 'true') {
+    return Response.json({ error: 'not found' }, { status: 404 })
+  }
   const url = new URL(req.url)
   if (url.searchParams.get('key') !== 'viralpx-init') {
     return Response.json({ error: 'bad key' }, { status: 401 })

@@ -26,6 +26,11 @@ async function solid(
 }
 
 export async function GET(req: Request) {
+  // Off by default — set ENABLE_SEED_ROUTES=true to expose this while seeding,
+  // then unset it before real launch. Returns 404 so the route is invisible.
+  if (process.env.ENABLE_SEED_ROUTES !== 'true') {
+    return Response.json({ error: 'not found' }, { status: 404 })
+  }
   const url = new URL(req.url)
   if (url.searchParams.get('key') !== 'seed-viralpx') {
     return Response.json({ error: 'bad key' }, { status: 401 })

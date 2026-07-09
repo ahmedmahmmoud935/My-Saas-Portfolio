@@ -213,6 +213,8 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
           avatarUrl: mediaUrl(t.avatar),
           rating: t.rating,
         }))}
+        submitHref={`/testimonial/${tenant.slug}${locale === 'en' ? '?lang=en' : ''}`}
+        submitLabel={locale === 'en' ? '+ Add your review' : '+ أضف رأيك'}
       />
     ),
     contact: (

@@ -3,6 +3,8 @@ import React from 'react'
 export default function Testimonials({
   title,
   items,
+  submitHref,
+  submitLabel,
 }: {
   title: string
   items: {
@@ -14,8 +16,11 @@ export default function Testimonials({
     avatarUrl?: string | null
     rating?: number | null
   }[]
+  submitHref?: string
+  submitLabel?: string
 }) {
-  if (items.length === 0) return null
+  // Hide the whole section only when there's nothing to show AND no way to add one.
+  if (items.length === 0 && !submitHref) return null
   return (
     <section className="section" id="testimonials">
       <div className="container">
@@ -46,6 +51,24 @@ export default function Testimonials({
             </div>
           ))}
         </div>
+        {submitHref && (
+          <div style={{ textAlign: 'center', marginTop: 28 }}>
+            <a
+              href={submitHref}
+              style={{
+                display: 'inline-block',
+                border: '1px solid var(--accent)',
+                color: 'var(--accent)',
+                borderRadius: 12,
+                padding: '11px 22px',
+                fontWeight: 700,
+                textDecoration: 'none',
+              }}
+            >
+              {submitLabel || '+ أضف رأيك'}
+            </a>
+          </div>
+        )}
       </div>
     </section>
   )

@@ -75,20 +75,34 @@ Local uses R2-off (disk media). Demo login: `ahmed@viralpx.test` / `password123`
 - Phase 3 (dashboard) **100%** — all 14 tabs working (projects+upload+module builder, design w/ wireframe
   pickers, content, categories, sections, navbar, mobilebar, highlights, logos, achievements, testimonials,
   articles, social, analytics, owner users). Design matched to the original screenshots (SVG line icons).
-- Deploy: live on Coolify. ~87% overall.
+- Deploy: live on Coolify. ~92% overall (landing + public testimonials + llms.txt + seed-route guard done 2026-07-10).
 
 ## 4. Status — TODO (priority order)
 1. **Point `viralpx.com` + SSL** (user will move DNS off the old site). In Coolify add the domain to the app;
-   set `NEXT_PUBLIC_SERVER_URL=https://viralpx.com` + rebuild. Coolify auto-issues Let's Encrypt.
+   set `NEXT_PUBLIC_SERVER_URL=https://viralpx.com` + rebuild. Coolify auto-issues Let's Encrypt. **[needs user: DNS]**
 2. **Custom-domain middleware** — built (`src/middleware.ts` + `/api/domains`); verify with a real client domain
-   (set `tenants.domain` in the owner Users tab, point DNS → VPS).
-3. **Landing page** (Phase 4) — owner marketing site at `/` (currently placeholder). Config under a landing
-   global / tenant 0 (spec/05 `DEFAULT_LANDING`).
-4. **Data migration** (Phase 5) — import the old Flask **SQLite** (`portfolio.db`) + R2 media into the new
-   collections. **User must provide the old DB export.** Media already in the same R2 bucket → easier.
-5. Public **testimonial submit** page `/testimonial/<username>` (approved=false → moderation).
-6. Polish: dynamic OG images (`@vercel/og`), `llms.txt`, add EN to the few single-locale editors
-   (testimonials/achievements/articles), and **remove/guard `/api/seed` + `/api/bootstrap` before real launch**.
+   (set `tenants.domain` in the owner Users tab, point DNS → VPS). **[needs user: a real client domain]**
+3. **Data migration** (Phase 5) — import the old Flask **SQLite** (`portfolio.db`) + R2 media into the new
+   collections. **User must provide the old DB export.** Media already in the same R2 bucket → easier. **[needs user: `portfolio.db`]**
+4. Polish: **dynamic OG images** (`@vercel/og`/Satori at `/og-image/<slug>.png`), and add EN to the few
+   single-locale editors (testimonials/achievements/articles).
+5. **Optional — make the landing owner-editable**: the landing (`src/app/(frontend)/page.tsx`) currently reads its
+   copy from an in-file `COPY` map + live tenants for the showcase. To make it CMS-managed, add a `Landing` global
+   (spec/05 `DEFAULT_LANDING`) + a dashboard tab, and generate a migration (set R2_* inline — see §2 gotcha).
+
+### DONE in this pass (2026-07-10)
+- **Landing page** (`/`) — real bilingual (AR/EN, `?lang=`) marketing site: sticky nav, hero, features, how-it-works,
+  live-portfolio showcase (pulls newest tenants), pricing, FAQ (+FAQPage JSON-LD), CTA, footer. Own scoped `<style>`,
+  brand orange. Replaces the Phase-0 placeholder. Verified: 200, AR+EN, showcase links to real tenants.
+- **Public testimonial submit** — page `src/app/(frontend)/testimonial/[username]/page.tsx` (tenant-branded via
+  `tenantCssVars`, AR/EN, `noindex`) + client `TestimonialForm` → `POST /api/testimonial` → creates
+  `source='public', approved=false` (moderation). Linked from each portfolio's Testimonials section
+  (`submitHref`/`submitLabel` props). Verified end-to-end: submit → `ok`, stays hidden until approved, unknown
+  tenant → 404, missing fields → 400.
+- **`llms.txt`** — `src/app/llms.txt/route.ts` (site summary + tenant list). Verified.
+- **Guarded seed routes** — `/api/seed` + `/api/bootstrap` now return **404 unless `ENABLE_SEED_ROUTES=true`**
+  (documented in `.env.example`). Set it in Coolify only while seeding, then unset before launch.
+- Local preview note: `.claude/launch.json` runs `next dev`; embedded PG via `pnpm db:local` (:5432).
 
 ## 5. Access (secrets provided separately in chat)
 - Coolify API token, app uuid `pan0o2z2oop82i4pk9ohlnad`, Postgres uuid, server uuid `pwmq9ab728vjapjfkr08ab67`,
