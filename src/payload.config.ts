@@ -95,6 +95,10 @@ export default buildConfig({
               endpoint: process.env.R2_ENDPOINT,
               region: 'auto',
               forcePathStyle: true,
+              // R2 doesn't support the AWS SDK's default integrity checksums
+              // (added in newer SDKs) — leaving them on makes uploads hang/fail.
+              requestChecksumCalculation: 'WHEN_REQUIRED',
+              responseChecksumValidation: 'WHEN_REQUIRED',
               credentials: {
                 accessKeyId: process.env.R2_ACCESS_KEY_ID as string,
                 secretAccessKey: process.env.R2_SECRET_ACCESS_KEY as string,
