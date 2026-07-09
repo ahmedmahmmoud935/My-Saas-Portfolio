@@ -12,6 +12,7 @@ import Testimonials from '@/components/portfolio/Testimonials'
 import Contact from '@/components/portfolio/Contact'
 import Footer from '@/components/portfolio/Footer'
 import TrackVisit from '@/components/portfolio/TrackVisit'
+import StoryHighlights from '@/components/portfolio/StoryHighlights'
 import {
   Expertise,
   Experience,
@@ -75,8 +76,19 @@ export default async function PortfolioPage({ params }: Params) {
       />
     ),
     projects: (
-      <ProjectsGrid
-        title={content.projects?.title || 'Selected Work'}
+      <>
+        <StoryHighlights
+          stories={(settings?.highlights ?? []).map((h) => ({
+            title: h.title || '',
+            coverUrl: mediaUrl(h.cover, 'thumb'),
+            items: (h.items ?? []).map((it) => ({
+              type: it.type || 'image',
+              url: mediaUrl(it.media),
+            })),
+          }))}
+        />
+        <ProjectsGrid
+          title={content.projects?.title || 'Selected Work'}
         subtitle={content.projects?.subtitle || undefined}
         categories={(settings?.categories?.image ?? [])
           .map((c) => c.name || '')
@@ -88,7 +100,8 @@ export default async function PortfolioPage({ params }: Params) {
           category: p.category,
           coverUrl: mediaUrl(p.cover, 'card'),
         }))}
-      />
+        />
+      </>
     ),
     expertise: (
       <Expertise
