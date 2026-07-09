@@ -21,6 +21,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         tenantSlug={tenant.slug}
         storageUsed={tenant.storageUsedMb ?? 0}
         storageLimit={tenant.storageLimitMb ?? 1024}
+        isOwner={Boolean(ctx.user.isOwner)}
       />
     </div>
   )
