@@ -75,6 +75,7 @@ export async function GET(req: Request) {
       email: 'ahmed@viralpx.test',
       password: 'password123',
       name: 'Ahmed',
+      isOwner: true, // demo account: owner + client (so all tabs are testable)
       tenants: [{ tenant: t }],
     },
   })
