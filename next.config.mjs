@@ -2,8 +2,6 @@ import { withPayload } from '@payloadcms/next/withPayload'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Lean, self-contained server bundle for Docker/Coolify.
-  output: 'standalone',
   // Allow media served from R2 / the CDN in next/image.
   images: {
     remotePatterns: [

@@ -1,13 +1,14 @@
-# ViralPX — production image for Coolify (Next.js standalone + Payload + sharp).
+# ViralPX — production image (Next.js 16 + Payload 3).
+# Runs DB migrations on startup, then serves with `next start`.
 # Debian slim base keeps sharp's native libs happy.
-
 FROM node:22-slim AS base
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
+ENV NEXT_TELEMETRY_DISABLED=1
 RUN corepack enable
 WORKDIR /app
 
-# ---- deps ----
+# ---- dependencies ----
 FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
@@ -16,24 +17,20 @@ RUN pnpm install --frozen-lockfile
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-ENV NEXT_TELEMETRY_DISABLED=1
-# Build doesn't connect to the DB (DB-touching pages are dynamic); placeholder secret is fine.
+# Placeholder secret so the config loads at build; real values injected at runtime.
 ENV PAYLOAD_SECRET=build-time-placeholder
 RUN pnpm build
 
-# ---- run ----
+# ---- runner ----
 FROM base AS runner
 ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
-RUN groupadd -r nodejs && useradd -r -g nodejs nextjs
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-# sharp isn't traced into standalone reliably; ship it explicitly.
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.pnpm/sharp* ./node_modules/.pnpm/
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/sharp ./node_modules/sharp
-USER nextjs
+COPY --from=builder /app/src ./src
+COPY --from=builder /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml /app/next.config.mjs /app/tsconfig.json ./
 EXPOSE 3000
-CMD ["node", "server.js"]
+# Apply pending migrations, then start the server.
+CMD ["sh", "-c", "pnpm migrate && pnpm start"]

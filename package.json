@@ -10,7 +10,8 @@
   "scripts": {
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
     "build": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap && cross-env NODE_OPTIONS=--no-deprecation next build",
-    "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
+    "start": "cross-env NODE_OPTIONS=--no-deprecation next start -H 0.0.0.0",
+    "migrate": "cross-env NODE_OPTIONS=--no-deprecation payload migrate",
     "lint": "next lint",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "db:local": "node scripts/dev-db.mjs",
