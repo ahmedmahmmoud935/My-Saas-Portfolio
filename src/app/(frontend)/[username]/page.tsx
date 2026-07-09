@@ -11,6 +11,7 @@ import Logos from '@/components/portfolio/Logos'
 import Testimonials from '@/components/portfolio/Testimonials'
 import Contact from '@/components/portfolio/Contact'
 import Footer from '@/components/portfolio/Footer'
+import TrackVisit from '@/components/portfolio/TrackVisit'
 import {
   Expertise,
   Experience,
@@ -207,6 +208,7 @@ export default async function PortfolioPage({ params }: Params) {
 
   return (
     <div style={cssVars}>
+      <TrackVisit tenant={tenant.id} page="home" />
       <Navbar logo={logoText} links={navLinks} />
       {ordered.map((id) => (
         <React.Fragment key={id}>{sectionEls[id]}</React.Fragment>
