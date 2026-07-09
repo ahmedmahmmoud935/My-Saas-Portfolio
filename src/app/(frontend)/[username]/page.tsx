@@ -221,6 +221,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
         subtitle={content.contact?.subtitle || undefined}
         email={content.contact?.email || undefined}
         phone={content.contact?.phone || undefined}
+        tenant={tenant.id}
       />
     ),
   }
