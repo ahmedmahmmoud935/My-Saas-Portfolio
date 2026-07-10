@@ -1,7 +1,6 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { readFile } from 'fs/promises'
-import path from 'path'
+import legacyData from './legacy-data.json'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -91,18 +90,8 @@ type Tenant = {
   articles: Record<string, Node>[]
 }
 
-async function loadData(): Promise<{ tenants: Tenant[] }> {
-  for (const p of [
-    path.join(process.cwd(), 'scripts', 'legacy-data.json'),
-    path.join(process.cwd(), 'legacy-data.json'),
-  ]) {
-    try {
-      return JSON.parse(await readFile(p, 'utf8'))
-    } catch {
-      /* try next */
-    }
-  }
-  throw new Error('legacy-data.json not found')
+function loadData(): { tenants: Tenant[] } {
+  return legacyData as unknown as { tenants: Tenant[] }
 }
 
 const CONTENT_COLLS = ['projects', 'achievements', 'logos', 'testimonials', 'articles', 'site-settings'] as const
@@ -117,7 +106,7 @@ export async function GET(req: Request) {
   }
   const step = url.searchParams.get('step') || 'status'
   const payload = await getPayload({ config })
-  const { tenants } = await loadData()
+  const { tenants } = loadData()
 
   const findTenant = async (slug: string) =>
     (await payload.find({ collection: 'tenants', where: { slug: { equals: slug } }, limit: 1, depth: 0 })).docs[0]
