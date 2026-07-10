@@ -113,7 +113,60 @@ Local uses R2-off (disk media). Demo login: `ahmed@viralpx.test` / `password123`
   migration is done — no bulk-import endpoints ship to production. In git history at `9367cce` if needed again.
 - Local preview note: `.claude/launch.json` runs `next dev`; embedded PG via `pnpm db:local` (:5432).
 
-## 5. Access (secrets provided separately in chat)
-- Coolify API token, app uuid `pan0o2z2oop82i4pk9ohlnad`, Postgres uuid, server uuid `pwmq9ab728vjapjfkr08ab67`,
-  project uuid `ojey45nxoqznmpwrzdmjjgr6`, env `production`.
-- R2 keys, Resend key, demo login. GitHub push uses the machine's cached credentials.
+### DONE in this pass (2026-07-11) — dashboard UX + projects + backups
+- **Media upload 413 fix** — uploads go through the `uploadProjectMedia` Server Action; Next's default 1MB body
+  cap rejected normal design files. `next.config.mjs` now sets `experimental.serverActions.bodySizeLimit:'25mb'`.
+- **New-project wizard** (`NewProjectWizard.tsx`) — 2 steps: تصميمات (شبكة/صفحة حرة) · فيديو (ريل/فيديو). The
+  "صفحة حرة" path creates a **draft** project and routes to a dedicated full-page editor.
+- **Dedicated free-editor page** `src/app/(dashboard)/dashboard/projects/[id]/editor/page.tsx` +
+  `ProjectPageBuilder.tsx` — sidebar element palette + info panel + canvas (`ModulesEditor` with `hideAdd`).
+  Buttons: **حفظ كمسودة** (published:false, stay) and **نشر** (published:true, exit).
+- **Video module** — link / upload-a-file / paste-embed-code modes + live preview; `src/lib/video.ts`
+  `resolveVideoUrl()` normalises YouTube/Vimeo/watch URLs and plays uploaded files via `<video>`. Fixes non-playing.
+- **Before/after** — `ProjectView.tsx` slider rewritten to clip-path reveal (image stays put, natural height, no
+  crop); editor shows a "both images must be same dimensions" note.
+- **Big image previews + replace** in the editor (`MediaUploader` `big` prop; grid items are replace-in-place).
+- **Publish/Draft** — new `projects.published` field (migration `20260710_093433_add_project_published`; note: the
+  auto-diff also tried to DROP `media.prefix` — that line was removed by hand, see §2 R2 gotcha). Public queries +
+  detail page hide drafts. Eye/🚫 toggle + "مسودة" badge on cards; `setProjectPublished` action. New free projects
+  start as drafts.
+- **Flat icons everywhere** — `icons.tsx` (`NavIcon`) extended with a full set; emoji replaced across project cards,
+  module palette, wizard, video modes, sidebar footer; `PageHeader` maps legacy emoji → flat icon.
+- **Dashboard chrome** — working **light/dark mode** (`[data-mode=light]` palette) + **language toggle** (ar RTL ↔
+  en LTR: flips `<html dir>`, moves the sidebar via `html[dir=ltr] .dash`, translates nav labels). State in a shared
+  **`DashLangProvider`/`useDashLang`** (`DashLang.tsx`); a `<head>` boot script in `(dashboard)/dashboard/layout.tsx`
+  applies saved lang/mode pre-paint. **ProjectsManager fully translated (ar/en); other tabs still Arabic-only —
+  continue the translation via `useDashLang` (server-component pages will need lang in a cookie to translate).**
+- **Projects grid = public site** — dashboard cards now use the tenant's `gridCols` counts + per-tab cover ratio
+  (designs 4/3, reels 9/16, videos 16/9), **capped at 380px/column** (site sits in ~1160px container). Cards
+  redesigned to cover-fill + type badge + title/category overlay + hover toolbar.
+- **Analytics fixed** — `.counter-grid`/`.counter` CSS was **missing entirely** (tiles stacked). Added it + redesigned
+  tiles (number + flat icon in an accent square) + **daily-visits bar chart**. Tracking engine unchanged & accurate;
+  **country needs the `cf-ipcountry` header → only populates once the site is on the Cloudflare-fronted domain.**
+- **Kinetic theme** — was built (framer-motion + lenis, animated hero) then **reverted at user's request** (deps
+  removed). The `style.theme='kinetic'` option still exists in the schema but is dormant/unused again.
+- **Automated DB backups — DONE & verified.** Coolify scheduled backup on `viralpx-db`: every 6h (`0 */6 * * *`),
+  **local + S3(R2)** to bucket `viralpx-backups`, keep 16 local / unlimited S3. Verified: a manual run succeeded to
+  both. Set up via Coolify API (backup uuid `duxp5gb99hv4awkjfq67yd4g`); the S3 destination `r2-backups` had to be
+  registered in the Coolify **UI** (the API has no s3-storages endpoint). Postgres dumps are ~48KB gz (not the old
+  12MB `.db`).
+
+### ⚠️ Important context (avoid confusion)
+- **`viralpx.com` is still the OLD Flask/SQLite site** (behind Cloudflare) — NOT this app. It's the design
+  **reference** the user compares against, and its old cron still uploads `.db` backups to `viralpx-backups/db/`
+  every 6h. The new app is only at the **sslip.io** URL until DNS is moved. After cutover: **stop the old SQLite cron.**
+
+## 5. Launch checklist — remaining
+1. **Domain + SSL** — point `viralpx.com` (Cloudflare, A → `200.97.164.79`, DNS-only for Let's Encrypt) → add domain
+   in Coolify → set `NEXT_PUBLIC_SERVER_URL=https://viralpx.com` → **redeploy** (build-time var). **[needs user DNS]**
+2. **Auto-deploy** — enable the GitHub webhook in Coolify (secret already exists) so `push main` auto-deploys.
+3. **Resend** — verify `viralpx.com` (SPF/DKIM), set `RESEND_FROM` on the domain; test contact + testimonial.
+4. **`ENABLE_SEED_ROUTES`** env — remove from Coolify (dead; seed routes gone). *(being removed 2026-07-11)*
+5. After DNS cutover: **retire the old SQLite backup cron**; verify custom-domain middleware with a real client domain.
+6. **Continue the dashboard EN translation** (only chrome + Projects done).
+
+## 6. Access (secrets provided separately in chat)
+- Coolify `http://200.97.164.79:8000`. App uuid `pan0o2z2oop82i4pk9ohlnad`; **DB `viralpx-db` uuid
+  `t89m1pc1g2wse6zretd22i9d`**; server uuid `pwmq9ab728vjapjfkr08ab67`; project `ojey45nxoqznmpwrzdmjjgr6`
+  ("My first project"); env `production`. Backup schedule uuid `duxp5gb99hv4awkjfq67yd4g`; S3 storage `r2-backups`.
+- R2 keys, Resend key, Coolify API token, demo login. GitHub push uses the machine's cached credentials.
