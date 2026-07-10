@@ -27,6 +27,14 @@ const isLoc = (n: Node): n is Loc => !!n && typeof n === 'object' && '__loc' in 
 const isMed = (n: Node): n is Med => !!n && typeof n === 'object' && '__media' in (n as object)
 
 const basename = (url: string) => url.split('?')[0].split('/').pop() || url
+// Match media by hash WITHOUT extension: Payload converts images to .webp on
+// upload, so the stored filename (hash.webp) differs from the source url ext
+// (hash.png/.jpg). Compare by the extensionless base to stay in sync.
+const base = (s: string) => {
+  const fn = basename(s)
+  const d = fn.lastIndexOf('.')
+  return d > 0 ? fn.slice(0, d) : fn
+}
 const mimeOf = (fn: string) => {
   const e = fn.toLowerCase().split('.').pop()
   return e === 'png' ? 'image/png'
@@ -113,7 +121,7 @@ export async function GET(req: Request) {
 
   const uploadedFilenames = async (tid: number): Promise<Set<string>> => {
     const res = await payload.find({ collection: 'media', where: { tenant: { equals: tid } }, limit: 5000, depth: 0 })
-    return new Set(res.docs.map((m) => m.filename).filter(Boolean) as string[])
+    return new Set(res.docs.map((m) => (m.filename ? base(m.filename) : '')).filter(Boolean))
   }
 
   // ── status ────────────────────────────────────────────────────────────────
@@ -122,7 +130,7 @@ export async function GET(req: Request) {
     for (const t of tenants) {
       const tenant = await findTenant(t.slug)
       const set = tenant ? await uploadedFilenames(tenant.id) : new Set<string>()
-      const done = t.media.filter((u) => set.has(basename(u))).length
+      const done = t.media.filter((u) => set.has(base(u))).length
       out.push({ slug: t.slug, exists: !!tenant, media: `${done}/${t.media.length}` })
     }
     return Response.json({ ok: true, tenants: out })
@@ -182,7 +190,7 @@ export async function GET(req: Request) {
       for (const u of t.media) {
         if (uploaded >= batch) break
         const fn = basename(u)
-        if (set.has(fn)) continue
+        if (set.has(base(u))) continue
         try {
           const ctrl = new AbortController()
           const to = setTimeout(() => ctrl.abort(), 20000)
@@ -195,7 +203,7 @@ export async function GET(req: Request) {
             data: { alt: fn, tenant: tid },
             file: { data: buf, mimetype: mimeOf(fn), name: fn, size: buf.length },
           })
-          set.add(fn)
+          set.add(base(u))
           uploaded++
         } catch (e) {
           errors.push(`${t.slug}/${fn}: ${(e as Error).message}`)
@@ -207,7 +215,7 @@ export async function GET(req: Request) {
     let remaining = 0
     for (const t of tenants) {
       const set = await uploadedFilenames(tenantIds[t.slug])
-      remaining += t.media.filter((u) => !set.has(basename(u))).length
+      remaining += t.media.filter((u) => !set.has(base(u))).length
     }
 
     const force = url.searchParams.get('force') === '1'
@@ -239,9 +247,9 @@ async function build(
     // media map: url → id (by stored filename)
     const all = await payload.find({ collection: 'media', where: { tenant: { equals: tid } }, limit: 5000, depth: 0 })
     const byFn: Record<string, number> = {}
-    for (const m of all.docs) if (m.filename) byFn[m.filename] = m.id
+    for (const m of all.docs) if (m.filename) byFn[base(m.filename)] = m.id
     const mmap: Record<string, number> = {}
-    for (const u of t.media) { const id = byFn[basename(u)]; if (id) mmap[u] = id }
+    for (const u of t.media) { const id = byFn[base(u)]; if (id) mmap[u] = id }
 
     // wipe existing content (NOT media) so re-runs are clean
     for (const coll of ['projects', 'achievements', 'logos', 'testimonials', 'articles', 'site-settings'] as const) {
