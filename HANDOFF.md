@@ -75,22 +75,34 @@ Local uses R2-off (disk media). Demo login: `ahmed@viralpx.test` / `password123`
 - Phase 3 (dashboard) **100%** — all 14 tabs working (projects+upload+module builder, design w/ wireframe
   pickers, content, categories, sections, navbar, mobilebar, highlights, logos, achievements, testimonials,
   articles, social, analytics, owner users). Design matched to the original screenshots (SVG line icons).
-- Deploy: live on Coolify. ~92% overall (landing + public testimonials + llms.txt + seed-route guard done 2026-07-10).
+- Deploy: live on Coolify. ~96% overall (landing + public testimonials + llms.txt + seed guard + **full data
+  migration of all 4 tenants** done 2026-07-10).
 
 ## 4. Status — TODO (priority order)
 1. **Point `viralpx.com` + SSL** (user will move DNS off the old site). In Coolify add the domain to the app;
    set `NEXT_PUBLIC_SERVER_URL=https://viralpx.com` + rebuild. Coolify auto-issues Let's Encrypt. **[needs user: DNS]**
 2. **Custom-domain middleware** — built (`src/middleware.ts` + `/api/domains`); verify with a real client domain
    (set `tenants.domain` in the owner Users tab, point DNS → VPS). **[needs user: a real client domain]**
-3. **Data migration** (Phase 5) — import the old Flask **SQLite** (`portfolio.db`) + R2 media into the new
-   collections. **User must provide the old DB export.** Media already in the same R2 bucket → easier. **[needs user: `portfolio.db`]**
-4. Polish: **dynamic OG images** (`@vercel/og`/Satori at `/og-image/<slug>.png`), and add EN to the few
+3. Polish: **dynamic OG images** (`@vercel/og`/Satori at `/og-image/<slug>.png`), and add EN to the few
    single-locale editors (testimonials/achievements/articles).
+4. **Pre-launch cleanup**: delete `src/app/(payload)/api/{seed,bootstrap,migrate}` + `.../migrate/legacy-data.json`
+   + `scripts/export-legacy.py` + `scripts/legacy-data.json`. They're inert now (`ENABLE_SEED_ROUTES` unset → 404)
+   but should be removed before the public launch.
 5. **Optional — make the landing owner-editable**: the landing (`src/app/(frontend)/page.tsx`) currently reads its
    copy from an in-file `COPY` map + live tenants for the showcase. To make it CMS-managed, add a `Landing` global
    (spec/05 `DEFAULT_LANDING`) + a dashboard tab, and generate a migration (set R2_* inline — see §2 gotcha).
 
 ### DONE in this pass (2026-07-10)
+- **Data migration (Phase 5) — COMPLETE & live.** Imported the old Flask SQLite (`db_portfolio_*.db`) for all 4
+  tenants: **ahmed** (25 projects, owner), **kamal** (12 projects, 1 article), **omar** + **adventures** (settings +
+  achievements). Totals restored with **zero errors**: 37 projects, 16 achievements, 3 logos, 7 testimonials, 1
+  article, + full per-tenant site-settings (bilingual content, sections, navbar, colors, brand media, highlights).
+  The demo `ahmed` seed data was wiped and replaced. One CDN file (`u1_bh_1778249131069.webp`) was 404/gone → its one
+  image block was pruned; everything else migrated. Dashboard logins created: `ahmed@viralpx.test` (owner) +
+  `omar@ / adventures@ / kamal@ viralpx.test`, all password `password123`.
+  Mechanism: `scripts/export-legacy.py` → `legacy-data.json` → guarded `/api/migrate` (incremental: re-uploads media
+  from the CDN to R2, generic AR→EN two-pass restores localization). **Route now disabled** (`ENABLE_SEED_ROUTES`
+  unset → 404). Gotcha found: Payload converts image uploads to `.webp`, so match media by the extensionless hash.
 - **Landing page** (`/`) — real bilingual (AR/EN, `?lang=`) marketing site: sticky nav, hero, features, how-it-works,
   live-portfolio showcase (pulls newest tenants), pricing, FAQ (+FAQPage JSON-LD), CTA, footer. Own scoped `<style>`,
   brand orange. Replaces the Phase-0 placeholder. Verified: 200, AR+EN, showcase links to real tenants.
