@@ -216,7 +216,8 @@ export default function ProjectsManager({
                 '--pm-cols': isVideo ? cols.videoDesktop : cols.imageDesktop,
                 '--pm-cols-t': isVideo ? cols.videoTablet : cols.imageTablet,
                 '--pm-cols-m': isVideo ? cols.videoMobile : cols.imageMobile,
-                '--pm-ratio': isVideo && tab === 'reels' ? '9 / 16' : '4 / 3',
+                // Match the site's per-tab cover ratio: designs 4/3, reels 9/16, videos 16/9.
+                '--pm-ratio': tab === 'reels' ? '9 / 16' : tab === 'videos' ? '16 / 9' : '4 / 3',
               } as React.CSSProperties
             }
           >

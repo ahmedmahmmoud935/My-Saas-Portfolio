@@ -454,18 +454,21 @@ button {
 }
 .proj-manage-grid {
   display: grid;
-  /* Mirror the public site: same column count per breakpoint as the live grid. */
-  grid-template-columns: repeat(var(--pm-cols, 3), 1fr);
-  gap: 14px;
+  /* Mirror the public site: same column count AND card size. The site grid sits
+     in a ~1160px container, so a column caps at ~380px — cap here too (via
+     minmax) so wide dashboards don't blow the cards up out of proportion. */
+  grid-template-columns: repeat(var(--pm-cols, 3), minmax(0, 380px));
+  justify-content: start;
+  gap: 16px;
 }
 @media (max-width: 900px) {
   .proj-manage-grid {
-    grid-template-columns: repeat(var(--pm-cols-t, 2), 1fr);
+    grid-template-columns: repeat(var(--pm-cols-t, 2), minmax(0, 1fr));
   }
 }
 @media (max-width: 540px) {
   .proj-manage-grid {
-    grid-template-columns: repeat(var(--pm-cols-m, 2), 1fr);
+    grid-template-columns: repeat(var(--pm-cols-m, 2), minmax(0, 1fr));
   }
 }
 /* Uniform, cover-filled cards (matches the public site): media-type badge at the
