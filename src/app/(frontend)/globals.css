@@ -1106,3 +1106,178 @@ body {
   top: 50%;
   transform: translateY(-50%);
 }
+
+/* ════════════════════════════════════════════════════════════════════════
+   KINETIC THEME  —  [data-theme='kinetic']
+   Animated aurora backdrop, cinematic parallax hero, kinetic typography.
+   ════════════════════════════════════════════════════════════════════════ */
+[data-theme='kinetic'] {
+  position: relative;
+}
+/* keep sections above the fixed aurora */
+[data-theme='kinetic'] > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Aurora backdrop ─────────────────────────────────────────────────────── */
+.kx-aurora {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.kx-blob {
+  position: absolute;
+  width: 55vmax;
+  height: 55vmax;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.5;
+  mix-blend-mode: screen;
+  will-change: transform;
+}
+.kx-blob-1 {
+  top: -18vmax;
+  inset-inline-end: -12vmax;
+  background: radial-gradient(circle at 30% 30%, var(--accent), transparent 62%);
+  animation: kx-drift-1 22s ease-in-out infinite;
+}
+.kx-blob-2 {
+  bottom: -20vmax;
+  inset-inline-start: -14vmax;
+  background: radial-gradient(circle at 60% 40%, #6d5cff, transparent 60%);
+  animation: kx-drift-2 26s ease-in-out infinite;
+}
+.kx-blob-3 {
+  top: 32%;
+  inset-inline-start: 38%;
+  width: 40vmax;
+  height: 40vmax;
+  background: radial-gradient(circle at 50% 50%, #12b5b0, transparent 60%);
+  opacity: 0.32;
+  animation: kx-drift-3 30s ease-in-out infinite;
+}
+.kx-grain {
+  position: absolute;
+  inset: -50%;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 3px 3px;
+  opacity: 0.4;
+}
+@keyframes kx-drift-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-6vmax, 5vmax) scale(1.12); }
+}
+@keyframes kx-drift-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(7vmax, -4vmax) scale(1.15); }
+}
+@keyframes kx-drift-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(4vmax, -6vmax) scale(0.9); }
+}
+
+/* ── Kinetic hero ────────────────────────────────────────────────────────── */
+.kx-hero {
+  min-height: 100vh;
+}
+.kx-hero-bg {
+  will-change: transform;
+}
+.kx-hero-inner {
+  will-change: transform, opacity;
+}
+.kx-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.kx-eyebrow-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 70%, transparent);
+  animation: kx-pulse 2.4s ease-out infinite;
+}
+@keyframes kx-pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent); }
+  70% { box-shadow: 0 0 0 12px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+.kx-name {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.3em;
+  font-size: clamp(48px, 8.5vw, 104px);
+  letter-spacing: -0.02em;
+}
+/* each word sits in an overflow-clip wrapper so it rises in from nothing */
+.kx-word-wrap {
+  display: inline-block;
+  overflow: hidden;
+  padding-bottom: 0.08em;
+}
+.kx-word {
+  display: inline-block;
+  transform-origin: bottom;
+}
+.kx-word.accent {
+  background: linear-gradient(120deg, var(--accent), #ffb774 60%, var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.kx-scroll-cue {
+  position: absolute;
+  bottom: 26px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 26px;
+  height: 42px;
+  border: 2px solid color-mix(in srgb, var(--text) 55%, transparent);
+  border-radius: 14px;
+  z-index: 3;
+}
+.kx-scroll-dot {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  width: 4px;
+  height: 8px;
+  margin-left: -2px;
+  border-radius: 3px;
+  background: var(--text);
+  animation: kx-scroll 1.8s ease-in-out infinite;
+}
+@keyframes kx-scroll {
+  0% { opacity: 0; transform: translateY(0); }
+  40% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(14px); }
+}
+
+/* ── A touch more life on the rest of the page ───────────────────────────── */
+[data-theme='kinetic'] .proj-card,
+[data-theme='kinetic'] .project-card {
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.45s ease;
+}
+[data-theme='kinetic'] .proj-card:hover,
+[data-theme='kinetic'] .project-card:hover {
+  transform: translateY(-8px) scale(1.015);
+  box-shadow: 0 24px 60px -24px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+[data-theme='kinetic'] .section-title,
+[data-theme='kinetic'] .sec-title {
+  letter-spacing: -0.02em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kx-blob,
+  .kx-grain,
+  .kx-eyebrow-dot,
+  .kx-scroll-dot {
+    animation: none !important;
+  }
+}

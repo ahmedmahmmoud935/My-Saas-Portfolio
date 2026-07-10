@@ -21,6 +21,9 @@ import {
   Education,
   Skills,
 } from '@/components/portfolio/MoreSections'
+import KineticProvider from '@/components/portfolio/kinetic/KineticProvider'
+import KineticHero from '@/components/portfolio/kinetic/KineticHero'
+import Reveal from '@/components/portfolio/kinetic/Reveal'
 
 type Params = {
   params: Promise<{ username: string }>
@@ -68,6 +71,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
   const { tenant, settings, projects, achievements, logos, testimonials } = data
   const content = settings?.content ?? {}
   const brand = settings?.brand ?? {}
+  const kinetic = settings?.style?.theme === 'kinetic'
 
   // Navbar links
   const navLinks = [
@@ -81,7 +85,17 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
 
   // Section components keyed by id
   const sectionEls: Record<string, React.ReactNode> = {
-    hero: (
+    hero: kinetic ? (
+      <KineticHero
+        eyebrow={content.hero?.title || undefined}
+        name={content.hero?.name || tenant.name}
+        btn1={content.hero?.btn1 || undefined}
+        btn2={content.hero?.btn2 || undefined}
+        coverUrl={mediaUrl(brand.heroCover)}
+        overlay={settings?.heroCover?.overlay ?? 45}
+        heightVh={settings?.heroCover?.height ?? 82}
+      />
+    ) : (
       <Hero
         eyebrow={content.hero?.title || undefined}
         name={content.hero?.name || tenant.name}
@@ -266,8 +280,17 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
 
   const cssVars = tenantCssVars(settings) as React.CSSProperties
 
-  return (
-    <div style={cssVars} dir={locale === 'en' ? 'ltr' : 'rtl'} lang={locale}>
+  const sections = ordered.map((id) =>
+    // Kinetic theme reveals every section on scroll (the hero animates itself).
+    kinetic && id !== 'hero' ? (
+      <Reveal key={id}>{sectionEls[id]}</Reveal>
+    ) : (
+      <React.Fragment key={id}>{sectionEls[id]}</React.Fragment>
+    ),
+  )
+
+  const body = (
+    <>
       <TrackVisit tenant={tenant.id} page="home" />
       <Navbar
         logo={logoText}
@@ -275,9 +298,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
         langHref={`/${tenant.slug}?lang=${locale === 'en' ? 'ar' : 'en'}`}
         langLabel={locale === 'en' ? 'ع' : 'EN'}
       />
-      {ordered.map((id) => (
-        <React.Fragment key={id}>{sectionEls[id]}</React.Fragment>
-      ))}
+      {sections}
       <Footer logo={logoText} name={content.hero?.name || tenant.name} />
 
       {settings?.social?.whatsapp && (
@@ -305,6 +326,17 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
           username={tenant.slug}
         />
       )}
+    </>
+  )
+
+  return (
+    <div
+      style={cssVars}
+      data-theme={kinetic ? 'kinetic' : undefined}
+      dir={locale === 'en' ? 'ltr' : 'rtl'}
+      lang={locale}
+    >
+      {kinetic ? <KineticProvider>{body}</KineticProvider> : body}
     </div>
   )
 }

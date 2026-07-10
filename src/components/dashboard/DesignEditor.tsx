@@ -182,6 +182,20 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
 
         {tab === 'layouts' && (
           <>
+            <Opt
+              label="الثيم العام"
+              value={f.style.theme}
+              options={[
+                { value: 'default', label: 'كلاسيكي' },
+                { value: 'kinetic', label: '✨ حركي (Kinetic)' },
+              ]}
+              onChange={(v) => setStyle({ theme: v })}
+            />
+            {f.style.theme === 'kinetic' && (
+              <div className="ba-note" style={{ marginBottom: 16 }}>
+                ثيم حركي: كفر سينمائي بحركة parallax، سكرول ناعم، وظهور تدريجي للأقسام.
+              </div>
+            )}
             <LayoutPicker section="hero" label="القسم الرئيسي (Hero)" value={f.style.hero} options={LAYOUT_OPTIONS.hero} onChange={(v) => setStyle({ hero: v })} />
             <LayoutPicker section="about" label="عن النفس" value={f.style.about} options={LAYOUT_OPTIONS.about} onChange={(v) => setStyle({ about: v })} />
             <LayoutPicker section="projects" label="المشاريع" value={f.style.projects} options={LAYOUT_OPTIONS.projects} onChange={(v) => setStyle({ projects: v })} />
