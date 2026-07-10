@@ -3,25 +3,39 @@ import { redirect } from 'next/navigation'
 import { getDashboardContext } from '@/lib/dashboard'
 import PageHeader from '@/components/dashboard/PageHeader'
 import RangeSelector from '@/components/dashboard/RangeSelector'
+import NavIcon from '@/components/dashboard/icons'
 
 export const dynamic = 'force-dynamic'
 
 function Stat({ icon, value, label }: { icon: string; value: string | number; label: string }) {
   return (
-    <div className="counter" style={{ textAlign: 'center' }}>
-      <div style={{ fontSize: 22 }}>{icon}</div>
-      <b style={{ display: 'block', fontSize: 28, color: 'var(--accent)' }}>{value}</b>
-      <span style={{ color: 'var(--sub)', fontSize: 13 }}>{label}</span>
+    <div className="counter">
+      <div className="counter-info">
+        <b>{value}</b>
+        <span>{label}</span>
+      </div>
+      <span className="counter-ic">
+        <NavIcon id={icon} size={20} />
+      </span>
     </div>
   )
 }
 
-function Bars({ title, rows }: { title: string; rows: { label: string; n: number }[] }) {
+function Bars({
+  icon,
+  title,
+  rows,
+}: {
+  icon: string
+  title: string
+  rows: { label: string; n: number }[]
+}) {
   const max = Math.max(1, ...rows.map((r) => r.n))
   return (
     <div className="panel">
       <div className="panel-title">
         <span>{title}</span>
+        <NavIcon id={icon} size={16} />
       </div>
       {rows.length === 0 && <div style={{ color: 'var(--sub)', fontSize: 13 }}>لا توجد بيانات.</div>}
       {rows.map((r, i) => (
@@ -86,6 +100,19 @@ export default async function AnalyticsPage({ searchParams }: Params) {
     }
   }).slice(0, 6)
 
+  // Daily visit buckets for the chart (cap at 60 bars).
+  const dayCounts = new Map<string, number>()
+  for (const v of visits) {
+    const d = (v.visitedAt ?? '').slice(0, 10)
+    if (d) dayCounts.set(d, (dayCounts.get(d) || 0) + 1)
+  }
+  const span = Math.min(days === 'all' ? 30 : Number(days) || 30, 60)
+  const dailyDays = Array.from({ length: span }, (_, i) => {
+    const dt = new Date(Date.now() - (span - 1 - i) * 86400000)
+    return dt.toISOString().slice(0, 10)
+  })
+  const dailyMax = Math.max(1, ...dailyDays.map((d) => dayCounts.get(d) || 0))
+
   return (
     <div>
       <PageHeader
@@ -96,21 +123,40 @@ export default async function AnalyticsPage({ searchParams }: Params) {
       />
 
       <div className="counter-grid" style={{ marginBottom: 18 }}>
-        <Stat icon="👁️" value={total} label="إجمالي الزيارات" />
-        <Stat icon="👥" value={unique} label="زائر فريد" />
-        <Stat icon="📱" value={`${mobilePct}%`} label="من الموبايل" />
-        <Stat icon="🌍" value={countries.length} label="دولة مختلفة" />
+        <Stat icon="eye" value={total} label="إجمالي الزيارات" />
+        <Stat icon="users" value={unique} label="زائر فريد" />
+        <Stat icon="phone" value={`${mobilePct}%`} label="من الموبايل" />
+        <Stat icon="globe" value={countries.length} label="دولة مختلفة" />
+      </div>
+
+      <div className="panel" style={{ marginBottom: 16 }}>
+        <div className="panel-title">
+          <span>الزوار يومياً</span>
+          <NavIcon id="analytics" size={16} />
+        </div>
+        <div className="daily-chart">
+          {dailyDays.map((d) => (
+            <div key={d} className="daily-bar" title={`${d}: ${dayCounts.get(d) || 0}`}>
+              <span style={{ height: `${((dayCounts.get(d) || 0) / dailyMax) * 100}%` }} />
+            </div>
+          ))}
+        </div>
+        <div className="daily-axis">
+          <span>{dailyDays[0]?.slice(5)}</span>
+          <span>{dailyDays[dailyDays.length - 1]?.slice(5)}</span>
+        </div>
       </div>
 
       <div className="grid-2">
-        <Bars title="🏆 أكثر المشاريع مشاهدة" rows={topProjects} />
-        <Bars title="🌍 أعلى الدول زيارة" rows={countries} />
+        <Bars icon="achievements" title="أكثر المشاريع مشاهدة" rows={topProjects} />
+        <Bars icon="globe" title="أعلى الدول زيارة" rows={countries} />
       </div>
       <div style={{ height: 16 }} />
       <div className="grid-2">
-        <Bars title="🔗 مصادر الزيارات" rows={referrers} />
+        <Bars icon="link" title="مصادر الزيارات" rows={referrers} />
         <Bars
-          title="🖥️ الأجهزة"
+          icon="monitor"
+          title="الأجهزة"
           rows={[
             { label: 'ديسكتوب', n: devices.desktop },
             { label: 'موبايل', n: devices.mobile },
