@@ -289,7 +289,7 @@ img {
 }
 .project-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(var(--cols-d, 3), 1fr);
   gap: 16px;
 }
 .project-card {
@@ -333,12 +333,12 @@ img {
 }
 @media (max-width: 900px) {
   .project-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(var(--cols-t, 2), 1fr);
   }
 }
 @media (max-width: 540px) {
   .project-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(var(--cols-m, 1), 1fr);
   }
 }
 button.project-card {
@@ -349,31 +349,31 @@ button.project-card {
   text-align: start;
 }
 .reels-grid {
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(var(--cols-d, 4), 1fr);
 }
 .reels-grid .project-card {
   aspect-ratio: 9 / 16;
 }
 .videos-grid {
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(var(--cols-d, 3), 1fr);
 }
 .videos-grid .project-card {
   aspect-ratio: 16 / 9;
 }
 @media (max-width: 900px) {
   .reels-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(var(--cols-t, 3), 1fr);
   }
   .videos-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(var(--cols-t, 2), 1fr);
   }
 }
 @media (max-width: 540px) {
   .reels-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(var(--cols-m, 2), 1fr);
   }
   .videos-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(var(--cols-m, 1), 1fr);
   }
 }
 .play-badge {

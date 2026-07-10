@@ -123,6 +123,18 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
             reels: settings?.projTabs?.reels?.label || undefined,
             videos: settings?.projTabs?.videos?.label || undefined,
           }}
+          cols={{
+            image: {
+              d: settings?.gridCols?.imageDesktop,
+              t: settings?.gridCols?.imageTablet,
+              m: settings?.gridCols?.imageMobile,
+            },
+            video: {
+              d: settings?.gridCols?.videoDesktop,
+              t: settings?.gridCols?.videoTablet,
+              m: settings?.gridCols?.videoMobile,
+            },
+          }}
           projects={projects.map((p) => ({
             id: p.id,
             title: p.title,

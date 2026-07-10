@@ -23,6 +23,7 @@ export default function ProjectsGrid({
   projects,
   username,
   tabLabels,
+  cols,
 }: {
   title: string
   subtitle?: string
@@ -31,6 +32,10 @@ export default function ProjectsGrid({
   projects: ProjectCard[]
   username: string
   tabLabels?: Partial<Record<TabId, string>>
+  cols?: {
+    image?: { d?: number | null; t?: number | null; m?: number | null }
+    video?: { d?: number | null; t?: number | null; m?: number | null }
+  }
 }) {
   const groups: Record<TabId, ProjectCard[]> = {
     designs: projects.filter((p) => p.mediaType === 'image'),
@@ -53,6 +58,14 @@ export default function ProjectsGrid({
 
   const gridClass =
     activeTab === 'reels' ? 'project-grid reels-grid' : activeTab === 'videos' ? 'project-grid videos-grid' : 'project-grid'
+
+  // Column counts per breakpoint from tenant settings → CSS vars (falls back to
+  // the per-grid CSS defaults when a value is missing).
+  const colCfg = activeTab === 'designs' ? cols?.image : cols?.video
+  const colVars: Record<string, string> = {}
+  if (colCfg?.d) colVars['--cols-d'] = String(colCfg.d)
+  if (colCfg?.t) colVars['--cols-t'] = String(colCfg.t)
+  if (colCfg?.m) colVars['--cols-m'] = String(colCfg.m)
 
   const openVideo = (clicked: ProjectCard) => {
     const reels: Reel[] = groups[activeTab].map((p) => ({ id: p.id, title: p.title, videoUrl: p.videoUrl, coverUrl: p.coverUrl }))
@@ -95,7 +108,7 @@ export default function ProjectsGrid({
           </div>
         )}
 
-        <div className={gridClass}>
+        <div className={gridClass} style={colVars as React.CSSProperties}>
           {list.map((p) => {
             const inner = (
               <>

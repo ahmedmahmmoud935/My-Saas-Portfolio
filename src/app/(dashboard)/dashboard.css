@@ -440,6 +440,96 @@ button {
   justify-content: flex-start;
 }
 
+/* ─── Items-per-row control ─────────────────────────────────────────────── */
+.cols-control {
+  margin: 14px 0;
+  padding: 16px 18px;
+}
+.cols-control-head {
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+.cols-sliders {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+@media (max-width: 640px) {
+  .cols-sliders {
+    grid-template-columns: 1fr;
+  }
+}
+.cols-slider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cols-slider-val {
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+}
+.cols-slider input[type='range'] {
+  flex: 1 1 auto;
+  min-width: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.cols-slider-label {
+  color: var(--sub);
+  font-size: 12px;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+/* ─── Drag-to-reorder ───────────────────────────────────────────────────── */
+.reorder-hint {
+  color: var(--accent);
+  font-size: 13px;
+  margin: 4px 2px 12px;
+}
+.proj-manage-card {
+  position: relative;
+  cursor: grab;
+}
+.proj-manage-card:active {
+  cursor: grabbing;
+}
+.proj-manage-card.dragging {
+  opacity: 0.4;
+  outline: 2px dashed var(--accent);
+}
+.pm-cover {
+  position: relative;
+}
+.pm-drag {
+  position: absolute;
+  top: 8px;
+  inset-inline-start: 8px;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 14px;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.proj-manage-card:hover .pm-drag {
+  opacity: 1;
+}
+
 /* ─── Modal ─────────────────────────────────────────────────────────────── */
 .modal-overlay {
   position: fixed;

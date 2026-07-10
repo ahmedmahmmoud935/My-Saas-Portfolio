@@ -95,5 +95,15 @@ export default async function ProjectsPage() {
   const categoriesVideo = (settings.categories?.video ?? []).map((c) => c.name || '').filter(Boolean)
   const categories = Array.from(new Set([...categoriesImage, ...categoriesVideo]))
 
-  return <ProjectsManager projects={projects} categories={categories} />
+  const gc = settings.gridCols ?? {}
+  const gridCols = {
+    imageMobile: gc.imageMobile ?? 2,
+    imageTablet: gc.imageTablet ?? 3,
+    imageDesktop: gc.imageDesktop ?? 3,
+    videoMobile: gc.videoMobile ?? 2,
+    videoTablet: gc.videoTablet ?? 3,
+    videoDesktop: gc.videoDesktop ?? 4,
+  }
+
+  return <ProjectsManager projects={projects} categories={categories} gridCols={gridCols} />
 }

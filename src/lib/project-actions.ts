@@ -1,6 +1,6 @@
 'use server'
 
-import { getDashboardContext } from './dashboard'
+import { getDashboardContext, getTenantSettings } from './dashboard'
 import type { ProjectInput, ModuleInput } from './project-types'
 import type { Project } from '../payload-types'
 
@@ -115,5 +115,26 @@ export async function reorderProjects(ids: number[]) {
     await assertOwnsProject(ctx, ids[i])
     await ctx.payload.update({ collection: 'projects', id: ids[i], data: { sortOrder: i } })
   }
+  return { ok: true }
+}
+
+/** Save the "items per row" grid config (per-breakpoint columns) for the tenant. */
+export async function saveGridCols(cols: {
+  imageMobile?: number
+  imageTablet?: number
+  imageDesktop?: number
+  videoMobile?: number
+  videoTablet?: number
+  videoDesktop?: number
+}) {
+  const ctx = await getDashboardContext()
+  if (!ctx) throw new Error('unauthorized')
+  const settings = await getTenantSettings(ctx)
+  const current = (settings.gridCols ?? {}) as Record<string, number>
+  await ctx.payload.update({
+    collection: 'site-settings',
+    id: settings.id,
+    data: { gridCols: { ...current, ...cols } } as never,
+  })
   return { ok: true }
 }
