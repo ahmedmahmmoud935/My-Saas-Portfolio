@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import PageHeader from './PageHeader'
 import { createClient, updateTenant, setClientPassword } from '@/lib/owner-actions'
+import { useDashLang } from './DashLang'
 
 type Client = {
   id: number
@@ -18,13 +19,14 @@ type Client = {
 
 export default function UsersManager({ clients }: { clients: Client[] }) {
   const router = useRouter()
+  const { t } = useDashLang()
   const [busy, setBusy] = useState(false)
   const [creating, setCreating] = useState(false)
   const [nc, setNc] = useState({ name: '', slug: '', email: '', password: '', storageLimitMb: 500 })
 
   async function create() {
     if (!nc.name || !nc.slug || !nc.email || !nc.password) {
-      alert('املأ كل الحقول')
+      alert(t('املأ كل الحقول', 'Fill in all fields'))
       return
     }
     setBusy(true)
@@ -34,7 +36,7 @@ export default function UsersManager({ clients }: { clients: Client[] }) {
       setNc({ name: '', slug: '', email: '', password: '', storageLimitMb: 500 })
       router.refresh()
     } catch {
-      alert('فشل الإنشاء (تأكد إن الـ slug/الإيميل غير مكرّرين)')
+      alert(t('فشل الإنشاء (تأكد إن الـ slug/الإيميل غير مكرّرين)', 'Creation failed (check the slug/email are not duplicated)'))
     } finally {
       setBusy(false)
     }
@@ -46,19 +48,19 @@ export default function UsersManager({ clients }: { clients: Client[] }) {
   }
   async function changePassword(c: Client) {
     if (!c.userId) return
-    const p = prompt(`كلمة مرور جديدة لـ ${c.email}:`)
+    const p = prompt(`${t('كلمة مرور جديدة لـ', 'New password for')} ${c.email}:`)
     if (!p) return
     await setClientPassword(c.userId, p)
-    alert('تم تغيير كلمة المرور ✓')
+    alert(t('تم تغيير كلمة المرور ✓', 'Password changed ✓'))
   }
 
   return (
     <div>
       <PageHeader
         icon="👤"
-        title="المستخدمون / العملاء"
-        subtitle="إنشاء عملاء، الحصص، والدومينات"
-        actions={<button className="btn btn-primary" onClick={() => setCreating(true)}>+ عميل جديد</button>}
+        title={t('المستخدمون / العملاء', 'Users / clients')}
+        subtitle={t('إنشاء عملاء، الحصص، والدومينات', 'Create clients, quotas and domains')}
+        actions={<button className="btn btn-primary" onClick={() => setCreating(true)}>+ {t('عميل جديد', 'New client')}</button>}
       />
 
       <div className="proj-manage-grid" style={{ gridTemplateColumns: '1fr' }}>
@@ -72,23 +74,23 @@ export default function UsersManager({ clients }: { clients: Client[] }) {
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-head">
               <button className="icon-btn" onClick={() => setCreating(false)}>✕</button>
-              <strong>عميل جديد</strong>
+              <strong>{t('عميل جديد', 'New client')}</strong>
             </div>
             <div className="modal-body">
-              <label className="lbl">الاسم</label>
+              <label className="lbl">{t('الاسم', 'Name')}</label>
               <input className="field" value={nc.name} onChange={(e) => setNc({ ...nc, name: e.target.value })} />
-              <label className="lbl">اسم المستخدم (URL)</label>
+              <label className="lbl">{t('اسم المستخدم (URL)', 'Username (URL)')}</label>
               <input className="field" dir="ltr" value={nc.slug} onChange={(e) => setNc({ ...nc, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') })} style={{ textAlign: 'start' }} />
-              <label className="lbl">الإيميل</label>
+              <label className="lbl">{t('الإيميل', 'Email')}</label>
               <input className="field" dir="ltr" value={nc.email} onChange={(e) => setNc({ ...nc, email: e.target.value })} style={{ textAlign: 'start' }} />
-              <label className="lbl">كلمة المرور</label>
+              <label className="lbl">{t('كلمة المرور', 'Password')}</label>
               <input className="field" dir="ltr" value={nc.password} onChange={(e) => setNc({ ...nc, password: e.target.value })} style={{ textAlign: 'start' }} />
-              <label className="lbl">حد التخزين (MB)</label>
+              <label className="lbl">{t('حد التخزين (MB)', 'Storage limit (MB)')}</label>
               <input className="field" type="number" value={nc.storageLimitMb} onChange={(e) => setNc({ ...nc, storageLimitMb: Number(e.target.value) })} />
             </div>
             <div className="modal-foot">
-              <button className="btn btn-ghost" onClick={() => setCreating(false)}>إلغاء</button>
-              <button className="btn btn-primary" onClick={create} disabled={busy}>{busy ? '...' : 'إنشاء'}</button>
+              <button className="btn btn-ghost" onClick={() => setCreating(false)}>{t('إلغاء', 'Cancel')}</button>
+              <button className="btn btn-primary" onClick={create} disabled={busy}>{busy ? '…' : t('إنشاء', 'Create')}</button>
             </div>
           </div>
         </div>
@@ -107,6 +109,7 @@ function ClientRow({
   onPassword: () => void
 }) {
   const [limit, setLimit] = useState(c.storageLimitMb)
+  const { t } = useDashLang()
   const [domain, setDomain] = useState(c.domain)
   const pct = Math.min(100, Math.round((c.storageUsedMb / Math.max(1, limit)) * 100))
   return (
@@ -116,23 +119,23 @@ function ClientRow({
           <strong>{c.name}</strong> <span style={{ color: 'var(--sub)' }}>/{c.slug}</span>
           <div style={{ color: 'var(--sub)', fontSize: 12 }} dir="ltr">{c.email}</div>
         </div>
-        <a className="pill" href={`/${c.slug}`} target="_blank" rel="noreferrer">عرض</a>
+        <a className="pill" href={`/${c.slug}`} target="_blank" rel="noreferrer">{t('عرض', 'View')}</a>
       </div>
       <div className="storage-bar" style={{ margin: '10px 0' }}><span style={{ width: `${pct}%` }} /></div>
       <div style={{ color: 'var(--sub)', fontSize: 12, textAlign: 'end', marginBottom: 8 }}>{c.storageUsedMb.toFixed(1)} / {limit} MB</div>
       <div className="grid-2">
         <div>
-          <label className="lbl">حد التخزين (MB)</label>
+          <label className="lbl">{t('حد التخزين (MB)', 'Storage limit (MB)')}</label>
           <input className="field" type="number" value={limit} onChange={(e) => setLimit(Number(e.target.value))} />
         </div>
         <div>
-          <label className="lbl">دومين مخصّص</label>
+          <label className="lbl">{t('دومين مخصّص', 'Custom domain')}</label>
           <input className="field" dir="ltr" value={domain} onChange={(e) => setDomain(e.target.value)} style={{ textAlign: 'start' }} />
         </div>
       </div>
       <div style={{ display: 'flex', gap: 8, marginTop: 10, justifyContent: 'flex-start' }}>
-        <button className="btn btn-primary" onClick={() => onSaveQuota(c, limit, domain)}>💾 حفظ</button>
-        <button className="btn btn-ghost" onClick={onPassword} disabled={!c.userId}>🔑 كلمة المرور</button>
+        <button className="btn btn-primary" onClick={() => onSaveQuota(c, limit, domain)}>{t('💾 حفظ', '💾 Save')}</button>
+        <button className="btn btn-ghost" onClick={onPassword} disabled={!c.userId}>{t('🔑 كلمة المرور', '🔑 Password')}</button>
       </div>
     </div>
   )
