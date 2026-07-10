@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import PageHeader from './PageHeader'
+import NavIcon from './icons'
 import ProjectEditor, { type EditableProject } from './ProjectEditor'
 import NewProjectWizard from './NewProjectWizard'
 import {
@@ -138,7 +139,8 @@ export default function ProjectsManager({
         subtitle="أضِف وعدّل أعمالك — صور، ريلز، وفيديوهات"
         actions={
           <button className="btn btn-primary" onClick={() => setWizard(true)}>
-            + مشروع جديد
+            <NavIcon id="plus" size={16} />
+            مشروع جديد
           </button>
         }
       />
@@ -202,7 +204,18 @@ export default function ProjectsManager({
           {visible.length > 1 && (
             <div className="reorder-hint">↔︎ اسحب أي مشروع لتغيير ترتيبه — يُحفظ تلقائياً</div>
           )}
-          <div className="proj-manage-grid">
+          <div
+            className="proj-manage-grid"
+            style={
+              {
+                // Match the public site: same columns + cover ratio as the live grid.
+                '--pm-cols': isVideo ? cols.videoDesktop : cols.imageDesktop,
+                '--pm-cols-t': isVideo ? cols.videoTablet : cols.imageTablet,
+                '--pm-cols-m': isVideo ? cols.videoMobile : cols.imageMobile,
+                '--pm-ratio': isVideo && tab === 'reels' ? '9 / 16' : '4 / 3',
+              } as React.CSSProperties
+            }
+          >
             {visible.map((p) => (
               <div
                 className={`proj-manage-card${dragging === p.id ? ' dragging' : ''}`}
@@ -227,7 +240,7 @@ export default function ProjectsManager({
                     <span style={{ color: 'var(--sub)' }}>لا غلاف</span>
                   )}
                   <span className="pm-drag" title="اسحب للترتيب">
-                    ⠿
+                    <NavIcon id="grip" size={15} />
                   </span>
                   {p.published === false && <span className="pm-draft">مسودة</span>}
                 </div>
@@ -241,20 +254,21 @@ export default function ProjectsManager({
                     title={p.published === false ? 'نشر المشروع' : 'إخفاء (مسودة)'}
                     onClick={() => togglePublish(p.id, p.published === false)}
                   >
-                    {p.published === false ? '🚫' : '👁'}
+                    <NavIcon id={p.published === false ? 'eyeOff' : 'eye'} size={16} />
                   </button>
                   <button
                     className="icon-btn"
+                    title="تعديل"
                     onClick={() =>
                       p.projectType === 'free'
                         ? router.push(`/dashboard/projects/${p.id}/editor`)
                         : setEditing(p)
                     }
                   >
-                    ✏️
+                    <NavIcon id="edit" size={16} />
                   </button>
-                  <button className="icon-btn del" onClick={() => remove(p.id)}>
-                    🗑
+                  <button className="icon-btn del" title="حذف" onClick={() => remove(p.id)}>
+                    <NavIcon id="trash" size={16} />
                   </button>
                 </div>
               </div>

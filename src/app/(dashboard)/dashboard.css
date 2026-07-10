@@ -16,6 +16,25 @@
   --radius: 12px;
 }
 
+/* Light mode — toggled via <html data-mode="light"> from the sidebar. */
+:root[data-mode='light'] {
+  --accent-soft: rgba(249, 115, 22, 0.12);
+  --bg: #f4f5f7;
+  --bg-2: #ffffff;
+  --bg-3: #eceef1;
+  --text: #16181d;
+  --sub: #626875;
+  --border: #e1e4e9;
+}
+
+/* LTR (English): sidebar moves to the left, content to the right. */
+html[dir='ltr'] .dash {
+  grid-template-columns: 244px 1fr;
+}
+html[dir='ltr'] .sidebar {
+  order: -1;
+}
+
 *,
 *::before,
 *::after {
@@ -85,6 +104,39 @@ button {
   font-size: 14px;
   cursor: pointer;
   margin-bottom: 16px;
+}
+
+.head-ic {
+  display: inline-flex;
+  vertical-align: -3px;
+  color: var(--accent);
+}
+
+/* Language + light/dark toggles */
+.sidebar-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.chrome-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: var(--bg-3);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.chrome-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 .nav-item {
   display: flex;
@@ -402,8 +454,19 @@ button {
 }
 .proj-manage-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  /* Mirror the public site: same column count per breakpoint as the live grid. */
+  grid-template-columns: repeat(var(--pm-cols, 3), 1fr);
   gap: 14px;
+}
+@media (max-width: 900px) {
+  .proj-manage-grid {
+    grid-template-columns: repeat(var(--pm-cols-t, 2), 1fr);
+  }
+}
+@media (max-width: 540px) {
+  .proj-manage-grid {
+    grid-template-columns: repeat(var(--pm-cols-m, 2), 1fr);
+  }
 }
 .proj-manage-card {
   background: var(--bg-2);
@@ -412,7 +475,7 @@ button {
   overflow: hidden;
 }
 .pm-cover {
-  aspect-ratio: 4 / 3;
+  aspect-ratio: var(--pm-ratio, 4 / 3);
   background: var(--bg-3);
   display: grid;
   place-items: center;

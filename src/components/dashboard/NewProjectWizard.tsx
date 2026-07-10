@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { saveProject } from '@/lib/project-actions'
+import NavIcon from './icons'
 import type { EditableProject } from './ProjectEditor'
 
 type Kind = 'design' | 'video'
@@ -32,6 +33,7 @@ export default function NewProjectWizard({
         title: 'مشروع جديد',
         mediaType: 'image',
         projectType: 'free',
+        published: false, // start as a draft; publish from the editor
       })
       router.push(`/dashboard/projects/${res.id}/editor`)
     } catch {
@@ -59,7 +61,7 @@ export default function NewProjectWizard({
       <div className="modal" style={{ maxWidth: 560 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
           <button className="icon-btn" onClick={onClose}>
-            ✕
+            <NavIcon id="x" size={16} />
           </button>
           <strong>{kind === null ? 'مشروع جديد' : 'اختر طريقة العرض'}</strong>
         </div>
@@ -68,12 +70,12 @@ export default function NewProjectWizard({
           {kind === null ? (
             <div className="wiz-grid">
               <button className="wiz-card" onClick={() => setKind('design')}>
-                <span className="wiz-ico">🎨</span>
+                <span className="wiz-ico"><NavIcon id="palette" size={30} /></span>
                 <strong>تصميمات</strong>
                 <span className="wiz-sub">صور، بوسترات، هوية بصرية</span>
               </button>
               <button className="wiz-card" onClick={() => setKind('video')}>
-                <span className="wiz-ico">🎬</span>
+                <span className="wiz-ico"><NavIcon id="film" size={30} /></span>
                 <strong>فيديو / ريل</strong>
                 <span className="wiz-sub">ريلز وفيديوهات</span>
               </button>
@@ -81,12 +83,12 @@ export default function NewProjectWizard({
           ) : kind === 'design' ? (
             <div className="wiz-grid">
               <button className="wiz-card" onClick={pickGrid}>
-                <span className="wiz-ico">▦</span>
+                <span className="wiz-ico"><NavIcon id="grid" size={30} /></span>
                 <strong>شبكة صور</strong>
                 <span className="wiz-sub">أسلوب إنستجرام — عدة صور بترتيب شبكي</span>
               </button>
               <button className="wiz-card" onClick={startFree} disabled={busy}>
-                <span className="wiz-ico">🗂️</span>
+                <span className="wiz-ico"><NavIcon id="page" size={30} /></span>
                 <strong>صفحة حرة</strong>
                 <span className="wiz-sub">{busy ? '...جارٍ الإنشاء' : 'أسلوب Behance — صفحة كاملة تبنيها بالعناصر'}</span>
               </button>
@@ -94,12 +96,12 @@ export default function NewProjectWizard({
           ) : (
             <div className="wiz-grid">
               <button className="wiz-card" onClick={() => pickVideo('reel')}>
-                <span className="wiz-ico">📱</span>
+                <span className="wiz-ico"><NavIcon id="phone" size={30} /></span>
                 <strong>ريل</strong>
                 <span className="wiz-sub">عمودي 9:16</span>
               </button>
               <button className="wiz-card" onClick={() => pickVideo('video')}>
-                <span className="wiz-ico">🖥️</span>
+                <span className="wiz-ico"><NavIcon id="monitor" size={30} /></span>
                 <strong>فيديو</strong>
                 <span className="wiz-sub">أفقي 16:9</span>
               </button>

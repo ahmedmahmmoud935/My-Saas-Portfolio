@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import MediaUploader from './MediaUploader'
+import NavIcon from './icons'
 import ModulesEditor, { MODULE_ADD_BUTTONS, blankModule } from './ModulesEditor'
 import { saveProject } from '@/lib/project-actions'
 import { editModuleToInput, type EditModule } from '@/lib/project-types'
@@ -31,7 +32,7 @@ export default function ProjectPageBuilder({
 
   const setModules = (modules: EditModule[]) => setP((x) => ({ ...x, modules }))
 
-  async function save(goBack = false) {
+  async function save(published: boolean, exit: boolean) {
     if (!p.title.trim()) {
       alert('اكتب عنوان المشروع')
       return
@@ -46,9 +47,10 @@ export default function ProjectPageBuilder({
         mediaType: 'image',
         projectType: 'free',
         coverId: p.coverId ?? null,
+        published,
         modules: p.modules.map(editModuleToInput),
       })
-      if (goBack) {
+      if (exit) {
         router.push('/dashboard/projects')
         router.refresh()
       } else {
@@ -66,14 +68,17 @@ export default function ProjectPageBuilder({
     <div className="builder">
       <div className="builder-bar">
         <a className="builder-back" href="/dashboard/projects">
-          → رجوع
+          <NavIcon id="back" size={16} />
+          رجوع
         </a>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn btn-ghost" onClick={() => save(false)} disabled={busy}>
-            {busy ? '...' : '💾 حفظ'}
+          <button className="btn btn-ghost" onClick={() => save(false, false)} disabled={busy}>
+            <NavIcon id="save" size={16} />
+            {busy ? '...' : 'حفظ كمسودة'}
           </button>
-          <button className="btn btn-primary" onClick={() => save(true)} disabled={busy}>
-            حفظ وخروج
+          <button className="btn btn-primary" onClick={() => save(true, true)} disabled={busy}>
+            <NavIcon id="publish" size={16} />
+            نشر
           </button>
         </div>
       </div>
@@ -94,6 +99,7 @@ export default function ProjectPageBuilder({
                 className="builder-add-btn"
                 onClick={() => setModules([...p.modules, blankModule(b.type)])}
               >
+                <NavIcon id={b.icon} size={17} />
                 {b.label}
               </button>
             ))}

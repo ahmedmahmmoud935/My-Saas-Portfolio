@@ -2,16 +2,17 @@
 
 import React, { useState } from 'react'
 import MediaUploader from './MediaUploader'
+import NavIcon from './icons'
 import { resolveVideoUrl } from '@/lib/video'
 import type { EditModule } from '@/lib/project-types'
 
-export const MODULE_ADD_BUTTONS: { type: EditModule['type']; label: string }[] = [
-  { type: 'image', label: '🖼️ صورة كاملة' },
-  { type: 'grid', label: '▦ شبكة صور' },
-  { type: 'text', label: '📝 نص / عنوان' },
-  { type: 'video', label: '🎬 فيديو' },
-  { type: 'beforeafter', label: '↔ قبل / بعد' },
-  { type: 'separator', label: '― فاصل' },
+export const MODULE_ADD_BUTTONS: { type: EditModule['type']; label: string; icon: string }[] = [
+  { type: 'image', label: 'صورة كاملة', icon: 'image' },
+  { type: 'grid', label: 'شبكة صور', icon: 'grid' },
+  { type: 'text', label: 'نص / عنوان', icon: 'text' },
+  { type: 'video', label: 'فيديو', icon: 'video' },
+  { type: 'beforeafter', label: 'قبل / بعد', icon: 'beforeafter' },
+  { type: 'separator', label: 'فاصل', icon: 'separator' },
 ]
 
 export function blankModule(type: EditModule['type']): EditModule {
@@ -66,6 +67,7 @@ export default function ModulesEditor({
         <div className="mods-add">
           {MODULE_ADD_BUTTONS.map((b) => (
             <button key={b.type} className="btn btn-ghost mods-add-btn" onClick={() => add(b.type)}>
+              <NavIcon id={b.icon} size={16} />
               {b.label}
             </button>
           ))}
@@ -77,13 +79,13 @@ export default function ModulesEditor({
           <div className="mod-card-head">
             <div style={{ display: 'flex', gap: 4 }}>
               <button className="icon-btn" style={{ width: 30, height: 30 }} onClick={() => move(i, -1)}>
-                ▲
+                <NavIcon id="up" size={15} />
               </button>
               <button className="icon-btn" style={{ width: 30, height: 30 }} onClick={() => move(i, 1)}>
-                ▼
+                <NavIcon id="down" size={15} />
               </button>
               <button className="icon-btn del" style={{ width: 30, height: 30 }} onClick={() => remove(i)}>
-                🗑
+                <NavIcon id="trash" size={15} />
               </button>
             </div>
             <span style={{ color: 'var(--sub)', fontSize: 12 }}>{m.type}</span>
@@ -141,7 +143,7 @@ export default function ModulesEditor({
                       update(i, { ...m, items: m.items.filter((_, z) => z !== k) })
                     }
                   >
-                    ✕
+                    <NavIcon id="x" size={13} />
                   </button>
                 </div>
               ))}
@@ -161,7 +163,7 @@ export default function ModulesEditor({
 
           {m.type === 'beforeafter' && (
             <>
-              <div className="ba-note">⚠️ لازم تكون الصورتان بنفس الأبعاد بالظبط عشان المقارنة تظبط.</div>
+              <div className="ba-note">لازم تكون الصورتان بنفس الأبعاد بالظبط عشان المقارنة تظبط.</div>
               <div className="grid-2">
                 <div>
                   <label className="lbl">قبل</label>
@@ -228,9 +230,9 @@ export default function ModulesEditor({
 
 /* ── Video module body — link / upload a file / paste embed code ──────────── */
 const VIDEO_MODES = [
-  { id: 'link', label: '🔗 رابط' },
-  { id: 'upload', label: '⬆ رفع من الجهاز' },
-  { id: 'code', label: '</> كود التضمين' },
+  { id: 'link', label: 'رابط', icon: 'link' },
+  { id: 'upload', label: 'رفع من الجهاز', icon: 'upload' },
+  { id: 'code', label: 'كود التضمين', icon: 'code' },
 ] as const
 type VideoMode = (typeof VIDEO_MODES)[number]['id']
 
@@ -248,6 +250,7 @@ function VideoBody({ value, onChange }: { value: string; onChange: (v: string) =
             className={`video-mode ${mode === o.id ? 'active' : ''}`}
             onClick={() => setMode(o.id)}
           >
+            <NavIcon id={o.icon} size={15} />
             {o.label}
           </button>
         ))}
