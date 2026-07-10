@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import PageHeader from './PageHeader'
 import NavIcon from './icons'
+import { useDashLang } from './DashLang'
 import ProjectEditor, { type EditableProject } from './ProjectEditor'
 import NewProjectWizard from './NewProjectWizard'
 import {
@@ -25,9 +26,9 @@ export type GridCols = {
 }
 
 const TABS = [
-  { id: 'designs', label: 'التصاميم' },
-  { id: 'reels', label: 'الريلز' },
-  { id: 'videos', label: 'الفيديوهات' },
+  { id: 'designs', ar: 'التصاميم', en: 'Designs' },
+  { id: 'reels', ar: 'الريلز', en: 'Reels' },
+  { id: 'videos', ar: 'الفيديوهات', en: 'Videos' },
 ] as const
 
 type TabId = (typeof TABS)[number]['id']
@@ -50,6 +51,7 @@ export default function ProjectsManager({
   gridCols: GridCols
 }) {
   const router = useRouter()
+  const { t: tr } = useDashLang()
   const [tab, setTab] = useState<TabId>('designs')
   const [cat, setCat] = useState('all')
   const [editing, setEditing] = useState<EditableProject | null>(null)
@@ -73,7 +75,7 @@ export default function ProjectsManager({
   )
 
   async function remove(id: number) {
-    if (!confirm('حذف المشروع؟')) return
+    if (!confirm(tr('حذف المشروع؟', 'Delete this project?'))) return
     await deleteProject(id)
     router.refresh()
   }
@@ -85,7 +87,7 @@ export default function ProjectsManager({
       await setProjectPublished(id, next)
     } catch {
       setItems((prev) => prev.map((p) => (p.id === id ? { ...p, published: !next } : p)))
-      alert('تعذّر تغيير الحالة')
+      alert(tr('تعذّر تغيير الحالة', 'Could not change status'))
     }
   }
 
@@ -118,9 +120,9 @@ export default function ProjectsManager({
     ? (['videoDesktop', 'videoTablet', 'videoMobile'] as const)
     : (['imageDesktop', 'imageTablet', 'imageMobile'] as const)
   const bps = [
-    { key: colFields[0], label: 'كمبيوتر', icon: '🖥️', max: COL_MAX.desktop },
-    { key: colFields[1], label: 'تابلت', icon: '📱', max: COL_MAX.tablet },
-    { key: colFields[2], label: 'موبايل', icon: '📲', max: COL_MAX.mobile },
+    { key: colFields[0], ar: 'كمبيوتر', en: 'Desktop', icon: 'monitor', max: COL_MAX.desktop },
+    { key: colFields[1], ar: 'تابلت', en: 'Tablet', icon: 'tablet', max: COL_MAX.tablet },
+    { key: colFields[2], ar: 'موبايل', en: 'Mobile', icon: 'phone', max: COL_MAX.mobile },
   ]
 
   function setCol(key: keyof GridCols, value: number) {
@@ -135,27 +137,27 @@ export default function ProjectsManager({
     <div>
       <PageHeader
         icon="🗂️"
-        title="المشاريع"
-        subtitle="أضِف وعدّل أعمالك — صور، ريلز، وفيديوهات"
+        title={tr('المشاريع', 'Projects')}
+        subtitle={tr('أضِف وعدّل أعمالك — صور، ريلز، وفيديوهات', 'Add and edit your work — images, reels and videos')}
         actions={
           <button className="btn btn-primary" onClick={() => setWizard(true)}>
             <NavIcon id="plus" size={16} />
-            مشروع جديد
+            {tr('مشروع جديد', 'New project')}
           </button>
         }
       />
 
       <div className="filter-tabs">
-        {TABS.map((t) => (
+        {TABS.map((tb) => (
           <button
-            key={t.id}
-            className={`ftab ${tab === t.id ? 'active' : ''}`}
+            key={tb.id}
+            className={`ftab ${tab === tb.id ? 'active' : ''}`}
             onClick={() => {
-              setTab(t.id)
+              setTab(tb.id)
               setCat('all')
             }}
           >
-            {t.label}
+            {tr(tb.ar, tb.en)}
           </button>
         ))}
       </div>
@@ -163,7 +165,7 @@ export default function ProjectsManager({
       {/* Items-per-row control */}
       <div className="panel cols-control">
         <div className="cols-control-head">
-          <span>📐 عدد العناصر في الصف</span>
+          <span>{tr('عدد العناصر في الصف', 'Items per row')}</span>
         </div>
         <div className="cols-sliders">
           {bps.map((b) => (
@@ -177,7 +179,7 @@ export default function ProjectsManager({
                 onChange={(e) => setCol(b.key, Number(e.target.value))}
               />
               <span className="cols-slider-label">
-                {b.icon} {b.label}
+                <NavIcon id={b.icon} size={15} /> {tr(b.ar, b.en)}
               </span>
             </label>
           ))}
@@ -186,7 +188,7 @@ export default function ProjectsManager({
 
       <div className="cat-pills">
         <button className={`pill ${cat === 'all' ? 'active' : ''}`} onClick={() => setCat('all')}>
-          الكل
+          {tr('الكل', 'All')}
         </button>
         {categories.map((c) => (
           <button key={c} className={`pill ${cat === c ? 'active' : ''}`} onClick={() => setCat(c)}>
@@ -197,12 +199,14 @@ export default function ProjectsManager({
 
       {visible.length === 0 ? (
         <div className="panel" style={{ textAlign: 'center', padding: 50, color: 'var(--sub)' }}>
-          لا توجد مشاريع في هذا القسم — اضغط «مشروع جديد».
+          {tr('لا توجد مشاريع في هذا القسم — اضغط «مشروع جديد».', 'No projects in this section — click “New project”.')}
         </div>
       ) : (
         <>
           {visible.length > 1 && (
-            <div className="reorder-hint">↔︎ اسحب أي مشروع لتغيير ترتيبه — يُحفظ تلقائياً</div>
+            <div className="reorder-hint">
+              {tr('اسحب أي مشروع لتغيير ترتيبه — يُحفظ تلقائياً', 'Drag any project to reorder — saved automatically')}
+            </div>
           )}
           <div
             className="proj-manage-grid"
@@ -237,39 +241,50 @@ export default function ProjectsManager({
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={p.coverUrl} alt={p.title} draggable={false} />
                   ) : (
-                    <span style={{ color: 'var(--sub)' }}>لا غلاف</span>
+                    <span className="pm-nocover">
+                      <NavIcon id="image" size={30} />
+                    </span>
                   )}
-                  <span className="pm-drag" title="اسحب للترتيب">
-                    <NavIcon id="grip" size={15} />
+
+                  {/* media-type badge (top-start) */}
+                  <span className="pm-type" title={p.mediaType === 'video' ? tr('فيديو', 'Video') : tr('صورة', 'Image')}>
+                    <NavIcon id={p.mediaType === 'video' ? 'video' : 'image'} size={15} />
                   </span>
-                  {p.published === false && <span className="pm-draft">مسودة</span>}
-                </div>
-                <div className="pm-body">
-                  <strong>{p.title}</strong>
-                  <span>{p.category || '—'}</span>
-                </div>
-                <div className="pm-actions">
-                  <button
-                    className={`icon-btn ${p.published === false ? 'pub-off' : ''}`}
-                    title={p.published === false ? 'نشر المشروع' : 'إخفاء (مسودة)'}
-                    onClick={() => togglePublish(p.id, p.published === false)}
-                  >
-                    <NavIcon id={p.published === false ? 'eyeOff' : 'eye'} size={16} />
-                  </button>
-                  <button
-                    className="icon-btn"
-                    title="تعديل"
-                    onClick={() =>
-                      p.projectType === 'free'
-                        ? router.push(`/dashboard/projects/${p.id}/editor`)
-                        : setEditing(p)
-                    }
-                  >
-                    <NavIcon id="edit" size={16} />
-                  </button>
-                  <button className="icon-btn del" title="حذف" onClick={() => remove(p.id)}>
-                    <NavIcon id="trash" size={16} />
-                  </button>
+                  {p.published === false && <span className="pm-draft">{tr('مسودة', 'Draft')}</span>}
+
+                  {/* title + category overlaid on the cover */}
+                  <div className="pm-overlay">
+                    <strong>{p.title}</strong>
+                    {p.category && <span>{p.category}</span>}
+                  </div>
+
+                  {/* hover toolbar */}
+                  <div className="pm-actions">
+                    <button
+                      className={`icon-btn ${p.published === false ? 'pub-off' : ''}`}
+                      title={p.published === false ? tr('نشر المشروع', 'Publish') : tr('إخفاء (مسودة)', 'Hide (draft)')}
+                      onClick={() => togglePublish(p.id, p.published === false)}
+                    >
+                      <NavIcon id={p.published === false ? 'eyeOff' : 'eye'} size={15} />
+                    </button>
+                    <button
+                      className="icon-btn"
+                      title={tr('تعديل', 'Edit')}
+                      onClick={() =>
+                        p.projectType === 'free'
+                          ? router.push(`/dashboard/projects/${p.id}/editor`)
+                          : setEditing(p)
+                      }
+                    >
+                      <NavIcon id="edit" size={15} />
+                    </button>
+                    <button className="icon-btn del" title={tr('حذف', 'Delete')} onClick={() => remove(p.id)}>
+                      <NavIcon id="trash" size={15} />
+                    </button>
+                    <span className="pm-drag" title={tr('اسحب للترتيب', 'Drag to reorder')}>
+                      <NavIcon id="grip" size={15} />
+                    </span>
+                  </div>
                 </div>
               </div>
             ))}

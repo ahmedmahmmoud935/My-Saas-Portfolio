@@ -3,18 +3,12 @@
 import React, { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { DASHBOARD_NAV } from '@/lib/dashboard-nav'
+import { useDashLang } from './DashLang'
 import NavIcon from './icons'
 
-type Lang = 'ar' | 'en'
 type Mode = 'dark' | 'light'
 
-// Apply + persist the dashboard's language (direction) and colour mode on <html>.
-function applyLang(lang: Lang) {
-  const el = document.documentElement
-  el.setAttribute('lang', lang)
-  el.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr')
-  localStorage.setItem('dash-lang', lang)
-}
+// Apply + persist the dashboard's colour mode on <html>.
 function applyMode(mode: Mode) {
   document.documentElement.setAttribute('data-mode', mode)
   localStorage.setItem('dash-mode', mode)
@@ -37,30 +31,22 @@ export default function Sidebar({
   const router = useRouter()
   const pct = Math.min(100, Math.round((storageUsed / Math.max(1, storageLimit)) * 100))
 
-  const [lang, setLang] = useState<Lang>('ar')
+  const { lang, setLang, t } = useDashLang()
   const [mode, setMode] = useState<Mode>('dark')
 
-  // Restore saved preferences on mount.
+  // Restore saved colour mode on mount (language is handled by the provider).
   useEffect(() => {
-    const l = (localStorage.getItem('dash-lang') as Lang) || 'ar'
     const m = (localStorage.getItem('dash-mode') as Mode) || 'dark'
-    setLang(l)
     setMode(m)
-    applyLang(l)
     applyMode(m)
   }, [])
 
-  const toggleLang = () => {
-    const next: Lang = lang === 'ar' ? 'en' : 'ar'
-    setLang(next)
-    applyLang(next)
-  }
+  const toggleLang = () => setLang(lang === 'ar' ? 'en' : 'ar')
   const toggleMode = () => {
     const next: Mode = mode === 'dark' ? 'light' : 'dark'
     setMode(next)
     applyMode(next)
   }
-  const t = (ar: string, en: string) => (lang === 'ar' ? ar : en)
 
   const items = isOwner
     ? [...DASHBOARD_NAV, { id: 'users', labelAr: 'المستخدمون', labelEn: 'Users', icon: '' }]

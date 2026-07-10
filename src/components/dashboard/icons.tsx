@@ -256,6 +256,12 @@ const PATHS: Record<string, React.ReactNode> = {
       {P('M8 21h8M12 17v4')}
     </>
   ),
+  tablet: (
+    <>
+      <rect x="4" y="2" width="16" height="20" rx="2" />
+      {P('M10 18h4')}
+    </>
+  ),
 }
 
 export default function NavIcon({ id, size = 20 }: { id: string; size?: number }) {
