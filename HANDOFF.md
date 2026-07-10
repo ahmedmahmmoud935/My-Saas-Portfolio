@@ -56,13 +56,13 @@ pnpm dev          # http://localhost:3000  (admin /admin, dashboard /login)
 ```
 Local uses R2-off (disk media). Demo login: `ahmed@viralpx.test` / `password123`.
 
-### Seeding prod (IMPORTANT gotchas)
-- Prod DB is separate + empty on first boot. Don't use `/api/seed` in prod (40 uploads → times out behind
-  Coolify proxy on the slow India→R2 path).
-- Use **`GET /api/bootstrap?key=viralpx-init`** — INCREMENTAL (one upload per call, idempotent). Call it ~7×
-  to create tenant + owner user + settings + 4 projects + achievements + logo + testimonial.
-- **R2 bug fixes already applied:** (a) migration `add_r2_storage` adds `media.prefix` (was missing because
-  the initial migration was generated with R2 off); (b) `payload.config.ts` s3 config sets
+### Seeding prod (historical — routes removed)
+- Prod is already seeded via the real data migration (§3). The old `/api/seed`, `/api/bootstrap`, and `/api/migrate`
+  routes + `legacy-data.json` + `scripts/export-legacy.py` have been **removed** from the repo (2026-07-10).
+- If you ever need to bulk-import again, they're in git history (last present at commit `9367cce`). They were
+  guarded by `ENABLE_SEED_ROUTES=true`; that env var is no longer used.
+- **R2 bug fixes already applied (still relevant):** (a) migration `add_r2_storage` adds `media.prefix` (was missing
+  because the initial migration was generated with R2 off); (b) `payload.config.ts` s3 config sets
   `requestChecksumCalculation/responseChecksumValidation: 'WHEN_REQUIRED'` (AWS SDK default checksums hang on R2).
   **When generating new migrations, set R2_* env inline so the schema matches prod.**
 
@@ -85,9 +85,6 @@ Local uses R2-off (disk media). Demo login: `ahmed@viralpx.test` / `password123`
    (set `tenants.domain` in the owner Users tab, point DNS → VPS). **[needs user: a real client domain]**
 3. Polish: **dynamic OG images** (`@vercel/og`/Satori at `/og-image/<slug>.png`), and add EN to the few
    single-locale editors (testimonials/achievements/articles).
-4. **Pre-launch cleanup**: delete `src/app/(payload)/api/{seed,bootstrap,migrate}` + `.../migrate/legacy-data.json`
-   + `scripts/export-legacy.py` + `scripts/legacy-data.json`. They're inert now (`ENABLE_SEED_ROUTES` unset → 404)
-   but should be removed before the public launch.
 5. **Optional — make the landing owner-editable**: the landing (`src/app/(frontend)/page.tsx`) currently reads its
    copy from an in-file `COPY` map + live tenants for the showcase. To make it CMS-managed, add a `Landing` global
    (spec/05 `DEFAULT_LANDING`) + a dashboard tab, and generate a migration (set R2_* inline — see §2 gotcha).
@@ -101,8 +98,8 @@ Local uses R2-off (disk media). Demo login: `ahmed@viralpx.test` / `password123`
   image block was pruned; everything else migrated. Dashboard logins created: `ahmed@viralpx.test` (owner) +
   `omar@ / adventures@ / kamal@ viralpx.test`, all password `password123`.
   Mechanism: `scripts/export-legacy.py` → `legacy-data.json` → guarded `/api/migrate` (incremental: re-uploads media
-  from the CDN to R2, generic AR→EN two-pass restores localization). **Route now disabled** (`ENABLE_SEED_ROUTES`
-  unset → 404). Gotcha found: Payload converts image uploads to `.webp`, so match media by the extensionless hash.
+  from the CDN to R2, generic AR→EN two-pass restores localization). **Route since removed** from the repo (in git
+  history at `9367cce`). Gotcha found: Payload converts image uploads to `.webp`, so match media by the extensionless hash.
 - **Landing page** (`/`) — real bilingual (AR/EN, `?lang=`) marketing site: sticky nav, hero, features, how-it-works,
   live-portfolio showcase (pulls newest tenants), pricing, FAQ (+FAQPage JSON-LD), CTA, footer. Own scoped `<style>`,
   brand orange. Replaces the Phase-0 placeholder. Verified: 200, AR+EN, showcase links to real tenants.
@@ -112,8 +109,8 @@ Local uses R2-off (disk media). Demo login: `ahmed@viralpx.test` / `password123`
   (`submitHref`/`submitLabel` props). Verified end-to-end: submit → `ok`, stays hidden until approved, unknown
   tenant → 404, missing fields → 400.
 - **`llms.txt`** — `src/app/llms.txt/route.ts` (site summary + tenant list). Verified.
-- **Guarded seed routes** — `/api/seed` + `/api/bootstrap` now return **404 unless `ENABLE_SEED_ROUTES=true`**
-  (documented in `.env.example`). Set it in Coolify only while seeding, then unset before launch.
+- **Removed the seed/bootstrap/migrate routes** (+ `legacy-data.json`, `scripts/export-legacy.py`) now that the
+  migration is done — no bulk-import endpoints ship to production. In git history at `9367cce` if needed again.
 - Local preview note: `.claude/launch.json` runs `next dev`; embedded PG via `pnpm db:local` (:5432).
 
 ## 5. Access (secrets provided separately in chat)
