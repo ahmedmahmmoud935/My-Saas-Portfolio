@@ -4,16 +4,16 @@ import React from 'react'
 import MediaUploader from './MediaUploader'
 import type { EditModule } from '@/lib/project-types'
 
-const ADD_BUTTONS: { type: EditModule['type']; label: string }[] = [
-  { type: 'text', label: '📝 نص' },
-  { type: 'image', label: '🖼️ صورة' },
+export const MODULE_ADD_BUTTONS: { type: EditModule['type']; label: string }[] = [
+  { type: 'image', label: '🖼️ صورة كاملة' },
   { type: 'grid', label: '▦ شبكة صور' },
+  { type: 'text', label: '📝 نص / عنوان' },
   { type: 'video', label: '🎬 فيديو' },
-  { type: 'beforeafter', label: '↔ قبل/بعد' },
+  { type: 'beforeafter', label: '↔ قبل / بعد' },
   { type: 'separator', label: '― فاصل' },
 ]
 
-function blank(type: EditModule['type']): EditModule {
+export function blankModule(type: EditModule['type']): EditModule {
   switch (type) {
     case 'text':
       return { type: 'text', textType: 'p', value: '' }
@@ -41,9 +41,11 @@ function blank(type: EditModule['type']): EditModule {
 export default function ModulesEditor({
   modules,
   onChange,
+  hideAdd = false,
 }: {
   modules: EditModule[]
   onChange: (m: EditModule[]) => void
+  hideAdd?: boolean
 }) {
   const update = (i: number, m: EditModule) =>
     onChange(modules.map((x, j) => (j === i ? m : x)))
@@ -55,17 +57,19 @@ export default function ModulesEditor({
     ;[next[i], next[j]] = [next[j], next[i]]
     onChange(next)
   }
-  const add = (type: EditModule['type']) => onChange([...modules, blank(type)])
+  const add = (type: EditModule['type']) => onChange([...modules, blankModule(type)])
 
   return (
     <div className="mods">
-      <div className="mods-add">
-        {ADD_BUTTONS.map((b) => (
-          <button key={b.type} className="btn btn-ghost mods-add-btn" onClick={() => add(b.type)}>
-            {b.label}
-          </button>
-        ))}
-      </div>
+      {!hideAdd && (
+        <div className="mods-add">
+          {MODULE_ADD_BUTTONS.map((b) => (
+            <button key={b.type} className="btn btn-ghost mods-add-btn" onClick={() => add(b.type)}>
+              {b.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {modules.map((m, i) => (
         <div className="mod-card" key={i}>
@@ -206,8 +210,12 @@ export default function ModulesEditor({
       ))}
 
       {modules.length === 0 && (
-        <div style={{ color: 'var(--sub)', fontSize: 13, textAlign: 'center', padding: 16 }}>
-          ابدأ بإضافة بلوك من الأزرار فوق.
+        <div className="builder-empty">
+          <div style={{ fontSize: 34, opacity: 0.4 }}>▢</div>
+          <div style={{ fontWeight: 700, marginTop: 8 }}>ابدأ ببناء مشروعك</div>
+          <div style={{ color: 'var(--sub)', fontSize: 13 }}>
+            {hideAdd ? 'اضغط على عنصر من القائمة الجانبية لإضافته' : 'اختر عنصر من الأزرار فوق'}
+          </div>
         </div>
       )}
     </div>

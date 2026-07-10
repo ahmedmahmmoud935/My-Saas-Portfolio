@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import PageHeader from './PageHeader'
 import ProjectEditor, { type EditableProject } from './ProjectEditor'
+import NewProjectWizard from './NewProjectWizard'
 import { deleteProject, reorderProjects, saveGridCols } from '@/lib/project-actions'
 
 export type ProjectRow = EditableProject & { id: number }
@@ -46,6 +47,7 @@ export default function ProjectsManager({
   const [tab, setTab] = useState<TabId>('designs')
   const [cat, setCat] = useState('all')
   const [editing, setEditing] = useState<EditableProject | null>(null)
+  const [wizard, setWizard] = useState(false)
 
   // Local, reorderable copy of the projects (optimistic drag-and-drop).
   const [items, setItems] = useState<ProjectRow[]>(projects)
@@ -112,15 +114,6 @@ export default function ProjectsManager({
     }, 400)
   }
 
-  const blank: EditableProject = {
-    title: '',
-    mediaType: tab === 'designs' ? 'image' : 'video',
-    projectType: 'grid',
-    videoKind: tab === 'videos' ? 'video' : 'reel',
-    aspectRatio: tab === 'videos' ? '16:9' : '9:16',
-    images: [],
-  }
-
   return (
     <div>
       <PageHeader
@@ -128,7 +121,7 @@ export default function ProjectsManager({
         title="المشاريع"
         subtitle="أضِف وعدّل أعمالك — صور، ريلز، وفيديوهات"
         actions={
-          <button className="btn btn-primary" onClick={() => setEditing(blank)}>
+          <button className="btn btn-primary" onClick={() => setWizard(true)}>
             + مشروع جديد
           </button>
         }
@@ -226,7 +219,14 @@ export default function ProjectsManager({
                   <span>{p.category || '—'}</span>
                 </div>
                 <div className="pm-actions">
-                  <button className="icon-btn" onClick={() => setEditing(p)}>
+                  <button
+                    className="icon-btn"
+                    onClick={() =>
+                      p.projectType === 'free'
+                        ? router.push(`/dashboard/projects/${p.id}/editor`)
+                        : setEditing(p)
+                    }
+                  >
                     ✏️
                   </button>
                   <button className="icon-btn del" onClick={() => remove(p.id)}>
@@ -237,6 +237,16 @@ export default function ProjectsManager({
             ))}
           </div>
         </>
+      )}
+
+      {wizard && (
+        <NewProjectWizard
+          onClose={() => setWizard(false)}
+          onPickModal={(blank) => {
+            setWizard(false)
+            setEditing(blank)
+          }}
+        />
       )}
 
       {editing && (
