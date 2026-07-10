@@ -7,6 +7,7 @@ import NavIcon from './icons'
 import ModulesEditor, { MODULE_ADD_BUTTONS, blankModule } from './ModulesEditor'
 import { saveProject } from '@/lib/project-actions'
 import { editModuleToInput, type EditModule } from '@/lib/project-types'
+import { useDashLang } from './DashLang'
 
 export type BuilderProject = {
   id: number
@@ -28,13 +29,14 @@ export default function ProjectPageBuilder({
   const router = useRouter()
   const [p, setP] = useState<BuilderProject>(initial)
   const [busy, setBusy] = useState(false)
+  const { t } = useDashLang()
   const [toast, setToast] = useState(false)
 
   const setModules = (modules: EditModule[]) => setP((x) => ({ ...x, modules }))
 
   async function save(published: boolean, exit: boolean) {
     if (!p.title.trim()) {
-      alert('اكتب عنوان المشروع')
+      alert(t('اكتب عنوان المشروع', 'Enter the project title'))
       return
     }
     setBusy(true)
@@ -58,7 +60,7 @@ export default function ProjectPageBuilder({
         setTimeout(() => setToast(false), 1800)
       }
     } catch {
-      alert('فشل الحفظ')
+      alert(t('فشل الحفظ', 'Save failed'))
     } finally {
       setBusy(false)
     }
@@ -69,16 +71,16 @@ export default function ProjectPageBuilder({
       <div className="builder-bar">
         <a className="builder-back" href="/dashboard/projects">
           <NavIcon id="back" size={16} />
-          رجوع
+          {t('رجوع', 'Back')}
         </a>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn btn-ghost" onClick={() => save(false, false)} disabled={busy}>
             <NavIcon id="save" size={16} />
-            {busy ? '...' : 'حفظ كمسودة'}
+            {busy ? '…' : t('حفظ كمسودة', 'Save as draft')}
           </button>
           <button className="btn btn-primary" onClick={() => save(true, true)} disabled={busy}>
             <NavIcon id="publish" size={16} />
-            نشر
+            {t('نشر', 'Publish')}
           </button>
         </div>
       </div>
@@ -91,7 +93,7 @@ export default function ProjectPageBuilder({
 
         {/* Sidebar: add elements + info */}
         <aside className="builder-side">
-          <div className="builder-side-title">إضافة عنصر</div>
+          <div className="builder-side-title">{t('إضافة عنصر', 'Add element')}</div>
           <div className="builder-add">
             {MODULE_ADD_BUTTONS.map((b) => (
               <button
@@ -100,48 +102,48 @@ export default function ProjectPageBuilder({
                 onClick={() => setModules([...p.modules, blankModule(b.type)])}
               >
                 <NavIcon id={b.icon} size={17} />
-                {b.label}
+                {t(b.label, b.labelEn)}
               </button>
             ))}
           </div>
 
           <div className="builder-side-title" style={{ marginTop: 18 }}>
-            معلومات
+            {t('معلومات', 'Info')}
           </div>
-          <label className="lbl">العنوان *</label>
+          <label className="lbl">{t('العنوان *', 'Title *')}</label>
           <input className="field" value={p.title} onChange={(e) => setP({ ...p, title: e.target.value })} />
-          <label className="lbl">التصنيف</label>
+          <label className="lbl">{t('التصنيف', 'Category')}</label>
           <select
             className="field"
             value={p.category ?? ''}
             onChange={(e) => setP({ ...p, category: e.target.value })}
           >
-            <option value="">— بدون —</option>
+            <option value="">{t('— بدون —', '— None —')}</option>
             {categories.map((c) => (
               <option key={c} value={c}>
                 {c}
               </option>
             ))}
           </select>
-          <label className="lbl">الوصف</label>
+          <label className="lbl">{t('الوصف', 'Description')}</label>
           <textarea
             className="field"
             rows={3}
             value={p.description ?? ''}
             onChange={(e) => setP({ ...p, description: e.target.value })}
           />
-          <label className="lbl">صورة الغلاف</label>
+          <label className="lbl">{t('صورة الغلاف', 'Cover image')}</label>
           <MediaUploader
             previewUrl={p.coverUrl}
             onUploaded={(m) => setP({ ...p, coverId: m.id, coverUrl: m.thumbUrl })}
           />
           <p style={{ color: 'var(--sub)', fontSize: 12, marginTop: 6 }}>
-            الغلاف هو اللي بيظهر في كارت المشروع بالقائمة.
+            {t('الغلاف هو اللي بيظهر في كارت المشروع بالقائمة.', 'The cover is what shows on the project card in the list.')}
           </p>
         </aside>
       </div>
 
-      {toast && <div className="toast">تم الحفظ ✓</div>}
+      {toast && <div className="toast">{t('تم الحفظ ✓', 'Saved ✓')}</div>}
     </div>
   )
 }

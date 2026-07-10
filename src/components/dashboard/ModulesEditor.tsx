@@ -5,14 +5,15 @@ import MediaUploader from './MediaUploader'
 import NavIcon from './icons'
 import { resolveVideoUrl } from '@/lib/video'
 import type { EditModule } from '@/lib/project-types'
+import { useDashLang } from './DashLang'
 
-export const MODULE_ADD_BUTTONS: { type: EditModule['type']; label: string; icon: string }[] = [
-  { type: 'image', label: 'صورة كاملة', icon: 'image' },
-  { type: 'grid', label: 'شبكة صور', icon: 'grid' },
-  { type: 'text', label: 'نص / عنوان', icon: 'text' },
-  { type: 'video', label: 'فيديو', icon: 'video' },
-  { type: 'beforeafter', label: 'قبل / بعد', icon: 'beforeafter' },
-  { type: 'separator', label: 'فاصل', icon: 'separator' },
+export const MODULE_ADD_BUTTONS: { type: EditModule['type']; label: string; labelEn: string; icon: string }[] = [
+  { type: 'image', label: 'صورة كاملة', labelEn: 'Full image', icon: 'image' },
+  { type: 'grid', label: 'شبكة صور', labelEn: 'Image grid', icon: 'grid' },
+  { type: 'text', label: 'نص / عنوان', labelEn: 'Text / heading', icon: 'text' },
+  { type: 'video', label: 'فيديو', labelEn: 'Video', icon: 'video' },
+  { type: 'beforeafter', label: 'قبل / بعد', labelEn: 'Before / after', icon: 'beforeafter' },
+  { type: 'separator', label: 'فاصل', labelEn: 'Separator', icon: 'separator' },
 ]
 
 export function blankModule(type: EditModule['type']): EditModule {
@@ -49,6 +50,7 @@ export default function ModulesEditor({
   onChange: (m: EditModule[]) => void
   hideAdd?: boolean
 }) {
+  const { t } = useDashLang()
   const update = (i: number, m: EditModule) =>
     onChange(modules.map((x, j) => (j === i ? m : x)))
   const remove = (i: number) => onChange(modules.filter((_, j) => j !== i))
@@ -68,7 +70,7 @@ export default function ModulesEditor({
           {MODULE_ADD_BUTTONS.map((b) => (
             <button key={b.type} className="btn btn-ghost mods-add-btn" onClick={() => add(b.type)}>
               <NavIcon id={b.icon} size={16} />
-              {b.label}
+              {t(b.label, b.labelEn)}
             </button>
           ))}
         </div>
@@ -101,9 +103,9 @@ export default function ModulesEditor({
                 }
                 style={{ marginBottom: 8 }}
               >
-                <option value="h1">عنوان كبير (H1)</option>
-                <option value="h2">عنوان (H2)</option>
-                <option value="p">فقرة</option>
+                <option value="h1">{t('عنوان كبير (H1)', 'Heading (H1)')}</option>
+                <option value="h2">{t('عنوان (H2)', 'Subheading (H2)')}</option>
+                <option value="p">{t('فقرة', 'Paragraph')}</option>
               </select>
               <textarea
                 className="field"
@@ -148,7 +150,7 @@ export default function ModulesEditor({
                 </div>
               ))}
               <MediaUploader
-                label="إضافة"
+                label={t('إضافة', 'Add')}
                 compact
                 onUploaded={(u) =>
                   update(i, { ...m, items: [...m.items, { id: u.id, url: u.thumbUrl }] })
@@ -163,10 +165,10 @@ export default function ModulesEditor({
 
           {m.type === 'beforeafter' && (
             <>
-              <div className="ba-note">لازم تكون الصورتان بنفس الأبعاد بالظبط عشان المقارنة تظبط.</div>
+              <div className="ba-note">{t('لازم تكون الصورتان بنفس الأبعاد بالظبط عشان المقارنة تظبط.', 'Both images must be exactly the same dimensions for the comparison to line up.')}</div>
               <div className="grid-2">
                 <div>
-                  <label className="lbl">قبل</label>
+                  <label className="lbl">{t('قبل', 'Before')}</label>
                   <MediaUploader
                     big
                     previewUrl={m.beforeUrl}
@@ -174,7 +176,7 @@ export default function ModulesEditor({
                   />
                 </div>
                 <div>
-                  <label className="lbl">بعد</label>
+                  <label className="lbl">{t('بعد', 'After')}</label>
                   <MediaUploader
                     big
                     previewUrl={m.afterUrl}
@@ -185,13 +187,13 @@ export default function ModulesEditor({
               <div className="grid-2" style={{ marginTop: 8 }}>
                 <input
                   className="field"
-                  placeholder="نص «قبل»"
+                  placeholder={t('نص «قبل»', '“Before” label')}
                   value={m.labelBefore}
                   onChange={(e) => update(i, { ...m, labelBefore: e.target.value })}
                 />
                 <input
                   className="field"
-                  placeholder="نص «بعد»"
+                  placeholder={t('نص «بعد»', '“After” label')}
                   value={m.labelAfter}
                   onChange={(e) => update(i, { ...m, labelAfter: e.target.value })}
                 />
@@ -207,9 +209,9 @@ export default function ModulesEditor({
                 update(i, { ...m, spacing: e.target.value as 'compact' | 'normal' | 'large' })
               }
             >
-              <option value="compact">مسافة صغيرة</option>
-              <option value="normal">عادية</option>
-              <option value="large">كبيرة</option>
+              <option value="compact">{t('مسافة صغيرة', 'Compact')}</option>
+              <option value="normal">{t('عادية', 'Normal')}</option>
+              <option value="large">{t('كبيرة', 'Large')}</option>
             </select>
           )}
         </div>
@@ -218,9 +220,9 @@ export default function ModulesEditor({
       {modules.length === 0 && (
         <div className="builder-empty">
           <div style={{ fontSize: 34, opacity: 0.4 }}>▢</div>
-          <div style={{ fontWeight: 700, marginTop: 8 }}>ابدأ ببناء مشروعك</div>
+          <div style={{ fontWeight: 700, marginTop: 8 }}>{t('ابدأ ببناء مشروعك', 'Start building your project')}</div>
           <div style={{ color: 'var(--sub)', fontSize: 13 }}>
-            {hideAdd ? 'اضغط على عنصر من القائمة الجانبية لإضافته' : 'اختر عنصر من الأزرار فوق'}
+            {hideAdd ? t('اضغط على عنصر من القائمة الجانبية لإضافته', 'Click an element from the side panel to add it') : t('اختر عنصر من الأزرار فوق', 'Choose an element from the buttons above')}
           </div>
         </div>
       )}
@@ -230,14 +232,15 @@ export default function ModulesEditor({
 
 /* ── Video module body — link / upload a file / paste embed code ──────────── */
 const VIDEO_MODES = [
-  { id: 'link', label: 'رابط', icon: 'link' },
-  { id: 'upload', label: 'رفع من الجهاز', icon: 'upload' },
-  { id: 'code', label: 'كود التضمين', icon: 'code' },
+  { id: 'link', label: 'رابط', labelEn: 'Link', icon: 'link' },
+  { id: 'upload', label: 'رفع من الجهاز', labelEn: 'Upload file', icon: 'upload' },
+  { id: 'code', label: 'كود التضمين', labelEn: 'Embed code', icon: 'code' },
 ] as const
 type VideoMode = (typeof VIDEO_MODES)[number]['id']
 
 function VideoBody({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const [mode, setMode] = useState<VideoMode>('link')
+  const { t } = useDashLang()
   const resolved = resolveVideoUrl(value)
 
   return (
@@ -251,7 +254,7 @@ function VideoBody({ value, onChange }: { value: string; onChange: (v: string) =
             onClick={() => setMode(o.id)}
           >
             <NavIcon id={o.icon} size={15} />
-            {o.label}
+            {t(o.label, o.labelEn)}
           </button>
         ))}
       </div>
@@ -260,7 +263,7 @@ function VideoBody({ value, onChange }: { value: string; onChange: (v: string) =
         <input
           className="field"
           dir="ltr"
-          placeholder="https://youtu.be/…  أو  https://vimeo.com/…"
+          placeholder={t('https://youtu.be/…  أو  https://vimeo.com/…', 'https://youtu.be/…  or  https://vimeo.com/…')}
           value={value}
           onChange={(e) => onChange(e.target.value)}
         />
@@ -268,7 +271,7 @@ function VideoBody({ value, onChange }: { value: string; onChange: (v: string) =
 
       {mode === 'upload' && (
         <MediaUploader
-          label="رفع ملف فيديو"
+          label={t('رفع ملف فيديو', 'Upload video file')}
           accept="video/*"
           previewUrl={null}
           onUploaded={(u) => onChange(u.url ?? '')}

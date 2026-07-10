@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { saveProject } from '@/lib/project-actions'
 import NavIcon from './icons'
 import type { EditableProject } from './ProjectEditor'
+import { useDashLang } from './DashLang'
 
 type Kind = 'design' | 'video'
 
@@ -24,20 +25,21 @@ export default function NewProjectWizard({
 }) {
   const router = useRouter()
   const [kind, setKind] = useState<Kind | null>(null)
+  const { t } = useDashLang()
   const [busy, setBusy] = useState(false)
 
   async function startFree() {
     setBusy(true)
     try {
       const res = await saveProject({
-        title: 'مشروع جديد',
+        title: t('مشروع جديد', 'New project'),
         mediaType: 'image',
         projectType: 'free',
         published: false, // start as a draft; publish from the editor
       })
       router.push(`/dashboard/projects/${res.id}/editor`)
     } catch {
-      alert('تعذّر إنشاء المشروع')
+      alert(t('تعذّر إنشاء المشروع', 'Could not create the project'))
       setBusy(false)
     }
   }
@@ -63,7 +65,7 @@ export default function NewProjectWizard({
           <button className="icon-btn" onClick={onClose}>
             <NavIcon id="x" size={16} />
           </button>
-          <strong>{kind === null ? 'مشروع جديد' : 'اختر طريقة العرض'}</strong>
+          <strong>{kind === null ? t('مشروع جديد', 'New project') : t('اختر طريقة العرض', 'Choose a layout')}</strong>
         </div>
 
         <div className="modal-body">
@@ -71,39 +73,39 @@ export default function NewProjectWizard({
             <div className="wiz-grid">
               <button className="wiz-card" onClick={() => setKind('design')}>
                 <span className="wiz-ico"><NavIcon id="palette" size={30} /></span>
-                <strong>تصميمات</strong>
-                <span className="wiz-sub">صور، بوسترات، هوية بصرية</span>
+                <strong>{t('تصميمات', 'Designs')}</strong>
+                <span className="wiz-sub">{t('صور، بوسترات، هوية بصرية', 'Images, posters, branding')}</span>
               </button>
               <button className="wiz-card" onClick={() => setKind('video')}>
                 <span className="wiz-ico"><NavIcon id="film" size={30} /></span>
-                <strong>فيديو / ريل</strong>
-                <span className="wiz-sub">ريلز وفيديوهات</span>
+                <strong>{t('فيديو / ريل', 'Video / Reel')}</strong>
+                <span className="wiz-sub">{t('ريلز وفيديوهات', 'Reels and videos')}</span>
               </button>
             </div>
           ) : kind === 'design' ? (
             <div className="wiz-grid">
               <button className="wiz-card" onClick={pickGrid}>
                 <span className="wiz-ico"><NavIcon id="grid" size={30} /></span>
-                <strong>شبكة صور</strong>
-                <span className="wiz-sub">أسلوب إنستجرام — عدة صور بترتيب شبكي</span>
+                <strong>{t('شبكة صور', 'Image grid')}</strong>
+                <span className="wiz-sub">{t('أسلوب إنستجرام — عدة صور بترتيب شبكي', 'Instagram-style — several images in a grid')}</span>
               </button>
               <button className="wiz-card" onClick={startFree} disabled={busy}>
                 <span className="wiz-ico"><NavIcon id="page" size={30} /></span>
-                <strong>صفحة حرة</strong>
-                <span className="wiz-sub">{busy ? '...جارٍ الإنشاء' : 'أسلوب Behance — صفحة كاملة تبنيها بالعناصر'}</span>
+                <strong>{t('صفحة حرة', 'Free page')}</strong>
+                <span className="wiz-sub">{busy ? t('جارٍ الإنشاء…', 'Creating…') : t('أسلوب Behance — صفحة كاملة تبنيها بالعناصر', 'Behance-style — a full page you build with elements')}</span>
               </button>
             </div>
           ) : (
             <div className="wiz-grid">
               <button className="wiz-card" onClick={() => pickVideo('reel')}>
                 <span className="wiz-ico"><NavIcon id="phone" size={30} /></span>
-                <strong>ريل</strong>
-                <span className="wiz-sub">عمودي 9:16</span>
+                <strong>{t('ريل', 'Reel')}</strong>
+                <span className="wiz-sub">{t('عمودي 9:16', 'Vertical 9:16')}</span>
               </button>
               <button className="wiz-card" onClick={() => pickVideo('video')}>
                 <span className="wiz-ico"><NavIcon id="monitor" size={30} /></span>
-                <strong>فيديو</strong>
-                <span className="wiz-sub">أفقي 16:9</span>
+                <strong>{t('فيديو', 'Video')}</strong>
+                <span className="wiz-sub">{t('أفقي 16:9', 'Horizontal 16:9')}</span>
               </button>
             </div>
           )}
@@ -112,7 +114,7 @@ export default function NewProjectWizard({
         <div className="modal-foot">
           {kind !== null && (
             <button className="btn btn-ghost" onClick={() => setKind(null)} disabled={busy}>
-              → رجوع
+              → {t('رجوع', 'Back')}
             </button>
           )}
         </div>
