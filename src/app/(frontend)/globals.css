@@ -961,14 +961,22 @@ body {
   display: flex;
   gap: 10px;
   margin: 14px 0;
+  align-items: flex-start;
 }
 .mod-row img {
-  height: 320px;
-  width: auto;
+  /* Share the row width equally so the row fills the container (Behance-style)
+     instead of clumping to the start edge — which is the RIGHT in an RTL page. */
+  flex: 1 1 0;
+  min-width: 0;
+  width: 100%;
+  height: auto;
   border-radius: 6px;
-  object-fit: cover;
   cursor: zoom-in;
-  flex: 0 0 auto;
+}
+@media (max-width: 640px) {
+  .mod-row {
+    flex-direction: column;
+  }
 }
 .mod-video {
   position: relative;
