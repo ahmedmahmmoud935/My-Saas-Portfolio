@@ -76,9 +76,10 @@ export default async function ProjectDetailPage({ params }: Params) {
   } catch {
     notFound()
   }
-  // Ensure the project belongs to this tenant.
+  // Ensure the project belongs to this tenant and isn't a hidden draft.
   const projTenant = typeof project.tenant === 'object' ? project.tenant?.id : project.tenant
   if (!project || projTenant !== tenant.id) notFound()
+  if (project.published === false) notFound()
 
   const settingsRes = await payload.find({
     collection: 'site-settings',

@@ -20,6 +20,7 @@ export type EditableProject = {
   aspectRatio?: string
   images?: { id: number; url: string | null }[]
   modules?: EditModule[]
+  published?: boolean
 }
 
 export default function ProjectEditor({

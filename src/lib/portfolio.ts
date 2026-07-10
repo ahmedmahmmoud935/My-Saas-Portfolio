@@ -62,7 +62,8 @@ export async function getPortfolio(
       }),
       payload.find({
         collection: 'projects',
-        where: tenantFilter,
+        // Hide drafts (published === false); legacy rows with null stay visible.
+        where: { and: [tenantFilter, { published: { not_equals: false } }] },
         sort: 'sortOrder',
         limit: 200,
         depth: 1,

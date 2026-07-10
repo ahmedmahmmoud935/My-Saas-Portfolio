@@ -5,7 +5,12 @@ import { useRouter } from 'next/navigation'
 import PageHeader from './PageHeader'
 import ProjectEditor, { type EditableProject } from './ProjectEditor'
 import NewProjectWizard from './NewProjectWizard'
-import { deleteProject, reorderProjects, saveGridCols } from '@/lib/project-actions'
+import {
+  deleteProject,
+  reorderProjects,
+  saveGridCols,
+  setProjectPublished,
+} from '@/lib/project-actions'
 
 export type ProjectRow = EditableProject & { id: number }
 
@@ -70,6 +75,17 @@ export default function ProjectsManager({
     if (!confirm('حذف المشروع؟')) return
     await deleteProject(id)
     router.refresh()
+  }
+
+  // Publish / unpublish (draft) — optimistic, persisted immediately.
+  async function togglePublish(id: number, next: boolean) {
+    setItems((prev) => prev.map((p) => (p.id === id ? { ...p, published: next } : p)))
+    try {
+      await setProjectPublished(id, next)
+    } catch {
+      setItems((prev) => prev.map((p) => (p.id === id ? { ...p, published: !next } : p)))
+      alert('تعذّر تغيير الحالة')
+    }
   }
 
   // ── Drag-and-drop reorder ─────────────────────────────────────────────────
@@ -213,12 +229,20 @@ export default function ProjectsManager({
                   <span className="pm-drag" title="اسحب للترتيب">
                     ⠿
                   </span>
+                  {p.published === false && <span className="pm-draft">مسودة</span>}
                 </div>
                 <div className="pm-body">
                   <strong>{p.title}</strong>
                   <span>{p.category || '—'}</span>
                 </div>
                 <div className="pm-actions">
+                  <button
+                    className={`icon-btn ${p.published === false ? 'pub-off' : ''}`}
+                    title={p.published === false ? 'نشر المشروع' : 'إخفاء (مسودة)'}
+                    onClick={() => togglePublish(p.id, p.published === false)}
+                  >
+                    {p.published === false ? '🚫' : '👁'}
+                  </button>
                   <button
                     className="icon-btn"
                     onClick={() =>

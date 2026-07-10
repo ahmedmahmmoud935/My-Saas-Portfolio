@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { resolveVideoUrl } from '@/lib/video'
 
 export type Mod =
   | { type: 'text'; textType: 'h1' | 'h2' | 'p'; value: string }
@@ -76,12 +77,20 @@ function BeforeAfter({
         move(e.touches[0].clientX)
       }}
     >
+      {/* `before` sizes the box at its natural height (no crop). The two images
+          must share the same dimensions. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={before} alt="before" />
-      <div className="after-wrap" style={{ width: `${pos}%` }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={after} alt="after" style={{ width: `${100 / (pos / 100)}%`, maxWidth: 'none' }} />
-      </div>
+      <img className="ba-before" src={before} alt="before" draggable={false} />
+      {/* `after` overlays exactly and is revealed left→right by a moving clip —
+          the image itself never shifts or scales. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        className="ba-after"
+        src={after}
+        alt="after"
+        draggable={false}
+        style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}
+      />
       <div className="handle" style={{ left: `${pos}%` }} />
       {labelBefore && (
         <span className="ba-label" style={{ insetInlineStart: 12 }}>
@@ -204,12 +213,24 @@ export default function ProjectView({ project }: { project: SerializedProject })
                     ))}
                   </div>
                 )
-              case 'video':
+              case 'video': {
+                const v = resolveVideoUrl(m.embedUrl)
+                if (!v) return null
                 return (
                   <div className="mod-video" key={i}>
-                    <iframe src={m.embedUrl} allowFullScreen title={`video-${i}`} />
+                    {v.kind === 'file' ? (
+                      <video src={v.url} controls playsInline preload="metadata" />
+                    ) : (
+                      <iframe
+                        src={v.url}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        title={`video-${i}`}
+                      />
+                    )}
                   </div>
                 )
+              }
               case 'beforeafter':
                 return m.before && m.after ? (
                   <BeforeAfter

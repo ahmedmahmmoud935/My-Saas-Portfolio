@@ -11,12 +11,15 @@ export default function MediaUploader({
   onUploaded,
   accept = 'image/*',
   compact = false,
+  big = false,
 }: {
   label?: string
   previewUrl?: string | null
   onUploaded: (m: UploadedMedia) => void
   accept?: string
   compact?: boolean
+  /** Render the preview full-width (as it appears when published) with a replace badge. */
+  big?: boolean
 }) {
   const ref = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(false)
@@ -35,6 +38,29 @@ export default function MediaUploader({
     } finally {
       setBusy(false)
     }
+  }
+
+  // Full-width preview (shows the image at roughly its published size) with a
+  // replace badge — clicking anywhere re-opens the picker to swap the image.
+  if (big && preview) {
+    return (
+      <div className="uploader uploader-big" onClick={() => ref.current?.click()}>
+        <input
+          ref={ref}
+          type="file"
+          accept={accept}
+          hidden
+          onChange={(e) => {
+            const f = e.target.files?.[0]
+            if (f) pick(f)
+            e.target.value = ''
+          }}
+        />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={preview} alt="" />
+        <span className="uploader-replace">{busy ? '...جاري الرفع' : '⟳ استبدال'}</span>
+      </div>
+    )
   }
 
   return (

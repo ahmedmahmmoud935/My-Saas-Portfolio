@@ -1,7 +1,8 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import MediaUploader from './MediaUploader'
+import { resolveVideoUrl } from '@/lib/video'
 import type { EditModule } from '@/lib/project-types'
 
 export const MODULE_ADD_BUTTONS: { type: EditModule['type']; label: string }[] = [
@@ -113,6 +114,7 @@ export default function ModulesEditor({
 
           {m.type === 'image' && (
             <MediaUploader
+              big
               previewUrl={m.srcUrl}
               onUploaded={(u) => update(i, { ...m, srcId: u.id, srcUrl: u.thumbUrl })}
             />
@@ -122,10 +124,17 @@ export default function ModulesEditor({
             <div className="gallery-grid">
               {m.items.map((it, k) => (
                 <div className="gallery-thumb" key={it.id}>
-                  {it.url && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={it.url} alt="" />
-                  )}
+                  {/* Click the thumb to swap this image (استبدال). */}
+                  <MediaUploader
+                    big
+                    previewUrl={it.url}
+                    onUploaded={(u) =>
+                      update(i, {
+                        ...m,
+                        items: m.items.map((x, z) => (z === k ? { id: u.id, url: u.thumbUrl } : x)),
+                      })
+                    }
+                  />
                   <button
                     className="icon-btn del thumb-del"
                     onClick={() =>
@@ -147,31 +156,26 @@ export default function ModulesEditor({
           )}
 
           {m.type === 'video' && (
-            <input
-              className="field"
-              dir="ltr"
-              placeholder="رابط الفيديو (YouTube / Vimeo)"
-              value={m.embedUrl}
-              onChange={(e) => update(i, { ...m, embedUrl: e.target.value })}
-            />
+            <VideoBody value={m.embedUrl} onChange={(embedUrl) => update(i, { ...m, embedUrl })} />
           )}
 
           {m.type === 'beforeafter' && (
             <>
+              <div className="ba-note">⚠️ لازم تكون الصورتان بنفس الأبعاد بالظبط عشان المقارنة تظبط.</div>
               <div className="grid-2">
                 <div>
                   <label className="lbl">قبل</label>
                   <MediaUploader
+                    big
                     previewUrl={m.beforeUrl}
-                    compact
                     onUploaded={(u) => update(i, { ...m, beforeId: u.id, beforeUrl: u.thumbUrl })}
                   />
                 </div>
                 <div>
                   <label className="lbl">بعد</label>
                   <MediaUploader
+                    big
                     previewUrl={m.afterUrl}
-                    compact
                     onUploaded={(u) => update(i, { ...m, afterId: u.id, afterUrl: u.thumbUrl })}
                   />
                 </div>
@@ -216,6 +220,82 @@ export default function ModulesEditor({
           <div style={{ color: 'var(--sub)', fontSize: 13 }}>
             {hideAdd ? 'اضغط على عنصر من القائمة الجانبية لإضافته' : 'اختر عنصر من الأزرار فوق'}
           </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ── Video module body — link / upload a file / paste embed code ──────────── */
+const VIDEO_MODES = [
+  { id: 'link', label: '🔗 رابط' },
+  { id: 'upload', label: '⬆ رفع من الجهاز' },
+  { id: 'code', label: '</> كود التضمين' },
+] as const
+type VideoMode = (typeof VIDEO_MODES)[number]['id']
+
+function VideoBody({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [mode, setMode] = useState<VideoMode>('link')
+  const resolved = resolveVideoUrl(value)
+
+  return (
+    <div className="video-body">
+      <div className="video-modes">
+        {VIDEO_MODES.map((o) => (
+          <button
+            key={o.id}
+            type="button"
+            className={`video-mode ${mode === o.id ? 'active' : ''}`}
+            onClick={() => setMode(o.id)}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+
+      {mode === 'link' && (
+        <input
+          className="field"
+          dir="ltr"
+          placeholder="https://youtu.be/…  أو  https://vimeo.com/…"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      )}
+
+      {mode === 'upload' && (
+        <MediaUploader
+          label="رفع ملف فيديو"
+          accept="video/*"
+          previewUrl={null}
+          onUploaded={(u) => onChange(u.url ?? '')}
+        />
+      )}
+
+      {mode === 'code' && (
+        <textarea
+          className="field"
+          dir="ltr"
+          rows={3}
+          placeholder={'<iframe src="…"></iframe>'}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      )}
+
+      {/* Live preview so the user sees it working before saving. */}
+      {resolved && (
+        <div className="video-preview">
+          {resolved.kind === 'file' ? (
+            <video src={resolved.url} controls playsInline preload="metadata" />
+          ) : (
+            <iframe
+              src={resolved.url}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              title="video-preview"
+            />
+          )}
         </div>
       )}
     </div>

@@ -27,6 +27,7 @@ export type ProjectInput = {
   aspectRatio?: string
   imageIds?: number[]
   modules?: ModuleInput[]
+  published?: boolean
 }
 
 /** Editor-side module: like ModuleInput but carries preview URLs for display. */

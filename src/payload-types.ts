@@ -322,6 +322,10 @@ export interface Project {
           }
       )[]
     | null;
+  /**
+   * Uncheck to hide this project from the public portfolio (draft).
+   */
+  published?: boolean | null;
   sortOrder?: number | null;
   updatedAt: string;
   createdAt: string;
@@ -992,6 +996,7 @@ export interface ProjectsSelect<T extends boolean = true> {
               blockName?: T;
             };
       };
+  published?: T;
   sortOrder?: T;
   updatedAt?: T;
   createdAt?: T;

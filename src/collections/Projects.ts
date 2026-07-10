@@ -113,6 +113,15 @@ export const Projects: CollectionConfig = {
       },
     },
     {
+      name: 'published',
+      type: 'checkbox',
+      defaultValue: true,
+      admin: {
+        position: 'sidebar',
+        description: 'Uncheck to hide this project from the public portfolio (draft).',
+      },
+    },
+    {
       name: 'sortOrder',
       type: 'number',
       defaultValue: 0,

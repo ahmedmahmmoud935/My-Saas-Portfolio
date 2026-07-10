@@ -81,6 +81,9 @@ export async function saveProject(input: ProjectInput) {
     aspectRatio: input.aspectRatio ?? '9:16',
     images: (input.imageIds ?? []).map((image) => ({ image })),
     modules: toBlocks(input.modules),
+    // Only touch `published` when explicitly provided (the toggle is a separate
+    // action) — new projects fall back to the collection default (true).
+    ...(input.published !== undefined ? { published: input.published } : {}),
   }
 
   if (input.id) {
@@ -105,6 +108,15 @@ export async function deleteProject(id: number) {
   if (!ctx) throw new Error('unauthorized')
   await assertOwnsProject(ctx, id)
   await ctx.payload.delete({ collection: 'projects', id })
+  return { ok: true }
+}
+
+/** Toggle a project between published and draft (hidden from the public site). */
+export async function setProjectPublished(id: number, published: boolean) {
+  const ctx = await getDashboardContext()
+  if (!ctx) throw new Error('unauthorized')
+  await assertOwnsProject(ctx, id)
+  await ctx.payload.update({ collection: 'projects', id, data: { published } })
   return { ok: true }
 }
 

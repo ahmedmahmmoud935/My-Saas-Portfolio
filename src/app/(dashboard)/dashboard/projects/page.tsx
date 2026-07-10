@@ -89,6 +89,7 @@ export default async function ProjectsPage() {
       })
       .filter((x): x is { id: number; url: string | null } => !!x),
     modules: serializeEditModules(p.modules),
+    published: p.published !== false,
   }))
 
   const categoriesImage = (settings.categories?.image ?? []).map((c) => c.name || '').filter(Boolean)
