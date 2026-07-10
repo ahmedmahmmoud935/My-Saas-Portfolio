@@ -5,12 +5,12 @@ import PageHeader from './PageHeader'
 import MediaUploader from './MediaUploader'
 import { saveContent } from '@/lib/content-actions'
 import {
-import { useDashLang } from './DashLang'
   CONTENT_SECTIONS,
   emptyLoc,
   type ContentForm,
   type Loc,
 } from '@/lib/content-types'
+import { useDashLang } from './DashLang'
 
 /* Bilingual field (AR + EN side by side). */
 function LocField({
