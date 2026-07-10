@@ -5,6 +5,7 @@ import MediaUploader, { type UploadedMedia } from './MediaUploader'
 import ModulesEditor from './ModulesEditor'
 import { saveProject } from '@/lib/project-actions'
 import { editModuleToInput, type ProjectInput, type EditModule } from '@/lib/project-types'
+import { useDashLang } from './DashLang'
 
 export type EditableProject = {
   id?: number
@@ -35,12 +36,13 @@ export default function ProjectEditor({
   onSaved: () => void
 }) {
   const [p, setP] = useState<EditableProject>(initial)
+  const { t } = useDashLang()
   const [busy, setBusy] = useState(false)
   const set = (patch: Partial<EditableProject>) => setP((prev) => ({ ...prev, ...patch }))
 
   async function submit() {
     if (!p.title.trim()) {
-      alert('اكتب عنوان المشروع')
+      alert(t('اكتب عنوان المشروع', 'Enter the project title'))
       return
     }
     setBusy(true)
@@ -62,7 +64,7 @@ export default function ProjectEditor({
       await saveProject(input)
       onSaved()
     } catch {
-      alert('فشل الحفظ')
+      alert(t('فشل الحفظ', 'Save failed'))
     } finally {
       setBusy(false)
     }
@@ -75,22 +77,22 @@ export default function ProjectEditor({
           <button className="icon-btn" onClick={onClose}>
             ✕
           </button>
-          <strong>{p.id ? 'تعديل مشروع' : 'مشروع جديد'}</strong>
+          <strong>{p.id ? t('تعديل مشروع', 'Edit project') : t('مشروع جديد', 'New project')}</strong>
         </div>
 
         <div className="modal-body">
-          <label className="lbl">العنوان</label>
+          <label className="lbl">{t('العنوان', 'Title')}</label>
           <input className="field" value={p.title} onChange={(e) => set({ title: e.target.value })} />
 
           <div className="grid-2">
             <div>
-              <label className="lbl">التصنيف</label>
+              <label className="lbl">{t('التصنيف', 'Category')}</label>
               <select
                 className="field"
                 value={p.category ?? ''}
                 onChange={(e) => set({ category: e.target.value })}
               >
-                <option value="">— بدون —</option>
+                <option value="">{t('— بدون —', '— None —')}</option>
                 {categories.map((c) => (
                   <option key={c} value={c}>
                     {c}
@@ -99,19 +101,19 @@ export default function ProjectEditor({
               </select>
             </div>
             <div>
-              <label className="lbl">النوع</label>
+              <label className="lbl">{t('النوع', 'Type')}</label>
               <select
                 className="field"
                 value={p.mediaType}
                 onChange={(e) => set({ mediaType: e.target.value as 'image' | 'video' })}
               >
-                <option value="image">صور</option>
-                <option value="video">فيديو</option>
+                <option value="image">{t('صور', 'Images')}</option>
+                <option value="video">{t('فيديو', 'Video')}</option>
               </select>
             </div>
           </div>
 
-          <label className="lbl">الوصف</label>
+          <label className="lbl">{t('الوصف', 'Description')}</label>
           <textarea
             className="field"
             rows={3}
@@ -119,21 +121,21 @@ export default function ProjectEditor({
             onChange={(e) => set({ description: e.target.value })}
           />
 
-          <label className="lbl">تخطيط صفحة التفاصيل</label>
+          <label className="lbl">{t('تخطيط صفحة التفاصيل', 'Detail page layout')}</label>
           <select
             className="field"
             value={p.projectType}
             onChange={(e) => set({ projectType: e.target.value as EditableProject['projectType'] })}
           >
-            <option value="grid">جريد (معرض صور)</option>
-            <option value="free">حر (page-builder)</option>
-            <option value="stacked">مكدّس (غلاف + صور)</option>
+            <option value="grid">{t('جريد (معرض صور)', 'Grid (image gallery)')}</option>
+            <option value="free">{t('حر (page-builder)', 'Free (page builder)')}</option>
+            <option value="stacked">{t('مكدّس (غلاف + صور)', 'Stacked (cover + images)')}</option>
           </select>
 
           {p.mediaType === 'video' && (
             <div className="grid-2">
               <div>
-                <label className="lbl">رابط الفيديو</label>
+                <label className="lbl">{t('رابط الفيديو', 'Video URL')}</label>
                 <input
                   className="field"
                   dir="ltr"
@@ -143,26 +145,26 @@ export default function ProjectEditor({
                 />
               </div>
               <div>
-                <label className="lbl">نوع الفيديو</label>
+                <label className="lbl">{t('نوع الفيديو', 'Video type')}</label>
                 <select
                   className="field"
                   value={p.videoKind ?? 'reel'}
                   onChange={(e) => set({ videoKind: e.target.value as 'reel' | 'video' })}
                 >
-                  <option value="reel">ريل (9:16)</option>
-                  <option value="video">فيديو (16:9)</option>
+                  <option value="reel">{t('ريل (9:16)', 'Reel (9:16)')}</option>
+                  <option value="video">{t('فيديو (16:9)', 'Video (16:9)')}</option>
                 </select>
               </div>
             </div>
           )}
 
-          <label className="lbl">صورة الغلاف</label>
+          <label className="lbl">{t('صورة الغلاف', 'Cover image')}</label>
           <MediaUploader
             previewUrl={p.coverUrl}
             onUploaded={(m: UploadedMedia) => set({ coverId: m.id, coverUrl: m.thumbUrl })}
           />
 
-          <label className="lbl">صور المعرض</label>
+          <label className="lbl">{t('صور المعرض', 'Gallery images')}</label>
           <div className="gallery-grid">
             {(p.images ?? []).map((im, i) => (
               <div className="gallery-thumb" key={im.id}>
@@ -179,7 +181,7 @@ export default function ProjectEditor({
               </div>
             ))}
             <MediaUploader
-              label="إضافة"
+              label={t('إضافة', 'Add')}
               compact
               onUploaded={(m) =>
                 set({ images: [...(p.images ?? []), { id: m.id, url: m.thumbUrl }] })
@@ -189,7 +191,7 @@ export default function ProjectEditor({
 
           {p.projectType === 'free' && (
             <>
-              <label className="lbl">بناء الصفحة (Page Builder)</label>
+              <label className="lbl">{t('بناء الصفحة (Page Builder)', 'Page builder')}</label>
               <ModulesEditor
                 modules={p.modules ?? []}
                 onChange={(mods) => set({ modules: mods })}
@@ -200,10 +202,10 @@ export default function ProjectEditor({
 
         <div className="modal-foot">
           <button className="btn btn-ghost" onClick={onClose}>
-            إلغاء
+            {t('إلغاء', 'Cancel')}
           </button>
           <button className="btn btn-primary" onClick={submit} disabled={busy}>
-            {busy ? '...' : '💾 حفظ المشروع'}
+            {busy ? '…' : t('💾 حفظ المشروع', '💾 Save project')}
           </button>
         </div>
       </div>
