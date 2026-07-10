@@ -5,7 +5,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 export type Mod =
   | { type: 'text'; textType: 'h1' | 'h2' | 'p'; value: string }
   | { type: 'image'; src: string | null }
-  | { type: 'grid'; items: (string | null)[] }
+  | { type: 'grid'; items: { src: string; ar: number }[] }
   | { type: 'video'; embedUrl: string }
   | {
       type: 'beforeafter'
@@ -105,7 +105,7 @@ export default function ProjectView({ project }: { project: SerializedProject })
   gallery.current = [
     ...project.images,
     ...project.modules.flatMap((m) =>
-      m.type === 'image' && m.src ? [m.src] : m.type === 'grid' ? m.items.filter(Boolean) as string[] : [],
+      m.type === 'image' && m.src ? [m.src] : m.type === 'grid' ? m.items.map((it) => it.src) : [],
     ),
   ]
 
@@ -189,9 +189,18 @@ export default function ProjectView({ project }: { project: SerializedProject })
               case 'grid':
                 return (
                   <div className="mod-row" key={i}>
-                    {m.items.filter(Boolean).map((src, j) => (
+                    {m.items.map((it, j) => (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img key={j} src={src!} alt="" loading="lazy" onClick={() => open(src!)} />
+                      <img
+                        key={j}
+                        src={it.src}
+                        alt=""
+                        loading="lazy"
+                        // flex-grow ∝ aspect ratio → all images in the row share one
+                        // height, widths proportional, and the row fills the container.
+                        style={{ flexGrow: it.ar }}
+                        onClick={() => open(it.src)}
+                      />
                     ))}
                   </div>
                 )

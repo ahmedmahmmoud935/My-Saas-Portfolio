@@ -27,7 +27,14 @@ function serializeModules(modules: unknown[]): Mod[] {
       case 'grid':
         out.push({
           type: 'grid',
-          items: ((m.items as { src: unknown }[]) || []).map((it) => mediaUrl(it.src as never)),
+          items: ((m.items as { src: unknown }[]) || [])
+            .map((it) => {
+              const src = mediaUrl(it.src as never)
+              const s = it.src as { width?: number | null; height?: number | null } | null
+              const ar = s && s.width && s.height ? s.width / s.height : 1
+              return src ? { src, ar } : null
+            })
+            .filter((x): x is { src: string; ar: number } => !!x),
         })
         break
       case 'video':
