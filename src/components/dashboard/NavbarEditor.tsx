@@ -62,7 +62,7 @@ export default function NavbarEditor({ initial }: { initial: Item[] }) {
             />
             <input
               className="field"
-              placeholder="عربي"
+              placeholder={t('عربي', 'Arabic')}
               value={it.labelAr}
               onChange={(e) => patch(i, { labelAr: e.target.value })}
             />

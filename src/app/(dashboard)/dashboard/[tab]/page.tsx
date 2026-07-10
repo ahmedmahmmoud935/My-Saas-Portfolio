@@ -1,6 +1,6 @@
 import React from 'react'
 import { notFound } from 'next/navigation'
-import PageHeader from '@/components/dashboard/PageHeader'
+import DashNotice from '@/components/dashboard/DashNotice'
 import { DASHBOARD_NAV } from '@/lib/dashboard-nav'
 
 // Fallback for tabs that exist in the sidebar but aren't built yet.
@@ -15,14 +15,15 @@ export default async function ComingSoonTab({
   if (!nav) notFound()
 
   return (
-    <div>
-      <PageHeader icon={nav.icon} title={nav.labelAr} subtitle="قيد الإنشاء — قريبًا" />
-      <div className="panel" style={{ textAlign: 'center', padding: 60 }}>
-        <div style={{ fontSize: 40, marginBottom: 12 }}>{nav.icon}</div>
-        <div style={{ color: 'var(--sub)' }}>
-          تبويب <b style={{ color: 'var(--text)' }}>{nav.labelAr}</b> لسه تحت التنفيذ.
-        </div>
-      </div>
-    </div>
+    <DashNotice
+      icon={nav.icon}
+      titleAr={nav.labelAr}
+      titleEn={nav.labelEn}
+      subAr="قيد الإنشاء — قريبًا"
+      subEn="Under construction — coming soon"
+      bodyAr="هذا التبويب لسه تحت التنفيذ."
+      bodyEn="This tab is still under construction."
+      bigIcon
+    />
   )
 }

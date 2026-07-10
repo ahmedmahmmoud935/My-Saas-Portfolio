@@ -1,7 +1,7 @@
 import React from 'react'
 import { redirect } from 'next/navigation'
 import { getDashboardContext } from '@/lib/dashboard'
-import PageHeader from '@/components/dashboard/PageHeader'
+import DashNotice from '@/components/dashboard/DashNotice'
 import UsersManager from '@/components/dashboard/UsersManager'
 
 export const dynamic = 'force-dynamic'
@@ -12,12 +12,15 @@ export default async function UsersPage() {
 
   if (!ctx.user.isOwner) {
     return (
-      <div>
-        <PageHeader icon="👤" title="المستخدمون" subtitle="إدارة العملاء" />
-        <div className="panel" style={{ textAlign: 'center', padding: 50, color: 'var(--sub)' }}>
-          هذا القسم متاح لمالك المنصّة فقط.
-        </div>
-      </div>
+      <DashNotice
+        icon="👤"
+        titleAr="المستخدمون"
+        titleEn="Users"
+        subAr="إدارة العملاء"
+        subEn="Manage clients"
+        bodyAr="هذا القسم متاح لمالك المنصّة فقط."
+        bodyEn="This section is only available to the platform owner."
+      />
     )
   }
 
