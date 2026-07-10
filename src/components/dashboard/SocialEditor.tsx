@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import PageHeader from './PageHeader'
 import MediaUploader from './MediaUploader'
 import { saveSocial, type SocialForm } from '@/lib/social-actions'
+import { useDashLang } from './DashLang'
 
 const NETWORKS: { key: keyof SocialForm; label: string; icon: string }[] = [
   { key: 'whatsapp', label: 'WhatsApp', icon: '🟢' },
@@ -23,6 +24,7 @@ export default function SocialEditor({
 }) {
   const [f, setF] = useState<SocialForm>(initial)
   const [busy, setBusy] = useState(false)
+  const { t } = useDashLang()
   const [toast, setToast] = useState(false)
 
   const isVisible = (k: string) => f.visible.includes(k)
@@ -44,18 +46,18 @@ export default function SocialEditor({
     <div>
       <PageHeader
         icon="🔗"
-        title="التواصل الاجتماعي"
-        subtitle="روابطك — فعّلها وحط اللينك. الواتساب بيشغّل الزر العائم"
+        title={t('التواصل الاجتماعي', 'Social links')}
+        subtitle={t('روابطك — فعّلها وحط اللينك. الواتساب بيشغّل الزر العائم', 'Your links — toggle and add the URL. WhatsApp powers the floating button')}
         actions={
           <button className="btn btn-primary" onClick={save} disabled={busy}>
-            {busy ? '...' : '💾 حفظ'}
+            {busy ? '…' : t('💾 حفظ', '💾 Save')}
           </button>
         }
       />
 
       <div className="panel" style={{ marginBottom: 16 }}>
         <div className="panel-title">
-          <span>الصورة الشخصية</span>
+          <span>{t('الصورة الشخصية', 'Profile photo')}</span>
           <span>👤</span>
         </div>
         <MediaUploader
@@ -82,7 +84,7 @@ export default function SocialEditor({
               <input
                 className="field"
                 dir="ltr"
-                placeholder="الرابط / الرقم"
+                placeholder={t('الرابط / الرقم', 'Link / number')}
                 value={f[n.key] as string}
                 onChange={(e) => setF((p) => ({ ...p, [n.key]: e.target.value }))}
                 style={{ textAlign: 'start' }}
@@ -92,7 +94,7 @@ export default function SocialEditor({
         </div>
       </div>
 
-      {toast && <div className="toast">تم الحفظ ✓</div>}
+      {toast && <div className="toast">{t('تم الحفظ ✓', 'Saved ✓')}</div>}
     </div>
   )
 }

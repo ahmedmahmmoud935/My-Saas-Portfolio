@@ -5,12 +5,14 @@ import { useRouter } from 'next/navigation'
 import PageHeader from './PageHeader'
 import MediaUploader from './MediaUploader'
 import { saveDoc, deleteDoc } from '@/lib/collection-actions'
+import { useDashLang } from './DashLang'
 
 type Logo = { id?: number; name: string; websiteUrl: string; logoId: number | null; logoUrl: string | null }
 
 export default function LogosManager({ logos }: { logos: Logo[] }) {
   const router = useRouter()
   const [edit, setEdit] = useState<Logo | null>(null)
+  const { t } = useDashLang()
   const [busy, setBusy] = useState(false)
 
   async function save() {
@@ -26,7 +28,7 @@ export default function LogosManager({ logos }: { logos: Logo[] }) {
     router.refresh()
   }
   async function remove(id: number) {
-    if (!confirm('حذف الشعار؟')) return
+    if (!confirm(t('حذف الشعار؟', 'Delete this logo?'))) return
     await deleteDoc('logos', id)
     router.refresh()
   }
@@ -35,18 +37,18 @@ export default function LogosManager({ logos }: { logos: Logo[] }) {
     <div>
       <PageHeader
         icon="👥"
-        title="شعارات العملاء"
-        subtitle="الشركات اللي اشتغلت معاها"
+        title={t('شعارات العملاء', 'Client logos')}
+        subtitle={t('الشركات اللي اشتغلت معاها', 'Companies you have worked with')}
         actions={
           <button className="btn btn-primary" onClick={() => setEdit({ name: '', websiteUrl: '', logoId: null, logoUrl: null })}>
-            + إضافة شعار
+            + {t('إضافة شعار', 'Add logo')}
           </button>
         }
       />
 
       {logos.length === 0 ? (
         <div className="panel" style={{ textAlign: 'center', padding: 46, color: 'var(--sub)' }}>
-          مفيش شعارات لسه.
+          {t('مفيش شعارات لسه.', 'No logos yet.')}
         </div>
       ) : (
         <div className="proj-manage-grid">
@@ -78,19 +80,19 @@ export default function LogosManager({ logos }: { logos: Logo[] }) {
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-head">
               <button className="icon-btn" onClick={() => setEdit(null)}>✕</button>
-              <strong>{edit.id ? 'تعديل شعار' : 'شعار جديد'}</strong>
+              <strong>{edit.id ? t('تعديل شعار', 'Edit logo') : t('شعار جديد', 'New logo')}</strong>
             </div>
             <div className="modal-body">
-              <label className="lbl">اسم الشركة</label>
+              <label className="lbl">{t('اسم الشركة', 'Company name')}</label>
               <input className="field" value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} />
-              <label className="lbl">رابط الموقع</label>
+              <label className="lbl">{t('رابط الموقع', 'Website URL')}</label>
               <input className="field" dir="ltr" value={edit.websiteUrl} onChange={(e) => setEdit({ ...edit, websiteUrl: e.target.value })} style={{ textAlign: 'start' }} />
-              <label className="lbl">الشعار</label>
+              <label className="lbl">{t('الشعار', 'Logo')}</label>
               <MediaUploader previewUrl={edit.logoUrl} onUploaded={(m) => setEdit({ ...edit, logoId: m.id, logoUrl: m.thumbUrl })} />
             </div>
             <div className="modal-foot">
-              <button className="btn btn-ghost" onClick={() => setEdit(null)}>إلغاء</button>
-              <button className="btn btn-primary" onClick={save} disabled={busy || !edit.name.trim()}>{busy ? '...' : '💾 حفظ'}</button>
+              <button className="btn btn-ghost" onClick={() => setEdit(null)}>{t('إلغاء', 'Cancel')}</button>
+              <button className="btn btn-primary" onClick={save} disabled={busy || !edit.name.trim()}>{busy ? '…' : t('💾 حفظ', '💾 Save')}</button>
             </div>
           </div>
         </div>

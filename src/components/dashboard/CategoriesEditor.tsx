@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import PageHeader from './PageHeader'
 import { saveCategories } from '@/lib/dashboard-actions'
+import { useDashLang } from './DashLang'
 
 function List({
   title,
@@ -15,6 +16,7 @@ function List({
   items: string[]
   setItems: (v: string[]) => void
 }) {
+  const { t } = useDashLang()
   const [draft, setDraft] = useState('')
   return (
     <div className="panel">
@@ -53,7 +55,7 @@ function List({
         </button>
         <input
           className="field"
-          placeholder="اسم التصنيف الجديد..."
+          placeholder={t('اسم التصنيف الجديد...', 'New category name...')}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
@@ -78,6 +80,7 @@ export default function CategoriesEditor({
   const [image, setImage] = useState(initialImage)
   const [video, setVideo] = useState(initialVideo)
   const [busy, setBusy] = useState(false)
+  const { t } = useDashLang()
   const [toast, setToast] = useState(false)
 
   async function save() {
@@ -92,19 +95,19 @@ export default function CategoriesEditor({
     <div>
       <PageHeader
         icon="🏷️"
-        title="التصنيفات"
-        subtitle="أضِف وعدّل تصنيفات التصاميم والريلز — هتظهر كفلاتر في الموقع"
+        title={t('التصنيفات', 'Categories')}
+        subtitle={t('أضِف وعدّل تصنيفات التصاميم والريلز — هتظهر كفلاتر في الموقع', 'Add and edit design/reel categories — shown as filters on the site')}
         actions={
           <button className="btn btn-primary" onClick={save} disabled={busy}>
-            {busy ? '...' : '💾 حفظ'}
+            {busy ? '…' : t('💾 حفظ', '💾 Save')}
           </button>
         }
       />
       <div className="grid-2">
-        <List title="تصنيفات التصاميم" icon="🖼️" items={image} setItems={setImage} />
-        <List title="تصنيفات الريلز" icon="🎬" items={video} setItems={setVideo} />
+        <List title={t('تصنيفات التصاميم', 'Design categories')} icon="🖼️" items={image} setItems={setImage} />
+        <List title={t('تصنيفات الريلز', 'Reel categories')} icon="🎬" items={video} setItems={setVideo} />
       </div>
-      {toast && <div className="toast">تم الحفظ ✓</div>}
+      {toast && <div className="toast">{t('تم الحفظ ✓', 'Saved ✓')}</div>}
     </div>
   )
 }

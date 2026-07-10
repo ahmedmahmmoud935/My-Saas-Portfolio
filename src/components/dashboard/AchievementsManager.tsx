@@ -5,12 +5,14 @@ import { useRouter } from 'next/navigation'
 import PageHeader from './PageHeader'
 import MediaUploader from './MediaUploader'
 import { saveDoc, deleteDoc } from '@/lib/collection-actions'
+import { useDashLang } from './DashLang'
 
 type Item = { id?: number; title: string; value: string; iconId: number | null; iconUrl: string | null }
 
 export default function AchievementsManager({ items }: { items: Item[] }) {
   const router = useRouter()
   const [edit, setEdit] = useState<Item | null>(null)
+  const { t } = useDashLang()
   const [busy, setBusy] = useState(false)
 
   async function save() {
@@ -22,7 +24,7 @@ export default function AchievementsManager({ items }: { items: Item[] }) {
     router.refresh()
   }
   async function remove(id: number) {
-    if (!confirm('حذف الإنجاز؟')) return
+    if (!confirm(t('حذف الإنجاز؟', 'Delete this achievement?'))) return
     await deleteDoc('achievements', id)
     router.refresh()
   }
@@ -31,17 +33,17 @@ export default function AchievementsManager({ items }: { items: Item[] }) {
     <div>
       <PageHeader
         icon="🏆"
-        title="الإنجازات"
-        subtitle="العدّادات (عنوان + قيمة زي 50+)"
+        title={t('الإنجازات', 'Achievements')}
+        subtitle={t('العدّادات (عنوان + قيمة زي 50+)', 'Stat counters (title + value like 50+)')}
         actions={
           <button className="btn btn-primary" onClick={() => setEdit({ title: '', value: '', iconId: null, iconUrl: null })}>
-            + إضافة إنجاز
+            + {t('إضافة إنجاز', 'Add achievement')}
           </button>
         }
       />
 
       {items.length === 0 ? (
-        <div className="panel" style={{ textAlign: 'center', padding: 46, color: 'var(--sub)' }}>مفيش إنجازات لسه.</div>
+        <div className="panel" style={{ textAlign: 'center', padding: 46, color: 'var(--sub)' }}>{t('مفيش إنجازات لسه.', 'No achievements yet.')}</div>
       ) : (
         <div className="proj-manage-grid">
           {items.map((a) => (
@@ -66,19 +68,19 @@ export default function AchievementsManager({ items }: { items: Item[] }) {
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-head">
               <button className="icon-btn" onClick={() => setEdit(null)}>✕</button>
-              <strong>{edit.id ? 'تعديل إنجاز' : 'إنجاز جديد'}</strong>
+              <strong>{edit.id ? t('تعديل إنجاز', 'Edit achievement') : t('إنجاز جديد', 'New achievement')}</strong>
             </div>
             <div className="modal-body">
-              <label className="lbl">العنوان</label>
+              <label className="lbl">{t('العنوان', 'Title')}</label>
               <input className="field" value={edit.title} onChange={(e) => setEdit({ ...edit, title: e.target.value })} />
-              <label className="lbl">القيمة (مثال: 50+)</label>
+              <label className="lbl">{t('القيمة (مثال: 50+)', 'Value (e.g. 50+)')}</label>
               <input className="field" value={edit.value} onChange={(e) => setEdit({ ...edit, value: e.target.value })} />
-              <label className="lbl">أيقونة (اختياري)</label>
+              <label className="lbl">{t('أيقونة (اختياري)', 'Icon (optional)')}</label>
               <MediaUploader compact previewUrl={edit.iconUrl} onUploaded={(m) => setEdit({ ...edit, iconId: m.id, iconUrl: m.thumbUrl })} />
             </div>
             <div className="modal-foot">
-              <button className="btn btn-ghost" onClick={() => setEdit(null)}>إلغاء</button>
-              <button className="btn btn-primary" onClick={save} disabled={busy || !edit.title.trim()}>{busy ? '...' : '💾 حفظ'}</button>
+              <button className="btn btn-ghost" onClick={() => setEdit(null)}>{t('إلغاء', 'Cancel')}</button>
+              <button className="btn btn-primary" onClick={save} disabled={busy || !edit.title.trim()}>{busy ? '…' : t('💾 حفظ', '💾 Save')}</button>
             </div>
           </div>
         </div>
