@@ -5,6 +5,7 @@ import PageHeader from './PageHeader'
 import MediaUploader from './MediaUploader'
 import LayoutPicker from './LayoutPicker'
 import { saveDesign } from '@/lib/design-actions'
+import { useDashLang } from './DashLang'
 import {
   LAYOUT_OPTIONS,
   FONT_OPTIONS,
@@ -18,13 +19,13 @@ import {
 } from '@/lib/design-types'
 
 const SUBTABS = [
-  { id: 'colors', label: 'الألوان' },
-  { id: 'background', label: 'الخلفية' },
-  { id: 'layouts', label: 'التخطيطات' },
-  { id: 'components', label: 'المكوّنات' },
-  { id: 'fonts', label: 'الخطوط' },
-  { id: 'motion', label: 'الحركة' },
-  { id: 'cover', label: 'الغلاف' },
+  { id: 'colors', label: 'الألوان', labelEn: 'Colors' },
+  { id: 'background', label: 'الخلفية', labelEn: 'Background' },
+  { id: 'layouts', label: 'التخطيطات', labelEn: 'Layouts' },
+  { id: 'components', label: 'المكوّنات', labelEn: 'Components' },
+  { id: 'fonts', label: 'الخطوط', labelEn: 'Fonts' },
+  { id: 'motion', label: 'الحركة', labelEn: 'Motion' },
+  { id: 'cover', label: 'الغلاف', labelEn: 'Cover' },
 ] as const
 
 /* A row of option buttons (radio group). */
@@ -93,6 +94,7 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
   const [f, setF] = useState<DesignForm>(initial)
   const [tab, setTab] = useState<(typeof SUBTABS)[number]['id']>('colors')
   const [busy, setBusy] = useState(false)
+  const { t: tr } = useDashLang()
   const [toast, setToast] = useState(false)
 
   const set = (patch: Partial<DesignForm>) => setF((p) => ({ ...p, ...patch }))
@@ -114,11 +116,11 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
     <div>
       <PageHeader
         icon="🎨"
-        title="التصميم"
-        subtitle="خصّص شكل موقعك بالكامل — ألوان، خطوط، تخطيطات"
+        title={tr('التصميم', 'Design')}
+        subtitle={tr('خصّص شكل موقعك بالكامل — ألوان، خطوط، تخطيطات', 'Fully customize your site — colors, fonts, layouts')}
         actions={
           <button className="btn btn-primary" onClick={save} disabled={busy}>
-            {busy ? '...' : '💾 حفظ التصميم'}
+            {busy ? '…' : tr('💾 حفظ التصميم', '💾 Save design')}
           </button>
         }
       />
@@ -132,17 +134,17 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
         }}
       >
         <span style={{ background: f.colors.accent, color: '#fff', padding: '8px 18px', borderRadius: f.components.button === 'pill' ? 999 : f.components.button === 'sharp' ? 0 : 8, fontWeight: 700 }}>
-          زر
+          {tr('زر', 'Button')}
         </span>
         <span>
-          <b style={{ color: f.colors.accent }}>معاينة</b> — <span style={{ color: f.colors.subtext }}>نص خافت</span>
+          <b style={{ color: f.colors.accent }}>{tr('معاينة', 'Preview')}</b> — <span style={{ color: f.colors.subtext }}>{tr('نص خافت', 'Muted text')}</span>
         </span>
       </div>
 
       <div className="cat-pills" style={{ marginBottom: 18 }}>
         {SUBTABS.map((t) => (
           <button key={t.id} className={`pill ${tab === t.id ? 'active' : ''}`} onClick={() => setTab(t.id)}>
-            {t.label}
+            {tr(t.label, t.labelEn)}
           </button>
         ))}
       </div>
@@ -150,7 +152,7 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
       <div className="panel">
         {tab === 'colors' && (
           <>
-            <div className="lbl" style={{ marginBottom: 8 }}>لوحات جاهزة (اضغط للتطبيق)</div>
+            <div className="lbl" style={{ marginBottom: 8 }}>{tr('لوحات جاهزة (اضغط للتطبيق)', 'Ready palettes (click to apply)')}</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 20 }}>
               {PALETTE_PRESETS.map((p) => (
                 <button
@@ -163,70 +165,70 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
                 </button>
               ))}
             </div>
-            <ColorInput label="اللون المميّز (accent)" value={f.colors.accent} onChange={(v) => setColors({ accent: v })} />
-            <ColorInput label="الخلفية (bg)" value={f.colors.bg} onChange={(v) => setColors({ bg: v })} />
-            <ColorInput label="خلفية الكروت (bg2)" value={f.colors.bg2} onChange={(v) => setColors({ bg2: v })} />
-            <ColorInput label="النص (text)" value={f.colors.text} onChange={(v) => setColors({ text: v })} />
-            <ColorInput label="النص الخافت (subtext)" value={f.colors.subtext} onChange={(v) => setColors({ subtext: v })} />
+            <ColorInput label={tr('اللون المميّز (accent)', 'Accent color')} value={f.colors.accent} onChange={(v) => setColors({ accent: v })} />
+            <ColorInput label={tr('الخلفية (bg)', 'Background (bg)')} value={f.colors.bg} onChange={(v) => setColors({ bg: v })} />
+            <ColorInput label={tr('خلفية الكروت (bg2)', 'Card background (bg2)')} value={f.colors.bg2} onChange={(v) => setColors({ bg2: v })} />
+            <ColorInput label={tr('النص (text)', 'Text')} value={f.colors.text} onChange={(v) => setColors({ text: v })} />
+            <ColorInput label={tr('النص الخافت (subtext)', 'Muted text')} value={f.colors.subtext} onChange={(v) => setColors({ subtext: v })} />
           </>
         )}
 
         {tab === 'background' && (
           <>
-            <Opt label="خلفية جاهزة" value={f.background.preset} options={BG_PRESETS} onChange={(v) => setBg({ preset: v })} />
-            <Opt label="النوع" value={f.background.type} options={['solid', 'gradient']} onChange={(v) => setBg({ type: v })} />
-            <ColorInput label="لون 1" value={f.background.color1} onChange={(v) => setBg({ color1: v })} />
-            {f.background.type === 'gradient' && <ColorInput label="لون 2" value={f.background.color2} onChange={(v) => setBg({ color2: v })} />}
+            <Opt label={tr('خلفية جاهزة', 'Preset background')} value={f.background.preset} options={BG_PRESETS} onChange={(v) => setBg({ preset: v })} />
+            <Opt label={tr('النوع', 'Type')} value={f.background.type} options={['solid', 'gradient']} onChange={(v) => setBg({ type: v })} />
+            <ColorInput label={tr('لون 1', 'Color 1')} value={f.background.color1} onChange={(v) => setBg({ color1: v })} />
+            {f.background.type === 'gradient' && <ColorInput label={tr('لون 2', 'Color 2')} value={f.background.color2} onChange={(v) => setBg({ color2: v })} />}
           </>
         )}
 
         {tab === 'layouts' && (
           <>
-            <LayoutPicker section="hero" label="القسم الرئيسي (Hero)" value={f.style.hero} options={LAYOUT_OPTIONS.hero} onChange={(v) => setStyle({ hero: v })} />
-            <LayoutPicker section="about" label="عن النفس" value={f.style.about} options={LAYOUT_OPTIONS.about} onChange={(v) => setStyle({ about: v })} />
-            <LayoutPicker section="projects" label="المشاريع" value={f.style.projects} options={LAYOUT_OPTIONS.projects} onChange={(v) => setStyle({ projects: v })} />
-            <Opt label="التواصل" value={f.style.contact} options={LAYOUT_OPTIONS.contact} onChange={(v) => setStyle({ contact: v })} />
-            <Opt label="المهارات" value={f.style.skills} options={LAYOUT_OPTIONS.skills} onChange={(v) => setStyle({ skills: v })} />
-            <Opt label="الأدوات" value={f.style.tools} options={LAYOUT_OPTIONS.tools} onChange={(v) => setStyle({ tools: v })} />
-            <Opt label="الخبرات" value={f.style.exp} options={LAYOUT_OPTIONS.exp} onChange={(v) => setStyle({ exp: v })} />
+            <LayoutPicker section="hero" label={tr('القسم الرئيسي (Hero)', 'Hero section')} value={f.style.hero} options={LAYOUT_OPTIONS.hero} onChange={(v) => setStyle({ hero: v })} />
+            <LayoutPicker section="about" label={tr('عن النفس', 'About')} value={f.style.about} options={LAYOUT_OPTIONS.about} onChange={(v) => setStyle({ about: v })} />
+            <LayoutPicker section="projects" label={tr('المشاريع', 'Projects')} value={f.style.projects} options={LAYOUT_OPTIONS.projects} onChange={(v) => setStyle({ projects: v })} />
+            <Opt label={tr('التواصل', 'Contact')} value={f.style.contact} options={LAYOUT_OPTIONS.contact} onChange={(v) => setStyle({ contact: v })} />
+            <Opt label={tr('المهارات', 'Skills')} value={f.style.skills} options={LAYOUT_OPTIONS.skills} onChange={(v) => setStyle({ skills: v })} />
+            <Opt label={tr('الأدوات', 'Tools')} value={f.style.tools} options={LAYOUT_OPTIONS.tools} onChange={(v) => setStyle({ tools: v })} />
+            <Opt label={tr('الخبرات', 'Experience')} value={f.style.exp} options={LAYOUT_OPTIONS.exp} onChange={(v) => setStyle({ exp: v })} />
           </>
         )}
 
         {tab === 'components' && (
           <>
-            <Opt label="شكل الكروت" value={f.components.card} options={COMPONENT_OPTIONS.card} onChange={(v) => setComp({ card: v })} />
-            <Opt label="الشريط العلوي" value={f.components.navbar} options={COMPONENT_OPTIONS.navbar} onChange={(v) => setComp({ navbar: v })} />
-            <Opt label="الأزرار" value={f.components.button} options={COMPONENT_OPTIONS.button} onChange={(v) => setComp({ button: v })} />
+            <Opt label={tr('شكل الكروت', 'Card style')} value={f.components.card} options={COMPONENT_OPTIONS.card} onChange={(v) => setComp({ card: v })} />
+            <Opt label={tr('الشريط العلوي', 'Navbar')} value={f.components.navbar} options={COMPONENT_OPTIONS.navbar} onChange={(v) => setComp({ navbar: v })} />
+            <Opt label={tr('الأزرار', 'Buttons')} value={f.components.button} options={COMPONENT_OPTIONS.button} onChange={(v) => setComp({ button: v })} />
           </>
         )}
 
         {tab === 'fonts' && (
-          <Opt label="الخط (عربي · لاتيني)" value={f.style.font} options={FONT_OPTIONS} onChange={(v) => setStyle({ font: v })} />
+          <Opt label={tr('الخط (عربي · لاتيني)', 'Font (Arabic · Latin)')} value={f.style.font} options={FONT_OPTIONS} onChange={(v) => setStyle({ font: v })} />
         )}
 
         {tab === 'motion' && (
           <>
-            <Opt label="الحركات" value={f.style.anim} options={ANIM_OPTIONS} onChange={(v) => setStyle({ anim: v })} />
-            <Opt label="المؤشر" value={f.style.cursor} options={CURSOR_OPTIONS} onChange={(v) => setStyle({ cursor: v })} />
-            <Opt label="الاتجاه" value={f.style.direction} options={DIRECTION_OPTIONS} onChange={(v) => setStyle({ direction: v })} />
+            <Opt label={tr('الحركات', 'Animations')} value={f.style.anim} options={ANIM_OPTIONS} onChange={(v) => setStyle({ anim: v })} />
+            <Opt label={tr('المؤشر', 'Cursor')} value={f.style.cursor} options={CURSOR_OPTIONS} onChange={(v) => setStyle({ cursor: v })} />
+            <Opt label={tr('الاتجاه', 'Direction')} value={f.style.direction} options={DIRECTION_OPTIONS} onChange={(v) => setStyle({ direction: v })} />
           </>
         )}
 
         {tab === 'cover' && (
           <>
-            <div className="lbl" style={{ marginBottom: 6 }}>صورة الغلاف</div>
+            <div className="lbl" style={{ marginBottom: 6 }}>{tr('صورة الغلاف', 'Cover image')}</div>
             <MediaUploader previewUrl={f.heroCoverUrl} onUploaded={(m) => set({ heroCoverId: m.id, heroCoverUrl: m.thumbUrl })} />
             <div style={{ marginTop: 14 }} />
-            <Opt label="الحجم" value={f.heroCover.size} options={['cover', 'contain']} onChange={(v) => setCover({ size: v })} />
-            <Slider label="الموضع الأفقي" value={f.heroCover.posX} min={0} max={100} suffix="%" onChange={(v) => setCover({ posX: v })} />
-            <Slider label="الموضع العمودي" value={f.heroCover.posY} min={0} max={100} suffix="%" onChange={(v) => setCover({ posY: v })} />
-            <Slider label="شدّة الطبقة السوداء" value={f.heroCover.overlay} min={0} max={100} suffix="%" onChange={(v) => setCover({ overlay: v })} />
-            <Slider label="ارتفاع القسم" value={f.heroCover.height} min={40} max={100} suffix="vh" onChange={(v) => setCover({ height: v })} />
+            <Opt label={tr('الحجم', 'Size')} value={f.heroCover.size} options={['cover', 'contain']} onChange={(v) => setCover({ size: v })} />
+            <Slider label={tr('الموضع الأفقي', 'Horizontal position')} value={f.heroCover.posX} min={0} max={100} suffix="%" onChange={(v) => setCover({ posX: v })} />
+            <Slider label={tr('الموضع العمودي', 'Vertical position')} value={f.heroCover.posY} min={0} max={100} suffix="%" onChange={(v) => setCover({ posY: v })} />
+            <Slider label={tr('شدّة الطبقة السوداء', 'Overlay strength')} value={f.heroCover.overlay} min={0} max={100} suffix="%" onChange={(v) => setCover({ overlay: v })} />
+            <Slider label={tr('ارتفاع القسم', 'Section height')} value={f.heroCover.height} min={40} max={100} suffix="vh" onChange={(v) => setCover({ height: v })} />
           </>
         )}
       </div>
 
-      {toast && <div className="toast">تم الحفظ ✓</div>}
+      {toast && <div className="toast">{tr('تم الحفظ ✓', 'Saved ✓')}</div>}
     </div>
   )
 }
