@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import PageHeader from './PageHeader'
 import { saveNavbar } from '@/lib/dashboard-actions'
+import { useDashLang } from './DashLang'
 
 type Item = { linkId: string; labelAr: string; labelEn: string; visible: boolean }
 
@@ -10,6 +11,7 @@ export default function NavbarEditor({ initial }: { initial: Item[] }) {
   const [items, setItems] = useState<Item[]>(initial)
   const [busy, setBusy] = useState(false)
   const [toast, setToast] = useState(false)
+  const { t } = useDashLang()
 
   const patch = (i: number, p: Partial<Item>) =>
     setItems(items.map((it, j) => (j === i ? { ...it, ...p } : it)))
@@ -33,11 +35,11 @@ export default function NavbarEditor({ initial }: { initial: Item[] }) {
     <div>
       <PageHeader
         icon="⬆️"
-        title="الشريط العلوي"
-        subtitle="فعّل/أخفِ الروابط، رتّبها، وعدّل النص عربي/إنجليزي"
+        title={t('الشريط العلوي', 'Top navbar')}
+        subtitle={t('فعّل/أخفِ الروابط، رتّبها، وعدّل النص عربي/إنجليزي', 'Toggle, reorder links and edit the Arabic/English label')}
         actions={
           <button className="btn btn-primary" onClick={save} disabled={busy}>
-            {busy ? '...' : '💾 حفظ'}
+            {busy ? '…' : t('💾 حفظ', '💾 Save')}
           </button>
         }
       />
@@ -75,7 +77,7 @@ export default function NavbarEditor({ initial }: { initial: Item[] }) {
           </div>
         ))}
       </div>
-      {toast && <div className="toast">تم الحفظ ✓</div>}
+      {toast && <div className="toast">{t('تم الحفظ ✓', 'Saved ✓')}</div>}
     </div>
   )
 }

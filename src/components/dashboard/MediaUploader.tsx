@@ -2,11 +2,12 @@
 
 import React, { useRef, useState } from 'react'
 import { uploadProjectMedia } from '@/lib/project-actions'
+import { useDashLang } from './DashLang'
 
 export type UploadedMedia = { id: number; url: string | null; thumbUrl: string | null }
 
 export default function MediaUploader({
-  label = 'رفع صورة',
+  label,
   previewUrl,
   onUploaded,
   accept = 'image/*',
@@ -22,8 +23,10 @@ export default function MediaUploader({
   big?: boolean
 }) {
   const ref = useRef<HTMLInputElement>(null)
+  const { t } = useDashLang()
   const [busy, setBusy] = useState(false)
   const [preview, setPreview] = useState<string | null>(previewUrl ?? null)
+  const lbl = label ?? t('رفع صورة', 'Upload image')
 
   async function pick(file: File) {
     setBusy(true)
@@ -34,7 +37,7 @@ export default function MediaUploader({
       setPreview(res.thumbUrl ?? res.url)
       onUploaded(res)
     } catch {
-      alert('فشل الرفع')
+      alert(t('فشل الرفع', 'Upload failed'))
     } finally {
       setBusy(false)
     }
@@ -58,7 +61,7 @@ export default function MediaUploader({
         />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={preview} alt="" />
-        <span className="uploader-replace">{busy ? '...جاري الرفع' : '⟳ استبدال'}</span>
+        <span className="uploader-replace">{busy ? t('جاري الرفع…', 'Uploading…') : t('⟳ استبدال', '⟳ Replace')}</span>
       </div>
     )
   }
@@ -101,7 +104,7 @@ export default function MediaUploader({
         />
       ) : (
         <span style={{ color: 'var(--accent)', fontWeight: 700 }}>
-          {busy ? '...جاري الرفع' : `⬆ ${label}`}
+          {busy ? t('جاري الرفع…', 'Uploading…') : `⬆ ${lbl}`}
         </span>
       )}
     </div>

@@ -2,13 +2,15 @@
 
 import React from 'react'
 import { useRouter } from 'next/navigation'
+import { useDashLang } from './DashLang'
 
 export default function RangeSelector({ current }: { current: string }) {
   const router = useRouter()
+  const { t } = useDashLang()
   const opts = [
-    { v: '7', label: 'آخر 7 أيام' },
-    { v: '30', label: 'آخر 30 يوم' },
-    { v: 'all', label: 'الكل' },
+    { v: '7', label: t('آخر 7 أيام', 'Last 7 days') },
+    { v: '30', label: t('آخر 30 يوم', 'Last 30 days') },
+    { v: 'all', label: t('الكل', 'All') },
   ]
   return (
     <div style={{ display: 'flex', gap: 6 }}>

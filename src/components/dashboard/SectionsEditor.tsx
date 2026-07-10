@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import PageHeader from './PageHeader'
 import { SECTION_LABELS } from '@/lib/dashboard-nav'
 import { saveSections } from '@/lib/dashboard-actions'
+import { useDashLang } from './DashLang'
 
 type Item = { sectionId: string; visible: boolean }
 
@@ -11,6 +12,7 @@ export default function SectionsEditor({ initial }: { initial: Item[] }) {
   const [items, setItems] = useState<Item[]>(initial)
   const [busy, setBusy] = useState(false)
   const [toast, setToast] = useState(false)
+  const { t } = useDashLang()
 
   const move = (i: number, dir: -1 | 1) => {
     const j = i + dir
@@ -34,11 +36,11 @@ export default function SectionsEditor({ initial }: { initial: Item[] }) {
     <div>
       <PageHeader
         icon="☰"
-        title="ترتيب الأقسام"
-        subtitle="اسحب/رتّب الأقسام وتحكّم في ظهورها على الموقع"
+        title={t('ترتيب الأقسام', 'Section order')}
+        subtitle={t('اسحب/رتّب الأقسام وتحكّم في ظهورها على الموقع', 'Reorder sections and control their visibility on the site')}
         actions={
           <button className="btn btn-primary" onClick={save} disabled={busy}>
-            {busy ? '...' : '💾 حفظ'}
+            {busy ? '…' : t('💾 حفظ', '💾 Save')}
           </button>
         }
       />
@@ -72,7 +74,7 @@ export default function SectionsEditor({ initial }: { initial: Item[] }) {
           )
         })}
       </div>
-      {toast && <div className="toast">تم الحفظ ✓</div>}
+      {toast && <div className="toast">{t('تم الحفظ ✓', 'Saved ✓')}</div>}
     </div>
   )
 }
