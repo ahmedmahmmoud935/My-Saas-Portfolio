@@ -282,9 +282,33 @@ async function build(
       errors.push(`${t.slug}/site-settings: ${(e as Error).message}`)
     }
 
+    // Drop media that never resolved (e.g. deleted from the CDN) so one missing
+    // image doesn't sink a whole project.
+    const ok = (m: Node): boolean => isMed(m) ? mmap[m.__media] != null : true
+    const prune = (p: Record<string, Node>): Record<string, Node> => {
+      const out = { ...p }
+      if (isMed(out.cover) && !ok(out.cover)) delete out.cover
+      if (Array.isArray(out.images)) out.images = out.images.filter((r) => ok((r as { image: Node }).image))
+      if (Array.isArray(out.modules)) {
+        out.modules = out.modules
+          .map((m) => {
+            const b = m as Record<string, Node>
+            if (b.blockType === 'image') return ok(b.src) ? b : null
+            if (b.blockType === 'grid') {
+              const items = (b.items as { src: Node }[]).filter((it) => ok(it.src))
+              return items.length ? { ...b, items } : null
+            }
+            if (b.blockType === 'beforeafter') return ok(b.before) && ok(b.after) ? b : null
+            return b
+          })
+          .filter(Boolean) as Node[]
+      }
+      return out
+    }
+
     const counts = { projects: 0, achievements: 0, logos: 0, testimonials: 0, articles: 0 }
     for (const p of t.projects) {
-      try { await createLocalized('projects', p); counts.projects++ }
+      try { await createLocalized('projects', prune(p)); counts.projects++ }
       catch (e) { errors.push(`${t.slug}/project "${p.title}": ${(e as Error).message}`) }
     }
     for (const a of t.achievements) {

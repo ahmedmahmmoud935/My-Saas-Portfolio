@@ -38,6 +38,9 @@ ENUMS = {
     "card": {"solid", "glass", "outline"},
     "navbar": {"blur", "solid", "transparent"},
     "button": {"rounded", "sharp", "pill"},
+    "proj.mediaType": {"image", "video"},
+    "proj.projectType": {"grid", "free", "stacked"},
+    "proj.videoKind": {"reel", "video"},
 }
 SECTION_IDS = {"hero", "about", "projects", "achievements", "expertise", "testimonials",
                "logos", "experience", "tools", "education", "skills", "contact"}
@@ -341,10 +344,10 @@ def build_projects(db, uid):
             "title": p["title"],
             "category": p["category"] or None,
             "description": p["description"] or None,
-            "mediaType": p["media_type"] or "image",
-            "projectType": p["project_type"] or "grid",
+            "mediaType": enum(p["media_type"], "proj.mediaType", "image"),
+            "projectType": enum(p["project_type"], "proj.projectType", "grid"),
             "videoUrl": p["video_url"] or None,
-            "videoKind": p["video_kind"] or "reel",
+            "videoKind": enum(p["video_kind"], "proj.videoKind", "reel"),
             "aspectRatio": p["aspect_ratio"] or "9:16",
             "sortOrder": p["sort_order"] or 0,
             "cover": M(p["cover_url"]),
