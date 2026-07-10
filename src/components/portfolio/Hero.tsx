@@ -46,8 +46,8 @@ export default function Hero({
         </>
       )}
       <div className="container hero-inner">
-        {eyebrow && <p className="hero-eyebrow">{eyebrow}</p>}
         <h1 className="hero-name">{renderName(name)}</h1>
+        {eyebrow && <p className="hero-eyebrow">{eyebrow}</p>}
         <div className="hero-btns">
           {btn1 && (
             <a className="btn btn-primary" href="#projects">
