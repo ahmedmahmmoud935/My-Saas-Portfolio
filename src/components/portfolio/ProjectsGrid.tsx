@@ -3,7 +3,6 @@
 import React, { useMemo, useState } from 'react'
 import ReelsPlayer, { type Reel } from './ReelsPlayer'
 import StoryHighlights, { type Story } from './StoryHighlights'
-import PostViewer, { type Post } from './PostViewer'
 
 export type ProjectCard = {
   id: number
@@ -54,7 +53,6 @@ export default function ProjectsGrid({
   const [tab, setTab] = useState<TabId>(tabs[0] ?? 'designs')
   const [cat, setCat] = useState('all')
   const [player, setPlayer] = useState<{ reels: Reel[]; start: number } | null>(null)
-  const [postStart, setPostStart] = useState<number | null>(null)
 
   const activeTab = tabs.includes(tab) ? tab : tabs[0] ?? 'designs'
   const cats = activeTab === 'designs' ? imageCategories : videoCategories
@@ -80,22 +78,6 @@ export default function ProjectsGrid({
     setPlayer({ reels, start })
   }
 
-  // Instagram-style viewer for the designs grid: frames = cover + gallery images.
-  const posts: Post[] = useMemo(
-    () =>
-      list
-        .filter((p) => p.mediaType === 'image')
-        .map((p) => {
-          const frames = [...new Set([p.coverUrl, ...(p.frames ?? [])].filter(Boolean) as string[])]
-          return { id: p.id, title: p.title, category: p.category, frames }
-        })
-        .filter((p) => p.frames.length > 0),
-    [list],
-  )
-  const openPost = (clicked: ProjectCard) => {
-    const start = Math.max(0, posts.findIndex((p) => p.id === clicked.id))
-    setPostStart(start)
-  }
 
   return (
     <section className="section" id="projects">
@@ -154,18 +136,15 @@ export default function ProjectsGrid({
                 {inner}
               </button>
             ) : (
-              <button className="project-card" key={p.id} onClick={() => openPost(p)}>
+              <a className="project-card" key={p.id} href={`/${username}/project/${p.id}`}>
                 {inner}
-              </button>
+              </a>
             )
           })}
         </div>
       </div>
 
       {player && <ReelsPlayer reels={player.reels} start={player.start} onClose={() => setPlayer(null)} />}
-      {postStart !== null && posts.length > 0 && (
-        <PostViewer posts={posts} start={postStart} onClose={() => setPostStart(null)} />
-      )}
     </section>
   )
 }
