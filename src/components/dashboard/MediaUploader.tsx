@@ -10,17 +10,26 @@ export default function MediaUploader({
   label,
   previewUrl,
   onUploaded,
+  onUploadedMany,
   accept = 'image/*',
   compact = false,
   big = false,
+  multiple = false,
+  plus = false,
 }: {
   label?: string
   previewUrl?: string | null
-  onUploaded: (m: UploadedMedia) => void
+  onUploaded?: (m: UploadedMedia) => void
+  /** Called once with every uploaded file — use with `multiple`. */
+  onUploadedMany?: (items: UploadedMedia[]) => void
   accept?: string
   compact?: boolean
   /** Render the preview full-width (as it appears when published) with a replace badge. */
   big?: boolean
+  /** Allow picking several files at once. */
+  multiple?: boolean
+  /** Render as a small "+" tile (for adding more images to a gallery). */
+  plus?: boolean
 }) {
   const ref = useRef<HTMLInputElement>(null)
   const { t } = useDashLang()
@@ -28,14 +37,20 @@ export default function MediaUploader({
   const [preview, setPreview] = useState<string | null>(previewUrl ?? null)
   const lbl = label ?? t('رفع صورة', 'Upload image')
 
-  async function pick(file: File) {
+  async function pickFiles(files: File[]) {
+    if (!files.length) return
     setBusy(true)
     try {
-      const fd = new FormData()
-      fd.append('file', file)
-      const res = await uploadProjectMedia(fd)
-      setPreview(res.thumbUrl ?? res.url)
-      onUploaded(res)
+      const results: UploadedMedia[] = []
+      for (const file of files) {
+        const fd = new FormData()
+        fd.append('file', file)
+        results.push(await uploadProjectMedia(fd))
+      }
+      const last = results[results.length - 1]
+      setPreview(last?.thumbUrl ?? last?.url ?? null)
+      if (onUploadedMany) onUploadedMany(results)
+      else results.forEach((r) => onUploaded?.(r))
     } catch {
       alert(t('فشل الرفع', 'Upload failed'))
     } finally {
@@ -43,25 +58,41 @@ export default function MediaUploader({
     }
   }
 
-  // Full-width preview (shows the image at roughly its published size) with a
-  // replace badge — clicking anywhere re-opens the picker to swap the image.
+  const input = (
+    <input
+      ref={ref}
+      type="file"
+      accept={accept}
+      multiple={multiple}
+      hidden
+      onChange={(e) => {
+        const fs = Array.from(e.target.files ?? [])
+        if (fs.length) pickFiles(fs)
+        e.target.value = ''
+      }}
+    />
+  )
+
+  // "+" tile — add more images to a gallery.
+  if (plus) {
+    return (
+      <button type="button" className="uploader-plus" onClick={() => ref.current?.click()} title={lbl}>
+        {input}
+        {busy ? '…' : '+'}
+      </button>
+    )
+  }
+
+  // Full-width preview with a replace badge — clicking re-opens the picker.
   if (big && preview) {
     return (
       <div className="uploader uploader-big" onClick={() => ref.current?.click()}>
-        <input
-          ref={ref}
-          type="file"
-          accept={accept}
-          hidden
-          onChange={(e) => {
-            const f = e.target.files?.[0]
-            if (f) pick(f)
-            e.target.value = ''
-          }}
-        />
+        {input}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={preview} alt="" />
-        <span className="uploader-replace">{busy ? t('جاري الرفع…', 'Uploading…') : t('⟳ استبدال', '⟳ Replace')}</span>
+        <span className="uploader-replace">
+          {busy ? t('جاري الرفع…', 'Uploading…') : t('⟳ استبدال', '⟳ Replace')}
+        </span>
       </div>
     )
   }
@@ -84,17 +115,7 @@ export default function MediaUploader({
         background: 'var(--bg-3)',
       }}
     >
-      <input
-        ref={ref}
-        type="file"
-        accept={accept}
-        hidden
-        onChange={(e) => {
-          const f = e.target.files?.[0]
-          if (f) pick(f)
-          e.target.value = ''
-        }}
-      />
+      {input}
       {preview ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img

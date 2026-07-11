@@ -1104,60 +1104,95 @@ body {
   }
 }
 
-/* ─── Carousel module (free page) ───────────────────────────────────────── */
+/* ─── Carousel module (free page) — one centred image, arrows, cross-fade ── */
 .mod-carousel {
   position: relative;
-  margin: 14px 0;
+  margin: 18px 0;
 }
-.mc-track {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-  padding-bottom: 2px;
+.mc-viewport {
+  position: relative;
+  height: min(56vh, 480px);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg-2);
 }
-.mc-track::-webkit-scrollbar {
-  display: none;
-}
-.mc-item {
-  flex: 0 0 calc((100% - 20px) / 3); /* 3 visible + two 10px gaps */
-  aspect-ratio: 4 / 5;
-  object-fit: cover;
-  border-radius: 8px;
-  scroll-snap-align: start;
+.mc-slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.45s ease;
   cursor: zoom-in;
+  pointer-events: none;
 }
-@media (max-width: 640px) {
-  .mc-item {
-    flex-basis: calc((100% - 10px) / 2); /* 2 on mobile */
-  }
+.mc-slide.active {
+  opacity: 1;
+  pointer-events: auto;
 }
 .mc-arrow {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
   z-index: 2;
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.55);
   color: #fff;
   border: none;
-  font-size: 24px;
+  font-size: 26px;
   line-height: 1;
   cursor: pointer;
   display: grid;
   place-items: center;
+  transition: background 0.2s;
 }
 .mc-arrow:hover {
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.85);
 }
 .mc-prev {
-  inset-inline-start: -6px;
+  inset-inline-start: 10px;
 }
 .mc-next {
-  inset-inline-end: -6px;
+  inset-inline-end: 10px;
+}
+/* Fade the left/right edges so it reads as a carousel. */
+.mc-viewport::before,
+.mc-viewport::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 48px;
+  z-index: 1;
+  pointer-events: none;
+}
+.mc-viewport::before {
+  inset-inline-start: 0;
+  background: linear-gradient(to right, var(--bg-2), transparent);
+}
+.mc-viewport::after {
+  inset-inline-end: 0;
+  background: linear-gradient(to left, var(--bg-2), transparent);
+}
+.mc-dots {
+  display: flex;
+  gap: 7px;
+  justify-content: center;
+  margin-top: 12px;
+}
+.mc-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.mc-dots span.on {
+  background: var(--accent);
 }
 .mod-video {
   position: relative;

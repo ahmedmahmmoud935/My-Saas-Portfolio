@@ -1,11 +1,11 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import MediaUploader from './MediaUploader'
 import NavIcon from './icons'
 import ModulesEditor, { MODULE_ADD_BUTTONS, blankModule } from './ModulesEditor'
-import { saveProject } from '@/lib/project-actions'
+import { saveProject, uploadProjectMedia } from '@/lib/project-actions'
 import { editModuleToInput, type EditModule } from '@/lib/project-types'
 import { useDashLang } from './DashLang'
 
@@ -33,6 +33,44 @@ export default function ProjectPageBuilder({
   const [toast, setToast] = useState(false)
 
   const setModules = (modules: EditModule[]) => setP((x) => ({ ...x, modules }))
+
+  // Image/grid/carousel elements open the file picker immediately, then create
+  // the module from the uploaded image(s). Other elements just add a blank block.
+  const fileRef = useRef<HTMLInputElement>(null)
+  const pending = useRef<'image' | 'grid' | 'carousel' | null>(null)
+
+  function addElement(type: EditModule['type']) {
+    if (type === 'image' || type === 'grid' || type === 'carousel') {
+      pending.current = type
+      if (fileRef.current) {
+        fileRef.current.multiple = type !== 'image'
+        fileRef.current.click()
+      }
+    } else {
+      setModules([...p.modules, blankModule(type)])
+    }
+  }
+
+  async function onFilesPicked(files: File[]) {
+    const type = pending.current
+    pending.current = null
+    if (!type || files.length === 0) return
+    try {
+      const results = []
+      for (const f of files) {
+        const fd = new FormData()
+        fd.append('file', f)
+        results.push(await uploadProjectMedia(fd))
+      }
+      const mod: EditModule =
+        type === 'image'
+          ? { type: 'image', srcId: results[0].id, srcUrl: results[0].thumbUrl }
+          : { type, items: results.map((r) => ({ id: r.id, url: r.thumbUrl })) }
+      setModules([...p.modules, mod])
+    } catch {
+      alert(t('فشل الرفع', 'Upload failed'))
+    }
+  }
 
   async function save(published: boolean, exit: boolean) {
     if (!p.title.trim()) {
@@ -96,15 +134,22 @@ export default function ProjectPageBuilder({
           <div className="builder-side-title">{t('إضافة عنصر', 'Add element')}</div>
           <div className="builder-add">
             {MODULE_ADD_BUTTONS.map((b) => (
-              <button
-                key={b.type}
-                className="builder-add-btn"
-                onClick={() => setModules([...p.modules, blankModule(b.type)])}
-              >
+              <button key={b.type} className="builder-add-btn" onClick={() => addElement(b.type)}>
                 <NavIcon id={b.icon} size={17} />
                 {t(b.label, b.labelEn)}
               </button>
             ))}
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={(e) => {
+                const fs = Array.from(e.target.files ?? [])
+                if (fs.length) onFilesPicked(fs)
+                e.target.value = ''
+              }}
+            />
           </div>
 
           <div className="builder-side-title" style={{ marginTop: 18 }}>

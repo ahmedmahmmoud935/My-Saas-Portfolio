@@ -181,10 +181,13 @@ export default function ProjectEditor({
               </div>
             ))}
             <MediaUploader
-              label={t('إضافة', 'Add')}
-              compact
-              onUploaded={(m) =>
-                set({ images: [...(p.images ?? []), { id: m.id, url: m.thumbUrl }] })
+              plus
+              multiple
+              label={t('إضافة صور', 'Add images')}
+              onUploadedMany={(ms) =>
+                set({
+                  images: [...(p.images ?? []), ...ms.map((m) => ({ id: m.id, url: m.thumbUrl }))],
+                })
               }
             />
           </div>

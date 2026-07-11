@@ -153,10 +153,14 @@ export default function ModulesEditor({
                 </div>
               ))}
               <MediaUploader
-                label={t('إضافة', 'Add')}
-                compact
-                onUploaded={(u) =>
-                  update(i, { ...m, items: [...m.items, { id: u.id, url: u.thumbUrl }] })
+                plus
+                multiple
+                label={t('إضافة صور', 'Add images')}
+                onUploadedMany={(us) =>
+                  update(i, {
+                    ...m,
+                    items: [...m.items, ...us.map((u) => ({ id: u.id, url: u.thumbUrl }))],
+                  })
                 }
               />
             </div>

@@ -70,10 +70,18 @@ export default function HighlightsEditor({ initial }: { initial: Highlight[] }) 
                 </div>
               ))}
               <MediaUploader
-                label={t('إضافة', 'Add')}
-                compact
+                plus
+                multiple
+                label={t('إضافة صور', 'Add images')}
                 accept="image/*,video/*"
-                onUploaded={(m) => patch(i, { items: [...h.items, { type: 'image', mediaId: m.id, mediaUrl: m.thumbUrl }] })}
+                onUploadedMany={(ms) =>
+                  patch(i, {
+                    items: [
+                      ...h.items,
+                      ...ms.map((m) => ({ type: 'image' as const, mediaId: m.id, mediaUrl: m.thumbUrl })),
+                    ],
+                  })
+                }
               />
             </div>
           </div>

@@ -826,6 +826,26 @@ textarea.field {
   width: 24px;
   height: 24px;
 }
+/* "+" tile for adding more images to a gallery. */
+.uploader-plus {
+  aspect-ratio: 1;
+  width: 100%;
+  border: 1.5px dashed var(--border);
+  border-radius: 8px;
+  background: var(--bg-3);
+  color: var(--accent);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: border-color 0.2s, background 0.2s;
+}
+.uploader-plus:hover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-3));
+}
 
 /* Full-width image preview (shown at published size) + replace badge */
 .uploader-big {

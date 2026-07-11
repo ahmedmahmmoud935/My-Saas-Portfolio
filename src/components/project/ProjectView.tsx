@@ -107,32 +107,48 @@ function BeforeAfter({
   )
 }
 
-/* ── Carousel: horizontal slider, ~3 images visible, scroll left/right ────── */
+/* ── Carousel: one image centred, arrows, cross-fade between slides ───────── */
 function Carousel({ images, onOpen }: { images: string[]; onOpen: (src: string) => void }) {
-  const ref = useRef<HTMLDivElement>(null)
-  const scroll = (dir: number) => {
-    const el = ref.current
-    if (el) el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: 'smooth' })
-  }
+  const [idx, setIdx] = useState(0)
   if (images.length === 0) return null
-  const many = images.length > 3
+  const go = (d: number) => setIdx((i) => (i + d + images.length) % images.length)
   return (
     <div className="mod-carousel">
-      {many && (
-        <button className="mc-arrow mc-prev" onClick={() => scroll(-1)} aria-label="previous">
-          ‹
-        </button>
-      )}
-      <div className="mc-track" ref={ref}>
+      <div className="mc-viewport">
         {images.map((src, i) => (
           // eslint-disable-next-line @next/next/no-img-element
-          <img key={i} className="mc-item" src={src} alt="" loading="lazy" onClick={() => onOpen(src)} />
+          <img
+            key={i}
+            className={`mc-slide${i === idx ? ' active' : ''}`}
+            src={src}
+            alt=""
+            loading="lazy"
+            onClick={() => onOpen(src)}
+          />
         ))}
+        {images.length > 1 && (
+          <>
+            <button className="mc-arrow mc-prev" onClick={() => go(-1)} aria-label="previous">
+              ‹
+            </button>
+            <button className="mc-arrow mc-next" onClick={() => go(1)} aria-label="next">
+              ›
+            </button>
+          </>
+        )}
       </div>
-      {many && (
-        <button className="mc-arrow mc-next" onClick={() => scroll(1)} aria-label="next">
-          ›
-        </button>
+      {images.length > 1 && (
+        <div className="mc-dots">
+          {images.map((_, i) => (
+            <span
+              key={i}
+              className={i === idx ? 'on' : ''}
+              onClick={() => setIdx(i)}
+              role="button"
+              aria-label={`slide ${i + 1}`}
+            />
+          ))}
+        </div>
       )}
     </div>
   )
