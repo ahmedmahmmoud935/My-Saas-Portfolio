@@ -37,6 +37,14 @@ function serializeModules(modules: unknown[]): Mod[] {
             .filter((x): x is { src: string; ar: number } => !!x),
         })
         break
+      case 'carousel':
+        out.push({
+          type: 'carousel',
+          items: ((m.items as { src: unknown }[]) || [])
+            .map((it) => mediaUrl(it.src as never))
+            .filter((u): u is string => !!u),
+        })
+        break
       case 'video':
         out.push({ type: 'video', embedUrl: String(m.embedUrl ?? '') })
         break

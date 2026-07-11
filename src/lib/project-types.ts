@@ -4,6 +4,7 @@ export type ModuleInput =
   | { type: 'text'; textType: 'h1' | 'h2' | 'p'; value: string }
   | { type: 'image'; srcId: number | null }
   | { type: 'grid'; itemIds: number[] }
+  | { type: 'carousel'; itemIds: number[] }
   | { type: 'video'; embedUrl: string }
   | {
       type: 'beforeafter'
@@ -35,6 +36,7 @@ export type EditModule =
   | { type: 'text'; textType: 'h1' | 'h2' | 'p'; value: string }
   | { type: 'image'; srcId: number | null; srcUrl: string | null }
   | { type: 'grid'; items: { id: number; url: string | null }[] }
+  | { type: 'carousel'; items: { id: number; url: string | null }[] }
   | { type: 'video'; embedUrl: string }
   | {
       type: 'beforeafter'
@@ -56,6 +58,8 @@ export function editModuleToInput(m: EditModule): ModuleInput {
       return { type: 'image', srcId: m.srcId }
     case 'grid':
       return { type: 'grid', itemIds: m.items.map((i) => i.id) }
+    case 'carousel':
+      return { type: 'carousel', itemIds: m.items.map((i) => i.id) }
     case 'video':
       return { type: 'video', embedUrl: m.embedUrl }
     case 'beforeafter':

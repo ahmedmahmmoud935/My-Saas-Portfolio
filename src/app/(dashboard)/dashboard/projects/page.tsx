@@ -31,6 +31,14 @@ function serializeEditModules(modules: unknown): EditModule[] {
             .filter((x): x is { id: number; url: string | null } => x.id != null),
         })
         break
+      case 'carousel':
+        out.push({
+          type: 'carousel',
+          items: ((m.items as { src: unknown }[]) || [])
+            .map((it) => ({ id: mid(it.src), url: mediaUrl(it.src as never, 'thumb') }))
+            .filter((x): x is { id: number; url: string | null } => x.id != null),
+        })
+        break
       case 'video':
         out.push({ type: 'video', embedUrl: String(m.embedUrl ?? '') })
         break

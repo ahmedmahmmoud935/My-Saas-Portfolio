@@ -7,6 +7,7 @@ export type Mod =
   | { type: 'text'; textType: 'h1' | 'h2' | 'p'; value: string }
   | { type: 'image'; src: string | null }
   | { type: 'grid'; items: { src: string; ar: number }[] }
+  | { type: 'carousel'; items: string[] }
   | { type: 'video'; embedUrl: string }
   | {
       type: 'beforeafter'
@@ -106,6 +107,37 @@ function BeforeAfter({
   )
 }
 
+/* ── Carousel: horizontal slider, ~3 images visible, scroll left/right ────── */
+function Carousel({ images, onOpen }: { images: string[]; onOpen: (src: string) => void }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const scroll = (dir: number) => {
+    const el = ref.current
+    if (el) el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: 'smooth' })
+  }
+  if (images.length === 0) return null
+  const many = images.length > 3
+  return (
+    <div className="mod-carousel">
+      {many && (
+        <button className="mc-arrow mc-prev" onClick={() => scroll(-1)} aria-label="previous">
+          ‹
+        </button>
+      )}
+      <div className="mc-track" ref={ref}>
+        {images.map((src, i) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img key={i} className="mc-item" src={src} alt="" loading="lazy" onClick={() => onOpen(src)} />
+        ))}
+      </div>
+      {many && (
+        <button className="mc-arrow mc-next" onClick={() => scroll(1)} aria-label="next">
+          ›
+        </button>
+      )}
+    </div>
+  )
+}
+
 export default function ProjectView({ project }: { project: SerializedProject }) {
   const [lb, setLb] = useState<number | null>(null)
   const gallery = useRef<string[]>([])
@@ -114,7 +146,13 @@ export default function ProjectView({ project }: { project: SerializedProject })
   gallery.current = [
     ...project.images,
     ...project.modules.flatMap((m) =>
-      m.type === 'image' && m.src ? [m.src] : m.type === 'grid' ? m.items.map((it) => it.src) : [],
+      m.type === 'image' && m.src
+        ? [m.src]
+        : m.type === 'grid'
+          ? m.items.map((it) => it.src)
+          : m.type === 'carousel'
+            ? m.items
+            : [],
     ),
   ]
 
@@ -213,6 +251,8 @@ export default function ProjectView({ project }: { project: SerializedProject })
                     ))}
                   </div>
                 )
+              case 'carousel':
+                return <Carousel key={i} images={m.items} onOpen={open} />
               case 'video': {
                 const v = resolveVideoUrl(m.embedUrl)
                 if (!v) return null

@@ -16,6 +16,8 @@ function toBlocks(modules: ModuleInput[] | undefined): Blocks {
         return { blockType: 'image', src: m.srcId }
       case 'grid':
         return { blockType: 'grid', items: m.itemIds.map((src) => ({ src })) }
+      case 'carousel':
+        return { blockType: 'carousel', items: m.itemIds.map((src) => ({ src })) }
       case 'video':
         return { blockType: 'video', embedUrl: m.embedUrl }
       case 'beforeafter':

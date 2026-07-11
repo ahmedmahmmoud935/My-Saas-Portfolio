@@ -63,6 +63,27 @@ export const GridBlock: Block = {
   ],
 }
 
+/** Horizontal slider — shows ~3 images at once, swipe/arrow left/right. */
+export const CarouselBlock: Block = {
+  slug: 'carousel',
+  labels: { singular: 'Carousel', plural: 'Carousels' },
+  fields: [
+    {
+      name: 'items',
+      type: 'array',
+      minRows: 1,
+      fields: [
+        {
+          name: 'src',
+          type: 'upload',
+          relationTo: 'media',
+          required: true,
+        },
+      ],
+    },
+  ],
+}
+
 export const VideoBlock: Block = {
   slug: 'video',
   labels: { singular: 'Video', plural: 'Videos' },
@@ -119,6 +140,7 @@ export const moduleBlocks: Block[] = [
   TextBlock,
   ImageBlock,
   GridBlock,
+  CarouselBlock,
   VideoBlock,
   BeforeAfterBlock,
   SeparatorBlock,

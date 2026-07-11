@@ -1103,6 +1103,62 @@ body {
     flex-direction: column;
   }
 }
+
+/* ─── Carousel module (free page) ───────────────────────────────────────── */
+.mod-carousel {
+  position: relative;
+  margin: 14px 0;
+}
+.mc-track {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.mc-track::-webkit-scrollbar {
+  display: none;
+}
+.mc-item {
+  flex: 0 0 calc((100% - 20px) / 3); /* 3 visible + two 10px gaps */
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: 8px;
+  scroll-snap-align: start;
+  cursor: zoom-in;
+}
+@media (max-width: 640px) {
+  .mc-item {
+    flex-basis: calc((100% - 10px) / 2); /* 2 on mobile */
+  }
+}
+.mc-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  border: none;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.mc-arrow:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+.mc-prev {
+  inset-inline-start: -6px;
+}
+.mc-next {
+  inset-inline-end: -6px;
+}
 .mod-video {
   position: relative;
   width: 100%;

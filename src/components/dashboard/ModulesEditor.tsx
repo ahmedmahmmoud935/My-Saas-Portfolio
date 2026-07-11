@@ -10,6 +10,7 @@ import { useDashLang } from './DashLang'
 export const MODULE_ADD_BUTTONS: { type: EditModule['type']; label: string; labelEn: string; icon: string }[] = [
   { type: 'image', label: 'صورة كاملة', labelEn: 'Full image', icon: 'image' },
   { type: 'grid', label: 'شبكة صور', labelEn: 'Image grid', icon: 'grid' },
+  { type: 'carousel', label: 'كاروسيل', labelEn: 'Carousel', icon: 'grid' },
   { type: 'text', label: 'نص / عنوان', labelEn: 'Text / heading', icon: 'text' },
   { type: 'video', label: 'فيديو', labelEn: 'Video', icon: 'video' },
   { type: 'beforeafter', label: 'قبل / بعد', labelEn: 'Before / after', icon: 'beforeafter' },
@@ -24,6 +25,8 @@ export function blankModule(type: EditModule['type']): EditModule {
       return { type: 'image', srcId: null, srcUrl: null }
     case 'grid':
       return { type: 'grid', items: [] }
+    case 'carousel':
+      return { type: 'carousel', items: [] }
     case 'video':
       return { type: 'video', embedUrl: '' }
     case 'beforeafter':
@@ -124,7 +127,7 @@ export default function ModulesEditor({
             />
           )}
 
-          {m.type === 'grid' && (
+          {(m.type === 'grid' || m.type === 'carousel') && (
             <div className="gallery-grid">
               {m.items.map((it, k) => (
                 <div className="gallery-thumb" key={it.id}>
