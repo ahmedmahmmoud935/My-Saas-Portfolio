@@ -1119,17 +1119,32 @@ body {
 .mc-slide {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
   opacity: 0;
   transition: opacity 0.45s ease;
-  cursor: zoom-in;
   pointer-events: none;
 }
 .mc-slide.active {
   opacity: 1;
   pointer-events: auto;
+}
+/* Blurred, zoomed copy that fills the empty sides. */
+.mc-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(28px) brightness(0.55) saturate(120%);
+  transform: scale(1.15);
+}
+/* Sharp, fully-visible image centred on top. */
+.mc-fg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  cursor: zoom-in;
 }
 .mc-arrow {
   position: absolute;

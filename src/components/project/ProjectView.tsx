@@ -116,15 +116,13 @@ function Carousel({ images, onOpen }: { images: string[]; onOpen: (src: string) 
     <div className="mod-carousel">
       <div className="mc-viewport">
         {images.map((src, i) => (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            key={i}
-            className={`mc-slide${i === idx ? ' active' : ''}`}
-            src={src}
-            alt=""
-            loading="lazy"
-            onClick={() => onOpen(src)}
-          />
+          <div key={i} className={`mc-slide${i === idx ? ' active' : ''}`}>
+            {/* Blurred fill for the empty sides (Instagram-style). */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="mc-bg" src={src} alt="" aria-hidden="true" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="mc-fg" src={src} alt="" loading="lazy" onClick={() => onOpen(src)} />
+          </div>
         ))}
         {images.length > 1 && (
           <>
