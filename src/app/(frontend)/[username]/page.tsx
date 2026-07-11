@@ -12,7 +12,6 @@ import Testimonials from '@/components/portfolio/Testimonials'
 import Contact from '@/components/portfolio/Contact'
 import Footer from '@/components/portfolio/Footer'
 import TrackVisit from '@/components/portfolio/TrackVisit'
-import StoryHighlights from '@/components/portfolio/StoryHighlights'
 import MobileBar from '@/components/portfolio/MobileBar'
 import {
   Expertise,
@@ -61,7 +60,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function PortfolioPage({ params, searchParams }: Params) {
   const { username } = await params
   const { lang } = (await searchParams) ?? {}
-  const locale: 'ar' | 'en' = lang === 'en' ? 'en' : 'ar'
+  const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
   const data = await getPortfolio(username, locale)
   if (!data) notFound()
 
@@ -74,7 +73,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
     ...(settings?.navbarLinks ?? [])
       .filter((l) => l.visible !== false)
       .map((l) => ({ label: l.label || l.linkId || '', href: `#${l.linkId}` })),
-    { label: 'المقالات', href: `/${tenant.slug}/articles` },
+    { label: locale === 'en' ? 'Articles' : 'المقالات', href: `/${tenant.slug}/articles` },
   ]
 
   const logoText = tenant.name?.[0]?.toUpperCase() || 'V'
@@ -101,51 +100,47 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
       />
     ),
     projects: (
-      <>
-        <StoryHighlights
-          stories={(settings?.highlights ?? []).map((h) => ({
-            title: h.title || '',
-            coverUrl: mediaUrl(h.cover, 'thumb'),
-            items: (h.items ?? []).map((it) => ({
-              type: it.type || 'image',
-              url: mediaUrl(it.media),
-            })),
-          }))}
-        />
-        <ProjectsGrid
-          title={content.projects?.title || 'Selected Work'}
-          subtitle={content.projects?.subtitle || undefined}
-          imageCategories={(settings?.categories?.image ?? []).map((c) => c.name || '').filter(Boolean)}
-          videoCategories={(settings?.categories?.video ?? []).map((c) => c.name || '').filter(Boolean)}
-          username={tenant.slug}
-          tabLabels={{
-            designs: settings?.projTabs?.designs?.label || undefined,
-            reels: settings?.projTabs?.reels?.label || undefined,
-            videos: settings?.projTabs?.videos?.label || undefined,
-          }}
-          cols={{
-            image: {
-              d: settings?.gridCols?.imageDesktop,
-              t: settings?.gridCols?.imageTablet,
-              m: settings?.gridCols?.imageMobile,
-            },
-            video: {
-              d: settings?.gridCols?.videoDesktop,
-              t: settings?.gridCols?.videoTablet,
-              m: settings?.gridCols?.videoMobile,
-            },
-          }}
-          projects={projects.map((p) => ({
-            id: p.id,
-            title: p.title,
-            category: p.category,
-            coverUrl: mediaUrl(p.cover, 'card'),
-            mediaType: (p.mediaType as 'image' | 'video') || 'image',
-            videoKind: p.videoKind,
-            videoUrl: p.videoUrl,
-          }))}
-        />
-      </>
+      <ProjectsGrid
+        title={content.projects?.title || 'Selected Work'}
+        subtitle={content.projects?.subtitle || undefined}
+        imageCategories={(settings?.categories?.image ?? []).map((c) => c.name || '').filter(Boolean)}
+        videoCategories={(settings?.categories?.video ?? []).map((c) => c.name || '').filter(Boolean)}
+        username={tenant.slug}
+        tabLabels={{
+          designs: settings?.projTabs?.designs?.label || undefined,
+          reels: settings?.projTabs?.reels?.label || undefined,
+          videos: settings?.projTabs?.videos?.label || undefined,
+        }}
+        cols={{
+          image: {
+            d: settings?.gridCols?.imageDesktop,
+            t: settings?.gridCols?.imageTablet,
+            m: settings?.gridCols?.imageMobile,
+          },
+          video: {
+            d: settings?.gridCols?.videoDesktop,
+            t: settings?.gridCols?.videoTablet,
+            m: settings?.gridCols?.videoMobile,
+          },
+        }}
+        highlights={(settings?.highlights ?? []).map((h) => ({
+          title: h.title || '',
+          coverUrl: mediaUrl(h.cover, 'thumb'),
+          items: (h.items ?? []).map((it) => ({
+            type: it.type || 'image',
+            url: mediaUrl(it.media),
+          })),
+        }))}
+        projects={projects.map((p) => ({
+          id: p.id,
+          title: p.title,
+          category: p.category,
+          coverUrl: mediaUrl(p.cover, 'card'),
+          mediaType: (p.mediaType as 'image' | 'video') || 'image',
+          videoKind: p.videoKind,
+          videoUrl: p.videoUrl,
+        }))}
+      />
     ),
     expertise: (
       <Expertise

@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from 'react'
 import ReelsPlayer, { type Reel } from './ReelsPlayer'
+import StoryHighlights, { type Story } from './StoryHighlights'
 
 export type ProjectCard = {
   id: number
@@ -24,6 +25,7 @@ export default function ProjectsGrid({
   username,
   tabLabels,
   cols,
+  highlights,
 }: {
   title: string
   subtitle?: string
@@ -36,6 +38,7 @@ export default function ProjectsGrid({
     image?: { d?: number | null; t?: number | null; m?: number | null }
     video?: { d?: number | null; t?: number | null; m?: number | null }
   }
+  highlights?: Story[]
 }) {
   const groups: Record<TabId, ProjectCard[]> = {
     designs: projects.filter((p) => p.mediaType === 'image'),
@@ -80,6 +83,8 @@ export default function ProjectsGrid({
           <h2 className="section-title">{title}</h2>
           {subtitle && <p className="section-sub">{subtitle}</p>}
         </div>
+
+        {highlights && highlights.length > 0 && <StoryHighlights stories={highlights} />}
 
         {tabs.length > 1 && (
           <div className="filter-bar">

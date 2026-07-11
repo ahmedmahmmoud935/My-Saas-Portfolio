@@ -122,8 +122,10 @@ img {
   display: flex;
   align-items: center;
   gap: 8px;
-  /* Push the links + language toward the far side (old layout: logo alone at the start). */
-  margin-inline-end: auto;
+  /* Logo sits on the trailing edge; the links + language group on the leading
+     side (English → left, Arabic → right). */
+  order: 2;
+  margin-inline-start: auto;
 }
 .nav-links {
   display: flex;
@@ -202,13 +204,11 @@ img {
   position: relative;
   z-index: 2;
   width: 100%;
-  /* Hug the LEFT edge (like the old hero) instead of a centered container.
-     Content is Latin (name + eyebrow) and the cover subject sits on the right,
-     so keep it left-aligned in both languages. */
+  /* Hug the leading edge (no centered container). Follows the page direction:
+     English → left, Arabic → right. */
   max-width: none;
   padding-inline: clamp(24px, 5vw, 72px);
-  direction: ltr;
-  text-align: left;
+  text-align: start;
 }
 /* Eyebrow now sits UNDER the name (old layout). */
 .hero-eyebrow {
@@ -553,6 +553,14 @@ body {
   gap: 18px;
   overflow-x: auto;
   padding: 6px 2px 10px;
+  /* Centered under the projects title (scrolls when it overflows). */
+  justify-content: center;
+  margin: -14px 0 34px;
+}
+.story-row::before,
+.story-row::after {
+  content: '';
+  margin: auto;
 }
 .story-circle {
   background: none;

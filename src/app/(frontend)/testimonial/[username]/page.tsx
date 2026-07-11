@@ -56,7 +56,7 @@ const COPY = {
 export default async function TestimonialPage({ params, searchParams }: Params) {
   const { username } = await params
   const { lang } = (await searchParams) ?? {}
-  const locale: 'ar' | 'en' = lang === 'en' ? 'en' : 'ar'
+  const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
   const data = await getPortfolio(username, locale)
   if (!data) notFound()
 

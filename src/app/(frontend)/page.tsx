@@ -13,7 +13,7 @@ const SITE = process.env.NEXT_PUBLIC_SERVER_URL || ''
 
 export async function generateMetadata({ searchParams }: Params): Promise<Metadata> {
   const { lang } = (await searchParams) ?? {}
-  const en = lang === 'en'
+  const en = lang !== 'ar'
   const title = 'ViralPX — بورتفوليو احترافي في دقائق'
   const description = en
     ? 'ViralPX is a multi-tenant portfolio builder: launch a hosted portfolio with projects, reels, articles and a contact form — on your own domain.'
@@ -134,7 +134,7 @@ async function getShowcase(): Promise<{ name: string; slug: string }[]> {
 
 export default async function HomePage({ searchParams }: Params) {
   const { lang } = (await searchParams) ?? {}
-  const locale: 'ar' | 'en' = lang === 'en' ? 'en' : 'ar'
+  const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
   const c = COPY[locale]
   const q = locale === 'en' ? '?lang=en' : ''
   const showcase = await getShowcase()
@@ -166,7 +166,7 @@ export default async function HomePage({ searchParams }: Params) {
           <a href="#faq">{c.nav.faq}</a>
         </nav>
         <div className="lp-nav-actions">
-          <a className="lp-lang" href={locale === 'en' ? '/' : '/?lang=en'}>
+          <a className="lp-lang" href={locale === 'en' ? '/?lang=ar' : '/'}>
             {locale === 'en' ? 'ع' : 'EN'}
           </a>
           <a className="lp-btn lp-btn-ghost" href="/login">
