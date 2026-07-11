@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from 'react'
 import ReelsPlayer, { type Reel } from './ReelsPlayer'
 import StoryHighlights, { type Story } from './StoryHighlights'
+import PostViewer, { type Post } from './PostViewer'
 
 export type ProjectCard = {
   id: number
@@ -12,6 +13,8 @@ export type ProjectCard = {
   mediaType: 'image' | 'video'
   videoKind?: 'reel' | 'video' | null
   videoUrl?: string | null
+  /** Cover + gallery images — the frames shown in the Instagram-style viewer. */
+  frames?: string[]
 }
 
 type TabId = 'designs' | 'reels' | 'videos'
@@ -51,6 +54,7 @@ export default function ProjectsGrid({
   const [tab, setTab] = useState<TabId>(tabs[0] ?? 'designs')
   const [cat, setCat] = useState('all')
   const [player, setPlayer] = useState<{ reels: Reel[]; start: number } | null>(null)
+  const [postStart, setPostStart] = useState<number | null>(null)
 
   const activeTab = tabs.includes(tab) ? tab : tabs[0] ?? 'designs'
   const cats = activeTab === 'designs' ? imageCategories : videoCategories
@@ -74,6 +78,23 @@ export default function ProjectsGrid({
     const reels: Reel[] = groups[activeTab].map((p) => ({ id: p.id, title: p.title, videoUrl: p.videoUrl, coverUrl: p.coverUrl }))
     const start = Math.max(0, reels.findIndex((r) => r.id === clicked.id))
     setPlayer({ reels, start })
+  }
+
+  // Instagram-style viewer for the designs grid: frames = cover + gallery images.
+  const posts: Post[] = useMemo(
+    () =>
+      list
+        .filter((p) => p.mediaType === 'image')
+        .map((p) => {
+          const frames = [...new Set([p.coverUrl, ...(p.frames ?? [])].filter(Boolean) as string[])]
+          return { id: p.id, title: p.title, category: p.category, frames }
+        })
+        .filter((p) => p.frames.length > 0),
+    [list],
+  )
+  const openPost = (clicked: ProjectCard) => {
+    const start = Math.max(0, posts.findIndex((p) => p.id === clicked.id))
+    setPostStart(start)
   }
 
   return (
@@ -133,15 +154,18 @@ export default function ProjectsGrid({
                 {inner}
               </button>
             ) : (
-              <a className="project-card" key={p.id} href={`/${username}/project/${p.id}`}>
+              <button className="project-card" key={p.id} onClick={() => openPost(p)}>
                 {inner}
-              </a>
+              </button>
             )
           })}
         </div>
       </div>
 
       {player && <ReelsPlayer reels={player.reels} start={player.start} onClose={() => setPlayer(null)} />}
+      {postStart !== null && posts.length > 0 && (
+        <PostViewer posts={posts} start={postStart} onClose={() => setPostStart(null)} />
+      )}
     </section>
   )
 }

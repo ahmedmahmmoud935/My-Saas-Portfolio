@@ -404,6 +404,112 @@ button.project-card {
   pointer-events: none;
 }
 
+/* ─── Instagram-style post viewer (designs grid) ────────────────────────── */
+.pv {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.94);
+  display: grid;
+  place-items: center;
+}
+.pv-btn {
+  position: absolute;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.pv-btn:hover {
+  background: rgba(255, 255, 255, 0.24);
+}
+.pv-close {
+  top: 18px;
+  inset-inline-end: 18px;
+}
+.pv-up {
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.pv-down {
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.pv-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: min(92vw, 560px);
+}
+.pv-img {
+  max-width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: 12px;
+  user-select: none;
+}
+.pv-arrow {
+  position: absolute;
+  top: 40%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.pv-prev {
+  inset-inline-start: 8px;
+}
+.pv-next {
+  inset-inline-end: 8px;
+}
+.pv-dots {
+  display: flex;
+  gap: 6px;
+  margin-top: 12px;
+}
+.pv-dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  transition: background 0.2s;
+}
+.pv-dots span.on {
+  background: var(--accent);
+}
+.pv-cap {
+  text-align: center;
+  margin-top: 10px;
+  color: #fff;
+}
+.pv-cap strong {
+  display: block;
+  font-size: 15px;
+}
+.pv-cap span {
+  color: var(--accent);
+  font-size: 13px;
+}
+
 /* ─── Reels / video player ──────────────────────────────────────────────── */
 .reels {
   position: fixed;

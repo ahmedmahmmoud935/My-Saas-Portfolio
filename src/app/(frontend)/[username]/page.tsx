@@ -139,6 +139,9 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
           mediaType: (p.mediaType as 'image' | 'video') || 'image',
           videoKind: p.videoKind,
           videoUrl: p.videoUrl,
+          frames: (p.images ?? [])
+            .map((im) => mediaUrl(im.image, 'card'))
+            .filter((u): u is string => !!u),
         }))}
       />
     ),
