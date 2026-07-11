@@ -87,12 +87,12 @@ export function Tools({
         <div className="tools-grid">
           {items.map((it, i) => (
             <div className="tool" key={i} title={it.name || ''}>
-              {it.iconUrl ? (
+              <span className="tool-idx">{String(i + 1).padStart(2, '0')}</span>
+              {it.iconUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={it.iconUrl} alt={it.name || ''} />
-              ) : (
-                <span style={{ color: 'var(--sub)', fontSize: 12 }}>{it.name}</span>
+                <img className="tool-ic" src={it.iconUrl} alt="" />
               )}
+              <span className="tool-name">{it.name}</span>
             </div>
           ))}
         </div>

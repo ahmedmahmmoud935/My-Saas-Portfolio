@@ -90,11 +90,13 @@ export default function ProjectsGrid({
         {highlights && highlights.length > 0 && <StoryHighlights stories={highlights} />}
 
         {tabs.length > 1 && (
-          <div className="filter-bar">
+          <div className="media-tabs" role="tablist">
             {tabs.map((t) => (
               <button
                 key={t}
-                className={`filter-pill ${activeTab === t ? 'active' : ''}`}
+                role="tab"
+                aria-selected={activeTab === t}
+                className={`media-tab ${activeTab === t ? 'active' : ''}`}
                 onClick={() => { setTab(t); setCat('all') }}
               >
                 {tabLabels?.[t] || defaultLabels[t]}

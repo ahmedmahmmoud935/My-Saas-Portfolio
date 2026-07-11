@@ -276,27 +276,80 @@ img {
 }
 
 /* ─── Projects ──────────────────────────────────────────────────────────── */
+/* Primary media switch — a solid segmented control (distinct from category chips) */
+.media-tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 5px;
+  margin: 0 auto 22px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.media-tab {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--sub);
+  font-family: var(--font-montserrat), 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.2px;
+  padding: 10px 26px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s;
+}
+.media-tab:hover {
+  color: var(--text);
+}
+.media-tab.active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 6px 18px -8px color-mix(in srgb, var(--accent) 80%, transparent);
+}
+
+/* Secondary category filter — light underline chips (clearly subordinate) */
 .filter-bar {
   display: flex;
-  gap: 10px;
+  gap: 8px 22px;
   justify-content: center;
   flex-wrap: wrap;
   margin-bottom: 30px;
 }
 .filter-pill {
-  background: var(--bg-2);
-  border: 1px solid var(--border);
+  background: transparent;
+  border: 0;
   color: var(--sub);
-  border-radius: var(--radius-pill);
-  padding: 7px 18px;
+  padding: 4px 2px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+}
+.filter-pill::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -3px;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transition: transform 0.2s;
+}
+.filter-pill:hover {
+  color: var(--text);
 }
 .filter-pill.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
+  color: var(--text);
+}
+.filter-pill.active::after {
+  transform: scaleX(1);
 }
 .project-grid {
   display: grid;
@@ -899,6 +952,11 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
   padding: 24px;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s;
+}
+.card:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
 }
 .card h4 {
   margin: 12px 0 8px;
@@ -925,17 +983,25 @@ body {
   }
 }
 
-/* ─── Experience timeline ───────────────────────────────────────────────── */
+/* ─── Experience / Education — editorial timeline rows ──────────────────── */
 .exp-item {
   background: var(--bg-2);
   border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  padding: 18px 22px;
+  border-inline-start: 3px solid var(--accent);
+  border-radius: 0 var(--radius-card) var(--radius-card) 0;
+  padding: 20px 24px;
   margin-bottom: 12px;
   display: flex;
   justify-content: space-between;
   gap: 16px;
   align-items: center;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s;
+  max-width: 900px;
+  margin-inline: auto;
+}
+.exp-item:hover {
+  transform: translateX(4px);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
 }
 .exp-item .role {
   color: var(--sub);
@@ -945,30 +1011,83 @@ body {
 .exp-item .period {
   color: var(--accent);
   font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  padding: 5px 11px;
+  border-radius: var(--radius-pill);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
-/* ─── Tools ─────────────────────────────────────────────────────────────── */
+/* ─── Tools — editorial numbered tiles ──────────────────────────────────── */
 .tools-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  max-width: 900px;
+  margin-inline: auto;
 }
 .tool {
-  width: 74px;
-  height: 74px;
-  border-radius: var(--radius-card);
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: 14px;
   background: var(--bg-2);
   border: 1px solid var(--border);
-  display: grid;
-  place-items: center;
   overflow: hidden;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s;
 }
-.tool img {
-  width: 60%;
-  height: 60%;
+/* accent spine that grows on hover */
+.tool::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--accent);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 0.25s;
+}
+.tool:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+.tool:hover::before {
+  transform: scaleY(1);
+}
+.tool-idx {
+  font-family: var(--font-montserrat), 'Montserrat', monospace;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: 0.5px;
+}
+.tool-ic {
+  width: 26px;
+  height: 26px;
   object-fit: contain;
+}
+.tool-name {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+}
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .exp-item,
+  .tool {
+    transition: none;
+  }
+  .card:hover,
+  .exp-item:hover,
+  .tool:hover {
+    transform: none;
+  }
 }
 
 /* ─── Skills / chips center ─────────────────────────────────────────────── */
