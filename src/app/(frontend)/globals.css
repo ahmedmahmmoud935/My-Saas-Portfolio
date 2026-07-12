@@ -985,13 +985,14 @@ body {
 
 /* ─── Card stack (services deck) ────────────────────────────────────────── */
 .cs-wrap {
-  max-width: 460px;
+  max-width: 620px;
   margin: 0 auto;
 }
 .cs-stack {
   position: relative;
-  height: 380px;
-  perspective: 1200px;
+  height: 460px;
+  margin-top: 34px; /* room for the cards peeking behind/above */
+  perspective: 1400px;
 }
 .cs-card {
   position: absolute;

@@ -56,8 +56,8 @@ export default function CardStack({ items }: { items: StackCard[] }) {
           const rot = isTop ? (dragY + flyY) * 0.03 : 0
           const style: React.CSSProperties = {
             zIndex: items.length - rank,
-            transform: `translateY(${-rank * 16 + dragY + flyY}px) scale(${1 - Math.min(rank, 3) * 0.05})`,
-            opacity: rank > 3 ? 0 : isTop && exiting ? 0 : 1,
+            transform: `translateY(${-rank * 26 + dragY + flyY}px) scale(${1 - Math.min(rank, 4) * 0.06})`,
+            opacity: rank > 4 ? 0 : isTop && exiting ? 0 : 1,
             rotate: `${rot}deg`,
             transition: start.current !== null && isTop ? 'none' : 'transform .34s ease, opacity .34s ease, rotate .34s ease',
           }
