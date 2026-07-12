@@ -25,9 +25,15 @@ export const metadata = {
   description: 'Multi-tenant portfolio-builder SaaS',
 }
 
+// Apply the saved light/dark preference before paint (no flash).
+const themeBoot = `(function(){try{var t=localStorage.getItem('pf-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();`
+
 export default function FrontendLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" dir="ltr" className={`${cairo.variable} ${montserrat.variable}`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeBoot }} />
+      </head>
       <body>{children}</body>
     </html>
   )

@@ -271,7 +271,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
   const cssVars = tenantCssVars(settings) as React.CSSProperties
 
   return (
-    <div style={cssVars} dir={locale === 'en' ? 'ltr' : 'rtl'} lang={locale}>
+    <div className="pf-root" style={cssVars} dir={locale === 'en' ? 'ltr' : 'rtl'} lang={locale}>
       <TrackVisit tenant={tenant.id} page="home" />
       <Navbar
         logo={logoText}
