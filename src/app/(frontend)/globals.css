@@ -991,7 +991,7 @@ body {
 .cs-stack {
   position: relative;
   height: 460px;
-  margin-top: 34px; /* room for the cards peeking behind/above */
+  margin-top: 150px; /* room for the fan of cards peeking above the front one */
   perspective: 1400px;
 }
 .cs-card {
@@ -1002,8 +1002,10 @@ body {
   background: var(--bg-2);
   border: 1px solid var(--border);
   box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.7);
-  transform-origin: center bottom;
-  will-change: transform, opacity;
+  /* Anchor at the top so scaled-down behind cards keep their top edge visible
+     and each one peeks above the front card. */
+  transform-origin: center top;
+  will-change: transform, opacity, filter;
 }
 .cs-card.top {
   cursor: grab;
