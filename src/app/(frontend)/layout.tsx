@@ -19,6 +19,8 @@ const montserrat = Montserrat({
 })
 
 export const metadata = {
+  // Resolve relative OG/canonical URLs against the real host (not localhost:3000).
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'),
   title: 'ViralPX',
   description: 'Multi-tenant portfolio-builder SaaS',
 }

@@ -9,7 +9,15 @@ import Footer from '@/components/portfolio/Footer'
 
 type Params = { params: Promise<{ username: string; slug: string }> }
 
-async function load(username: string, slug: string) {
+async function load(username: string, slugRaw: string) {
+  // Next passes the raw (percent-encoded) URL segment; decode so non-ASCII
+  // (Arabic) slugs match the stored value. Idempotent for already-decoded slugs.
+  let slug = slugRaw
+  try {
+    slug = decodeURIComponent(slugRaw)
+  } catch {
+    /* keep raw */
+  }
   const payload = await getPayload({ config })
   const t = await payload.find({ collection: 'tenants', where: { slug: { equals: username } }, limit: 1, depth: 0 })
   const tenant = t.docs[0]
