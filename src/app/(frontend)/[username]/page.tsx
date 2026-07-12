@@ -153,6 +153,11 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
           title: it.title || '',
           description: it.description,
           iconUrl: mediaUrl(it.icon),
+          imageUrl: mediaUrl(it.image, 'card'),
+          bgZoom: it.bgZoom ?? 100,
+          bgOverlay: it.bgOverlay ?? 45,
+          bgPosX: it.bgPosX ?? 50,
+          bgPosY: it.bgPosY ?? 50,
         }))}
       />
     ),

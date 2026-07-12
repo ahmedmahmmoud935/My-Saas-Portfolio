@@ -2,7 +2,16 @@
 
 import React, { useRef, useState } from 'react'
 
-export type StackCard = { title: string; description?: string | null; iconUrl?: string | null }
+export type StackCard = {
+  title: string
+  description?: string | null
+  iconUrl?: string | null
+  imageUrl?: string | null
+  bgZoom?: number
+  bgOverlay?: number
+  bgPosX?: number
+  bgPosY?: number
+}
 
 /**
  * A deck of cards: the front card can be swiped/clicked away, revealing the next
@@ -71,13 +80,23 @@ export default function CardStack({ items }: { items: StackCard[] }) {
               onPointerUp={isTop ? onUp : undefined}
               onPointerCancel={isTop ? onUp : undefined}
             >
-              {it.iconUrl ? (
+              {it.imageUrl || it.iconUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img className="cs-bg" src={it.iconUrl} alt="" draggable={false} />
+                <img
+                  className="cs-bg"
+                  src={it.imageUrl || it.iconUrl || ''}
+                  alt=""
+                  draggable={false}
+                  style={{
+                    transform: `scale(${(it.bgZoom ?? 100) / 100})`,
+                    objectPosition: `${it.bgPosX ?? 50}% ${it.bgPosY ?? 50}%`,
+                  }}
+                />
               ) : (
                 <div className="cs-bg cs-bg-fallback" />
               )}
               <div className="cs-shade" />
+              <div className="cs-dim" style={{ opacity: (it.bgOverlay ?? 45) / 100 }} />
               <div className="cs-body">
                 <h4>{it.title}</h4>
                 {it.description && <p>{it.description}</p>}

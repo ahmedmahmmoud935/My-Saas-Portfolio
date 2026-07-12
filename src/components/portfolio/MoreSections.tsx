@@ -7,7 +7,16 @@ export function Expertise({
   layout = 'grid',
 }: {
   title: string
-  items: { title: string; description?: string | null; iconUrl?: string | null }[]
+  items: {
+    title: string
+    description?: string | null
+    iconUrl?: string | null
+    imageUrl?: string | null
+    bgZoom?: number
+    bgOverlay?: number
+    bgPosX?: number
+    bgPosY?: number
+  }[]
   layout?: string
 }) {
   if (items.length === 0) return null

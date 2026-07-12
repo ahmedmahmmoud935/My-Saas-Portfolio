@@ -8,6 +8,7 @@ import {
   CONTENT_SECTIONS,
   emptyLoc,
   type ContentForm,
+  type ExpertiseItem,
   type Loc,
 } from '@/lib/content-types'
 import { useDashLang } from './DashLang'
@@ -81,6 +82,13 @@ export default function ContentEditor({ initial }: { initial: ContentForm }) {
   const [toast, setToast] = useState(false)
 
   const patch = (p: Partial<ContentForm>) => setF((prev) => ({ ...prev, ...p }))
+  const setEx = (i: number, p: Partial<ExpertiseItem>) =>
+    patch({
+      expertise: {
+        ...f.expertise,
+        items: f.expertise.items.map((x, j) => (j === i ? { ...x, ...p } : x)),
+      },
+    })
 
   async function save() {
     setBusy(true)
@@ -140,10 +148,24 @@ export default function ContentEditor({ initial }: { initial: ContentForm }) {
                 <LocField label={t('العنوان', 'Title')} value={it.title} onChange={(v) => patch({ expertise: { ...f.expertise, items: f.expertise.items.map((x, j) => (j === i ? { ...x, title: v } : x)) } })} />
                 <LocField label={t('الوصف', 'Description')} multiline value={it.description} onChange={(v) => patch({ expertise: { ...f.expertise, items: f.expertise.items.map((x, j) => (j === i ? { ...x, description: v } : x)) } })} />
                 <label className="lbl">{t('أيقونة', 'Icon')}</label>
-                <MediaUploader compact previewUrl={it.iconUrl} onUploaded={(u) => patch({ expertise: { ...f.expertise, items: f.expertise.items.map((x, j) => (j === i ? { ...x, iconId: u.id, iconUrl: u.thumbUrl } : x)) } })} />
+                <MediaUploader compact previewUrl={it.iconUrl} onUploaded={(u) => setEx(i, { iconId: u.id, iconUrl: u.thumbUrl })} />
+                <label className="lbl">{t('صورة الخلفية (لتخطيط الكروت)', 'Background image (card layout)')}</label>
+                <MediaUploader big previewUrl={it.imageUrl} onUploaded={(u) => setEx(i, { imageId: u.id, imageUrl: u.thumbUrl })} />
+                {it.imageUrl && (
+                  <div className="bg-ctrls">
+                    <label className="lbl">{t('الزوم', 'Zoom')} — {it.bgZoom}%</label>
+                    <input type="range" min={100} max={220} value={it.bgZoom} onChange={(e) => setEx(i, { bgZoom: Number(e.target.value) })} />
+                    <label className="lbl">{t('التعتيم', 'Dim')} — {it.bgOverlay}%</label>
+                    <input type="range" min={0} max={90} value={it.bgOverlay} onChange={(e) => setEx(i, { bgOverlay: Number(e.target.value) })} />
+                    <label className="lbl">{t('الموضع ↔', 'Position ↔')} — {it.bgPosX}%</label>
+                    <input type="range" min={0} max={100} value={it.bgPosX} onChange={(e) => setEx(i, { bgPosX: Number(e.target.value) })} />
+                    <label className="lbl">{t('الموضع ↕', 'Position ↕')} — {it.bgPosY}%</label>
+                    <input type="range" min={0} max={100} value={it.bgPosY} onChange={(e) => setEx(i, { bgPosY: Number(e.target.value) })} />
+                  </div>
+                )}
               </ArrayCard>
             ))}
-            <button className="btn btn-ghost" onClick={() => patch({ expertise: { ...f.expertise, items: [...f.expertise.items, { title: emptyLoc(), description: emptyLoc(), iconId: null, iconUrl: null }] } })}>+ {t('خدمة', 'Service')}</button>
+            <button className="btn btn-ghost" onClick={() => patch({ expertise: { ...f.expertise, items: [...f.expertise.items, { title: emptyLoc(), description: emptyLoc(), iconId: null, iconUrl: null, imageId: null, imageUrl: null, bgZoom: 100, bgOverlay: 45, bgPosX: 50, bgPosY: 50 }] } })}>+ {t('خدمة', 'Service')}</button>
           </>
         )}
 

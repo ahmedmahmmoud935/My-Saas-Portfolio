@@ -3,7 +3,18 @@
 
 export type Loc = { ar: string; en: string }
 
-export type ExpertiseItem = { title: Loc; description: Loc; iconId: number | null; iconUrl: string | null }
+export type ExpertiseItem = {
+  title: Loc
+  description: Loc
+  iconId: number | null
+  iconUrl: string | null
+  imageId: number | null
+  imageUrl: string | null
+  bgZoom: number
+  bgOverlay: number
+  bgPosX: number
+  bgPosY: number
+}
 export type ExperienceItem = { company: string; role: Loc; period: string; description: Loc }
 export type EducationItem = { title: Loc; org: Loc; period: string; description: Loc }
 export type ToolItem = { name: string; iconId: number | null; iconUrl: string | null }

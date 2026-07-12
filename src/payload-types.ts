@@ -685,6 +685,17 @@ export interface SiteSetting {
             title?: string | null;
             description?: string | null;
             icon?: (number | null) | Media;
+            image?: (number | null) | Media;
+            /**
+             * Zoom %
+             */
+            bgZoom?: number | null;
+            /**
+             * Dim %
+             */
+            bgOverlay?: number | null;
+            bgPosX?: number | null;
+            bgPosY?: number | null;
             id?: string | null;
           }[]
         | null;
@@ -1329,6 +1340,11 @@ export interface SiteSettingsSelect<T extends boolean = true> {
                     title?: T;
                     description?: T;
                     icon?: T;
+                    image?: T;
+                    bgZoom?: T;
+                    bgOverlay?: T;
+                    bgPosX?: T;
+                    bgPosY?: T;
                     id?: T;
                   };
             };

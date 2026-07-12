@@ -1022,6 +1022,12 @@ body {
 .cs-bg-fallback {
   background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 30%, #000));
 }
+.cs-dim {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  pointer-events: none;
+}
 .cs-shade {
   position: absolute;
   inset: 0;

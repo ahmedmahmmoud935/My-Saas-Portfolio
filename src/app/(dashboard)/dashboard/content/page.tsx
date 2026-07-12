@@ -47,6 +47,15 @@ export default async function ContentPage() {
         title: L(it.title),
         description: L(it.description),
         ...iconOf(it.icon),
+        imageId:
+          it.image && typeof it.image === 'object'
+            ? ((it.image as { id?: number }).id ?? null)
+            : ((it.image as number) ?? null),
+        imageUrl: mediaUrl(it.image as never, 'card'),
+        bgZoom: (it.bgZoom as number) ?? 100,
+        bgOverlay: (it.bgOverlay as number) ?? 45,
+        bgPosX: (it.bgPosX as number) ?? 50,
+        bgPosY: (it.bgPosY as number) ?? 50,
       })),
     },
     experience: {

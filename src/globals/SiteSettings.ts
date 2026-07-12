@@ -531,6 +531,12 @@ export const SiteSettings: CollectionConfig = {
                         { name: 'title', type: 'text', localized: true },
                         { name: 'description', type: 'textarea', localized: true },
                         { name: 'icon', type: 'upload', relationTo: 'media' },
+                        // Background image + simple controls (used by the "stack" layout).
+                        { name: 'image', type: 'upload', relationTo: 'media', label: 'Background image' },
+                        { name: 'bgZoom', type: 'number', defaultValue: 100, admin: { description: 'Zoom %' } },
+                        { name: 'bgOverlay', type: 'number', defaultValue: 45, admin: { description: 'Dim %' } },
+                        { name: 'bgPosX', type: 'number', defaultValue: 50 },
+                        { name: 'bgPosY', type: 'number', defaultValue: 50 },
                       ],
                     },
                   ],

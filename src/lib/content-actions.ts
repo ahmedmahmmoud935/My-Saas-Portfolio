@@ -29,6 +29,11 @@ function buildContent(form: ContentForm, loc: 'ar' | 'en', ids?: IdMap) {
         title: g(it.title),
         description: g(it.description),
         icon: it.iconId ?? null,
+        image: it.imageId ?? null,
+        bgZoom: it.bgZoom,
+        bgOverlay: it.bgOverlay,
+        bgPosX: it.bgPosX,
+        bgPosY: it.bgPosY,
       })),
     },
     experience: {
