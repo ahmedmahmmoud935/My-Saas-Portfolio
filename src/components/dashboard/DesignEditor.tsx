@@ -187,6 +187,7 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
             <LayoutPicker section="hero" label={tr('القسم الرئيسي (Hero)', 'Hero section')} value={f.style.hero} options={LAYOUT_OPTIONS.hero} onChange={(v) => setStyle({ hero: v })} />
             <LayoutPicker section="about" label={tr('عن النفس', 'About')} value={f.style.about} options={LAYOUT_OPTIONS.about} onChange={(v) => setStyle({ about: v })} />
             <LayoutPicker section="projects" label={tr('المشاريع', 'Projects')} value={f.style.projects} options={LAYOUT_OPTIONS.projects} onChange={(v) => setStyle({ projects: v })} />
+            <Opt label={tr('الخدمات', 'Services')} value={f.style.expertise} options={LAYOUT_OPTIONS.expertise} onChange={(v) => setStyle({ expertise: v })} />
             <Opt label={tr('التواصل', 'Contact')} value={f.style.contact} options={LAYOUT_OPTIONS.contact} onChange={(v) => setStyle({ contact: v })} />
             <Opt label={tr('المهارات', 'Skills')} value={f.style.skills} options={LAYOUT_OPTIONS.skills} onChange={(v) => setStyle({ skills: v })} />
             <Opt label={tr('الأدوات', 'Tools')} value={f.style.tools} options={LAYOUT_OPTIONS.tools} onChange={(v) => setStyle({ tools: v })} />

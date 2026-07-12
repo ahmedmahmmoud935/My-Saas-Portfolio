@@ -1,11 +1,14 @@
 import React from 'react'
+import CardStack from './CardStack'
 
 export function Expertise({
   title,
   items,
+  layout = 'grid',
 }: {
   title: string
   items: { title: string; description?: string | null; iconUrl?: string | null }[]
+  layout?: string
 }) {
   if (items.length === 0) return null
   return (
@@ -14,22 +17,26 @@ export function Expertise({
         <div className="section-head">
           <h2 className="section-title">{title}</h2>
         </div>
-        <div className="card-grid">
-          {items.map((it, i) => (
-            <div className="card" key={i}>
-              <div className="ic">
-                {it.iconUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={it.iconUrl} alt="" width={22} height={22} />
-                ) : (
-                  <span>◆</span>
-                )}
+        {layout === 'stack' ? (
+          <CardStack items={items} />
+        ) : (
+          <div className="card-grid">
+            {items.map((it, i) => (
+              <div className="card" key={i}>
+                <div className="ic">
+                  {it.iconUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={it.iconUrl} alt="" width={22} height={22} />
+                  ) : (
+                    <span>◆</span>
+                  )}
+                </div>
+                <h4>{it.title}</h4>
+                {it.description && <p>{it.description}</p>}
               </div>
-              <h4>{it.title}</h4>
-              {it.description && <p>{it.description}</p>}
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   )

@@ -294,6 +294,17 @@ export interface Project {
             blockType: 'grid';
           }
         | {
+            items?:
+              | {
+                  src: number | Media;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'carousel';
+          }
+        | {
             /**
              * YouTube / Vimeo / direct embed URL.
              */
@@ -503,6 +514,7 @@ export interface SiteSetting {
     hero?: ('centered' | 'split' | 'massive' | 'cover-full' | 'minimal') | null;
     about?: ('classic' | 'visual' | 'simple') | null;
     projects?: ('grid' | 'masonry' | 'list' | 'freegrid') | null;
+    expertise?: ('grid' | 'stack') | null;
     contact?: ('classic' | 'split') | null;
     skills?: ('tags' | 'inline' | 'bars') | null;
     tools?: ('classic' | 'compact') | null;
@@ -971,6 +983,18 @@ export interface ProjectsSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
+        carousel?:
+          | T
+          | {
+              items?:
+                | T
+                | {
+                    src?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
         video?:
           | T
           | {
@@ -1148,6 +1172,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         hero?: T;
         about?: T;
         projects?: T;
+        expertise?: T;
         contact?: T;
         skills?: T;
         tools?: T;

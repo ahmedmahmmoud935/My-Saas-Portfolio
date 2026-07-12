@@ -148,6 +148,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
     expertise: (
       <Expertise
         title={content.expertise?.title || 'Key Expertise'}
+        layout={settings?.style?.expertise || 'grid'}
         items={(content.expertise?.items ?? []).map((it) => ({
           title: it.title || '',
           description: it.description,

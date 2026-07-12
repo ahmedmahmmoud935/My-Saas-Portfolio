@@ -8,6 +8,7 @@ export type DesignForm = {
     hero: string
     about: string
     projects: string
+    expertise: string
     contact: string
     skills: string
     tools: string
@@ -27,6 +28,7 @@ export const LAYOUT_OPTIONS = {
   hero: ['centered', 'split', 'massive', 'cover-full', 'minimal'],
   about: ['classic', 'visual', 'simple'],
   projects: ['grid', 'masonry', 'list', 'freegrid'],
+  expertise: ['grid', 'stack'],
   contact: ['classic', 'split'],
   skills: ['tags', 'inline', 'bars'],
   tools: ['classic', 'compact'],
@@ -71,6 +73,7 @@ export const emptyDesign = (): DesignForm => ({
     hero: 'centered',
     about: 'classic',
     projects: 'grid',
+    expertise: 'grid',
     contact: 'classic',
     skills: 'tags',
     tools: 'classic',

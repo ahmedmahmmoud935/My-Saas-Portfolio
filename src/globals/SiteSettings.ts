@@ -202,6 +202,12 @@ export const SiteSettings: CollectionConfig = {
                       })),
                     },
                     {
+                      name: 'expertise',
+                      type: 'select',
+                      defaultValue: 'grid',
+                      options: ['grid', 'stack'].map((v) => ({ label: v, value: v })),
+                    },
+                    {
                       name: 'contact',
                       type: 'select',
                       defaultValue: 'classic',
