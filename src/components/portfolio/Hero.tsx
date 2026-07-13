@@ -50,7 +50,12 @@ export default function Hero({
             className="hero-bg"
             src={coverUrl}
             alt=""
-            style={{ objectFit: coverSize as React.CSSProperties['objectFit'], objectPosition: `${posX}% ${posY}%` }}
+            style={{
+              // The framed "split" image always fills its frame (cover), set in CSS;
+              // other variants honour the contain/cover size control.
+              ...(variant === 'split' ? {} : { objectFit: coverSize as React.CSSProperties['objectFit'] }),
+              objectPosition: `${posX}% ${posY}%`,
+            }}
           />
           <div className="hero-overlay" />
         </>

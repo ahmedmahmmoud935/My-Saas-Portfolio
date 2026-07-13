@@ -320,23 +320,24 @@ img {
     transform: none;
   }
 }
-.hero-split .hero-bg {
-  inset-block: 28px;
-  inset-inline-end: 28px;
+/* The image and the dim share one explicit box (an <img> ignores inset-block-end,
+   so give it a real height) — same size, all corners rounded, inset from edges. */
+.hero-split .hero-bg,
+.hero-split .hero-overlay {
+  inset-block-start: 40px;
+  inset-inline-end: 48px;
   inset-inline-start: auto;
-  width: 43%;
-  height: auto;
-  border-radius: 22px;
+  width: 42%;
+  height: calc(100% - 80px);
+  border-radius: 24px;
+}
+.hero-split .hero-bg {
+  object-fit: cover;
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 26px 70px rgba(0, 0, 0, 0.5);
   animation: heroImgIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 .hero-split .hero-overlay {
-  inset-block: 28px;
-  inset-inline-end: 28px;
-  inset-inline-start: auto;
-  width: 43%;
-  border-radius: 22px;
   background: rgba(0, 0, 0, var(--hero-overlay, 0));
   pointer-events: none;
 }
