@@ -282,6 +282,65 @@ img {
   flex-wrap: wrap;
 }
 
+/* ── Hero layout variants ─────────────────────────────────────────────────
+   The base rules above are the "split" look (text hugs the leading edge over
+   a full-bleed cover). Each modifier below rearranges the same markup. */
+
+/* centered — everything stacked and centered */
+.hero-centered {
+  justify-content: center;
+}
+.hero-centered .hero-inner {
+  max-width: 940px;
+  margin-inline: auto;
+  text-align: center;
+}
+.hero-centered .hero-btns {
+  justify-content: center;
+}
+.hero-centered .hero-overlay {
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3));
+}
+
+/* massive — oversized name, eyebrow above it */
+.hero-massive .hero-inner {
+  display: flex;
+  flex-direction: column;
+}
+.hero-massive .hero-eyebrow {
+  order: -1;
+  margin: 0 0 20px;
+}
+.hero-massive .hero-name {
+  font-size: clamp(58px, 12vw, 150px);
+  letter-spacing: -3px;
+}
+
+/* cover-full — content pinned to the bottom over a darker image */
+.hero-cover-full {
+  align-items: flex-end;
+}
+.hero-cover-full .hero-inner {
+  padding-bottom: clamp(40px, 8vh, 96px);
+}
+.hero-cover-full .hero-overlay {
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.82) 5%, transparent 60%);
+}
+
+/* minimal — shorter section, restrained type, no heavy overlay */
+.hero-minimal {
+  min-height: 60vh !important;
+}
+.hero-minimal .hero-name {
+  font-size: clamp(36px, 5.5vw, 68px);
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+.hero-minimal .hero-overlay {
+  background: linear-gradient(90deg, var(--bg) 6%, transparent 55%),
+    rgba(0, 0, 0, 0.25);
+}
+
 /* ─── About ─────────────────────────────────────────────────────────────── */
 .about {
   display: grid;

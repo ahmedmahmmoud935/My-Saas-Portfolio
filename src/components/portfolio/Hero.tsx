@@ -20,6 +20,7 @@ export default function Hero({
   coverUrl,
   overlay = 45,
   heightVh = 82,
+  variant = 'split',
 }: {
   eyebrow?: string
   name: string
@@ -28,9 +29,10 @@ export default function Hero({
   coverUrl?: string | null
   overlay?: number
   heightVh?: number
+  variant?: string
 }) {
   return (
-    <header className="hero" id="hero" style={{ minHeight: `${heightVh}vh` }}>
+    <header className={`hero hero-${variant}`} id="hero" style={{ minHeight: `${heightVh}vh` }}>
       {coverUrl && (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}

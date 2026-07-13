@@ -89,6 +89,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
         coverUrl={mediaUrl(brand.heroCover)}
         overlay={settings?.heroCover?.overlay ?? 45}
         heightVh={settings?.heroCover?.height ?? 82}
+        variant={settings?.style?.hero || 'split'}
       />
     ),
     about: (
