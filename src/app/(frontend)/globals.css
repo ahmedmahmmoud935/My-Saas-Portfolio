@@ -324,18 +324,24 @@ img {
    so give it a real height) — same size, all corners rounded, inset from edges. */
 .hero-split .hero-bg,
 .hero-split .hero-overlay {
-  inset-block-start: 40px;
-  inset-inline-end: 48px;
+  inset-block-start: 44px;
+  inset-inline-end: 56px;
   inset-inline-start: auto;
-  width: 42%;
-  height: calc(100% - 80px);
-  border-radius: 24px;
+  /* Portrait panel — narrower than it is tall. */
+  width: clamp(280px, 30vw, 430px);
+  height: calc(100% - 88px);
+  border-radius: 22px;
 }
 .hero-split .hero-bg {
   object-fit: cover;
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 26px 70px rgba(0, 0, 0, 0.5);
   animation: heroImgIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+/* Softer, greyer shadow on the white theme (the heavy black one looked off). */
+html[data-theme='light'] .hero-split .hero-bg {
+  border-color: rgba(15, 23, 42, 0.08);
+  box-shadow: 0 22px 55px -18px rgba(15, 23, 42, 0.3);
 }
 .hero-split .hero-overlay {
   background: rgba(0, 0, 0, var(--hero-overlay, 0));
@@ -1869,28 +1875,73 @@ body {
 }
 .lb-btn {
   position: absolute;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid var(--border);
+  display: grid;
+  place-items: center;
+  background: rgba(20, 20, 24, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   color: #fff;
-  width: 46px;
-  height: 46px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  font-size: 20px;
   cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: background 0.18s, transform 0.18s;
+}
+.lb-btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: translateY(-50%) scale(1.06);
 }
 .lb-close {
   top: 20px;
-  right: 20px;
+  inset-inline-end: 20px;
+  width: 46px;
+  height: 46px;
+}
+.lb-close:hover {
+  transform: scale(1.06);
 }
 .lb-prev {
-  left: 20px;
+  inset-inline-start: 22px;
   top: 50%;
   transform: translateY(-50%);
 }
 .lb-next {
-  right: 20px;
+  inset-inline-end: 22px;
   top: 50%;
   transform: translateY(-50%);
+}
+/* keep the arrow chevron pointing the right way per direction */
+[dir='rtl'] .lb-prev svg,
+[dir='rtl'] .lb-next svg {
+  transform: scaleX(-1);
+}
+.lb-count {
+  position: absolute;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fff;
+  background: rgba(20, 20, 24, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-pill);
+  padding: 6px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  backdrop-filter: blur(6px);
+}
+@media (max-width: 640px) {
+  .lb-prev {
+    inset-inline-start: 12px;
+  }
+  .lb-next {
+    inset-inline-end: 12px;
+  }
+  .lb-btn {
+    width: 48px;
+    height: 48px;
+  }
 }
 
 /* ═══ Section layout variants ═════════════════════════════════════════════
