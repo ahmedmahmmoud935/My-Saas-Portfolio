@@ -57,7 +57,11 @@ export default function ProjectsGrid({
   const [player, setPlayer] = useState<{ reels: Reel[]; start: number } | null>(null)
 
   const activeTab = tabs.includes(tab) ? tab : tabs[0] ?? 'designs'
-  const cats = activeTab === 'designs' ? imageCategories : videoCategories
+  // Only show category filters that actually have a project in the active tab.
+  const usedCats = new Set(groups[activeTab].map((p) => p.category).filter(Boolean))
+  const cats = (activeTab === 'designs' ? imageCategories : videoCategories).filter((c) =>
+    usedCats.has(c),
+  )
   const list = useMemo(
     () => groups[activeTab].filter((p) => cat === 'all' || p.category === cat),
     [activeTab, cat, projects],
