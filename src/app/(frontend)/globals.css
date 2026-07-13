@@ -20,7 +20,7 @@
   --radius-pill: 999px;
 
   /* Rhythm */
-  --section-pad: clamp(48px, 6vw, 80px);
+  --section-pad: clamp(56px, 7vw, 96px);
   --container: 1200px;
 }
 
