@@ -114,5 +114,13 @@ export default async function ProjectsPage() {
     videoDesktop: gc.videoDesktop ?? 4,
   }
 
-  return <ProjectsManager projects={projects} categories={categories} gridCols={gridCols} />
+  return (
+    <ProjectsManager
+      projects={projects}
+      categories={categories}
+      categoriesImage={categoriesImage}
+      categoriesVideo={categoriesVideo}
+      gridCols={gridCols}
+    />
+  )
 }

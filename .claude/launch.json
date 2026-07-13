@@ -4,9 +4,9 @@
     {
       "name": "viralpx-dev",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["exec", "next", "dev"],
-      "port": 3001,
-      "autoPort": true
+      "runtimeArgs": ["exec", "next", "dev", "-p", "3006"],
+      "port": 3006,
+      "autoPort": false
     }
   ]
 }

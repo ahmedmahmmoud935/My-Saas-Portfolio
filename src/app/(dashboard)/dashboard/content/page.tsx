@@ -2,7 +2,7 @@ import React from 'react'
 import { redirect } from 'next/navigation'
 import { getDashboardContext, getTenantSettings } from '@/lib/dashboard'
 import { mediaUrl } from '@/lib/portfolio'
-import ContentEditor from '@/components/dashboard/ContentEditor'
+import ContentHub from '@/components/dashboard/ContentHub'
 import type { ContentForm, Loc } from '@/lib/content-types'
 
 const L = (x: unknown): Loc => {
@@ -90,5 +90,67 @@ export default async function ContentPage() {
     },
   }
 
-  return <ContentEditor initial={form} />
+  // Collections that also fill portfolio sections — managed here too.
+  const [logosRes, achRes, testRes] = await Promise.all([
+    ctx.payload.find({
+      collection: 'logos',
+      where: { tenant: { equals: ctx.tenantId } },
+      sort: 'sortOrder',
+      limit: 200,
+      depth: 1,
+    }),
+    ctx.payload.find({
+      collection: 'achievements',
+      where: { tenant: { equals: ctx.tenantId } },
+      sort: 'sortOrder',
+      limit: 200,
+      depth: 1,
+      locale: 'ar',
+    }),
+    ctx.payload.find({
+      collection: 'testimonials',
+      where: { tenant: { equals: ctx.tenantId } },
+      sort: 'sortOrder',
+      limit: 200,
+      depth: 1,
+      locale: 'ar',
+    }),
+  ])
+
+  const logos = logosRes.docs.map((l) => ({
+    id: l.id,
+    name: l.name,
+    websiteUrl: l.websiteUrl ?? '',
+    logoId: (l.logo && typeof l.logo === 'object' ? l.logo.id : (l.logo as number)) ?? null,
+    logoUrl: mediaUrl(l.logo, 'thumb'),
+  }))
+
+  const achievements = achRes.docs.map((a) => ({
+    id: a.id,
+    title: a.title,
+    value: a.value,
+    iconId: (a.icon && typeof a.icon === 'object' ? a.icon.id : (a.icon as number)) ?? null,
+    iconUrl: mediaUrl(a.icon, 'thumb'),
+  }))
+
+  const testimonials = testRes.docs.map((tt) => ({
+    id: tt.id,
+    name: tt.name,
+    role: tt.role ?? '',
+    company: tt.company ?? '',
+    content: tt.content,
+    rating: tt.rating ?? 5,
+    approved: tt.approved !== false,
+    avatarId: (tt.avatar && typeof tt.avatar === 'object' ? tt.avatar.id : (tt.avatar as number)) ?? null,
+    avatarUrl: mediaUrl(tt.avatar, 'thumb'),
+  }))
+
+  return (
+    <ContentHub
+      content={form}
+      logos={logos}
+      achievements={achievements}
+      testimonials={testimonials}
+    />
+  )
 }

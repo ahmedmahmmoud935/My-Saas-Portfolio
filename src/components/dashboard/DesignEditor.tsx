@@ -19,13 +19,13 @@ import {
 } from '@/lib/design-types'
 
 const SUBTABS = [
-  { id: 'colors', label: 'الألوان', labelEn: 'Colors' },
-  { id: 'background', label: 'الخلفية', labelEn: 'Background' },
-  { id: 'layouts', label: 'التخطيطات', labelEn: 'Layouts' },
-  { id: 'components', label: 'المكوّنات', labelEn: 'Components' },
-  { id: 'fonts', label: 'الخطوط', labelEn: 'Fonts' },
-  { id: 'motion', label: 'الحركة', labelEn: 'Motion' },
-  { id: 'cover', label: 'الغلاف', labelEn: 'Cover' },
+  { id: 'colors', label: 'الألوان', labelEn: 'Colors', icon: '🎨' },
+  { id: 'background', label: 'الخلفية', labelEn: 'Background', icon: '🖼️' },
+  { id: 'layouts', label: 'التخطيطات', labelEn: 'Layouts', icon: '🧩' },
+  { id: 'components', label: 'المكوّنات', labelEn: 'Components', icon: '🔘' },
+  { id: 'fonts', label: 'الخطوط', labelEn: 'Fonts', icon: '🔤' },
+  { id: 'motion', label: 'الحركة', labelEn: 'Motion', icon: '✨' },
+  { id: 'cover', label: 'الغلاف', labelEn: 'Cover', icon: '🌄' },
 ] as const
 
 /* A row of option buttons (radio group). */
@@ -42,11 +42,9 @@ function Opt({
 }) {
   const opts = options.map((o) => (typeof o === 'string' ? { value: o, label: o } : o))
   return (
-    <div style={{ marginBottom: 16 }}>
-      <div className="lbl" style={{ marginBottom: 6 }}>
-        {label}
-      </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'flex-end' }}>
+    <div className="opt-field">
+      <div className="opt-field-label">{label}</div>
+      <div className="opt-opts">
         {opts.map((o) => (
           <button
             key={o.value}
@@ -57,6 +55,16 @@ function Opt({
           </button>
         ))}
       </div>
+    </div>
+  )
+}
+
+/* A titled group of related controls. */
+function Group({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="de-group">
+      <div className="de-group-title">{title}</div>
+      {children}
     </div>
   )
 }
@@ -125,25 +133,47 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
         }
       />
 
-      {/* Live color preview */}
-      <div
-        style={{
-          border: '1px solid var(--border)', borderRadius: 12, padding: 20, marginBottom: 16,
-          background: f.colors.bg, color: f.colors.text, display: 'flex', alignItems: 'center',
-          justifyContent: 'space-between', gap: 12,
-        }}
-      >
-        <span style={{ background: f.colors.accent, color: '#fff', padding: '8px 18px', borderRadius: f.components.button === 'pill' ? 999 : f.components.button === 'sharp' ? 0 : 8, fontWeight: 700 }}>
-          {tr('زر', 'Button')}
-        </span>
-        <span>
-          <b style={{ color: f.colors.accent }}>{tr('معاينة', 'Preview')}</b> — <span style={{ color: f.colors.subtext }}>{tr('نص خافت', 'Muted text')}</span>
-        </span>
+      {/* Live preview — a miniature of the site's look */}
+      <div className="de-preview" style={{ background: f.colors.bg, color: f.colors.text }}>
+        <div className="de-preview-bar">
+          <i style={{ background: f.colors.accent }} />
+          <i style={{ background: f.colors.subtext }} />
+          <i style={{ background: f.colors.bg2 }} />
+        </div>
+        <div className="de-preview-body">
+          <div style={{ fontSize: 22, fontWeight: 800 }}>
+            {tr('اسمك', 'Your name')} <span style={{ color: f.colors.accent }}>{tr('هنا', 'here')}</span>
+          </div>
+          <div style={{ color: f.colors.subtext, fontSize: 14 }}>
+            {tr('نص وصفي خافت يوضّح شكل النص الثانوي في موقعك.', 'A muted line showing how secondary text looks on your site.')}
+          </div>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+            <span
+              style={{
+                background: f.colors.accent, color: '#fff', padding: '9px 20px', fontWeight: 700,
+                borderRadius: f.components.button === 'pill' ? 999 : f.components.button === 'sharp' ? 0 : 8,
+              }}
+            >
+              {tr('زر', 'Button')}
+            </span>
+            <span
+              className="de-preview-card"
+              style={{
+                background: f.colors.bg2, color: f.colors.subtext, fontSize: 13,
+                border: '1px solid rgba(255,255,255,.08)',
+                borderRadius: f.components.card === 'sharp' ? 0 : f.components.card === 'round' ? 16 : 8,
+              }}
+            >
+              {tr('كارت', 'Card')}
+            </span>
+          </div>
+        </div>
       </div>
 
-      <div className="cat-pills" style={{ marginBottom: 18 }}>
+      <div className="design-tabs">
         {SUBTABS.map((t) => (
-          <button key={t.id} className={`pill ${tab === t.id ? 'active' : ''}`} onClick={() => setTab(t.id)}>
+          <button key={t.id} className={`dt ${tab === t.id ? 'active' : ''}`} onClick={() => setTab(t.id)}>
+            <span aria-hidden>{t.icon}</span>
             {tr(t.label, t.labelEn)}
           </button>
         ))}
@@ -152,24 +182,31 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
       <div className="panel">
         {tab === 'colors' && (
           <>
-            <div className="lbl" style={{ marginBottom: 8 }}>{tr('لوحات جاهزة (اضغط للتطبيق)', 'Ready palettes (click to apply)')}</div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 20 }}>
-              {PALETTE_PRESETS.map((p) => (
-                <button
-                  key={p.name}
-                  onClick={() => setColors({ accent: p.accent, bg: p.bg, bg2: p.bg2, text: p.text, subtext: p.subtext })}
-                  style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg-3)', color: 'var(--text)', cursor: 'pointer', fontSize: 13 }}
-                >
-                  <span style={{ width: 16, height: 16, borderRadius: 4, background: p.accent }} />
-                  {p.name}
-                </button>
-              ))}
-            </div>
-            <ColorInput label={tr('اللون المميّز (accent)', 'Accent color')} value={f.colors.accent} onChange={(v) => setColors({ accent: v })} />
-            <ColorInput label={tr('الخلفية (bg)', 'Background (bg)')} value={f.colors.bg} onChange={(v) => setColors({ bg: v })} />
-            <ColorInput label={tr('خلفية الكروت (bg2)', 'Card background (bg2)')} value={f.colors.bg2} onChange={(v) => setColors({ bg2: v })} />
-            <ColorInput label={tr('النص (text)', 'Text')} value={f.colors.text} onChange={(v) => setColors({ text: v })} />
-            <ColorInput label={tr('النص الخافت (subtext)', 'Muted text')} value={f.colors.subtext} onChange={(v) => setColors({ subtext: v })} />
+            <Group title={tr('لوحات جاهزة', 'Ready palettes')}>
+              <div className="palette-row">
+                {PALETTE_PRESETS.map((p) => (
+                  <button
+                    key={p.name}
+                    className="palette-chip"
+                    onClick={() => setColors({ accent: p.accent, bg: p.bg, bg2: p.bg2, text: p.text, subtext: p.subtext })}
+                  >
+                    <span className="palette-swatch">
+                      <i style={{ background: p.accent }} />
+                      <i style={{ background: p.bg }} />
+                      <i style={{ background: p.bg2 }} />
+                    </span>
+                    {p.name}
+                  </button>
+                ))}
+              </div>
+            </Group>
+            <Group title={tr('ألوان مخصّصة', 'Custom colors')}>
+              <ColorInput label={tr('اللون المميّز (accent)', 'Accent color')} value={f.colors.accent} onChange={(v) => setColors({ accent: v })} />
+              <ColorInput label={tr('الخلفية (bg)', 'Background (bg)')} value={f.colors.bg} onChange={(v) => setColors({ bg: v })} />
+              <ColorInput label={tr('خلفية الكروت (bg2)', 'Card background (bg2)')} value={f.colors.bg2} onChange={(v) => setColors({ bg2: v })} />
+              <ColorInput label={tr('النص (text)', 'Text')} value={f.colors.text} onChange={(v) => setColors({ text: v })} />
+              <ColorInput label={tr('النص الخافت (subtext)', 'Muted text')} value={f.colors.subtext} onChange={(v) => setColors({ subtext: v })} />
+            </Group>
           </>
         )}
 
@@ -184,14 +221,18 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
 
         {tab === 'layouts' && (
           <>
-            <LayoutPicker section="hero" label={tr('القسم الرئيسي (Hero)', 'Hero section')} value={f.style.hero} options={LAYOUT_OPTIONS.hero} onChange={(v) => setStyle({ hero: v })} />
-            <LayoutPicker section="about" label={tr('عن النفس', 'About')} value={f.style.about} options={LAYOUT_OPTIONS.about} onChange={(v) => setStyle({ about: v })} />
-            <LayoutPicker section="projects" label={tr('المشاريع', 'Projects')} value={f.style.projects} options={LAYOUT_OPTIONS.projects} onChange={(v) => setStyle({ projects: v })} />
-            <Opt label={tr('الخدمات', 'Services')} value={f.style.expertise} options={LAYOUT_OPTIONS.expertise} onChange={(v) => setStyle({ expertise: v })} />
-            <Opt label={tr('التواصل', 'Contact')} value={f.style.contact} options={LAYOUT_OPTIONS.contact} onChange={(v) => setStyle({ contact: v })} />
-            <Opt label={tr('المهارات', 'Skills')} value={f.style.skills} options={LAYOUT_OPTIONS.skills} onChange={(v) => setStyle({ skills: v })} />
-            <Opt label={tr('الأدوات', 'Tools')} value={f.style.tools} options={LAYOUT_OPTIONS.tools} onChange={(v) => setStyle({ tools: v })} />
-            <Opt label={tr('الخبرات', 'Experience')} value={f.style.exp} options={LAYOUT_OPTIONS.exp} onChange={(v) => setStyle({ exp: v })} />
+            <Group title={tr('الأقسام الرئيسية', 'Main sections')}>
+              <LayoutPicker section="hero" label={tr('القسم الرئيسي (Hero)', 'Hero section')} value={f.style.hero} options={LAYOUT_OPTIONS.hero} onChange={(v) => setStyle({ hero: v })} />
+              <LayoutPicker section="about" label={tr('عن النفس', 'About')} value={f.style.about} options={LAYOUT_OPTIONS.about} onChange={(v) => setStyle({ about: v })} />
+              <LayoutPicker section="projects" label={tr('المشاريع', 'Projects')} value={f.style.projects} options={LAYOUT_OPTIONS.projects} onChange={(v) => setStyle({ projects: v })} />
+            </Group>
+            <Group title={tr('أقسام إضافية', 'Other sections')}>
+              <Opt label={tr('الخدمات', 'Services')} value={f.style.expertise} options={LAYOUT_OPTIONS.expertise} onChange={(v) => setStyle({ expertise: v })} />
+              <Opt label={tr('التواصل', 'Contact')} value={f.style.contact} options={LAYOUT_OPTIONS.contact} onChange={(v) => setStyle({ contact: v })} />
+              <Opt label={tr('المهارات', 'Skills')} value={f.style.skills} options={LAYOUT_OPTIONS.skills} onChange={(v) => setStyle({ skills: v })} />
+              <Opt label={tr('الأدوات', 'Tools')} value={f.style.tools} options={LAYOUT_OPTIONS.tools} onChange={(v) => setStyle({ tools: v })} />
+              <Opt label={tr('الخبرات', 'Experience')} value={f.style.exp} options={LAYOUT_OPTIONS.exp} onChange={(v) => setStyle({ exp: v })} />
+            </Group>
           </>
         )}
 

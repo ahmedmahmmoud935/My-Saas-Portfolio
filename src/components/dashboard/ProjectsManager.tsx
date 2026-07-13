@@ -7,6 +7,7 @@ import NavIcon from './icons'
 import { useDashLang } from './DashLang'
 import ProjectEditor, { type EditableProject } from './ProjectEditor'
 import NewProjectWizard from './NewProjectWizard'
+import CategoriesModal from './CategoriesModal'
 import {
   deleteProject,
   reorderProjects,
@@ -44,10 +45,14 @@ const COL_MAX = { desktop: 6, tablet: 4, mobile: 3 } as const
 export default function ProjectsManager({
   projects,
   categories,
+  categoriesImage,
+  categoriesVideo,
   gridCols,
 }: {
   projects: ProjectRow[]
   categories: string[]
+  categoriesImage: string[]
+  categoriesVideo: string[]
   gridCols: GridCols
 }) {
   const router = useRouter()
@@ -56,6 +61,7 @@ export default function ProjectsManager({
   const [cat, setCat] = useState('all')
   const [editing, setEditing] = useState<EditableProject | null>(null)
   const [wizard, setWizard] = useState(false)
+  const [catsOpen, setCatsOpen] = useState(false)
 
   // Local, reorderable copy of the projects (optimistic drag-and-drop).
   const [items, setItems] = useState<ProjectRow[]>(projects)
@@ -140,10 +146,16 @@ export default function ProjectsManager({
         title={tr('المشاريع', 'Projects')}
         subtitle={tr('أضِف وعدّل أعمالك — صور، ريلز، وفيديوهات', 'Add and edit your work — images, reels and videos')}
         actions={
-          <button className="btn btn-primary" onClick={() => setWizard(true)}>
-            <NavIcon id="plus" size={16} />
-            {tr('مشروع جديد', 'New project')}
-          </button>
+          <>
+            <button className="btn btn-ghost" onClick={() => setCatsOpen(true)}>
+              <NavIcon id="categories" size={16} />
+              {tr('التصنيفات', 'Categories')}
+            </button>
+            <button className="btn btn-primary" onClick={() => setWizard(true)}>
+              <NavIcon id="plus" size={16} />
+              {tr('مشروع جديد', 'New project')}
+            </button>
+          </>
         }
       />
 
@@ -310,6 +322,18 @@ export default function ProjectsManager({
           onClose={() => setEditing(null)}
           onSaved={() => {
             setEditing(null)
+            router.refresh()
+          }}
+        />
+      )}
+
+      {catsOpen && (
+        <CategoriesModal
+          initialImage={categoriesImage}
+          initialVideo={categoriesVideo}
+          onClose={() => setCatsOpen(false)}
+          onSaved={() => {
+            setCatsOpen(false)
             router.refresh()
           }}
         />

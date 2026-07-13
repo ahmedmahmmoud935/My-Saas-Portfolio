@@ -28,10 +28,10 @@
 }
 
 /* LTR (English): sidebar moves to the left, content to the right. */
-html[dir='ltr'] .dash {
-  grid-template-columns: 244px 1fr;
-}
-html[dir='ltr'] .sidebar {
+/* Sidebar lives in the leading grid track for BOTH directions:
+   order:-1 puts it in track 1; in RTL track 1 is the right edge (sidebar on
+   the right), in LTR track 1 is the left edge (sidebar on the left). */
+.sidebar {
   order: -1;
 }
 
@@ -60,7 +60,7 @@ button {
 /* ─── Shell ─────────────────────────────────────────────────────────────── */
 .dash {
   display: grid;
-  grid-template-columns: 1fr 244px; /* content | sidebar (RTL: sidebar on right) */
+  grid-template-columns: 244px 1fr; /* sidebar (leading track) | content */
   min-height: 100vh;
 }
 .dash-main {
@@ -76,7 +76,7 @@ button {
   height: 100vh;
   overflow-y: auto;
   background: var(--bg-2);
-  border-inline-start: 1px solid var(--border);
+  border-inline-end: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   padding: 18px 14px;
@@ -1143,4 +1143,146 @@ textarea.field {
     position: static;
     order: -1;
   }
+}
+
+/* ── Content hub sub-tabs (Texts / Clients / Achievements / Testimonials) ─── */
+.hub-tabs {
+  margin-bottom: 20px;
+}
+
+/* ── Design tab ─────────────────────────────────────────────────────────── */
+.design-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+.design-tabs .dt {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  color: var(--sub);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s,
+    background 0.15s;
+}
+.design-tabs .dt:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+.design-tabs .dt.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* Live preview mini-card */
+.de-preview {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+.de-preview-bar {
+  display: flex;
+  gap: 6px;
+  padding: 11px 14px;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.18);
+}
+.de-preview-bar i {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  display: block;
+}
+.de-preview-body {
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.de-preview-card {
+  padding: 10px 16px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Titled control groups inside a subtab */
+.de-group {
+  margin-bottom: 26px;
+}
+.de-group:last-child {
+  margin-bottom: 0;
+}
+.de-group-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sub);
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Consistent option rows */
+.opt-field {
+  margin-bottom: 16px;
+}
+.opt-field:last-child {
+  margin-bottom: 0;
+}
+.opt-field-label {
+  font-size: 13px;
+  color: var(--sub);
+  margin-bottom: 7px;
+}
+.opt-opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Palette preset chips (with a 3-colour swatch) */
+.palette-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.palette-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 13px 8px 9px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-3);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.palette-chip:hover {
+  border-color: var(--accent);
+}
+.palette-swatch {
+  display: inline-flex;
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid rgba(128, 128, 128, 0.2);
+}
+.palette-swatch i {
+  width: 14px;
+  height: 18px;
+  display: block;
 }
