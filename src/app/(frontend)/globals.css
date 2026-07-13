@@ -29,15 +29,16 @@
    inline on .pf-root, so the override needs !important to win; the brand
    --accent is kept. */
 html[data-theme='light'] body {
-  background: #f4f6f9;
+  background: #e8ebf1;
 }
 html[data-theme='light'] .pf-root {
-  --bg: #f4f6f9 !important;
+  /* Higher contrast: a grey page so white cards pop, darker borders + text. */
+  --bg: #e8ebf1 !important;
   --bg-2: #ffffff !important;
-  --bg-3: #eef1f5 !important;
-  --text: #14181f !important;
-  --sub: #5c6472 !important;
-  --border: #e3e7ee !important;
+  --bg-3: #f1f3f7 !important;
+  --text: #0d1017 !important;
+  --sub: #465063 !important;
+  --border: #cdd4df !important;
 }
 html[data-theme='light'] .pf-root .card,
 html[data-theme='light'] .pf-root .contact-card,
@@ -946,10 +947,10 @@ body {
 /* Two-column contact: info on one side, a form card on the other. */
 .contact-grid {
   display: grid;
-  grid-template-columns: 1fr 1.1fr;
-  gap: 40px;
-  align-items: start;
-  max-width: 1080px;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center; /* centre the shorter info column against the tall form */
+  max-width: 1000px;
   margin-inline: auto;
 }
 .contact-eyebrow {

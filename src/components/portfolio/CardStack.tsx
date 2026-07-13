@@ -68,7 +68,8 @@ export default function CardStack({ items }: { items: StackCard[] }) {
             transform: `translateY(${-rank * 34 + dragY + flyY}px) scale(${1 - Math.min(rank, 4) * 0.055})`,
             // Behind cards get progressively dimmer for depth (like a real deck).
             filter: rank > 0 ? `brightness(${1 - Math.min(rank, 4) * 0.12})` : undefined,
-            opacity: rank > 4 ? 0 : isTop && exiting ? 0 : 1,
+            // Fade the deck out gradually — the last card or two dissolve away.
+            opacity: isTop && exiting ? 0 : Math.max(0, 1 - Math.max(0, rank - 2) * 0.42),
             rotate: `${rot}deg`,
             transition:
               start.current !== null && isTop

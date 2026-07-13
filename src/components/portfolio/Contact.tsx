@@ -53,12 +53,15 @@ export default function Contact({
   return (
     <section className="section" id="contact">
       <div className="container">
+        <div className="section-head">
+          <h2 className="section-title">{title}</h2>
+          {subtitle && <p className="section-sub">{subtitle}</p>}
+        </div>
         <div className="contact-grid">
           {/* ── Left: info ─────────────────────────────────────────── */}
           <div className="contact-info">
-            <span className="contact-eyebrow">Contact</span>
-            <h2 className="contact-title">{title}</h2>
-            {subtitle && <p className="contact-lead">{subtitle}</p>}
+            <span className="contact-eyebrow">تواصل معنا</span>
+            <p className="contact-lead">جاهز نبدأ مشروعك القادم؟ ابعتلنا وهنرد عليك في أقرب وقت.</p>
 
             <div className="contact-lines">
               {email && (
