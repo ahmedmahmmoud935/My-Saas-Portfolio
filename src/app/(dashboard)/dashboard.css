@@ -1215,6 +1215,23 @@ textarea.field {
   display: inline-flex;
   align-items: center;
 }
+.de-pv-toggle {
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 7px;
+  border: 1px solid rgba(128, 128, 128, 0.35);
+  background: transparent;
+  color: inherit;
+  opacity: 0.55;
+  cursor: pointer;
+}
+.de-pv-toggle.on {
+  opacity: 1;
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
 
 /* Titled control groups inside a subtab */
 .de-group {

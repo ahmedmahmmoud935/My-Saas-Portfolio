@@ -502,6 +502,11 @@ export interface SiteSetting {
     bg2?: string | null;
     text?: string | null;
     subtext?: string | null;
+    accentLight?: string | null;
+    bgLight?: string | null;
+    bg2Light?: string | null;
+    textLight?: string | null;
+    subtextLight?: string | null;
   };
   background?: {
     preset?: ('dark' | 'ocean' | 'sunset' | 'forest' | 'mono' | 'pearl') | null;
@@ -1167,6 +1172,11 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         bg2?: T;
         text?: T;
         subtext?: T;
+        accentLight?: T;
+        bgLight?: T;
+        bg2Light?: T;
+        textLight?: T;
+        subtextLight?: T;
       };
   background?:
     | T

@@ -28,20 +28,26 @@
    Toggled from the navbar (sun/moon). The per-tenant colours are applied
    inline on .pf-root, so the override needs !important to win; the brand
    --accent is kept. */
+/* The tenant colours are applied inline on .pf-root; make it drive the whole
+   page surface so changing bg/text actually repaints the site (not just cards). */
+.pf-root {
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
 html[data-theme='light'] body {
-  background: #ffffff;
+  background: var(--bg-light, #ffffff);
 }
 html[data-theme='light'] .pf-root {
-  /* White page. Not tied to the exact brand palette — tuned for readability on
-     white; the accent is darkened from the tenant's so it reads (adjustable
-     from the dashboard later). Cards separate via borders + soft shadows. */
-  --bg: #ffffff !important;
-  --bg-2: #ffffff !important;
-  --bg-3: #f3f5f8 !important;
-  --text: #0c0f16 !important;
-  --sub: #495265 !important;
-  --border: #d9dee6 !important;
-  --accent: color-mix(in srgb, var(--accent-base, #f97316) 68%, #06181e) !important;
+  /* Light mode uses the tenant's editable light palette (from the dashboard),
+     falling back to readable defaults. Cards separate via borders + shadows. */
+  --bg: var(--bg-light, #ffffff) !important;
+  --bg-2: var(--bg2-light, #ffffff) !important;
+  --bg-3: color-mix(in srgb, var(--bg2-light, #f3f5f8) 90%, #000) !important;
+  --text: var(--text-light, #0c0f16) !important;
+  --sub: var(--sub-light, #495265) !important;
+  --border: color-mix(in srgb, var(--text-light, #0c0f16) 14%, transparent) !important;
+  --accent: var(--accent-light, var(--accent-base, #f97316)) !important;
 }
 html[data-theme='light'] .pf-root .card,
 html[data-theme='light'] .pf-root .contact-card,

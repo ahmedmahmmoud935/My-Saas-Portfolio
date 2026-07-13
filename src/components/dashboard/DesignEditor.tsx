@@ -14,7 +14,8 @@ import {
   ANIM_OPTIONS,
   CURSOR_OPTIONS,
   DIRECTION_OPTIONS,
-  PALETTE_PRESETS,
+  DARK_PALETTES,
+  LIGHT_PALETTES,
   type DesignForm,
 } from '@/lib/design-types'
 
@@ -104,6 +105,19 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
   const [busy, setBusy] = useState(false)
   const { t: tr } = useDashLang()
   const [toast, setToast] = useState(false)
+  const [pv, setPv] = useState<'dark' | 'light'>('dark')
+
+  // Colours shown in the live preview (dark set or light set).
+  const pc =
+    pv === 'dark'
+      ? { accent: f.colors.accent, bg: f.colors.bg, bg2: f.colors.bg2, text: f.colors.text, subtext: f.colors.subtext }
+      : {
+          accent: f.colors.accentLight,
+          bg: f.colors.bgLight,
+          bg2: f.colors.bg2Light,
+          text: f.colors.textLight,
+          subtext: f.colors.subtextLight,
+        }
 
   const set = (patch: Partial<DesignForm>) => setF((p) => ({ ...p, ...patch }))
   const setColors = (p: Partial<DesignForm['colors']>) => set({ colors: { ...f.colors, ...p } })
@@ -133,24 +147,34 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
         }
       />
 
-      {/* Live preview — a miniature of the site's look */}
-      <div className="de-preview" style={{ background: f.colors.bg, color: f.colors.text }}>
+      {/* Live preview — a miniature of the site's look (dark or light set) */}
+      <div className="de-preview" style={{ background: pc.bg, color: pc.text }}>
         <div className="de-preview-bar">
-          <i style={{ background: f.colors.accent }} />
-          <i style={{ background: f.colors.subtext }} />
-          <i style={{ background: f.colors.bg2 }} />
+          <span style={{ display: 'flex', gap: 6 }}>
+            <i style={{ background: pc.accent }} />
+            <i style={{ background: pc.subtext }} />
+            <i style={{ background: pc.bg2 }} />
+          </span>
+          <span style={{ display: 'inline-flex', gap: 4 }}>
+            <button className={`de-pv-toggle ${pv === 'dark' ? 'on' : ''}`} onClick={() => setPv('dark')}>
+              🌙 {tr('داكن', 'Dark')}
+            </button>
+            <button className={`de-pv-toggle ${pv === 'light' ? 'on' : ''}`} onClick={() => setPv('light')}>
+              ☀️ {tr('فاتح', 'Light')}
+            </button>
+          </span>
         </div>
         <div className="de-preview-body">
           <div style={{ fontSize: 22, fontWeight: 800 }}>
-            {tr('اسمك', 'Your name')} <span style={{ color: f.colors.accent }}>{tr('هنا', 'here')}</span>
+            {tr('اسمك', 'Your name')} <span style={{ color: pc.accent }}>{tr('هنا', 'here')}</span>
           </div>
-          <div style={{ color: f.colors.subtext, fontSize: 14 }}>
+          <div style={{ color: pc.subtext, fontSize: 14 }}>
             {tr('نص وصفي خافت يوضّح شكل النص الثانوي في موقعك.', 'A muted line showing how secondary text looks on your site.')}
           </div>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
             <span
               style={{
-                background: f.colors.accent, color: '#fff', padding: '9px 20px', fontWeight: 700,
+                background: pc.accent, color: '#fff', padding: '9px 20px', fontWeight: 700,
                 borderRadius: f.components.button === 'pill' ? 999 : f.components.button === 'sharp' ? 0 : 8,
               }}
             >
@@ -159,8 +183,8 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
             <span
               className="de-preview-card"
               style={{
-                background: f.colors.bg2, color: f.colors.subtext, fontSize: 13,
-                border: '1px solid rgba(255,255,255,.08)',
+                background: pc.bg2, color: pc.subtext, fontSize: 13,
+                border: '1px solid rgba(128,128,128,.25)',
                 borderRadius: f.components.card === 'sharp' ? 0 : f.components.card === 'round' ? 16 : 8,
               }}
             >
@@ -182,9 +206,9 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
       <div className="panel">
         {tab === 'colors' && (
           <>
-            <Group title={tr('لوحات جاهزة', 'Ready palettes')}>
+            <Group title={tr('🌙 الوضع الداكن — لوحات جاهزة', '🌙 Dark mode — ready palettes')}>
               <div className="palette-row">
-                {PALETTE_PRESETS.map((p) => (
+                {DARK_PALETTES.map((p) => (
                   <button
                     key={p.name}
                     className="palette-chip"
@@ -199,13 +223,36 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
                   </button>
                 ))}
               </div>
-            </Group>
-            <Group title={tr('ألوان مخصّصة', 'Custom colors')}>
+              <div style={{ marginTop: 16 }} />
               <ColorInput label={tr('اللون المميّز (accent)', 'Accent color')} value={f.colors.accent} onChange={(v) => setColors({ accent: v })} />
               <ColorInput label={tr('الخلفية (bg)', 'Background (bg)')} value={f.colors.bg} onChange={(v) => setColors({ bg: v })} />
               <ColorInput label={tr('خلفية الكروت (bg2)', 'Card background (bg2)')} value={f.colors.bg2} onChange={(v) => setColors({ bg2: v })} />
               <ColorInput label={tr('النص (text)', 'Text')} value={f.colors.text} onChange={(v) => setColors({ text: v })} />
               <ColorInput label={tr('النص الخافت (subtext)', 'Muted text')} value={f.colors.subtext} onChange={(v) => setColors({ subtext: v })} />
+            </Group>
+            <Group title={tr('☀️ الوضع الفاتح — لوحات جاهزة', '☀️ Light mode — ready palettes')}>
+              <div className="palette-row">
+                {LIGHT_PALETTES.map((p) => (
+                  <button
+                    key={p.name}
+                    className="palette-chip"
+                    onClick={() => setColors({ accentLight: p.accent, bgLight: p.bg, bg2Light: p.bg2, textLight: p.text, subtextLight: p.subtext })}
+                  >
+                    <span className="palette-swatch">
+                      <i style={{ background: p.accent }} />
+                      <i style={{ background: p.bg }} />
+                      <i style={{ background: p.bg2 }} />
+                    </span>
+                    {p.name}
+                  </button>
+                ))}
+              </div>
+              <div style={{ marginTop: 16 }} />
+              <ColorInput label={tr('اللون المميّز (accent)', 'Accent color')} value={f.colors.accentLight} onChange={(v) => setColors({ accentLight: v })} />
+              <ColorInput label={tr('الخلفية (bg)', 'Background (bg)')} value={f.colors.bgLight} onChange={(v) => setColors({ bgLight: v })} />
+              <ColorInput label={tr('خلفية الكروت (bg2)', 'Card background (bg2)')} value={f.colors.bg2Light} onChange={(v) => setColors({ bg2Light: v })} />
+              <ColorInput label={tr('النص (text)', 'Text')} value={f.colors.textLight} onChange={(v) => setColors({ textLight: v })} />
+              <ColorInput label={tr('النص الخافت (subtext)', 'Muted text')} value={f.colors.subtextLight} onChange={(v) => setColors({ subtextLight: v })} />
             </Group>
           </>
         )}

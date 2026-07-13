@@ -125,11 +125,18 @@ export const SiteSettings: CollectionConfig = {
               name: 'colors',
               type: 'group',
               fields: [
+                // Dark-mode palette (the site's default theme).
                 { name: 'accent', type: 'text', defaultValue: '#F97316' },
                 { name: 'bg', type: 'text', defaultValue: '#0A0A0A' },
                 { name: 'bg2', type: 'text', defaultValue: '#111111' },
                 { name: 'text', type: 'text', defaultValue: '#FFFFFF' },
                 { name: 'subtext', type: 'text', defaultValue: '#999999' },
+                // Light-mode palette (used when the visitor picks light mode).
+                { name: 'accentLight', type: 'text', defaultValue: '#F97316' },
+                { name: 'bgLight', type: 'text', defaultValue: '#FFFFFF' },
+                { name: 'bg2Light', type: 'text', defaultValue: '#F3F5F8' },
+                { name: 'textLight', type: 'text', defaultValue: '#0C0F16' },
+                { name: 'subtextLight', type: 'text', defaultValue: '#495265' },
               ],
             },
             {
