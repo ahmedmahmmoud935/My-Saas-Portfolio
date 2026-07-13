@@ -347,6 +347,10 @@ img {
   border-radius: 0;
   box-shadow: none;
 }
+/* Full-bleed heroes always fill (crop) — never letterbox with black bars. */
+.hero:not(.hero-split) .hero-bg {
+  object-fit: cover !important;
+}
 .hero-split .hero-bg {
   object-fit: cover;
   border: 1px solid rgba(255, 255, 255, 0.1);
