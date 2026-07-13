@@ -243,7 +243,7 @@ img {
   position: absolute;
   inset: 0;
   background: linear-gradient(90deg, var(--bg) 8%, transparent 70%),
-    rgba(0, 0, 0, 0.45);
+    rgba(0, 0, 0, var(--hero-overlay, 0.45));
   z-index: 1;
 }
 .hero-inner {
@@ -320,7 +320,13 @@ img {
   animation: heroImgIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 .hero-split .hero-overlay {
-  display: none;
+  inset-block: 28px;
+  inset-inline-end: 28px;
+  inset-inline-start: auto;
+  width: 43%;
+  border-radius: 22px;
+  background: rgba(0, 0, 0, var(--hero-overlay, 0));
+  pointer-events: none;
 }
 .hero-split .hero-inner {
   max-width: 50%;
@@ -337,11 +343,11 @@ img {
     box-shadow: none;
   }
   .hero-split .hero-overlay {
-    display: block;
     inset: 0;
     width: 100%;
+    border-radius: 0;
     background: linear-gradient(90deg, var(--bg) 8%, transparent 75%),
-      rgba(0, 0, 0, 0.45);
+      rgba(0, 0, 0, var(--hero-overlay, 0.45));
   }
   .hero-split .hero-inner {
     max-width: none;
@@ -367,7 +373,7 @@ img {
   justify-content: center;
 }
 .hero-centered .hero-overlay {
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3));
+  background: rgba(0, 0, 0, var(--hero-overlay, 0.4));
 }
 
 /* massive — oversized name, eyebrow above it */
@@ -392,7 +398,8 @@ img {
   padding-bottom: clamp(40px, 8vh, 96px);
 }
 .hero-cover-full .hero-overlay {
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.82) 5%, transparent 60%);
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.85) 5%, transparent 55%),
+    rgba(0, 0, 0, var(--hero-overlay, 0.1));
 }
 
 /* minimal — shorter section, restrained type, no heavy overlay */
@@ -406,7 +413,7 @@ img {
 }
 .hero-minimal .hero-overlay {
   background: linear-gradient(90deg, var(--bg) 6%, transparent 55%),
-    rgba(0, 0, 0, 0.25);
+    rgba(0, 0, 0, var(--hero-overlay, 0.25));
 }
 
 /* ─── About ─────────────────────────────────────────────────────────────── */

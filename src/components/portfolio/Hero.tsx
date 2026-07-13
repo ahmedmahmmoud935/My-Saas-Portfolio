@@ -21,6 +21,9 @@ export default function Hero({
   overlay = 45,
   heightVh = 82,
   variant = 'split',
+  coverSize = 'cover',
+  posX = 50,
+  posY = 50,
 }: {
   eyebrow?: string
   name: string
@@ -30,21 +33,26 @@ export default function Hero({
   overlay?: number
   heightVh?: number
   variant?: string
+  coverSize?: string
+  posX?: number
+  posY?: number
 }) {
   return (
-    <header className={`hero hero-${variant}`} id="hero" style={{ minHeight: `${heightVh}vh` }}>
+    <header
+      className={`hero hero-${variant}`}
+      id="hero"
+      style={{ minHeight: `${heightVh}vh`, ['--hero-overlay' as string]: overlay / 100 } as React.CSSProperties}
+    >
       {coverUrl && (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="hero-bg" src={coverUrl} alt="" />
-          <div
-            className="hero-overlay"
-            style={{
-              background: `linear-gradient(90deg, var(--bg) 8%, transparent 70%), rgba(0,0,0,${
-                overlay / 100
-              })`,
-            }}
+          <img
+            className="hero-bg"
+            src={coverUrl}
+            alt=""
+            style={{ objectFit: coverSize as React.CSSProperties['objectFit'], objectPosition: `${posX}% ${posY}%` }}
           />
+          <div className="hero-overlay" />
         </>
       )}
       <div className="container hero-inner">

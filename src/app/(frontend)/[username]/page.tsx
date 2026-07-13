@@ -90,6 +90,9 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
         overlay={settings?.heroCover?.overlay ?? 45}
         heightVh={settings?.heroCover?.height ?? 82}
         variant={settings?.style?.hero || 'split'}
+        coverSize={settings?.heroCover?.size || 'cover'}
+        posX={settings?.heroCover?.posX ?? 50}
+        posY={settings?.heroCover?.posY ?? 50}
       />
     ),
     about: (
