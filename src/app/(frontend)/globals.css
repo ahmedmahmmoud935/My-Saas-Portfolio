@@ -29,22 +29,27 @@
    inline on .pf-root, so the override needs !important to win; the brand
    --accent is kept. */
 html[data-theme='light'] body {
-  background: #e8ebf1;
+  background: #ffffff;
 }
 html[data-theme='light'] .pf-root {
-  /* Higher contrast: a grey page so white cards pop, darker borders + text. */
-  --bg: #e8ebf1 !important;
+  /* White page. Not tied to the exact brand palette — tuned for readability on
+     white; the accent is darkened from the tenant's so it reads (adjustable
+     from the dashboard later). Cards separate via borders + soft shadows. */
+  --bg: #ffffff !important;
   --bg-2: #ffffff !important;
-  --bg-3: #f1f3f7 !important;
-  --text: #0d1017 !important;
-  --sub: #465063 !important;
-  --border: #cdd4df !important;
+  --bg-3: #f3f5f8 !important;
+  --text: #0c0f16 !important;
+  --sub: #495265 !important;
+  --border: #d9dee6 !important;
+  --accent: color-mix(in srgb, var(--accent-base, #f97316) 68%, #06181e) !important;
 }
 html[data-theme='light'] .pf-root .card,
 html[data-theme='light'] .pf-root .contact-card,
 html[data-theme='light'] .pf-root .exp-item,
-html[data-theme='light'] .pf-root .tool {
-  box-shadow: 0 10px 30px -18px rgba(15, 23, 42, 0.25);
+html[data-theme='light'] .pf-root .tool,
+html[data-theme='light'] .pf-root .project-card,
+html[data-theme='light'] .pf-root .cs-card {
+  box-shadow: 0 12px 34px -20px rgba(13, 20, 40, 0.28);
 }
 
 *,

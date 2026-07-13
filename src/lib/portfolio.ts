@@ -107,8 +107,11 @@ export async function getPortfolio(
 /** Build the per-tenant CSS variables from settings.colors (falls back to defaults). */
 export function tenantCssVars(settings: SiteSetting | null): Record<string, string> {
   const c = settings?.colors ?? {}
+  const accent = c.accent || '#f97316'
   return {
-    '--accent': c.accent || '#f97316',
+    '--accent': accent,
+    // Kept unchanged so light mode can derive a darker, white-readable accent.
+    '--accent-base': accent,
     '--bg': c.bg || '#0a0a0a',
     '--bg-2': c.bg2 || '#111111',
     '--text': c.text || '#ffffff',
