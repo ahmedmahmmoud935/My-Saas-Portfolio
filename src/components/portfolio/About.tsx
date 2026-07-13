@@ -5,15 +5,17 @@ export default function About({
   photoUrl,
   text,
   tags,
+  variant = 'classic',
 }: {
   title: string
   photoUrl?: string | null
   text?: string
   tags?: string[]
+  variant?: string
 }) {
   return (
     <section className="section" id="about">
-      <div className="container about">
+      <div className={`container about about-${variant}`}>
         {photoUrl && (
           // eslint-disable-next-line @next/next/no-img-element
           <img className="about-photo" src={photoUrl} alt={title} />

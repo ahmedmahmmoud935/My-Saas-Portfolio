@@ -28,6 +28,7 @@ export default function ProjectsGrid({
   tabLabels,
   cols,
   highlights,
+  variant = 'grid',
 }: {
   title: string
   subtitle?: string
@@ -41,6 +42,7 @@ export default function ProjectsGrid({
     video?: { d?: number | null; t?: number | null; m?: number | null }
   }
   highlights?: Story[]
+  variant?: string
 }) {
   const groups: Record<TabId, ProjectCard[]> = {
     designs: projects.filter((p) => p.mediaType === 'image'),
@@ -62,7 +64,11 @@ export default function ProjectsGrid({
   )
 
   const gridClass =
-    activeTab === 'reels' ? 'project-grid reels-grid' : activeTab === 'videos' ? 'project-grid videos-grid' : 'project-grid'
+    activeTab === 'reels'
+      ? 'project-grid reels-grid'
+      : activeTab === 'videos'
+        ? 'project-grid videos-grid'
+        : `project-grid pg-${variant}` // layout variant applies to the designs grid
 
   // Column counts per breakpoint from tenant settings → CSS vars (falls back to
   // the per-grid CSS defaults when a value is missing).

@@ -54,6 +54,7 @@ export function Expertise({
 export function Experience({
   title,
   items,
+  variant = 'classic',
 }: {
   title: string
   items: {
@@ -62,6 +63,7 @@ export function Experience({
     period?: string | null
     description?: string | null
   }[]
+  variant?: string
 }) {
   if (items.length === 0) return null
   return (
@@ -70,6 +72,7 @@ export function Experience({
         <div className="section-head">
           <h2 className="section-title">{title}</h2>
         </div>
+        <div className={`exp-list exp-${variant}`}>
         {items.map((it, i) => (
           <div className="exp-item" key={i}>
             <div>
@@ -81,6 +84,7 @@ export function Experience({
             {it.period && <span className="period">{it.period}</span>}
           </div>
         ))}
+        </div>
       </div>
     </section>
   )
@@ -89,9 +93,11 @@ export function Experience({
 export function Tools({
   title,
   items,
+  variant = 'classic',
 }: {
   title: string
   items: { name?: string | null; iconUrl?: string | null }[]
+  variant?: string
 }) {
   if (items.length === 0) return null
   return (
@@ -100,7 +106,7 @@ export function Tools({
         <div className="section-head">
           <h2 className="section-title">{title}</h2>
         </div>
-        <div className="tools-grid">
+        <div className={`tools-grid tools-${variant}`}>
           {items.map((it, i) => (
             <div className="tool" key={i} title={it.name || ''}>
               <span className="tool-idx">{String(i + 1).padStart(2, '0')}</span>
@@ -150,7 +156,15 @@ export function Education({
   )
 }
 
-export function Skills({ title, items }: { title: string; items: string[] }) {
+export function Skills({
+  title,
+  items,
+  variant = 'tags',
+}: {
+  title: string
+  items: string[]
+  variant?: string
+}) {
   if (items.length === 0) return null
   return (
     <section className="section" id="skills">
@@ -158,7 +172,7 @@ export function Skills({ title, items }: { title: string; items: string[] }) {
         <div className="section-head">
           <h2 className="section-title">{title}</h2>
         </div>
-        <div className="chips-center">
+        <div className={`chips-center skills-${variant}`}>
           {items.map((s) => (
             <span className="chip" key={s}>
               {s}

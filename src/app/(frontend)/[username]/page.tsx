@@ -98,6 +98,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
         photoUrl={mediaUrl(brand.photo)}
         text={content.about?.text || undefined}
         tags={splitTags(content.about?.tags)}
+        variant={settings?.style?.about || 'classic'}
       />
     ),
     projects: (
@@ -144,6 +145,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
             .map((im) => mediaUrl(im.image, 'card'))
             .filter((u): u is string => !!u),
         }))}
+        variant={settings?.style?.projects || 'grid'}
       />
     ),
     expertise: (
@@ -165,6 +167,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
     experience: (
       <Experience
         title="Experience"
+        variant={settings?.style?.exp || 'classic'}
         items={(content.experience?.items ?? []).map((it) => ({
           company: it.company,
           role: it.role,
@@ -176,6 +179,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
     tools: (
       <Tools
         title="Tools & Software"
+        variant={settings?.style?.tools || 'classic'}
         items={(content.tools?.items ?? []).map((it) => ({
           name: it.name,
           iconUrl: mediaUrl(it.icon),
@@ -196,6 +200,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
     skills: (
       <Skills
         title="Soft Skills"
+        variant={settings?.style?.skills || 'tags'}
         items={(content.skills?.items || '')
           .split(',')
           .map((s) => s.trim())
@@ -241,6 +246,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
         email={content.contact?.email || undefined}
         phone={content.contact?.phone || undefined}
         tenant={tenant.id}
+        variant={settings?.style?.contact || 'classic'}
       />
     ),
   }

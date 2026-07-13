@@ -20,12 +20,14 @@ export default function Contact({
   email,
   phone,
   tenant,
+  variant = 'classic',
 }: {
   title: string
   subtitle?: string
   email?: string
   phone?: string
   tenant: number
+  variant?: string
 }) {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
   const [status, setStatus] = useState<'idle' | 'sending' | 'ok' | 'err'>('idle')
@@ -57,7 +59,7 @@ export default function Contact({
           <h2 className="section-title">{title}</h2>
           {subtitle && <p className="section-sub">{subtitle}</p>}
         </div>
-        <div className="contact-grid">
+        <div className={`contact-grid contact-${variant}`}>
           {/* ── Left: info ─────────────────────────────────────────── */}
           <div className="contact-info">
             <span className="contact-eyebrow">تواصل معنا</span>
