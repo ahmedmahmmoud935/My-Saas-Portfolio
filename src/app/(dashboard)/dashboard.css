@@ -1252,6 +1252,58 @@ textarea.field {
   gap: 8px;
 }
 
+/* Layout picker (wireframe cards) */
+.lp-field {
+  margin-bottom: 22px;
+}
+.lp-field:last-child {
+  margin-bottom: 0;
+}
+.lp-label {
+  font-size: 13px;
+  color: var(--sub);
+  margin-bottom: 10px;
+}
+.lp-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.lp-card {
+  flex: 0 0 150px;
+  width: 150px;
+  background: var(--bg-3);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 6px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font: inherit;
+  transition: border-color 0.15s;
+}
+.lp-card:hover {
+  border-color: var(--accent);
+}
+.lp-card.active {
+  border-color: var(--accent);
+}
+.lp-card svg {
+  display: block;
+  width: 100%;
+  border-radius: 4px;
+}
+.lp-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--sub);
+  text-align: center;
+}
+.lp-card.active .lp-name {
+  color: var(--accent);
+}
+
 /* Palette preset chips (with a 3-colour swatch) */
 .palette-row {
   display: flex;

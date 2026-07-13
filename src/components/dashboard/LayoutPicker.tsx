@@ -126,30 +126,20 @@ export default function LayoutPicker({
   onChange: (v: string) => void
 }) {
   return (
-    <div style={{ marginBottom: 22 }}>
-      <div className="lbl" style={{ marginBottom: 8 }}>
-        {label}
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(120px,1fr))', gap: 10 }}>
+    <div className="lp-field">
+      <div className="lp-label">{label}</div>
+      <div className="lp-grid">
         {options.map((o) => {
           const active = value === o
           return (
             <button
               key={o}
+              type="button"
+              className={`lp-card ${active ? 'active' : ''}`}
               onClick={() => onChange(o)}
-              style={{
-                background: 'var(--bg-3)',
-                border: `2px solid ${active ? 'var(--accent)' : 'var(--border)'}`,
-                borderRadius: 10,
-                padding: 6,
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 6,
-              }}
             >
               {WIREFRAMES[`${section}-${o}`] ?? <div style={{ height: 74 }} />}
-              <span style={{ fontSize: 12, color: active ? 'var(--accent)' : 'var(--sub)', fontWeight: 700 }}>{o}</span>
+              <span className="lp-name">{o}</span>
             </button>
           )
         })}
