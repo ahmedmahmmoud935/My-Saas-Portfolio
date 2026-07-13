@@ -286,6 +286,35 @@ img {
    The base rules above are the "split" look (text hugs the leading edge over
    a full-bleed cover). Each modifier below rearranges the same markup. */
 
+/* split — image panel on the trailing side, text on the leading half */
+.hero-split .hero-bg {
+  inset-inline-start: auto;
+  width: 46%;
+}
+.hero-split .hero-overlay {
+  inset-inline-start: auto;
+  width: 46%;
+  background: rgba(0, 0, 0, 0.12);
+}
+.hero-split .hero-inner {
+  max-width: 50%;
+  margin-inline: 0;
+}
+@media (max-width: 820px) {
+  .hero-split .hero-bg,
+  .hero-split .hero-overlay {
+    inset-inline: 0;
+    width: 100%;
+  }
+  .hero-split .hero-overlay {
+    background: linear-gradient(90deg, var(--bg) 8%, transparent 75%),
+      rgba(0, 0, 0, 0.4);
+  }
+  .hero-split .hero-inner {
+    max-width: none;
+  }
+}
+
 /* centered — everything stacked and centered */
 .hero-centered {
   justify-content: center;
