@@ -110,6 +110,88 @@ export const WIREFRAMES: Record<string, React.ReactNode> = {
       <rect x="62" y="40" width="50" height="24" rx="2" fill={G} />
     </Frame>
   ),
+  // Services (expertise)
+  'expertise-grid': (
+    <Frame>
+      {[0, 1, 2].map((c) => (
+        <rect key={c} x={10 + c * 34} y="24" width="28" height="26" rx="3" fill={G} />
+      ))}
+    </Frame>
+  ),
+  'expertise-stack': (
+    <Frame>
+      <rect x="34" y="10" width="52" height="40" rx="4" fill={G} />
+      <rect x="30" y="16" width="60" height="40" rx="4" fill={L} opacity="0.6" />
+      <rect x="26" y="22" width="68" height="42" rx="4" fill={G} />
+    </Frame>
+  ),
+  // Contact
+  'contact-classic': (
+    <Frame>
+      <rect x="8" y="14" width="46" height="46" rx="3" fill={L} />
+      <rect x="62" y="14" width="50" height="46" rx="3" fill={G} />
+    </Frame>
+  ),
+  'contact-split': (
+    <Frame>
+      <rect x="26" y="10" width="68" height="18" rx="3" fill={L} />
+      <rect x="26" y="32" width="68" height="32" rx="3" fill={G} />
+    </Frame>
+  ),
+  // Skills
+  'skills-tags': (
+    <Frame>
+      {[0, 1, 2, 3].map((i) => (
+        <rect key={i} x={12 + (i % 3) * 34} y={22 + Math.floor(i / 3) * 16} width="28" height="10" rx="5" fill={G} />
+      ))}
+    </Frame>
+  ),
+  'skills-inline': (
+    <Frame>
+      <rect x="14" y="34" width="92" height="6" rx="3" fill={A} />
+    </Frame>
+  ),
+  'skills-bars': (
+    <Frame>
+      {[0, 1, 2].map((i) => (
+        <rect key={i} x="14" y={16 + i * 16} width={92 - i * 18} height="8" rx="4" fill={i === 0 ? A : G} />
+      ))}
+    </Frame>
+  ),
+  // Tools
+  'tools-classic': (
+    <Frame>
+      {[0, 1, 2].map((c) => (
+        <rect key={c} x={10 + c * 34} y="26" width="28" height="22" rx="4" fill={G} />
+      ))}
+    </Frame>
+  ),
+  'tools-compact': (
+    <Frame>
+      {[0, 1, 2, 3, 4].map((c) => (
+        <rect key={c} x={10 + c * 21} y="30" width="16" height="14" rx="3" fill={G} />
+      ))}
+    </Frame>
+  ),
+  // Experience
+  'exp-classic': (
+    <Frame>
+      {[0, 1, 2].map((r) => (
+        <rect key={r} x="10" y={14 + r * 17} width="100" height="12" rx="3" fill={G} />
+      ))}
+    </Frame>
+  ),
+  'exp-timeline': (
+    <Frame>
+      <rect x="16" y="12" width="2" height="52" fill={A} />
+      {[0, 1, 2].map((r) => (
+        <g key={r}>
+          <circle cx="17" cy={20 + r * 16} r="3" fill={A} />
+          <rect x="26" y={15 + r * 16} width="80" height="10" rx="3" fill={G} />
+        </g>
+      ))}
+    </Frame>
+  ),
 }
 
 export default function LayoutPicker({

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getPortfolio, mediaUrl, tenantCssVars } from '@/lib/portfolio'
 import Navbar from '@/components/portfolio/Navbar'
+import MotionFx from '@/components/portfolio/MotionFx'
 import Hero from '@/components/portfolio/Hero'
 import About from '@/components/portfolio/About'
 import ProjectsGrid from '@/components/portfolio/ProjectsGrid'
@@ -281,8 +282,37 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
 
   const cssVars = tenantCssVars(settings) as React.CSSProperties
 
+  // Design → runtime: fonts / motion / direction / decorative background.
+  const st = (settings?.style ?? {}) as Record<string, string | undefined>
+  const dirOverride: 'ltr' | 'rtl' =
+    st.direction === 'ltr' ? 'ltr' : st.direction === 'rtl' ? 'rtl' : locale === 'en' ? 'ltr' : 'rtl'
+  const bg = settings?.background
+  const bgTints: Record<string, string> = {
+    ocean: 'radial-gradient(1200px 640px at 82% -12%, rgba(56,189,248,0.16), transparent 60%)',
+    sunset: 'radial-gradient(1200px 640px at 82% -12%, rgba(249,115,22,0.16), transparent 60%)',
+    forest: 'radial-gradient(1200px 640px at 82% -12%, rgba(16,185,129,0.14), transparent 60%)',
+    mono: 'radial-gradient(1200px 640px at 82% -12%, rgba(160,160,160,0.10), transparent 60%)',
+    pearl: 'radial-gradient(1200px 640px at 82% -12%, rgba(120,120,120,0.08), transparent 60%)',
+  }
+  const bgLayer: React.CSSProperties | null =
+    bg?.type === 'gradient' && bg.color1
+      ? { background: `linear-gradient(160deg, ${bg.color1}, ${bg.color2 || 'transparent'})`, opacity: 0.6 }
+      : bg?.preset && bgTints[bg.preset]
+        ? { background: bgTints[bg.preset] }
+        : null
+
   return (
-    <div className="pf-root" style={cssVars} dir={locale === 'en' ? 'ltr' : 'rtl'} lang={locale}>
+    <div
+      className="pf-root"
+      style={cssVars}
+      dir={dirOverride}
+      lang={locale}
+      data-font={st.font || 'default'}
+      data-anim={st.anim || 'fade-up'}
+      data-cursor={st.cursor || 'default'}
+    >
+      {bgLayer && <div className="pf-bg-layer" style={bgLayer} />}
+      <MotionFx anim={st.anim || 'fade-up'} cursor={st.cursor || 'default'} />
       <TrackVisit tenant={tenant.id} page="home" />
       <Navbar
         logo={logoText}
