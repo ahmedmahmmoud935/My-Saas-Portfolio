@@ -12,30 +12,41 @@ export default function MotionFx({ anim, cursor }: { anim?: string; cursor?: str
   const dot = useRef<HTMLDivElement>(null)
   const ring = useRef<HTMLDivElement>(null)
 
-  // ── Scroll reveal ──
+  // ── Scroll reveal (inline styles only — hides just the below-fold sections
+  //    at mount, reveals on scroll; no class toggling so it can't thrash, and
+  //    if this JS never runs the sections simply stay visible). ──
   useEffect(() => {
     if (!anim || anim === 'none') return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     const root = document.querySelector('.pf-root')
     if (!root) return
-    root.classList.add('reveal-ready')
-    const sections = Array.from(root.querySelectorAll('.section'))
+    const sections = Array.from(root.querySelectorAll<HTMLElement>('.section'))
+    const vh = window.innerHeight
+    const hidden: HTMLElement[] = []
+    for (const s of sections) {
+      if (s.getBoundingClientRect().top > vh * 0.85) {
+        s.style.transition = 'opacity .6s ease, transform .6s cubic-bezier(.16,1,.3,1)'
+        s.style.opacity = '0'
+        if (anim === 'fade-up') s.style.transform = 'translateY(26px)'
+        hidden.push(s)
+      }
+    }
+    if (hidden.length === 0) return
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
           if (e.isIntersecting) {
-            e.target.classList.add('reveal-in')
-            io.unobserve(e.target)
+            const el = e.target as HTMLElement
+            el.style.opacity = '1'
+            el.style.transform = 'none'
+            io.unobserve(el)
           }
         }
       },
-      { threshold: 0.12, rootMargin: '0px 0px -8% 0px' },
+      { threshold: 0.1, rootMargin: '0px 0px -6% 0px' },
     )
-    sections.forEach((s) => io.observe(s))
-    return () => {
-      io.disconnect()
-      root.classList.remove('reveal-ready')
-    }
+    hidden.forEach((s) => io.observe(s))
+    return () => io.disconnect()
   }, [anim])
 
   // ── Dot-ring cursor ──
