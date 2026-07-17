@@ -22,6 +22,7 @@ export default function Hero({
   heightVh = 82,
   variant = 'split',
   coverSize = 'cover',
+  gradient = 'none',
   posX = 50,
   posY = 50,
 }: {
@@ -34,15 +35,24 @@ export default function Hero({
   heightVh?: number
   variant?: string
   coverSize?: string
+  gradient?: string
   posX?: number
   posY?: number
 }) {
+  // A chosen gradient replaces the (missing) cover image.
+  const showGradient = !coverUrl && gradient && gradient !== 'none'
   return (
     <header
       className={`hero hero-${variant}`}
       id="hero"
       style={{ minHeight: `${heightVh}vh`, ['--hero-overlay' as string]: overlay / 100 } as React.CSSProperties}
     >
+      {showGradient && (
+        <>
+          <div className={`hero-bg hero-grad hg-${gradient}`} aria-hidden />
+          <div className="hero-overlay" />
+        </>
+      )}
       {coverUrl && (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}

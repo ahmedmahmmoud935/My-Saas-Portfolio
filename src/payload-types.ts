@@ -495,6 +495,10 @@ export interface SiteSetting {
      * vh
      */
     height?: number | null;
+    /**
+     * Cover gradient preset id (used when there's no image).
+     */
+    gradient?: string | null;
   };
   colors?: {
     accent?: string | null;
@@ -1163,6 +1167,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         posY?: T;
         overlay?: T;
         height?: T;
+        gradient?: T;
       };
   colors?:
     | T

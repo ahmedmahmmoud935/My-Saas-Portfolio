@@ -30,7 +30,14 @@ export type DesignForm = {
     anim: string
   }
   components: { card: string; navbar: string; button: string }
-  heroCover: { size: string; posX: number; posY: number; overlay: number; height: number }
+  heroCover: {
+    size: string
+    posX: number
+    posY: number
+    overlay: number
+    height: number
+    gradient: string
+  }
   heroCoverId: number | null
   heroCoverUrl: string | null
 }
@@ -120,7 +127,7 @@ export const emptyDesign = (): DesignForm => ({
     anim: 'fade-up',
   },
   components: { card: 'solid', navbar: 'blur', button: 'rounded' },
-  heroCover: { size: 'cover', posX: 50, posY: 50, overlay: 45, height: 82 },
+  heroCover: { size: 'cover', posX: 50, posY: 50, overlay: 45, height: 82, gradient: 'none' },
   heroCoverId: null,
   heroCoverUrl: null,
 })

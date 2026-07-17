@@ -113,6 +113,12 @@ export const SiteSettings: CollectionConfig = {
                     { name: 'height', type: 'number', defaultValue: 85, admin: { description: 'vh' } },
                   ],
                 },
+                {
+                  name: 'gradient',
+                  type: 'text',
+                  defaultValue: 'none',
+                  admin: { description: "Cover gradient preset id (used when there's no image)." },
+                },
               ],
             },
           ],

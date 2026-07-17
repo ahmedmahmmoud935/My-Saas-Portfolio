@@ -19,6 +19,19 @@ import {
   type DesignForm,
 } from '@/lib/design-types'
 
+// Cover gradient presets (swatch previews; the hero renders richer, animated,
+// theme-aware versions of the same ids). Shown when there's no cover image.
+const HERO_GRADIENTS: { id: string; label: string; css: string }[] = [
+  { id: 'none', label: 'بدون', css: '' },
+  { id: 'aurora', label: 'Aurora', css: 'linear-gradient(135deg,#0ea5e9,#8b5cf6)' },
+  { id: 'sunset', label: 'Sunset', css: 'linear-gradient(135deg,#f97316,#ec4899)' },
+  { id: 'ocean', label: 'Ocean', css: 'linear-gradient(135deg,#2563eb,#06b6d4)' },
+  { id: 'candy', label: 'Candy', css: 'linear-gradient(135deg,#ec4899,#8b5cf6)' },
+  { id: 'mint', label: 'Mint', css: 'linear-gradient(135deg,#10b981,#14b8a6)' },
+  { id: 'ember', label: 'Ember', css: 'linear-gradient(135deg,#ef4444,#f59e0b)' },
+  { id: 'dusk', label: 'Dusk', css: 'linear-gradient(135deg,#6366f1,#ec4899)' },
+]
+
 const SUBTABS = [
   { id: 'colors', label: 'الألوان', labelEn: 'Colors', icon: '🎨' },
   { id: 'background', label: 'الخلفية', labelEn: 'Background', icon: '🖼️' },
@@ -307,6 +320,24 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
           <>
             <div className="lbl" style={{ marginBottom: 6 }}>{tr('صورة الغلاف', 'Cover image')}</div>
             <MediaUploader previewUrl={f.heroCoverUrl} onUploaded={(m) => set({ heroCoverId: m.id, heroCoverUrl: m.thumbUrl })} />
+
+            <div className="lbl" style={{ marginTop: 18, marginBottom: 8 }}>
+              {tr('أو تدرّج لوني (يظهر لو مفيش صورة)', 'Or a colour gradient (used when there is no image)')}
+            </div>
+            <div className="hgp">
+              {HERO_GRADIENTS.map((g) => (
+                <button
+                  key={g.id}
+                  type="button"
+                  className={`hgp-swatch ${f.heroCover.gradient === g.id ? 'active' : ''} ${g.id === 'none' ? 'hgp-none' : ''}`}
+                  style={g.css ? { background: g.css } : undefined}
+                  onClick={() => setCover({ gradient: g.id })}
+                  title={g.label}
+                >
+                  {g.id === 'none' ? tr('بدون', 'None') : ''}
+                </button>
+              ))}
+            </div>
             <div style={{ marginTop: 14 }} />
             <Opt label={tr('الحجم', 'Size')} value={f.heroCover.size} options={['cover', 'contain']} onChange={(v) => setCover({ size: v })} />
             <Slider label={tr('الموضع الأفقي', 'Horizontal position')} value={f.heroCover.posX} min={0} max={100} suffix="%" onChange={(v) => setCover({ posX: v })} />

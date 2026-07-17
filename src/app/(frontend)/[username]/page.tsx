@@ -91,6 +91,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
         heightVh={settings?.heroCover?.height ?? 82}
         variant={settings?.style?.hero || 'split'}
         coverSize={settings?.heroCover?.size || 'cover'}
+        gradient={settings?.heroCover?.gradient || 'none'}
         posX={settings?.heroCover?.posX ?? 50}
         posY={settings?.heroCover?.posY ?? 50}
       />

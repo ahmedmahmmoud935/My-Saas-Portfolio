@@ -27,6 +27,7 @@ export async function saveDesign(form: DesignForm) {
         posY: form.heroCover.posY,
         overlay: form.heroCover.overlay,
         height: form.heroCover.height,
+        gradient: form.heroCover.gradient,
       },
       brand: {
         photo: brandRel(currentBrand.photo) as number | null,

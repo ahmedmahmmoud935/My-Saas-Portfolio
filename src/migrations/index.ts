@@ -5,6 +5,7 @@ import * as migration_20260711_095532_add_carousel_block from './20260711_095532
 import * as migration_20260712_134348_add_expertise_layout from './20260712_134348_add_expertise_layout';
 import * as migration_20260712_141437_add_expertise_bg from './20260712_141437_add_expertise_bg';
 import * as migration_20260713_172121_add_light_colors from './20260713_172121_add_light_colors';
+import * as migration_20260713_220315_add_hero_gradient from './20260713_220315_add_hero_gradient';
 
 export const migrations = [
   {
@@ -40,6 +41,11 @@ export const migrations = [
   {
     up: migration_20260713_172121_add_light_colors.up,
     down: migration_20260713_172121_add_light_colors.down,
-    name: '20260713_172121_add_light_colors'
+    name: '20260713_172121_add_light_colors',
+  },
+  {
+    up: migration_20260713_220315_add_hero_gradient.up,
+    down: migration_20260713_220315_add_hero_gradient.down,
+    name: '20260713_220315_add_hero_gradient'
   },
 ];
