@@ -1185,6 +1185,77 @@ textarea.field {
   color: #fff;
 }
 
+/* Theme sub-tabs (Colors / Backgrounds / Components / Fonts / Motion) */
+.design-subtabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.design-subtabs .dst {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--sub);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.design-subtabs .dst:hover {
+  color: var(--text);
+  background: var(--bg-3);
+}
+.design-subtabs .dst.active {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+/* Two-column layout so panels use horizontal space (stacks on narrow screens) */
+.de-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px 32px;
+  align-items: start;
+}
+/* Auto-fit grid for short option groups (components, motion) */
+.de-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px 28px;
+  align-items: start;
+}
+@media (max-width: 720px) {
+  .de-cols {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Compact colour row */
+.color-input {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 9px;
+}
+.color-input input[type='color'] {
+  width: 38px;
+  height: 30px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+}
+
 /* Live preview mini-card */
 .de-preview {
   border: 1px solid var(--border);
