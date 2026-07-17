@@ -39,8 +39,8 @@ export default function Hero({
   posX?: number
   posY?: number
 }) {
-  // A chosen gradient replaces the (missing) cover image.
-  const showGradient = !coverUrl && gradient && gradient !== 'none'
+  // A chosen gradient takes over the cover (even if an image is still uploaded).
+  const showGradient = Boolean(gradient && gradient !== 'none')
   return (
     <header
       className={`hero hero-${variant}`}
@@ -53,7 +53,7 @@ export default function Hero({
           <div className="hero-overlay" />
         </>
       )}
-      {coverUrl && (
+      {!showGradient && coverUrl && (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img

@@ -32,6 +32,38 @@ const HERO_GRADIENTS: { id: string; label: string; css: string }[] = [
   { id: 'dusk', label: 'Dusk', css: 'linear-gradient(135deg,#6366f1,#ec4899)' },
 ]
 
+const clampPct = (v: number) => Math.max(0, Math.min(100, v))
+
+/** A scaled, live preview of the hero cover (layout + image/gradient + position + overlay). */
+function CoverPreview({ f }: { f: DesignForm }) {
+  const g = f.heroCover.gradient
+  const usingGradient = g !== 'none'
+  const gradCss = HERO_GRADIENTS.find((x) => x.id === g)?.css
+  const variant = f.style.hero || 'split'
+  const bgStyle: React.CSSProperties = usingGradient
+    ? { background: gradCss }
+    : f.heroCoverUrl
+      ? {
+          backgroundImage: `url(${f.heroCoverUrl})`,
+          backgroundSize: f.heroCover.size === 'contain' ? 'contain' : 'cover',
+          backgroundPosition: `${f.heroCover.posX}% ${f.heroCover.posY}%`,
+          backgroundRepeat: 'no-repeat',
+        }
+      : { background: 'var(--bg-3)' }
+  return (
+    <div className={`cvp cvp-${variant}`}>
+      <div className="cvp-bg" style={bgStyle} />
+      <div className="cvp-overlay" style={{ opacity: (f.heroCover.overlay || 0) / 100 }} />
+      <div className="cvp-content">
+        <span className="cvp-name" />
+        <span className="cvp-name cvp-name-2" />
+        <span className="cvp-sub" />
+        <span className="cvp-btn" />
+      </div>
+    </div>
+  )
+}
+
 const SUBTABS = [
   { id: 'colors', label: 'الألوان', labelEn: 'Colors', icon: '🎨' },
   { id: 'background', label: 'الخلفية', labelEn: 'Background', icon: '🖼️' },
@@ -316,36 +348,92 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
           </>
         )}
 
-        {tab === 'cover' && (
-          <>
-            <div className="lbl" style={{ marginBottom: 6 }}>{tr('صورة الغلاف', 'Cover image')}</div>
-            <MediaUploader previewUrl={f.heroCoverUrl} onUploaded={(m) => set({ heroCoverId: m.id, heroCoverUrl: m.thumbUrl })} />
+        {tab === 'cover' &&
+          (() => {
+            const usingGradient = f.heroCover.gradient !== 'none'
+            return (
+              <div className="cover-tab">
+                {/* ── Live preview ── */}
+                <div className="cover-preview-col">
+                  <div className="lbl" style={{ marginBottom: 8 }}>{tr('معاينة حيّة', 'Live preview')}</div>
+                  <CoverPreview f={f} />
+                  <p className="cover-hint">{tr('ده شكل الغلاف بعد الحفظ.', 'This is how the cover will look after saving.')}</p>
+                </div>
 
-            <div className="lbl" style={{ marginTop: 18, marginBottom: 8 }}>
-              {tr('أو تدرّج لوني (يظهر لو مفيش صورة)', 'Or a colour gradient (used when there is no image)')}
-            </div>
-            <div className="hgp">
-              {HERO_GRADIENTS.map((g) => (
-                <button
-                  key={g.id}
-                  type="button"
-                  className={`hgp-swatch ${f.heroCover.gradient === g.id ? 'active' : ''} ${g.id === 'none' ? 'hgp-none' : ''}`}
-                  style={g.css ? { background: g.css } : undefined}
-                  onClick={() => setCover({ gradient: g.id })}
-                  title={g.label}
-                >
-                  {g.id === 'none' ? tr('بدون', 'None') : ''}
-                </button>
-              ))}
-            </div>
-            <div style={{ marginTop: 14 }} />
-            <Opt label={tr('الحجم', 'Size')} value={f.heroCover.size} options={['cover', 'contain']} onChange={(v) => setCover({ size: v })} />
-            <Slider label={tr('الموضع الأفقي', 'Horizontal position')} value={f.heroCover.posX} min={0} max={100} suffix="%" onChange={(v) => setCover({ posX: v })} />
-            <Slider label={tr('الموضع العمودي', 'Vertical position')} value={f.heroCover.posY} min={0} max={100} suffix="%" onChange={(v) => setCover({ posY: v })} />
-            <Slider label={tr('شدّة الطبقة السوداء', 'Overlay strength')} value={f.heroCover.overlay} min={0} max={100} suffix="%" onChange={(v) => setCover({ overlay: v })} />
-            <Slider label={tr('ارتفاع القسم', 'Section height')} value={f.heroCover.height} min={40} max={100} suffix="vh" onChange={(v) => setCover({ height: v })} />
-          </>
-        )}
+                {/* ── Controls ── */}
+                <div className="cover-ctrl-col">
+                  <div className="lbl">{tr('تخطيط القسم الرئيسي', 'Hero layout')}</div>
+                  <div className="cover-layouts">
+                    {LAYOUT_OPTIONS.hero.map((o) => (
+                      <button
+                        key={o}
+                        type="button"
+                        className={`cl-opt ${f.style.hero === o ? 'active' : ''}`}
+                        onClick={() => setStyle({ hero: o })}
+                      >
+                        {o}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="lbl" style={{ marginTop: 16 }}>{tr('مصدر الغلاف', 'Cover source')}</div>
+                  <div className="seg2">
+                    <button type="button" className={!usingGradient ? 'active' : ''} onClick={() => setCover({ gradient: 'none' })}>
+                      {tr('صورة', 'Image')}
+                    </button>
+                    <button
+                      type="button"
+                      className={usingGradient ? 'active' : ''}
+                      onClick={() => setCover({ gradient: f.heroCover.gradient !== 'none' ? f.heroCover.gradient : 'aurora' })}
+                    >
+                      {tr('تدرّج لوني', 'Gradient')}
+                    </button>
+                  </div>
+
+                  {usingGradient ? (
+                    <div className="hgp" style={{ marginTop: 12 }}>
+                      {HERO_GRADIENTS.filter((g) => g.id !== 'none').map((g) => (
+                        <button
+                          key={g.id}
+                          type="button"
+                          className={`hgp-swatch ${f.heroCover.gradient === g.id ? 'active' : ''}`}
+                          style={{ background: g.css }}
+                          onClick={() => setCover({ gradient: g.id })}
+                          title={g.label}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <>
+                      <div style={{ marginTop: 12 }} />
+                      <MediaUploader previewUrl={f.heroCoverUrl} onUploaded={(m) => set({ heroCoverId: m.id, heroCoverUrl: m.thumbUrl })} />
+                      {f.heroCoverUrl && (
+                        <button type="button" className="btn btn-danger" style={{ marginTop: 8 }} onClick={() => set({ heroCoverId: null, heroCoverUrl: null })}>
+                          {tr('حذف الصورة', 'Remove image')}
+                        </button>
+                      )}
+                      <Opt label={tr('ملء الإطار', 'Fit')} value={f.heroCover.size} options={['cover', 'contain']} onChange={(v) => setCover({ size: v })} />
+                      <div className="lbl">{tr('موضع الصورة', 'Image position')}</div>
+                      <div className="pos-pad">
+                        <button type="button" onClick={() => setCover({ posY: clampPct(f.heroCover.posY - 5) })} aria-label="up">↑</button>
+                        <div className="pos-pad-row">
+                          <button type="button" onClick={() => setCover({ posX: clampPct(f.heroCover.posX - 5) })} aria-label="left">←</button>
+                          <button type="button" className="pos-center" onClick={() => setCover({ posX: 50, posY: 50 })}>
+                            {f.heroCover.posX}% · {f.heroCover.posY}%
+                          </button>
+                          <button type="button" onClick={() => setCover({ posX: clampPct(f.heroCover.posX + 5) })} aria-label="right">→</button>
+                        </div>
+                        <button type="button" onClick={() => setCover({ posY: clampPct(f.heroCover.posY + 5) })} aria-label="down">↓</button>
+                      </div>
+                    </>
+                  )}
+
+                  <Slider label={tr('شدّة الطبقة السوداء', 'Overlay strength')} value={f.heroCover.overlay} min={0} max={100} suffix="%" onChange={(v) => setCover({ overlay: v })} />
+                  <Slider label={tr('ارتفاع القسم', 'Section height')} value={f.heroCover.height} min={40} max={100} suffix="vh" onChange={(v) => setCover({ height: v })} />
+                </div>
+              </div>
+            )
+          })()}
       </div>
 
       {toast && <div className="toast">{tr('تم الحفظ ✓', 'Saved ✓')}</div>}
