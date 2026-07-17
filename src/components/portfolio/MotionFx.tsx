@@ -25,28 +25,42 @@ export default function MotionFx({ anim, cursor }: { anim?: string; cursor?: str
     const hidden: HTMLElement[] = []
     for (const s of sections) {
       if (s.getBoundingClientRect().top > vh * 0.85) {
-        s.style.transition = 'opacity .6s ease, transform .6s cubic-bezier(.16,1,.3,1)'
+        // Snap-hide with a static inline opacity (no CSS transition — that fought
+        // the cursor rAF loop and never settled). The reveal uses WAAPI below.
         s.style.opacity = '0'
-        if (anim === 'fade-up') s.style.transform = 'translateY(26px)'
         hidden.push(s)
       }
     }
     if (hidden.length === 0) return
+    const reveal = (el: HTMLElement) => {
+      const from = anim === 'fade-up' ? 'translateY(26px)' : 'none'
+      el.style.opacity = '1'
+      el.animate(
+        [
+          { opacity: 0, transform: from },
+          { opacity: 1, transform: 'none' },
+        ],
+        { duration: 650, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'both' },
+      )
+    }
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
           if (e.isIntersecting) {
-            const el = e.target as HTMLElement
-            el.style.opacity = '1'
-            el.style.transform = 'none'
-            io.unobserve(el)
+            reveal(e.target as HTMLElement)
+            io.unobserve(e.target)
           }
         }
       },
       { threshold: 0.1, rootMargin: '0px 0px -6% 0px' },
     )
     hidden.forEach((s) => io.observe(s))
-    return () => io.disconnect()
+    // Safety net: if anything is still hidden after 2.5s (observer missed), show it.
+    const safety = window.setTimeout(() => hidden.forEach((s) => (s.style.opacity = '1')), 2500)
+    return () => {
+      io.disconnect()
+      window.clearTimeout(safety)
+    }
   }, [anim])
 
   // ── Dot-ring cursor ──
