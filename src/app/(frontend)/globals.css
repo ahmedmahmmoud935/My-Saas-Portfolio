@@ -2216,8 +2216,9 @@ body {
   width: 34px;
   height: 34px;
   border: 1.5px solid #fff;
+  /* No transform transition — MotionFx smooths the position via rAF; a CSS
+     transition on top of that makes the ring feel laggy. */
   transition:
-    transform 0.14s ease-out,
     width 0.2s,
     height 0.2s;
 }

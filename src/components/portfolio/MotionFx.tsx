@@ -2,19 +2,21 @@
 
 import React, { useEffect, useRef } from 'react'
 
+// Elements inside a section that cascade in (staggered) when it reveals.
+const STAGGER_SEL =
+  '.section-head, .project-card, .card, .tool, .exp-item, .chip, .cs-card, .achievement, .logo-item, .testimonial, .about-photo, .contact-info, .contact-card, .lp-card'
+
 /**
  * Applies the tenant's Motion settings on the client:
- *  - anim: scroll-reveal for sections (fade / fade-up)
- *  - cursor: a dot-ring custom cursor
+ *  - anim: scroll-reveal for sections + a staggered cascade of their contents
+ *  - cursor: a fast dot-ring custom cursor
  * Both are no-ops when set to their default/off value.
  */
 export default function MotionFx({ anim, cursor }: { anim?: string; cursor?: string }) {
   const dot = useRef<HTMLDivElement>(null)
   const ring = useRef<HTMLDivElement>(null)
 
-  // ── Scroll reveal (inline styles only — hides just the below-fold sections
-  //    at mount, reveals on scroll; no class toggling so it can't thrash, and
-  //    if this JS never runs the sections simply stay visible). ──
+  // ── Scroll reveal (WAAPI so it's independent of CSS transitions) ──
   useEffect(() => {
     if (!anim || anim === 'none') return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
@@ -22,27 +24,34 @@ export default function MotionFx({ anim, cursor }: { anim?: string; cursor?: str
     if (!root) return
     const sections = Array.from(root.querySelectorAll<HTMLElement>('.section'))
     const vh = window.innerHeight
+    const ease = 'cubic-bezier(.16,1,.3,1)'
+    const up = anim === 'fade-up'
     const hidden: HTMLElement[] = []
     for (const s of sections) {
-      if (s.getBoundingClientRect().top > vh * 0.85) {
-        // Snap-hide with a static inline opacity (no CSS transition — that fought
-        // the cursor rAF loop and never settled). The reveal uses WAAPI below.
+      if (s.getBoundingClientRect().top > vh * 0.82) {
         s.style.opacity = '0'
         hidden.push(s)
       }
     }
     if (hidden.length === 0) return
+
     const reveal = (el: HTMLElement) => {
-      const from = anim === 'fade-up' ? 'translateY(26px)' : 'none'
       el.style.opacity = '1'
-      el.animate(
-        [
-          { opacity: 0, transform: from },
-          { opacity: 1, transform: 'none' },
-        ],
-        { duration: 650, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'both' },
-      )
+      el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 500, easing: 'ease', fill: 'both' })
+      // Cascade the section's notable children for a motion you actually feel.
+      const items = Array.from(el.querySelectorAll<HTMLElement>(STAGGER_SEL)).slice(0, 14)
+      const targets = items.length ? items : [el]
+      targets.forEach((it, i) => {
+        it.animate(
+          [
+            { opacity: 0, transform: up ? 'translateY(34px)' : 'translateY(0)' },
+            { opacity: 1, transform: 'translateY(0)' },
+          ],
+          { duration: 620, delay: Math.min(i, 10) * 85, easing: ease, fill: 'both' },
+        )
+      })
     }
+
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
@@ -52,40 +61,44 @@ export default function MotionFx({ anim, cursor }: { anim?: string; cursor?: str
           }
         }
       },
-      { threshold: 0.1, rootMargin: '0px 0px -6% 0px' },
+      { threshold: 0.08, rootMargin: '0px 0px -8% 0px' },
     )
     hidden.forEach((s) => io.observe(s))
-    // Safety net: if anything is still hidden after 2.5s (observer missed), show it.
-    const safety = window.setTimeout(() => hidden.forEach((s) => (s.style.opacity = '1')), 2500)
+
+    // Safety net: reveal anything still hidden after 5s (e.g. observer missed).
+    const safety = window.setTimeout(() => {
+      io.disconnect()
+      hidden.forEach((s) => (s.style.opacity = '1'))
+    }, 5000)
     return () => {
       io.disconnect()
       window.clearTimeout(safety)
     }
   }, [anim])
 
-  // ── Dot-ring cursor ──
+  // ── Fast dot-ring cursor (position tracked in vars — no layout reads) ──
   useEffect(() => {
     if (cursor !== 'dot-ring') return
     if (window.matchMedia('(pointer: coarse)').matches) return // skip on touch
-    let rx = window.innerWidth / 2
-    let ry = window.innerHeight / 2
+    let mx = window.innerWidth / 2
+    let my = window.innerHeight / 2
+    let rx = mx
+    let ry = my
     let raf = 0
     const onMove = (e: MouseEvent) => {
-      if (dot.current) dot.current.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%,-50%)`
+      mx = e.clientX
+      my = e.clientY
+      if (dot.current) dot.current.style.transform = `translate(${mx}px, ${my}px) translate(-50%,-50%)`
     }
     const loop = () => {
-      const target = dot.current?.getBoundingClientRect()
-      if (target && ring.current) {
-        rx += (target.left - rx) * 0.18
-        ry += (target.top - ry) * 0.18
-        ring.current.style.transform = `translate(${rx}px, ${ry}px) translate(-50%,-50%)`
-      }
+      rx += (mx - rx) * 0.35
+      ry += (my - ry) * 0.35
+      if (ring.current) ring.current.style.transform = `translate(${rx}px, ${ry}px) translate(-50%,-50%)`
       raf = requestAnimationFrame(loop)
     }
     const over = (e: Event) => {
       const t = e.target as HTMLElement
-      if (t.closest('a, button')) ring.current?.classList.add('hover')
-      else ring.current?.classList.remove('hover')
+      ring.current?.classList.toggle('hover', !!t.closest('a, button'))
     }
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mouseover', over)
