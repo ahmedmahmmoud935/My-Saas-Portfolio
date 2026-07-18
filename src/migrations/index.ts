@@ -6,6 +6,7 @@ import * as migration_20260712_134348_add_expertise_layout from './20260712_1343
 import * as migration_20260712_141437_add_expertise_bg from './20260712_141437_add_expertise_bg';
 import * as migration_20260713_172121_add_light_colors from './20260713_172121_add_light_colors';
 import * as migration_20260713_220315_add_hero_gradient from './20260713_220315_add_hero_gradient';
+import * as migration_20260718_145333_add_user_activation from './20260718_145333_add_user_activation';
 
 export const migrations = [
   {
@@ -46,6 +47,11 @@ export const migrations = [
   {
     up: migration_20260713_220315_add_hero_gradient.up,
     down: migration_20260713_220315_add_hero_gradient.down,
-    name: '20260713_220315_add_hero_gradient'
+    name: '20260713_220315_add_hero_gradient',
+  },
+  {
+    up: migration_20260718_145333_add_user_activation.up,
+    down: migration_20260718_145333_add_user_activation.down,
+    name: '20260718_145333_add_user_activation'
   },
 ];

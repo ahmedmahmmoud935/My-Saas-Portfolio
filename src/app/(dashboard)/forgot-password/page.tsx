@@ -12,7 +12,7 @@ export default function ForgotPasswordPage() {
     e.preventDefault()
     setBusy(true)
     try {
-      await fetch('/api/users/forgot-password', {
+      await fetch('/api/request-reset', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),

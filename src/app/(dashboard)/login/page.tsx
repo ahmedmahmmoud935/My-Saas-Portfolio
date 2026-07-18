@@ -22,7 +22,9 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       })
       if (!res.ok) {
-        setErr('بيانات الدخول غير صحيحة')
+        const data = await res.json().catch(() => null)
+        const msg = data?.errors?.[0]?.message as string | undefined
+        setErr(msg || 'بيانات الدخول غير صحيحة')
         setBusy(false)
         return
       }

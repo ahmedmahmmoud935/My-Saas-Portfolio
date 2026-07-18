@@ -144,6 +144,10 @@ export interface User {
    * Owner can manage every tenant. Regular clients are scoped to their own tenant.
    */
   isOwner?: boolean | null;
+  activated?: boolean | null;
+  resetToken?: string | null;
+  resetCode?: string | null;
+  resetExp?: number | null;
   tenants?:
     | {
         tenant: number | Tenant;
@@ -873,6 +877,10 @@ export interface PayloadMigration {
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
   isOwner?: T;
+  activated?: T;
+  resetToken?: T;
+  resetCode?: T;
+  resetExp?: T;
   tenants?:
     | T
     | {
