@@ -64,6 +64,8 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
   const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
   const data = await getPortfolio(username, locale)
   if (!data) notFound()
+  // Suspended clients: hide the public site.
+  if ((data.tenant as { suspended?: boolean }).suspended) notFound()
 
   const { tenant, settings, projects, achievements, logos, testimonials } = data
   const content = settings?.content ?? {}

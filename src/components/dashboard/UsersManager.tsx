@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import PageHeader from './PageHeader'
-import { createClient, updateTenant, resendActivation } from '@/lib/owner-actions'
+import { createClient, updateTenant, resendActivation, setSuspended, deleteClient } from '@/lib/owner-actions'
 import { useDashLang } from './DashLang'
 
 type Client = {
@@ -13,6 +13,7 @@ type Client = {
   domain: string
   storageLimitMb: number
   storageUsedMb: number
+  suspended: boolean
   userId: number | null
   email: string
 }
@@ -52,6 +53,22 @@ export default function UsersManager({ clients }: { clients: Client[] }) {
     await resendActivation(c.email)
     alert(t('تم إرسال الرابط ✓', 'Link sent ✓'))
   }
+  async function toggleSuspend(c: Client) {
+    const on = !c.suspended
+    if (!confirm(on ? t('تعطيل حساب هذا العميل؟ مش هيقدر يدخل وموقعه هيتخفي.', 'Suspend this client? They cannot log in and their site is hidden.') : t('إعادة تفعيل الحساب؟', 'Re-enable this account?'))) return
+    await setSuspended(c.id, on)
+    router.refresh()
+  }
+  async function removeClient(c: Client) {
+    if (!confirm(`${t('حذف العميل نهائيًا', 'Permanently delete')} «${c.name}»؟\n${t('هيتحذف كل مشاريعه وصوره وحسابه — مفيش رجوع.', 'All their projects, media and account will be deleted — irreversible.')}`)) return
+    if (prompt(t('اكتب اسم المستخدم للتأكيد:', 'Type the username to confirm:')) !== c.slug) {
+      alert(t('الاسم غير مطابق — اتلغى الحذف.', 'Username did not match — delete cancelled.'))
+      return
+    }
+    await deleteClient(c.id)
+    alert(t('تم الحذف ✓', 'Deleted ✓'))
+    router.refresh()
+  }
 
   return (
     <div>
@@ -64,7 +81,7 @@ export default function UsersManager({ clients }: { clients: Client[] }) {
 
       <div className="proj-manage-grid" style={{ gridTemplateColumns: '1fr' }}>
         {clients.map((c) => (
-          <ClientRow key={c.id} c={c} onSaveQuota={saveQuota} onPassword={() => resendLink(c)} />
+          <ClientRow key={c.id} c={c} onSaveQuota={saveQuota} onPassword={() => resendLink(c)} onSuspend={() => toggleSuspend(c)} onDelete={() => removeClient(c)} />
         ))}
       </div>
 
@@ -103,20 +120,25 @@ function ClientRow({
   c,
   onSaveQuota,
   onPassword,
+  onSuspend,
+  onDelete,
 }: {
   c: Client
   onSaveQuota: (c: Client, limit: number, domain: string) => void
   onPassword: () => void
+  onSuspend: () => void
+  onDelete: () => void
 }) {
   const [limit, setLimit] = useState(c.storageLimitMb)
   const { t } = useDashLang()
   const [domain, setDomain] = useState(c.domain)
   const pct = Math.min(100, Math.round((c.storageUsedMb / Math.max(1, limit)) * 100))
   return (
-    <div className="panel">
+    <div className="panel" style={c.suspended ? { opacity: 0.7, borderColor: 'var(--danger)' } : undefined}>
       <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
         <div style={{ textAlign: 'end' }}>
           <strong>{c.name}</strong> <span style={{ color: 'var(--sub)' }}>/{c.slug}</span>
+          {c.suspended && <span className="pill" style={{ marginInlineStart: 8, color: 'var(--danger)', borderColor: 'var(--danger)' }}>{t('موقوف', 'Suspended')}</span>}
           <div style={{ color: 'var(--sub)', fontSize: 12 }} dir="ltr">{c.email}</div>
         </div>
         <a className="pill" href={`/${c.slug}`} target="_blank" rel="noreferrer">{t('عرض', 'View')}</a>
@@ -133,9 +155,11 @@ function ClientRow({
           <input className="field" dir="ltr" value={domain} onChange={(e) => setDomain(e.target.value)} style={{ textAlign: 'start' }} />
         </div>
       </div>
-      <div style={{ display: 'flex', gap: 8, marginTop: 10, justifyContent: 'flex-start' }}>
+      <div style={{ display: 'flex', gap: 8, marginTop: 10, justifyContent: 'flex-start', flexWrap: 'wrap' }}>
         <button className="btn btn-primary" onClick={() => onSaveQuota(c, limit, domain)}>{t('💾 حفظ', '💾 Save')}</button>
         <button className="btn btn-ghost" onClick={onPassword} disabled={!c.userId}>{t('📧 إرسال رابط كلمة السر', '📧 Send password link')}</button>
+        <button className="btn btn-ghost" onClick={onSuspend}>{c.suspended ? t('▶ تفعيل', '▶ Enable') : t('⏸ تعطيل', '⏸ Suspend')}</button>
+        <button className="btn btn-danger" onClick={onDelete} style={{ marginInlineStart: 'auto' }}>{t('🗑 حذف', '🗑 Delete')}</button>
       </div>
     </div>
   )

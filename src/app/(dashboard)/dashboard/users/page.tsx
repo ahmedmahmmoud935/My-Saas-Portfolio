@@ -44,6 +44,7 @@ export default async function UsersPage() {
     domain: t.domain ?? '',
     storageLimitMb: t.storageLimitMb ?? 500,
     storageUsedMb: t.storageUsedMb ?? 0,
+    suspended: Boolean((t as { suspended?: boolean }).suspended),
     userId: userByTenant.get(t.id)?.id ?? null,
     email: userByTenant.get(t.id)?.email ?? '',
   }))

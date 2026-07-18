@@ -54,6 +54,43 @@ export async function updateTenant(
   return { ok: true }
 }
 
+/** Suspend or re-enable a client (blocks login + hides their public site). */
+export async function setSuspended(tenantId: number, suspended: boolean) {
+  const ctx = await ownerCtx()
+  await ctx.payload.update({ collection: 'tenants', id: tenantId, data: { suspended } })
+  return { ok: true }
+}
+
+/** Permanently delete a client: all their content, media, users, then the tenant. */
+export async function deleteClient(tenantId: number) {
+  const ctx = await ownerCtx()
+  const scoped = [
+    'projects',
+    'logos',
+    'achievements',
+    'testimonials',
+    'articles',
+    'visits',
+    'site-settings',
+    'media',
+  ] as const
+  for (const collection of scoped) {
+    try {
+      await ctx.payload.delete({ collection, where: { tenant: { equals: tenantId } } })
+    } catch (e) {
+      console.error(`[deleteClient] ${collection}`, e)
+    }
+  }
+  // Users linked to this tenant.
+  try {
+    await ctx.payload.delete({ collection: 'users', where: { 'tenants.tenant': { equals: tenantId } } })
+  } catch (e) {
+    console.error('[deleteClient] users', e)
+  }
+  await ctx.payload.delete({ collection: 'tenants', id: tenantId })
+  return { ok: true }
+}
+
 export async function setClientPassword(userId: number, password: string) {
   const ctx = await ownerCtx()
   await ctx.payload.update({ collection: 'users', id: userId, data: { password } })

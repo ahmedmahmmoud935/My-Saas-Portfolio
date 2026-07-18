@@ -59,5 +59,12 @@ export const Tenants: CollectionConfig = {
       label: 'Storage used (MB)',
       admin: { readOnly: true },
     },
+    {
+      name: 'suspended',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Suspended',
+      admin: { description: 'When on: the client cannot log in and their public site is hidden.' },
+    },
   ],
 }

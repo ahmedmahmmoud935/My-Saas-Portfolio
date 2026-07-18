@@ -16,9 +16,26 @@ export const Users: CollectionConfig = {
     // Block login until the client has activated (set their password via the
     // emailed link/code). Owners and already-activated users pass through.
     beforeLogin: [
-      ({ user }) => {
-        if (!user?.activated && !user?.isOwner) {
+      async ({ user, req }) => {
+        if (!user) return
+        if (user.isOwner) return
+        if (!user.activated) {
           throw new Error('لازم تفعّل حسابك أولًا من الرابط اللي وصل على إيميلك.')
+        }
+        // Block login if the client's tenant is suspended.
+        const tenantIds = (user.tenants ?? [])
+          .map((t: { tenant?: number | { id: number } }) =>
+            typeof t.tenant === 'object' ? t.tenant?.id : t.tenant,
+          )
+          .filter(Boolean)
+        if (tenantIds.length) {
+          const res = await req.payload.find({
+            collection: 'tenants',
+            where: { and: [{ id: { in: tenantIds } }, { suspended: { equals: true } }] },
+            limit: 1,
+            overrideAccess: true,
+          })
+          if (res.docs.length) throw new Error('حسابك موقوف حاليًا. تواصل مع الإدارة.')
         }
       },
     ],

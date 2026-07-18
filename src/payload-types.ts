@@ -190,6 +190,10 @@ export interface Tenant {
   domain?: string | null;
   storageLimitMb?: number | null;
   storageUsedMb?: number | null;
+  /**
+   * When on: the client cannot log in and their public site is hidden.
+   */
+  suspended?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -914,6 +918,7 @@ export interface TenantsSelect<T extends boolean = true> {
   domain?: T;
   storageLimitMb?: T;
   storageUsedMb?: T;
+  suspended?: T;
   updatedAt?: T;
   createdAt?: T;
 }
