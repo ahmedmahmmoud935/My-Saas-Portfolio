@@ -2,77 +2,15 @@
 
 import React, { useEffect, useRef } from 'react'
 
-// Elements inside a section that cascade in (staggered) when it reveals.
-const STAGGER_SEL =
-  '.section-head, .project-card, .card, .tool, .exp-item, .chip, .cs-card, .achievement, .logo-item, .testimonial, .about-photo, .contact-info, .contact-card, .lp-card'
-
 /**
- * Applies the tenant's Motion settings on the client:
- *  - anim: scroll-reveal for sections + a staggered cascade of their contents
- *  - cursor: a fast dot-ring custom cursor
- * Both are no-ops when set to their default/off value.
+ * The tenant's dot-ring custom cursor (a fast dot + a trailing ring).
+ * Entrance/scroll motion is done in CSS (data-anim on .pf-root) so it never
+ * depends on JS timing. No-op unless cursor === 'dot-ring'.
  */
-export default function MotionFx({ anim, cursor }: { anim?: string; cursor?: string }) {
+export default function MotionFx({ cursor }: { anim?: string; cursor?: string }) {
   const dot = useRef<HTMLDivElement>(null)
   const ring = useRef<HTMLDivElement>(null)
 
-  // ── Scroll reveal — the observer itself decides what's below the fold (so it
-  //    is layout/image-load aware, unlike a one-shot getBoundingClientRect). ──
-  useEffect(() => {
-    if (!anim || anim === 'none') return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const root = document.querySelector('.pf-root')
-    if (!root) return
-    const ease = 'cubic-bezier(.16,1,.3,1)'
-    const up = anim === 'fade-up'
-    const seen = new WeakSet<Element>()
-
-    const reveal = (el: HTMLElement) => {
-      el.style.opacity = '1'
-      const items = Array.from(el.querySelectorAll<HTMLElement>(STAGGER_SEL)).slice(0, 14)
-      const targets = items.length ? items : [el]
-      targets.forEach((it, i) => {
-        it.animate(
-          [
-            { opacity: 0, transform: up ? 'translateY(36px)' : 'none' },
-            { opacity: 1, transform: 'none' },
-          ],
-          { duration: 640, delay: Math.min(i, 10) * 85, easing: ease, fill: 'both' },
-        )
-      })
-    }
-
-    const sections = Array.from(root.querySelectorAll<HTMLElement>('.section'))
-    // Hide every section up-front (the hero fills the first screen, so nothing
-    // visible flashes) and let the observer fade each one in when it arrives —
-    // robust against images changing the layout after mount.
-    sections.forEach((s) => (s.style.opacity = '0'))
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting && !seen.has(e.target)) {
-            seen.add(e.target)
-            reveal(e.target as HTMLElement)
-            io.unobserve(e.target)
-          }
-        }
-      },
-      { threshold: 0.08, rootMargin: '0px 0px -10% 0px' },
-    )
-    sections.forEach((s) => io.observe(s))
-
-    // Safety net: reveal everything after 6s no matter what.
-    const safety = window.setTimeout(() => {
-      io.disconnect()
-      sections.forEach((s) => (s.style.opacity = '1'))
-    }, 6000)
-    return () => {
-      io.disconnect()
-      window.clearTimeout(safety)
-    }
-  }, [anim])
-
-  // ── Fast dot-ring cursor (position tracked in vars — no layout reads) ──
   useEffect(() => {
     if (cursor !== 'dot-ring') return
     if (window.matchMedia('(pointer: coarse)').matches) return // skip on touch

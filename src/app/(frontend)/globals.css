@@ -2185,7 +2185,61 @@ body {
   --font-montserrat: var(--f-bebas);
 }
 
-/* ═══ Motion — scroll reveal handled inline by MotionFx (no CSS needed) ════ */
+/* ═══ Motion — entrance animations (pure CSS, play on load) ═══════════════ */
+@keyframes pfUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes pfFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* Sections fade/slide in; the first few are staggered so it reads as a cascade. */
+.pf-root[data-anim='fade-up'] .section {
+  animation: pfUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.pf-root[data-anim='fade'] .section {
+  animation: pfFade 0.7s ease both;
+}
+.pf-root[data-anim='fade-up'] .section:nth-of-type(2),
+.pf-root[data-anim='fade'] .section:nth-of-type(2) {
+  animation-delay: 0.08s;
+}
+.pf-root[data-anim='fade-up'] .section:nth-of-type(3),
+.pf-root[data-anim='fade'] .section:nth-of-type(3) {
+  animation-delay: 0.16s;
+}
+/* Hero content entrance (staggered). Split keeps its own image/text entrance. */
+.pf-root[data-anim='fade-up'] .hero:not(.hero-split) .hero-name,
+.pf-root[data-anim='fade'] .hero:not(.hero-split) .hero-name {
+  animation: pfUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.pf-root[data-anim='fade-up'] .hero:not(.hero-split) .hero-eyebrow,
+.pf-root[data-anim='fade'] .hero:not(.hero-split) .hero-eyebrow {
+  animation: pfUp 0.85s 0.12s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.pf-root[data-anim='fade-up'] .hero:not(.hero-split) .hero-btns,
+.pf-root[data-anim='fade'] .hero:not(.hero-split) .hero-btns {
+  animation: pfUp 0.85s 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pf-root[data-anim] .section,
+  .pf-root[data-anim] .hero-name,
+  .pf-root[data-anim] .hero-eyebrow,
+  .pf-root[data-anim] .hero-btns {
+    animation: none;
+  }
+}
 
 /* ═══ Motion — custom dot-ring cursor ═════════════════════════════════════ */
 .pf-root[data-cursor='dot-ring'] {
