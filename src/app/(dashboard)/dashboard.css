@@ -472,6 +472,17 @@ button {
   text-align: center;
   margin-top: 10px;
 }
+.login-link {
+  display: block;
+  text-align: center;
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--sub);
+  text-decoration: none;
+}
+.login-link:hover {
+  color: var(--accent);
+}
 
 .toast {
   position: fixed;

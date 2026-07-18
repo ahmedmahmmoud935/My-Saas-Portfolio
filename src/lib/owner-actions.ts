@@ -12,7 +12,6 @@ export async function createClient(input: {
   name: string
   slug: string
   email: string
-  password: string
   storageLimitMb: number
 }) {
   const ctx = await ownerCtx()
@@ -24,12 +23,25 @@ export async function createClient(input: {
     collection: 'users',
     data: {
       email: input.email,
-      password: input.password,
+      // Unusable random password — the client sets their own via the emailed link.
+      password: `${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}A9!`,
       name: input.name,
       tenants: [{ tenant: tenant.id }],
     },
   })
+  // Email the client a "set your password" link (this also proves email ownership).
+  await ctx.payload.forgotPassword({
+    collection: 'users',
+    data: { email: input.email },
+  })
   return { ok: true, id: tenant.id }
+}
+
+/** Re-send the set-password / activation link to an existing client. */
+export async function resendActivation(email: string) {
+  const ctx = await ownerCtx()
+  await ctx.payload.forgotPassword({ collection: 'users', data: { email } })
+  return { ok: true }
 }
 
 export async function updateTenant(

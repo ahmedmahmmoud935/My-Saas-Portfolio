@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -58,6 +59,9 @@ export default function LoginPage() {
           {busy ? '...' : 'دخول'}
         </button>
         {err && <div className="login-err">{err}</div>}
+        <Link href="/forgot-password" className="login-link">
+          نسيت كلمة السر؟
+        </Link>
       </form>
     </div>
   )

@@ -7,6 +7,7 @@ import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
+import { resendEmailAdapter } from './lib/email'
 import { Users } from './collections/Users'
 import { Tenants } from './collections/Tenants'
 import { Media } from './collections/Media'
@@ -35,6 +36,7 @@ export default buildConfig({
       titleSuffix: '— ViralPX',
     },
   },
+  email: resendEmailAdapter,
   collections: [
     Users,
     Tenants,

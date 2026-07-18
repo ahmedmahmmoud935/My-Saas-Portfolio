@@ -1,4 +1,7 @@
 import type { CollectionConfig } from 'payload'
+import { passwordEmailHTML } from '../lib/email'
+
+const SITE = process.env.NEXT_PUBLIC_SERVER_URL || 'https://viralpx.com'
 
 /**
  * Clients + owner. Payload's built-in auth replaces the old plaintext-password
@@ -12,7 +15,15 @@ export const Users: CollectionConfig = {
     useAsTitle: 'email',
     defaultColumns: ['email', 'name', 'isOwner'],
   },
-  auth: true,
+  auth: {
+    // Set/reset password via a one-time link emailed to the client. Used both
+    // for first-time onboarding and the "forgot password" flow.
+    forgotPassword: {
+      expiration: 1000 * 60 * 60 * 24 * 3, // link valid for 3 days
+      generateEmailSubject: () => 'تعيين كلمة سر ViralPX',
+      generateEmailHTML: (args) => passwordEmailHTML(`${SITE}/set-password?token=${args?.token ?? ''}`),
+    },
+  },
   fields: [
     {
       name: 'name',

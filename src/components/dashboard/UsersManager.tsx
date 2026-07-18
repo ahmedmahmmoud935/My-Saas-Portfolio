@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import PageHeader from './PageHeader'
-import { createClient, updateTenant, setClientPassword } from '@/lib/owner-actions'
+import { createClient, updateTenant, resendActivation } from '@/lib/owner-actions'
 import { useDashLang } from './DashLang'
 
 type Client = {
@@ -22,10 +22,10 @@ export default function UsersManager({ clients }: { clients: Client[] }) {
   const { t } = useDashLang()
   const [busy, setBusy] = useState(false)
   const [creating, setCreating] = useState(false)
-  const [nc, setNc] = useState({ name: '', slug: '', email: '', password: '', storageLimitMb: 500 })
+  const [nc, setNc] = useState({ name: '', slug: '', email: '', storageLimitMb: 500 })
 
   async function create() {
-    if (!nc.name || !nc.slug || !nc.email || !nc.password) {
+    if (!nc.name || !nc.slug || !nc.email) {
       alert(t('املأ كل الحقول', 'Fill in all fields'))
       return
     }
@@ -33,7 +33,8 @@ export default function UsersManager({ clients }: { clients: Client[] }) {
     try {
       await createClient(nc)
       setCreating(false)
-      setNc({ name: '', slug: '', email: '', password: '', storageLimitMb: 500 })
+      setNc({ name: '', slug: '', email: '', storageLimitMb: 500 })
+      alert(t('تم الإنشاء ✓ اتبعت للعميل رابط لتعيين كلمة السر', 'Created ✓ a set-password link was emailed to the client'))
       router.refresh()
     } catch {
       alert(t('فشل الإنشاء (تأكد إن الـ slug/الإيميل غير مكرّرين)', 'Creation failed (check the slug/email are not duplicated)'))
@@ -46,12 +47,10 @@ export default function UsersManager({ clients }: { clients: Client[] }) {
     await updateTenant(c.id, { storageLimitMb, domain: domain || null })
     router.refresh()
   }
-  async function changePassword(c: Client) {
-    if (!c.userId) return
-    const p = prompt(`${t('كلمة مرور جديدة لـ', 'New password for')} ${c.email}:`)
-    if (!p) return
-    await setClientPassword(c.userId, p)
-    alert(t('تم تغيير كلمة المرور ✓', 'Password changed ✓'))
+  async function resendLink(c: Client) {
+    if (!confirm(`${t('إرسال رابط تعيين كلمة السر إلى', 'Send a set-password link to')} ${c.email}؟`)) return
+    await resendActivation(c.email)
+    alert(t('تم إرسال الرابط ✓', 'Link sent ✓'))
   }
 
   return (
@@ -65,7 +64,7 @@ export default function UsersManager({ clients }: { clients: Client[] }) {
 
       <div className="proj-manage-grid" style={{ gridTemplateColumns: '1fr' }}>
         {clients.map((c) => (
-          <ClientRow key={c.id} c={c} onSaveQuota={saveQuota} onPassword={() => changePassword(c)} />
+          <ClientRow key={c.id} c={c} onSaveQuota={saveQuota} onPassword={() => resendLink(c)} />
         ))}
       </div>
 
@@ -83,8 +82,9 @@ export default function UsersManager({ clients }: { clients: Client[] }) {
               <input className="field" dir="ltr" value={nc.slug} onChange={(e) => setNc({ ...nc, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') })} style={{ textAlign: 'start' }} />
               <label className="lbl">{t('الإيميل', 'Email')}</label>
               <input className="field" dir="ltr" value={nc.email} onChange={(e) => setNc({ ...nc, email: e.target.value })} style={{ textAlign: 'start' }} />
-              <label className="lbl">{t('كلمة المرور', 'Password')}</label>
-              <input className="field" dir="ltr" value={nc.password} onChange={(e) => setNc({ ...nc, password: e.target.value })} style={{ textAlign: 'start' }} />
+              <p className="lbl" style={{ color: 'var(--sub)', marginTop: 4 }}>
+                {t('هيوصل للعميل رابط على إيميله لتعيين كلمة السر بنفسه.', 'The client gets an email link to set their own password.')}
+              </p>
               <label className="lbl">{t('حد التخزين (MB)', 'Storage limit (MB)')}</label>
               <input className="field" type="number" value={nc.storageLimitMb} onChange={(e) => setNc({ ...nc, storageLimitMb: Number(e.target.value) })} />
             </div>
@@ -135,7 +135,7 @@ function ClientRow({
       </div>
       <div style={{ display: 'flex', gap: 8, marginTop: 10, justifyContent: 'flex-start' }}>
         <button className="btn btn-primary" onClick={() => onSaveQuota(c, limit, domain)}>{t('💾 حفظ', '💾 Save')}</button>
-        <button className="btn btn-ghost" onClick={onPassword} disabled={!c.userId}>{t('🔑 كلمة المرور', '🔑 Password')}</button>
+        <button className="btn btn-ghost" onClick={onPassword} disabled={!c.userId}>{t('📧 إرسال رابط كلمة السر', '📧 Send password link')}</button>
       </div>
     </div>
   )
