@@ -42,27 +42,23 @@ export default function MotionFx({ anim, cursor }: { anim?: string; cursor?: str
       })
     }
 
+    const sections = Array.from(root.querySelectorAll<HTMLElement>('.section'))
+    // Hide every section up-front (the hero fills the first screen, so nothing
+    // visible flashes) and let the observer fade each one in when it arrives —
+    // robust against images changing the layout after mount.
+    sections.forEach((s) => (s.style.opacity = '0'))
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
-          const el = e.target as HTMLElement
-          if (!seen.has(el)) {
-            // First time we see it: if it's already on screen, leave it alone;
-            // if it's below the fold, hide it now so it can fade in on scroll.
-            seen.add(el)
-            if (e.isIntersecting) io.unobserve(el)
-            else el.style.opacity = '0'
-            continue
-          }
-          if (e.isIntersecting) {
-            reveal(el)
-            io.unobserve(el)
+          if (e.isIntersecting && !seen.has(e.target)) {
+            seen.add(e.target)
+            reveal(e.target as HTMLElement)
+            io.unobserve(e.target)
           }
         }
       },
       { threshold: 0.08, rootMargin: '0px 0px -10% 0px' },
     )
-    const sections = Array.from(root.querySelectorAll<HTMLElement>('.section'))
     sections.forEach((s) => io.observe(s))
 
     // Safety net: reveal everything after 6s no matter what.
