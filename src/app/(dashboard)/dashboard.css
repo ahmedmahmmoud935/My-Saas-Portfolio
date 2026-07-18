@@ -1197,37 +1197,58 @@ textarea.field {
 }
 
 /* Theme sub-tabs (Colors / Backgrounds / Components / Fonts / Motion) */
+/* Theme sub-tabs = a compact segmented control inside a track, so it reads as
+   clearly nested/secondary vs the solid main tabs above it. */
 .design-subtabs {
-  display: flex;
+  display: inline-flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 16px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--border);
+  gap: 2px;
+  margin-bottom: 20px;
+  padding: 4px;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: 12px;
 }
 .design-subtabs .dst {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 7px 15px;
   border-radius: 8px;
-  border: 1px solid transparent;
+  border: none;
   background: transparent;
   color: var(--sub);
   font: inherit;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s;
+  transition:
+    color 0.15s,
+    background 0.15s;
 }
 .design-subtabs .dst:hover {
   color: var(--text);
-  background: var(--bg-3);
 }
 .design-subtabs .dst.active {
-  color: var(--accent);
-  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: #fff;
+  background: var(--accent);
+}
+/* Colour/background columns become distinct cards for a tidier layout. */
+.de-cols > .de-group {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 18px 8px;
+  margin-bottom: 0;
+}
+.de-cols > .de-group > .de-group-title {
+  border-bottom: none;
+  margin-bottom: 14px;
+  padding-bottom: 0;
+  font-size: 13px;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text);
 }
 
 /* Two-column layout so panels use horizontal space (stacks on narrow screens) */

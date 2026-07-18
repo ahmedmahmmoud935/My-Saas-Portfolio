@@ -262,6 +262,34 @@ const PATHS: Record<string, React.ReactNode> = {
       {P('M10 18h4')}
     </>
   ),
+  home: (
+    <>
+      {P('M3 10.5 12 3l9 7.5')}
+      {P('M5 9.5V21h14V9.5')}
+      {P('M10 21v-6h4v6')}
+    </>
+  ),
+  star: P('M12 3l2.6 5.6 6 .8-4.3 4.2 1 6L12 17.3 6.7 19.6l1-6L3.4 9.4l6-.8L12 3z'),
+  briefcase: (
+    <>
+      <rect x="2" y="7" width="20" height="14" rx="2" />
+      {P('M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2')}
+      {P('M2 13h20')}
+    </>
+  ),
+  wrench: P('M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.8-.7-.7-2.8 2.5-2.5z'),
+  mail: (
+    <>
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      {P('M3 6.5 12 13l9-6.5')}
+    </>
+  ),
+  sparkles: (
+    <>
+      {P('M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z')}
+      {P('M19 14l.7 2.1L22 17l-2.3.9L19 20l-.7-2.1L16 17l2.3-.9L19 14z')}
+    </>
+  ),
 }
 
 export default function NavIcon({ id, size = 20 }: { id: string; size?: number }) {

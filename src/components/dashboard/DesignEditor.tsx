@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import PageHeader from './PageHeader'
 import MediaUploader from './MediaUploader'
 import LayoutPicker from './LayoutPicker'
+import NavIcon from './icons'
 import { saveDesign } from '@/lib/design-actions'
 import { useDashLang } from './DashLang'
 import {
@@ -66,25 +67,25 @@ function CoverPreview({ f }: { f: DesignForm }) {
 
 // Top-level tabs: the shared Theme, then one tab per page section.
 const TOP_TABS = [
-  { id: 'theme', ar: 'الثيم', en: 'Theme', icon: '🎨' },
-  { id: 'hero', ar: 'الرئيسية', en: 'Hero', icon: '🏠' },
-  { id: 'about', ar: 'عن النفس', en: 'About', icon: '👤' },
-  { id: 'projects', ar: 'المشاريع', en: 'Projects', icon: '🗂️' },
-  { id: 'expertise', ar: 'الخدمات', en: 'Services', icon: '⭐' },
-  { id: 'exp', ar: 'الخبرات', en: 'Experience', icon: '💼' },
-  { id: 'tools', ar: 'الأدوات', en: 'Tools', icon: '🧰' },
-  { id: 'skills', ar: 'المهارات', en: 'Skills', icon: '📊' },
-  { id: 'contact', ar: 'التواصل', en: 'Contact', icon: '✉️' },
+  { id: 'theme', ar: 'الثيم', en: 'Theme', icon: 'gem' },
+  { id: 'hero', ar: 'الرئيسية', en: 'Hero', icon: 'home' },
+  { id: 'about', ar: 'عن النفس', en: 'About', icon: 'users' },
+  { id: 'projects', ar: 'المشاريع', en: 'Projects', icon: 'projects' },
+  { id: 'expertise', ar: 'الخدمات', en: 'Services', icon: 'star' },
+  { id: 'exp', ar: 'الخبرات', en: 'Experience', icon: 'briefcase' },
+  { id: 'tools', ar: 'الأدوات', en: 'Tools', icon: 'wrench' },
+  { id: 'skills', ar: 'المهارات', en: 'Skills', icon: 'analytics' },
+  { id: 'contact', ar: 'التواصل', en: 'Contact', icon: 'mail' },
 ] as const
 
 type TopTab = (typeof TOP_TABS)[number]['id']
 
 const THEME_SUBS = [
-  { id: 'colors', ar: 'الألوان', en: 'Colors', icon: '🎨' },
-  { id: 'background', ar: 'الخلفيات', en: 'Backgrounds', icon: '🖼️' },
-  { id: 'components', ar: 'المكوّنات', en: 'Components', icon: '🔘' },
-  { id: 'fonts', ar: 'الخطوط', en: 'Fonts', icon: '🔤' },
-  { id: 'motion', ar: 'الحركة', en: 'Motion', icon: '✨' },
+  { id: 'colors', ar: 'الألوان', en: 'Colors', icon: 'palette' },
+  { id: 'background', ar: 'الخلفيات', en: 'Backgrounds', icon: 'image' },
+  { id: 'components', ar: 'المكوّنات', en: 'Components', icon: 'grid' },
+  { id: 'fonts', ar: 'الخطوط', en: 'Fonts', icon: 'text' },
+  { id: 'motion', ar: 'الحركة', en: 'Motion', icon: 'sparkles' },
 ] as const
 
 type ThemeSub = (typeof THEME_SUBS)[number]['id']
@@ -227,7 +228,7 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
       <div className="design-tabs de-toptabs">
         {TOP_TABS.map((t) => (
           <button key={t.id} className={`dt ${tab === t.id ? 'active' : ''}`} onClick={() => setTab(t.id)}>
-            <span aria-hidden>{t.icon}</span>
+            <NavIcon id={t.icon} size={16} />
             {tr(t.ar, t.en)}
           </button>
         ))}
@@ -239,7 +240,7 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
           <div className="design-subtabs">
             {THEME_SUBS.map((s) => (
               <button key={s.id} className={`dst ${sub === s.id ? 'active' : ''}`} onClick={() => setSub(s.id)}>
-                <span aria-hidden>{s.icon}</span>
+                <NavIcon id={s.icon} size={15} />
                 {tr(s.ar, s.en)}
               </button>
             ))}
