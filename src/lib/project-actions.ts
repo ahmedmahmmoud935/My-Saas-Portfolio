@@ -277,3 +277,94 @@ export async function importFromBehance(token: string) {
   await ctx.payload.delete({ collection: 'imports', id: row.id, overrideAccess: true }).catch(() => {})
   return { ok: true, id: created.id }
 }
+
+/**
+ * Best-effort server-side import from a Behance project URL. Behance blocks a
+ * lot server-side, so this parses the page's embedded data for every
+ * project_modules image + any youtube/vimeo embeds. The bookmarklet remains the
+ * complete path; this is a convenience for simple projects.
+ */
+export async function importBehanceUrl(rawUrl: string) {
+  const ctx = await getDashboardContext()
+  if (!ctx) throw new Error('unauthorized')
+
+  const url = rawUrl.trim()
+  if (!/^https?:\/\/(www\.)?behance\.net\/gallery\//i.test(url)) {
+    return { ok: false as const, error: 'bad-url' as const }
+  }
+
+  let html = ''
+  try {
+    const r = await fetch(url, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36',
+        Referer: 'https://www.behance.net/',
+        Accept: 'text/html,application/xhtml+xml',
+      },
+    })
+    if (!r.ok) return { ok: false as const, error: 'blocked' as const }
+    html = await r.text()
+  } catch {
+    return { ok: false as const, error: 'blocked' as const }
+  }
+
+  const meta = (prop: string) => {
+    const m = html.match(new RegExp(`<meta[^>]+property=["']${prop}["'][^>]+content=["']([^"']+)["']`, 'i'))
+    return m?.[1] || ''
+  }
+  const title = meta('og:title').split('::')[0].split('|')[0].trim() || 'Behance import'
+
+  // Every project_modules image URL embedded in the page, in appearance order.
+  const seen = new Set<string>()
+  const images: { url: string; i: number }[] = []
+  const re = /https:\\?\/\\?\/mir-[a-z0-9-]*\.behance\.net\/[^"'\\\s)]*?project_modules[^"'\\\s)]*/gi
+  let mm: RegExpExecArray | null
+  while ((mm = re.exec(html))) {
+    let u = mm[0].replace(/\\\//g, '/').split('?')[0]
+    if (/\/(profiles|users)\//.test(u) || /avatar/.test(u)) continue
+    u = u.replace(/\/(disp|115|202|404|disp_500|max_1200|max_3840|source)\//, '/source/')
+    if (seen.has(u)) continue
+    seen.add(u)
+    images.push({ url: u, i: mm.index })
+  }
+
+  // Embeds (youtube / vimeo).
+  const embeds: { url: string; i: number }[] = []
+  const eRe = /https:\\?\/\\?\/(?:www\.youtube\.com\/embed\/[\w-]+|player\.vimeo\.com\/video\/\d+)[^"'\\\s)]*/gi
+  let em: RegExpExecArray | null
+  while ((em = eRe.exec(html))) {
+    const u = em[0].replace(/\\\//g, '/')
+    if (embeds.some((x) => x.url === u)) continue
+    embeds.push({ url: u, i: em.index })
+  }
+
+  const ordered = [...images.map((x) => ({ ...x, kind: 'img' as const })), ...embeds.map((x) => ({ ...x, kind: 'embed' as const }))].sort((a, b) => a.i - b.i)
+
+  let counter = 0
+  let coverId: number | null = null
+  const modules: ModuleInput[] = []
+  for (const item of ordered.slice(0, 80)) {
+    if (item.kind === 'img') {
+      const id = await uploadImageSrc(ctx, item.url, counter++)
+      if (id) {
+        modules.push({ type: 'image', srcId: id })
+        coverId ??= id
+      }
+    } else {
+      modules.push({ type: 'video', embedUrl: item.url })
+    }
+  }
+
+  if (modules.length === 0) return { ok: false as const, error: 'empty' as const }
+
+  const created = await saveProject({
+    title,
+    mediaType: 'image',
+    projectType: 'free',
+    coverId,
+    modules,
+    published: false,
+  })
+  return { ok: true as const, id: created.id }
+}
