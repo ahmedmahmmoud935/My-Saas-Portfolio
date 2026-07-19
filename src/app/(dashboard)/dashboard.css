@@ -1607,3 +1607,49 @@ textarea.field {
   font-variant-numeric: tabular-nums;
   color: var(--sub) !important;
 }
+
+/* ── Behance import modal ─────────────────────────────────────────────────── */
+.bh-step {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+.bh-num {
+  flex: 0 0 26px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.bh-step-t {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.bh-hint {
+  color: var(--sub);
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+.bh-bookmarklet {
+  display: inline-block;
+  margin: 4px 0 6px;
+  padding: 9px 18px;
+  border-radius: 9px;
+  background: #1769ff;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+  cursor: grab;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.bh-bookmarklet:active {
+  cursor: grabbing;
+}

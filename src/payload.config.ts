@@ -17,6 +17,7 @@ import { Logos } from './collections/Logos'
 import { Testimonials } from './collections/Testimonials'
 import { Achievements } from './collections/Achievements'
 import { Visits } from './collections/Visits'
+import { Imports } from './collections/Imports'
 import { SiteSettings } from './globals/SiteSettings'
 
 const filename = fileURLToPath(import.meta.url)
@@ -47,6 +48,7 @@ export default buildConfig({
     Testimonials,
     Achievements,
     Visits,
+    Imports,
     SiteSettings,
   ],
   editor: lexicalEditor(),

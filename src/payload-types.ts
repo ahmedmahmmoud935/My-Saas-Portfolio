@@ -76,6 +76,7 @@ export interface Config {
     testimonials: Testimonial;
     achievements: Achievement;
     visits: Visit;
+    imports: Import;
     'site-settings': SiteSetting;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
@@ -93,6 +94,7 @@ export interface Config {
     testimonials: TestimonialsSelect<false> | TestimonialsSelect<true>;
     achievements: AchievementsSelect<false> | AchievementsSelect<true>;
     visits: VisitsSelect<false> | VisitsSelect<true>;
+    imports: ImportsSelect<false> | ImportsSelect<true>;
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -458,6 +460,26 @@ export interface Visit {
   device?: ('desktop' | 'mobile' | 'tablet') | null;
   referrer?: string | null;
   visitedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "imports".
+ */
+export interface Import {
+  id: number;
+  token?: string | null;
+  data?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  expiresAt?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -829,6 +851,10 @@ export interface PayloadLockedDocument {
         value: number | Visit;
       } | null)
     | ({
+        relationTo: 'imports';
+        value: number | Import;
+      } | null)
+    | ({
         relationTo: 'site-settings';
         value: number | SiteSetting;
       } | null);
@@ -1139,6 +1165,17 @@ export interface VisitsSelect<T extends boolean = true> {
   device?: T;
   referrer?: T;
   visitedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "imports_select".
+ */
+export interface ImportsSelect<T extends boolean = true> {
+  token?: T;
+  data?: T;
+  expiresAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

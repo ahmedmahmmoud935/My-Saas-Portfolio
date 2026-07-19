@@ -13,7 +13,9 @@ import {
   reorderProjects,
   saveGridCols,
   setProjectPublished,
+  importFromBehance,
 } from '@/lib/project-actions'
+import BehanceImportModal from './BehanceImportModal'
 
 export type ProjectRow = EditableProject & { id: number }
 
@@ -62,6 +64,30 @@ export default function ProjectsManager({
   const [editing, setEditing] = useState<EditableProject | null>(null)
   const [wizard, setWizard] = useState(false)
   const [catsOpen, setCatsOpen] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
+  const [importing, setImporting] = useState(false)
+
+  // Returning from the Behance bookmarklet: /dashboard/projects?bh=<token>
+  useEffect(() => {
+    const token = new URLSearchParams(window.location.search).get('bh')
+    if (!token || importing) return
+    setImporting(true)
+    window.history.replaceState({}, '', '/dashboard/projects')
+    importFromBehance(token)
+      .then((r) => {
+        if (r.ok && r.id) {
+          router.push(`/dashboard/projects/${r.id}/editor`)
+        } else {
+          alert(tr('فشل الاستيراد — الرابط منتهي أو مفيش محتوى.', 'Import failed — the link expired or had no content.'))
+          setImporting(false)
+        }
+      })
+      .catch(() => {
+        alert(tr('حصل خطأ أثناء الاستيراد.', 'Something went wrong during import.'))
+        setImporting(false)
+      })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Local, reorderable copy of the projects (optimistic drag-and-drop).
   const [items, setItems] = useState<ProjectRow[]>(projects)
@@ -147,6 +173,10 @@ export default function ProjectsManager({
         subtitle={tr('أضِف وعدّل أعمالك — صور، ريلز، وفيديوهات', 'Add and edit your work — images, reels and videos')}
         actions={
           <>
+            <button className="btn btn-ghost" onClick={() => setImportOpen(true)}>
+              <NavIcon id="upload" size={16} />
+              {tr('استيراد من Behance', 'Import from Behance')}
+            </button>
             <button className="btn btn-ghost" onClick={() => setCatsOpen(true)}>
               <NavIcon id="categories" size={16} />
               {tr('التصنيفات', 'Categories')}
@@ -158,6 +188,15 @@ export default function ProjectsManager({
           </>
         }
       />
+
+      {importing && (
+        <div className="modal-overlay">
+          <div className="modal" style={{ maxWidth: 360, textAlign: 'center', padding: 30 }}>
+            <strong>{tr('جاري الاستيراد من Behance…', 'Importing from Behance…')}</strong>
+            <p style={{ color: 'var(--sub)', marginTop: 10 }}>{tr('بنرفع الصور ونجهّز المشروع، استنى شوية.', 'Uploading images and building the project — one moment.')}</p>
+          </div>
+        </div>
+      )}
 
       <div className="filter-tabs">
         {TABS.map((tb) => (
@@ -326,6 +365,8 @@ export default function ProjectsManager({
           }}
         />
       )}
+
+      {importOpen && <BehanceImportModal onClose={() => setImportOpen(false)} />}
 
       {catsOpen && (
         <CategoriesModal

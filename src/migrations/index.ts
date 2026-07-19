@@ -8,6 +8,7 @@ import * as migration_20260713_172121_add_light_colors from './20260713_172121_a
 import * as migration_20260713_220315_add_hero_gradient from './20260713_220315_add_hero_gradient';
 import * as migration_20260718_145333_add_user_activation from './20260718_145333_add_user_activation';
 import * as migration_20260718_204656_add_tenant_suspended from './20260718_204656_add_tenant_suspended';
+import * as migration_20260719_104557_add_imports from './20260719_104557_add_imports';
 
 export const migrations = [
   {
@@ -58,6 +59,11 @@ export const migrations = [
   {
     up: migration_20260718_204656_add_tenant_suspended.up,
     down: migration_20260718_204656_add_tenant_suspended.down,
-    name: '20260718_204656_add_tenant_suspended'
+    name: '20260718_204656_add_tenant_suspended',
+  },
+  {
+    up: migration_20260719_104557_add_imports.up,
+    down: migration_20260719_104557_add_imports.down,
+    name: '20260719_104557_add_imports'
   },
 ];
