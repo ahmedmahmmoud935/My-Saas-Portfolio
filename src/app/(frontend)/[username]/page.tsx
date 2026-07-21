@@ -137,7 +137,9 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
           coverUrl: mediaUrl(h.cover, 'thumb'),
           items: (h.items ?? []).map((it) => ({
             type: it.type || 'image',
-            url: mediaUrl(it.media),
+            // Images: serve the optimised 1024px WebP so stories load light;
+            // videos fall back to the original file (no image size exists).
+            url: mediaUrl(it.media, 'card'),
           })),
         }))}
         projects={projects.map((p) => ({

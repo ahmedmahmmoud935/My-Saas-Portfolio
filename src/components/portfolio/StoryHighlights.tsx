@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 export type Story = {
   title: string
@@ -15,7 +16,20 @@ export default function StoryHighlights({ stories }: { stories: Story[] }) {
   const [open, setOpen] = useState<number | null>(null)
   const [idx, setIdx] = useState(0)
   const [progress, setProgress] = useState(0)
+  const [mounted, setMounted] = useState(false)
   const timer = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  useEffect(() => setMounted(true), [])
+
+  // Lock background scroll while the viewer is open.
+  useEffect(() => {
+    if (open === null) return
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prevOverflow
+    }
+  }, [open])
 
   const items = open !== null ? valid[open].items.filter((i) => i.url) : []
   const current = items[idx]
@@ -90,41 +104,48 @@ export default function StoryHighlights({ stories }: { stories: Story[] }) {
         ))}
       </div>
 
-      {open !== null && current && (
-        <div className="story-viewer" onClick={() => setOpen(null)}>
-          <div className="story-stage" onClick={(e) => e.stopPropagation()}>
-            <div className="story-bars">
-              {items.map((_, i) => (
-                <div className="story-bar" key={i}>
-                  <div
-                    className="story-bar-fill"
-                    style={{ width: i < idx ? '100%' : i === idx ? `${progress}%` : '0%' }}
-                  />
-                </div>
-              ))}
+      {mounted &&
+        open !== null &&
+        current &&
+        createPortal(
+          <div className="story-viewer" onClick={() => setOpen(null)}>
+            <div className="story-stage" onClick={(e) => e.stopPropagation()}>
+              <div className="story-bars">
+                {items.map((_, i) => (
+                  <div className="story-bar" key={i}>
+                    <div
+                      className="story-bar-fill"
+                      style={{ width: i < idx ? '100%' : i === idx ? `${progress}%` : '0%' }}
+                    />
+                  </div>
+                ))}
+              </div>
+              <button className="story-close" onClick={() => setOpen(null)}>
+                ✕
+              </button>
+
+              {current.type === 'video' ? (
+                <video
+                  className="story-media"
+                  src={current.url || ''}
+                  poster={valid[open].coverUrl || undefined}
+                  autoPlay
+                  muted
+                  playsInline
+                  preload="auto"
+                  onEnded={next}
+                />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img className="story-media" src={current.url || ''} alt="" loading="eager" decoding="async" />
+              )}
+
+              <div className="story-tap prev" onClick={prev} />
+              <div className="story-tap next" onClick={next} />
             </div>
-            <button className="story-close" onClick={() => setOpen(null)}>
-              ✕
-            </button>
-
-            {current.type === 'video' ? (
-              <video
-                className="story-media"
-                src={current.url || ''}
-                autoPlay
-                playsInline
-                onEnded={next}
-              />
-            ) : (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img className="story-media" src={current.url || ''} alt="" />
-            )}
-
-            <div className="story-tap prev" onClick={prev} />
-            <div className="story-tap next" onClick={next} />
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
     </div>
   )
 }
