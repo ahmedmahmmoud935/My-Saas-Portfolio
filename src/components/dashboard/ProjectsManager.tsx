@@ -14,6 +14,7 @@ import {
   saveGridCols,
   setProjectPublished,
   importFromBehance,
+  recompressVideos,
 } from '@/lib/project-actions'
 import BehanceImportModal from './BehanceImportModal'
 
@@ -66,6 +67,26 @@ export default function ProjectsManager({
   const [catsOpen, setCatsOpen] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
   const [importing, setImporting] = useState(false)
+  const [recompressing, setRecompressing] = useState(false)
+
+  async function runRecompress() {
+    if (!confirm(tr('إعادة ضغط كل الفيديوهات المرفوعة؟ ممكن تاخد وقت حسب عددها.', 'Re-compress all uploaded videos? May take a while depending on how many.'))) return
+    setRecompressing(true)
+    try {
+      const r = await recompressVideos()
+      alert(
+        tr(
+          `تم ✓ اتضغط ${r.processed} من ${r.total} فيديو، ووفّرنا ${r.savedMb} ميجابايت.`,
+          `Done ✓ compressed ${r.processed} of ${r.total} videos, saved ${r.savedMb} MB.`,
+        ),
+      )
+      router.refresh()
+    } catch {
+      alert(tr('حصل خطأ أثناء الضغط.', 'Something went wrong.'))
+    } finally {
+      setRecompressing(false)
+    }
+  }
 
   // Returning from the Behance bookmarklet: /dashboard/projects?bh=<token>
   useEffect(() => {
@@ -176,6 +197,10 @@ export default function ProjectsManager({
             <button className="btn btn-ghost" onClick={() => setImportOpen(true)}>
               <NavIcon id="upload" size={16} />
               {tr('استيراد من Behance', 'Import from Behance')}
+            </button>
+            <button className="btn btn-ghost" onClick={runRecompress} disabled={recompressing}>
+              <NavIcon id="film" size={16} />
+              {recompressing ? tr('جاري الضغط…', 'Compressing…') : tr('ضغط الفيديوهات', 'Compress videos')}
             </button>
             <button className="btn btn-ghost" onClick={() => setCatsOpen(true)}>
               <NavIcon id="categories" size={16} />

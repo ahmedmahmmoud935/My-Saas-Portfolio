@@ -290,3 +290,74 @@ export async function importFromBehance(token: string) {
   await ctx.payload.delete({ collection: 'imports', id: row.id, overrideAccess: true }).catch(() => {})
   return { ok: true, id: created.id }
 }
+
+const APP_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'https://viralpx.com'
+
+/** Recompute a tenant's storageUsedMb as the exact sum of its media filesizes. */
+async function recomputeStorage(ctx: NonNullable<Awaited<ReturnType<typeof getDashboardContext>>>) {
+  const all = await ctx.payload.find({
+    collection: 'media',
+    where: { tenant: { equals: ctx.tenantId } },
+    limit: 5000,
+    depth: 0,
+  })
+  const totalMb = all.docs.reduce((n, d) => n + ((d as { filesize?: number }).filesize ?? 0) / 1048576, 0)
+  await ctx.payload.update({
+    collection: 'tenants',
+    id: ctx.tenantId,
+    data: { storageUsedMb: Math.round(totalMb * 100) / 100 },
+    overrideAccess: true,
+  })
+}
+
+/** Re-compress this tenant's already-uploaded videos with ffmpeg. */
+export async function recompressVideos() {
+  const ctx = await getDashboardContext()
+  if (!ctx) throw new Error('unauthorized')
+
+  const res = await ctx.payload.find({
+    collection: 'media',
+    where: { tenant: { equals: ctx.tenantId } },
+    limit: 5000,
+    depth: 0,
+  })
+  const videos = res.docs.filter((m) => ((m as { mimeType?: string }).mimeType || '').startsWith('video/'))
+
+  let processed = 0
+  let failed = 0
+  let savedBytes = 0
+  for (const m of videos as { id: number; url?: string | null; filename?: string | null; filesize?: number; mimeType?: string }[]) {
+    if (!m.url) continue
+    try {
+      const abs = m.url.startsWith('http') ? m.url : `${APP_URL}${m.url}`
+      const r = await fetch(abs)
+      if (!r.ok) {
+        failed++
+        continue
+      }
+      const buf = Buffer.from(await r.arrayBuffer())
+      const c = await compressVideo(buf)
+      if (!c) continue // ffmpeg missing, error, or not smaller
+      const oldSize = m.filesize ?? buf.length
+      await ctx.payload.update({
+        collection: 'media',
+        id: m.id,
+        data: {},
+        file: {
+          data: c.buf as Buffer<ArrayBuffer>,
+          mimetype: c.mimetype,
+          name: (m.filename || 'video').replace(/\.[^.]+$/, '') + '.mp4',
+          size: c.buf.length,
+        },
+        overrideAccess: true,
+      })
+      savedBytes += Math.max(0, oldSize - c.buf.length)
+      processed++
+    } catch {
+      failed++
+    }
+  }
+
+  await recomputeStorage(ctx)
+  return { ok: true, total: videos.length, processed, failed, savedMb: Math.round((savedBytes / 1048576) * 10) / 10 }
+}
