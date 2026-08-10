@@ -269,6 +269,12 @@ const PATHS: Record<string, React.ReactNode> = {
       {P('M10 21v-6h4v6')}
     </>
   ),
+  landing: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      {P('M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18')}
+    </>
+  ),
   star: P('M12 3l2.6 5.6 6 .8-4.3 4.2 1 6L12 17.3 6.7 19.6l1-6L3.4 9.4l6-.8L12 3z'),
   briefcase: (
     <>

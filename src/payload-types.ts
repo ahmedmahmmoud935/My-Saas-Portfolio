@@ -105,8 +105,12 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: ('false' | 'none' | 'null') | false | null | ('ar' | 'en') | ('ar' | 'en')[];
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    landing: Landing;
+  };
+  globalsSelect: {
+    landing: LandingSelect<false> | LandingSelect<true>;
+  };
   locale: 'ar' | 'en';
   widgets: {
     collections: CollectionsWidget;
@@ -1512,6 +1516,34 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "landing".
+ */
+export interface Landing {
+  id: number;
+  content?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "landing_select".
+ */
+export interface LandingSelect<T extends boolean = true> {
+  content?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

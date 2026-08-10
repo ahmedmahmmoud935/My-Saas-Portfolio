@@ -19,6 +19,7 @@ import { Achievements } from './collections/Achievements'
 import { Visits } from './collections/Visits'
 import { Imports } from './collections/Imports'
 import { SiteSettings } from './globals/SiteSettings'
+import { Landing } from './globals/Landing'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -51,6 +52,7 @@ export default buildConfig({
     Imports,
     SiteSettings,
   ],
+  globals: [Landing],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

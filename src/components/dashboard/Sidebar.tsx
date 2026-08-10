@@ -49,7 +49,11 @@ export default function Sidebar({
   }
 
   const items = isOwner
-    ? [...DASHBOARD_NAV, { id: 'users', labelAr: 'المستخدمون', labelEn: 'Users', icon: '' }]
+    ? [
+        ...DASHBOARD_NAV,
+        { id: 'landing', labelAr: 'الصفحة الرئيسية', labelEn: 'Landing', icon: '' },
+        { id: 'users', labelAr: 'المستخدمون', labelEn: 'Users', icon: '' },
+      ]
     : DASHBOARD_NAV
 
   async function logout() {
