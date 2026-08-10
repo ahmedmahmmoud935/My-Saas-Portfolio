@@ -18,6 +18,7 @@ export default function StoryHighlights({ stories }: { stories: Story[] }) {
   const [progress, setProgress] = useState(0)
   const [mounted, setMounted] = useState(false)
   const timer = useRef<ReturnType<typeof setInterval> | null>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => setMounted(true), [])
 
@@ -33,6 +34,20 @@ export default function StoryHighlights({ stories }: { stories: Story[] }) {
 
   const items = open !== null ? valid[open].items.filter((i) => i.url) : []
   const current = items[idx]
+
+  // Play story videos with sound (opening a story is a user gesture). If the
+  // browser still blocks unmuted playback, fall back to muted so it doesn't
+  // freeze instead of playing.
+  useEffect(() => {
+    if (open === null || current?.type !== 'video') return
+    const v = videoRef.current
+    if (!v) return
+    v.muted = false
+    v.play().catch(() => {
+      v.muted = true
+      v.play().catch(() => {})
+    })
+  }, [open, idx, current])
 
   const clearTimer = () => {
     if (timer.current) clearInterval(timer.current)
@@ -126,11 +141,11 @@ export default function StoryHighlights({ stories }: { stories: Story[] }) {
 
               {current.type === 'video' ? (
                 <video
+                  key={current.url || ''}
+                  ref={videoRef}
                   className="story-media"
                   src={current.url || ''}
-                  poster={valid[open].coverUrl || undefined}
                   autoPlay
-                  muted
                   playsInline
                   preload="auto"
                   onEnded={next}

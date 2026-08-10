@@ -1,6 +1,7 @@
 'use server'
 
 import { getDashboardContext, getTenantSettings } from './dashboard'
+import { compressVideo } from './transcode'
 import type { ProjectInput, ModuleInput } from './project-types'
 import type { Project } from '../payload-types'
 
@@ -41,11 +42,23 @@ export async function uploadProjectMedia(formData: FormData) {
   const file = formData.get('file') as File | null
   if (!file) throw new Error('no file')
 
-  const buf = Buffer.from(await file.arrayBuffer())
+  let buf: Buffer = Buffer.from(await file.arrayBuffer())
+  let mimetype = file.type
+  let name = file.name
+  // Compress videos on upload (H.264 MP4). Falls back to the original if ffmpeg
+  // isn't available or doesn't shrink it.
+  if (file.type.startsWith('video/')) {
+    const c = await compressVideo(buf)
+    if (c) {
+      buf = c.buf
+      mimetype = c.mimetype
+      name = name.replace(/\.[^.]+$/, '') + '.mp4'
+    }
+  }
   const media = await ctx.payload.create({
     collection: 'media',
-    data: { tenant: ctx.tenantId, alt: file.name },
-    file: { data: buf, mimetype: file.type, name: file.name, size: buf.length },
+    data: { tenant: ctx.tenantId, alt: name },
+    file: { data: buf as Buffer<ArrayBuffer>, mimetype, name, size: buf.length },
   })
   const sizes = (media as { sizes?: { thumb?: { url?: string }; card?: { url?: string } } }).sizes
   return {
