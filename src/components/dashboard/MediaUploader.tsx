@@ -16,6 +16,7 @@ export default function MediaUploader({
   big = false,
   multiple = false,
   plus = false,
+  aspect,
 }: {
   label?: string
   previewUrl?: string | null
@@ -30,6 +31,8 @@ export default function MediaUploader({
   multiple?: boolean
   /** Render as a small "+" tile (for adding more images to a gallery). */
   plus?: boolean
+  /** CSS aspect-ratio (e.g. '9 / 16') — frames the preview like the real cover. */
+  aspect?: string
 }) {
   const ref = useRef<HTMLInputElement>(null)
   const { t } = useDashLang()
@@ -93,6 +96,28 @@ export default function MediaUploader({
         <span className="uploader-replace">
           {busy ? t('جاري الرفع…', 'Uploading…') : t('⟳ استبدال', '⟳ Replace')}
         </span>
+      </div>
+    )
+  }
+
+  // Framed preview in a specific aspect ratio (cover images per media type).
+  if (aspect) {
+    const [w, h] = aspect.split('/').map((n) => parseFloat(n))
+    const portrait = w && h ? w / h < 1 : false
+    return (
+      <div
+        className="uploader uploader-aspect"
+        onClick={() => ref.current?.click()}
+        style={{ aspectRatio: aspect, maxWidth: portrait ? 190 : 340 }}
+      >
+        {input}
+        {preview ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={preview} alt="" />
+        ) : (
+          <span className="uploader-aspect-label">{busy ? t('جاري الرفع…', 'Uploading…') : `⬆ ${lbl}`}</span>
+        )}
+        <span className="uploader-replace">{busy ? t('جاري الرفع…', 'Uploading…') : preview ? t('⟳ استبدال', '⟳ Replace') : ''}</span>
       </div>
     )
   }

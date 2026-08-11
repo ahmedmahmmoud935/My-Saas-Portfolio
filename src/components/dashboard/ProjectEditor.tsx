@@ -158,8 +158,26 @@ export default function ProjectEditor({
             </div>
           )}
 
-          <label className="lbl">{t('صورة الغلاف', 'Cover image')}</label>
+          <label className="lbl">
+            {t('صورة الغلاف', 'Cover image')}{' '}
+            <span style={{ color: 'var(--sub)', fontWeight: 400 }}>
+              (
+              {p.mediaType === 'video'
+                ? p.videoKind === 'video'
+                  ? t('سينمائي 16:9', 'Cinematic 16:9')
+                  : t('ريل 9:16', 'Reel 9:16')
+                : t('4:3', '4:3')}
+              )
+            </span>
+          </label>
           <MediaUploader
+            aspect={
+              p.mediaType === 'video'
+                ? p.videoKind === 'video'
+                  ? '16 / 9'
+                  : '9 / 16'
+                : '4 / 3'
+            }
             previewUrl={p.coverUrl}
             onUploaded={(m: UploadedMedia) => set({ coverId: m.id, coverUrl: m.thumbUrl })}
           />
