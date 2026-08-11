@@ -2288,3 +2288,53 @@ body {
   z-index: -1;
   pointer-events: none;
 }
+
+/* ═══ Unified mobile hero — every layout becomes one clean full-bleed cover ══
+   (the framed/split & massive variants broke on phones). */
+@media (max-width: 768px) {
+  .pf-root .hero {
+    min-height: 80vh !important;
+    align-items: center !important;
+  }
+  .pf-root .hero .hero-bg {
+    inset: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    aspect-ratio: auto !important;
+    object-fit: cover !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    animation: none !important;
+    transform: none !important;
+  }
+  .pf-root .hero .hero-overlay {
+    inset: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    border-radius: 0 !important;
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.6)) !important;
+  }
+  .pf-root .hero .hero-inner {
+    max-width: none !important;
+    margin: 0 !important;
+    width: 100% !important;
+    text-align: center !important;
+    padding: 22px !important;
+    animation: none !important;
+    display: block !important;
+  }
+  .pf-root .hero .hero-name {
+    font-size: clamp(38px, 11.5vw, 56px) !important;
+    order: 0 !important;
+  }
+  .pf-root .hero .hero-eyebrow {
+    order: 0 !important;
+    margin: 8px 0 20px !important;
+  }
+  .pf-root .hero .hero-btns {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+  }
+}

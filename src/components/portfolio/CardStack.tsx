@@ -34,20 +34,21 @@ export default function CardStack({ items }: { items: StackCard[] }) {
     }, 340)
   }
 
+  // Horizontal swipe so it works with touch (vertical stays for page scroll).
   const onDown = (e: React.PointerEvent) => {
     if (exiting) return
-    start.current = e.clientY
+    start.current = e.clientX
     ;(e.target as HTMLElement).setPointerCapture?.(e.pointerId)
   }
   const onMove = (e: React.PointerEvent) => {
     if (start.current === null) return
-    setDrag(e.clientY - start.current)
+    setDrag(e.clientX - start.current)
   }
   const onUp = () => {
     if (start.current === null) return
     const d = drag
     start.current = null
-    if (Math.abs(d) > 70) advance(d < 0 ? 1 : -1)
+    if (Math.abs(d) > 60) advance(d < 0 ? 1 : -1)
     else setDrag(0)
   }
 
@@ -60,12 +61,13 @@ export default function CardStack({ items }: { items: StackCard[] }) {
         {order.map((itemIdx, rank) => {
           const it = items[itemIdx]
           const isTop = rank === 0
-          const dragY = isTop ? drag : 0
-          const flyY = isTop && exiting ? (exiting === 1 ? -420 : 420) : 0
-          const rot = isTop ? (dragY + flyY) * 0.03 : 0
+          const dragX = isTop ? drag : 0
+          const flyX = isTop && exiting ? (exiting === 1 ? -460 : 460) : 0
+          const rot = isTop ? (dragX + flyX) * 0.04 : 0
           const style: React.CSSProperties = {
             zIndex: items.length - rank,
-            transform: `translateY(${-rank * 34 + dragY + flyY}px) scale(${1 - Math.min(rank, 4) * 0.055})`,
+            touchAction: isTop ? 'pan-y' : undefined,
+            transform: `translate(${dragX + flyX}px, ${-rank * 34}px) scale(${1 - Math.min(rank, 4) * 0.055})`,
             // Behind cards get progressively dimmer for depth (like a real deck).
             filter: rank > 0 ? `brightness(${1 - Math.min(rank, 4) * 0.12})` : undefined,
             // Fade the deck out gradually — the last card or two dissolve away.
@@ -125,7 +127,7 @@ export default function CardStack({ items }: { items: StackCard[] }) {
           ›
         </button>
       </div>
-      <p className="cs-hint">اسحب الكارت أو استخدم الأسهم · Drag the card or use the arrows</p>
+      <p className="cs-hint">اسحب يمين أو شمال — أو استخدم الأسهم · Swipe left/right or use the arrows</p>
     </div>
   )
 }
