@@ -30,6 +30,11 @@ const hasR2 = Boolean(
   process.env.R2_BUCKET && process.env.R2_ENDPOINT && process.env.R2_ACCESS_KEY_ID,
 )
 
+// Bucket key prefix for uploads, and the public CDN in front of the bucket.
+// Without R2_PUBLIC_URL, media keeps being served by this app (the old path).
+const MEDIA_PREFIX = 'media'
+const cdnBase = process.env.R2_PUBLIC_URL?.trim().replace(/\/+$/, '') || undefined
+
 export default buildConfig({
   admin: {
     user: Users.slug,
@@ -94,7 +99,26 @@ export default buildConfig({
       ? [
           s3Storage({
             collections: {
-              media: { prefix: 'media' },
+              media: {
+                prefix: MEDIA_PREFIX,
+                // With a public CDN in front of the bucket, hand out its URLs
+                // directly instead of streaming every image and video through
+                // this server. `afterRead` rewrites the stored url on the way
+                // out, so existing rows are corrected without a migration.
+                //
+                // Deliberately NOT setting `disablePayloadAccessControl`: that
+                // would also unregister the /api/media/file/* handler, and old
+                // links already in the wild point at it. Keeping it costs
+                // nothing and leaves a fallback if the CDN is ever unreachable.
+                ...(cdnBase
+                  ? {
+                      // Encode the filename like Payload's own S3 URL builder:
+                      // plenty of uploads have spaces and Arabic in their names.
+                      generateFileURL: ({ filename, prefix }) =>
+                        `${cdnBase}/${prefix ?? MEDIA_PREFIX}/${encodeURIComponent(filename)}`,
+                    }
+                  : {}),
+              },
             },
             bucket: process.env.R2_BUCKET as string,
             config: {
