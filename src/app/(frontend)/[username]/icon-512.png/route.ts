@@ -39,10 +39,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ username
 
   const bg = data.settings?.colors?.bg || '#0A0A0A'
   const brand = data.settings?.brand
-  const logoSrc = mediaUrl(brand?.brandLogo) || mediaUrl(brand?.avatar)
-  // A logo gets padded onto the brand colour; a photo is cropped to fill the
-  // tile instead, which reads far better than a letterboxed portrait.
-  const src = logoSrc || mediaUrl(brand?.photo, 'card')
+  const src =
+    mediaUrl(brand?.brandLogo) || mediaUrl(brand?.avatar) || mediaUrl(brand?.photo, 'card')
 
   try {
     if (!src) throw new Error('no logo')
@@ -50,7 +48,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ username
     if (!res.ok) throw new Error(`logo ${res.status}`)
     const input = Buffer.from(await res.arrayBuffer())
 
-    const png = logoSrc
+    // Transparency is what actually separates a logo from a photo — any of
+    // these three fields can hold either. A cut-out logo gets padded onto the
+    // brand colour; an opaque photo is cropped to fill the tile (anchored top,
+    // so faces survive) rather than sitting letterboxed inside it.
+    const { hasAlpha } = await sharp(input).metadata()
+
+    const png = hasAlpha
       ? await sharp({ create: { width: SIZE, height: SIZE, channels: 4, background: bg } })
           .composite([
             {
