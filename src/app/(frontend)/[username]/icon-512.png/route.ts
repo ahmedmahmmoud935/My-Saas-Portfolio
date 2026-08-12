@@ -1,3 +1,5 @@
+import { readFile } from 'fs/promises'
+import path from 'path'
 import sharp from 'sharp'
 import { getPortfolio, mediaUrl } from '@/lib/portfolio'
 
@@ -18,34 +20,50 @@ const SIZE = 512
 const INNER_W = Math.round(SIZE * 0.76)
 const INNER_H = Math.round(SIZE * 0.56)
 
+/**
+ * The public origin of this request. Behind the reverse proxy `req.url` is the
+ * container's own bind address (https://0.0.0.0:3000), which is not fetchable —
+ * so trust the forwarded headers first.
+ */
+function publicOrigin(req: Request): string {
+  const h = req.headers
+  const host = h.get('x-forwarded-host') || h.get('host')
+  if (host) return `${h.get('x-forwarded-proto') || 'https'}://${host}`
+  return process.env.NEXT_PUBLIC_SERVER_URL || new URL(req.url).origin
+}
+
 export async function GET(req: Request, { params }: { params: Promise<{ username: string }> }) {
   const { username } = await params
   const data = await getPortfolio(username)
   if (!data) return new Response('Not found', { status: 404 })
 
   const bg = data.settings?.colors?.bg || '#0A0A0A'
-  const src =
-    mediaUrl(data.settings?.brand?.brandLogo) ||
-    mediaUrl(data.settings?.brand?.avatar) ||
-    mediaUrl(data.settings?.brand?.photo, 'thumb')
+  const brand = data.settings?.brand
+  const logoSrc = mediaUrl(brand?.brandLogo) || mediaUrl(brand?.avatar)
+  // A logo gets padded onto the brand colour; a photo is cropped to fill the
+  // tile instead, which reads far better than a letterboxed portrait.
+  const src = logoSrc || mediaUrl(brand?.photo, 'card')
 
   try {
     if (!src) throw new Error('no logo')
-    // Resolve against the incoming request so this works on any host/port.
-    const res = await fetch(new URL(src, req.url))
+    const res = await fetch(new URL(src, publicOrigin(req)))
     if (!res.ok) throw new Error(`logo ${res.status}`)
+    const input = Buffer.from(await res.arrayBuffer())
 
-    const logo = await sharp(Buffer.from(await res.arrayBuffer()))
-      .resize(INNER_W, INNER_H, { fit: 'inside', withoutEnlargement: false })
-      .png()
-      .toBuffer()
-
-    const png = await sharp({
-      create: { width: SIZE, height: SIZE, channels: 4, background: bg },
-    })
-      .composite([{ input: logo, gravity: 'centre' }])
-      .png()
-      .toBuffer()
+    const png = logoSrc
+      ? await sharp({ create: { width: SIZE, height: SIZE, channels: 4, background: bg } })
+          .composite([
+            {
+              input: await sharp(input)
+                .resize(INNER_W, INNER_H, { fit: 'inside' })
+                .png()
+                .toBuffer(),
+              gravity: 'centre',
+            },
+          ])
+          .png()
+          .toBuffer()
+      : await sharp(input).resize(SIZE, SIZE, { fit: 'cover', position: 'top' }).png().toBuffer()
 
     return new Response(new Uint8Array(png), {
       headers: {
@@ -54,7 +72,15 @@ export async function GET(req: Request, { params }: { params: Promise<{ username
       },
     })
   } catch {
-    // No usable logo — fall back to the ViralPX mark.
-    return Response.redirect(new URL('/icon-512.png', req.url), 307)
+    // No usable logo — serve the ViralPX mark straight off disk. (A redirect
+    // would have to name a host, and behind the proxy we'd guess it wrong.)
+    try {
+      const fallback = await readFile(path.join(process.cwd(), 'public', 'icon-512.png'))
+      return new Response(new Uint8Array(fallback), {
+        headers: { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=3600' },
+      })
+    } catch {
+      return new Response('Not found', { status: 404 })
+    }
   }
 }
