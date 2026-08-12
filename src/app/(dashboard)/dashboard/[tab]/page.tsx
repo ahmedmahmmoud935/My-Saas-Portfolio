@@ -1,5 +1,5 @@
 import React from 'react'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import DashNotice from '@/components/dashboard/DashNotice'
 import { DASHBOARD_NAV } from '@/lib/dashboard-nav'
 
@@ -11,6 +11,8 @@ export default async function ComingSoonTab({
   params: Promise<{ tab: string }>
 }) {
   const { tab } = await params
+  // The admin pages moved to their own area; keep old links working.
+  if (tab === 'landing' || tab === 'users') redirect(`/owner/${tab}`)
   const nav = DASHBOARD_NAV.find((n) => n.id === tab)
   if (!nav) notFound()
 

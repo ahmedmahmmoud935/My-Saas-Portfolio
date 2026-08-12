@@ -1,7 +1,6 @@
 import React from 'react'
 import { redirect } from 'next/navigation'
 import { getDashboardContext } from '@/lib/dashboard'
-import DashNotice from '@/components/dashboard/DashNotice'
 import UsersManager from '@/components/dashboard/UsersManager'
 
 export const dynamic = 'force-dynamic'
@@ -10,19 +9,6 @@ export default async function UsersPage() {
   const ctx = await getDashboardContext()
   if (!ctx) redirect('/login')
 
-  if (!ctx.user.isOwner) {
-    return (
-      <DashNotice
-        icon="👤"
-        titleAr="المستخدمون"
-        titleEn="Users"
-        subAr="إدارة العملاء"
-        subEn="Manage clients"
-        bodyAr="هذا القسم متاح لمالك المنصّة فقط."
-        bodyEn="This section is only available to the platform owner."
-      />
-    )
-  }
 
   const [tenantsRes, usersRes] = await Promise.all([
     ctx.payload.find({ collection: 'tenants', limit: 500, depth: 0, sort: 'name' }),

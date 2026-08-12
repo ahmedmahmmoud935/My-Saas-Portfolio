@@ -2,39 +2,28 @@
 
 import React, { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-import { DASHBOARD_NAV } from '@/lib/dashboard-nav'
+import { OWNER_NAV, OWNER_NAV_ICONS } from '@/lib/owner-nav'
 import { useDashLang } from './DashLang'
 import NavIcon from './icons'
 
 type Mode = 'dark' | 'light'
 
-// Apply + persist the dashboard's colour mode on <html>.
 function applyMode(mode: Mode) {
   document.documentElement.setAttribute('data-mode', mode)
   localStorage.setItem('dash-mode', mode)
 }
 
-export default function Sidebar({
-  userName,
-  tenantSlug,
-  storageUsed,
-  storageLimit,
-  isOwner = false,
-}: {
-  userName: string
-  tenantSlug: string
-  storageUsed: number
-  storageLimit: number
-  isOwner?: boolean
-}) {
+/**
+ * Sidebar for the admin area. Same chrome as the client dashboard, different
+ * job: this one runs ViralPX (the marketing page, the client list), while
+ * /dashboard edits a single portfolio.
+ */
+export default function OwnerSidebar({ userName }: { userName: string }) {
   const pathname = usePathname()
   const router = useRouter()
-  const pct = Math.min(100, Math.round((storageUsed / Math.max(1, storageLimit)) * 100))
-
   const { lang, setLang, t } = useDashLang()
   const [mode, setMode] = useState<Mode>('dark')
 
-  // Restore saved colour mode on mount (language is handled by the provider).
   useEffect(() => {
     const m = (localStorage.getItem('dash-mode') as Mode) || 'dark'
     setMode(m)
@@ -48,11 +37,6 @@ export default function Sidebar({
     applyMode(next)
   }
 
-  // Running ViralPX (landing page, clients) lives in its own area at /owner —
-  // so this dashboard edits one portfolio, the owner's included, and looks the
-  // same for everyone.
-  const items = DASHBOARD_NAV
-
   async function logout() {
     await fetch('/api/users/logout', { method: 'POST' })
     router.push('/login')
@@ -62,7 +46,7 @@ export default function Sidebar({
   return (
     <aside className="sidebar">
       <div className="sidebar-brand">
-        <span>Portfolio Admin</span>
+        <span>{t('لوحة الإدارة', 'Admin panel')}</span>
         <span style={{ color: 'var(--accent)', display: 'inline-flex' }}>
           <NavIcon id="gem" size={18} />
         </span>
@@ -80,14 +64,13 @@ export default function Sidebar({
       </div>
 
       <nav>
-        {items.map((item) => {
-          const href = `/dashboard/${item.id}`
-          const active = pathname === href || (item.id === 'projects' && pathname === '/dashboard')
+        {OWNER_NAV.map((item) => {
+          const href = `/owner/${item.id}`
           return (
-            <a key={item.id} href={href} className={`nav-item ${active ? 'active' : ''}`}>
+            <a key={item.id} href={href} className={`nav-item ${pathname === href ? 'active' : ''}`}>
               <span>{t(item.labelAr, item.labelEn)}</span>
               <span className="ic">
-                <NavIcon id={item.id} />
+                <NavIcon id={OWNER_NAV_ICONS[item.id] || item.id} />
               </span>
             </a>
           )
@@ -98,22 +81,10 @@ export default function Sidebar({
         <div className="who">
           {t('مسجّل كـ', 'Signed in as')} <b>{userName}</b>
         </div>
-        <div className="storage-bar">
-          <span style={{ width: `${pct}%` }} />
-        </div>
-        <div className="who" style={{ fontSize: 12 }}>
-          {storageUsed.toFixed(2)} / {storageLimit} MB
-        </div>
-        <a className="foot-link" href={`/${tenantSlug}`} target="_blank" rel="noreferrer">
-          <span>{t('عرض الموقع', 'View site')}</span>
-          <NavIcon id="external" size={15} />
+        <a className="foot-link" href="/dashboard" style={{ marginTop: 8 }}>
+          <span>{t('بورتفوليو الخاص بي', 'My portfolio')}</span>
+          <NavIcon id="back" size={15} />
         </a>
-        {isOwner && (
-          <a className="foot-link" href="/owner/landing">
-            <span>{t('لوحة الإدارة', 'Admin panel')}</span>
-            <NavIcon id="gem" size={15} />
-          </a>
-        )}
         <button
           className="foot-link danger"
           onClick={logout}
