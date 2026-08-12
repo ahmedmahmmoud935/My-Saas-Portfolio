@@ -3,17 +3,67 @@ import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { LANDING_COPY } from '@/lib/landing-copy'
+import { mediaUrl } from '@/lib/portfolio'
 
 // Owner-edited landing copy merged over the defaults (per locale).
-async function getLandingCopy(locale: 'ar' | 'en') {
+type LandingLook = {
+  accent: string
+  bg: string
+  bg2: string
+  text: string
+  subtext: string
+  logoUrl: string | null
+  heroUrl: string | null
+  heroDim: number
+  ogUrl: string | null
+}
+
+const DEFAULT_LOOK: LandingLook = {
+  accent: '#F97316',
+  bg: '#0A0A0A',
+  bg2: '#111111',
+  text: '#FFFFFF',
+  subtext: '#9AA0AA',
+  logoUrl: null,
+  heroUrl: null,
+  heroDim: 40,
+  ogUrl: null,
+}
+
+
+/** Saved colours, minus the blanks — a null column must not beat the default. */
+function setOnly<T extends object>(o: unknown): Partial<T> {
+  if (!o || typeof o !== 'object') return {}
+  return Object.fromEntries(
+    Object.entries(o as Record<string, unknown>).filter(([, v]) => v !== null && v !== ''),
+  ) as Partial<T>
+}
+
+/** Copy plus the owner-set colours and imagery, merged over the code defaults. */
+async function getLanding(locale: 'ar' | 'en') {
   const base = LANDING_COPY[locale]
   try {
     const payload = await getPayload({ config })
-    const g = await payload.findGlobal({ slug: 'landing', locale, depth: 0 })
-    const saved = (g as { content?: Record<string, unknown> })?.content
-    return saved && typeof saved === 'object' ? { ...base, ...saved } : base
+    const g = (await payload.findGlobal({ slug: 'landing', locale, depth: 1 })) as {
+      content?: Record<string, unknown>
+      theme?: Partial<LandingLook>
+      images?: Record<string, unknown>
+    }
+    const saved = g?.content
+    const im = g?.images ?? {}
+    return {
+      copy: saved && typeof saved === 'object' ? { ...base, ...saved } : base,
+      look: {
+        ...DEFAULT_LOOK,
+        ...setOnly<LandingLook>(g?.theme),
+        logoUrl: mediaUrl((im.logo as never) ?? null, 'thumb'),
+        heroUrl: mediaUrl((im.hero as never) ?? null, 'card'),
+        heroDim: (im.heroDim as number) ?? DEFAULT_LOOK.heroDim,
+        ogUrl: mediaUrl((im.ogImage as never) ?? null, 'card'),
+      } as LandingLook,
+    }
   } catch {
-    return base
+    return { copy: base, look: DEFAULT_LOOK }
   }
 }
 
@@ -22,12 +72,12 @@ export const dynamic = 'force-dynamic'
 
 type Params = { searchParams?: Promise<{ lang?: string }> }
 
-const ORANGE = '#F97316'
 const SITE = process.env.NEXT_PUBLIC_SERVER_URL || ''
 
 export async function generateMetadata({ searchParams }: Params): Promise<Metadata> {
   const { lang } = (await searchParams) ?? {}
   const en = lang !== 'ar'
+  const og = (await getLanding(en ? 'en' : 'ar')).look.ogUrl
   const title = 'ViralPX — بورتفوليو احترافي في دقائق'
   const description = en
     ? 'ViralPX is a multi-tenant portfolio builder: launch a hosted portfolio with projects, reels, articles and a contact form — on your own domain.'
@@ -36,8 +86,14 @@ export async function generateMetadata({ searchParams }: Params): Promise<Metada
     title,
     description,
     alternates: { canonical: SITE || undefined },
-    openGraph: { title, description, type: 'website', url: SITE || undefined },
-    twitter: { card: 'summary_large_image', title, description },
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      url: SITE || undefined,
+      images: og ? [og] : undefined,
+    },
+    twitter: { card: 'summary_large_image', title, description, images: og ? [og] : undefined },
   }
 }
 
@@ -55,7 +111,8 @@ async function getShowcase(): Promise<{ name: string; slug: string }[]> {
 export default async function HomePage({ searchParams }: Params) {
   const { lang } = (await searchParams) ?? {}
   const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
-  const c = (await getLandingCopy(locale)) as (typeof LANDING_COPY)['ar']
+  const { copy, look } = await getLanding(locale)
+  const c = copy as (typeof LANDING_COPY)['ar']
   const q = locale === 'en' ? '?lang=en' : ''
   const showcase = await getShowcase()
 
@@ -76,7 +133,14 @@ export default async function HomePage({ searchParams }: Params) {
 
       <header className="lp-nav">
         <a href={`/${q}`} className="lp-logo">
-          Viral<span>PX</span>
+          {look.logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={look.logoUrl} alt="ViralPX" className="lp-logo-img" />
+          ) : (
+            <>
+              Viral<span>PX</span>
+            </>
+          )}
         </a>
         <nav className="lp-nav-links">
           <a href="#features">{c.nav.features}</a>
@@ -95,8 +159,15 @@ export default async function HomePage({ searchParams }: Params) {
         </div>
       </header>
 
-      <section className="lp-hero">
-        <div className="lp-hero-glow" />
+      <section className={`lp-hero${look.heroUrl ? ' has-image' : ''}`}>
+        {look.heroUrl ? (
+          <>
+            <span className="lp-hero-img" style={{ backgroundImage: `url(${JSON.stringify(look.heroUrl)})` }} />
+            <span className="lp-hero-dim" style={{ opacity: look.heroDim / 100 }} />
+          </>
+        ) : (
+          <div className="lp-hero-glow" />
+        )}
         <span className="lp-eyebrow">{c.heroEyebrow}</span>
         <h1 className="lp-h1">
           {c.heroTitle} <span className="lp-accent">{c.heroTitleAccent}</span>
@@ -207,7 +278,14 @@ export default async function HomePage({ searchParams }: Params) {
 
       <footer className="lp-footer">
         <a href={`/${q}`} className="lp-logo">
-          Viral<span>PX</span>
+          {look.logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={look.logoUrl} alt="ViralPX" className="lp-logo-img" />
+          ) : (
+            <>
+              Viral<span>PX</span>
+            </>
+          )}
         </a>
         <span>
           © {new Date().getFullYear()} ViralPX — {c.rights}
@@ -215,7 +293,8 @@ export default async function HomePage({ searchParams }: Params) {
       </footer>
 
       <style>{`
-        .lp { --o: ${ORANGE}; background: #0A0A0A; color: #fff; overflow-x: hidden;
+        .lp { --o: ${look.accent}; --lp-bg2: ${look.bg2}; --lp-sub: ${look.subtext};
+          background: ${look.bg}; color: ${look.text}; overflow-x: hidden;
           font-family: var(--font-cairo), system-ui, sans-serif; }
         .lp a { text-decoration: none; color: inherit; }
         .lp-nav { position: sticky; top: 0; z-index: 20; display: flex; align-items: center;
@@ -224,6 +303,13 @@ export default async function HomePage({ searchParams }: Params) {
           border-bottom: 1px solid rgba(255,255,255,0.06); }
         .lp-logo { font-family: var(--font-montserrat), sans-serif; font-weight: 900; font-size: 22px; letter-spacing: -.5px; }
         .lp-logo span { color: var(--o); }
+        .lp-logo-img { height: 34px; width: auto; display: block; }
+
+        /* Hero image backdrop (falls back to the orange glow when unset). */
+        .lp-hero.has-image { max-width: none; padding-inline: 24px; isolation: isolate; }
+        .lp-hero-img { position: absolute; inset: 0; z-index: -2; background-size: cover;
+          background-position: center; }
+        .lp-hero-dim { position: absolute; inset: 0; z-index: -1; background: #000; }
         .lp-nav-links { display: flex; gap: 22px; font-size: 15px; }
         .lp-nav-links a { color: #bdbdbd; }
         .lp-nav-links a:hover { color: #fff; }

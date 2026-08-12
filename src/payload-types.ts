@@ -1634,6 +1634,19 @@ export interface Landing {
     | number
     | boolean
     | null;
+  theme?: {
+    accent?: string | null;
+    bg?: string | null;
+    bg2?: string | null;
+    text?: string | null;
+    subtext?: string | null;
+  };
+  images?: {
+    logo?: (number | null) | Media;
+    hero?: (number | null) | Media;
+    heroDim?: number | null;
+    ogImage?: (number | null) | Media;
+  };
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1643,6 +1656,23 @@ export interface Landing {
  */
 export interface LandingSelect<T extends boolean = true> {
   content?: T;
+  theme?:
+    | T
+    | {
+        accent?: T;
+        bg?: T;
+        bg2?: T;
+        text?: T;
+        subtext?: T;
+      };
+  images?:
+    | T
+    | {
+        logo?: T;
+        hero?: T;
+        heroDim?: T;
+        ogImage?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

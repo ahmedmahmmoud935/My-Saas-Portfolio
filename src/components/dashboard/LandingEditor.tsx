@@ -3,11 +3,12 @@
 import React, { useState } from 'react'
 import PageHeader from './PageHeader'
 import { useDashLang } from './DashLang'
-import { saveLanding } from '@/lib/landing-actions'
+import MediaUploader from './MediaUploader'
+import { saveLanding, type LandingImages, type LandingTheme } from '@/lib/landing-actions'
 import { LANDING_COPY } from '@/lib/landing-copy'
 
 type Copy = (typeof LANDING_COPY)['ar']
-type Form = { ar: Copy; en: Copy }
+type Form = { ar: Copy; en: Copy; theme: LandingTheme; images: LandingImages }
 
 const SECTIONS = [
   { id: 'header', ar: 'الهيدر', en: 'Header' },
@@ -17,6 +18,8 @@ const SECTIONS = [
   { id: 'faq', ar: 'الأسئلة', en: 'FAQ' },
   { id: 'cta', ar: 'دعوة الفعل', en: 'Call to action' },
   { id: 'footer', ar: 'الفوتر', en: 'Footer' },
+  { id: 'style', ar: 'الألوان', en: 'Colours' },
+  { id: 'images', ar: 'الصور', en: 'Images' },
 ] as const
 
 /* Bilingual text field (AR + EN side by side). */
@@ -48,6 +51,19 @@ function Field({
   )
 }
 
+/* Same colour control as the Design tab: caption above a fused swatch + hex. */
+function ColorInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <label className="color-input">
+      <span className="ci-label">{label}</span>
+      <span className="ci-control">
+        <input type="color" value={value || '#000000'} onChange={(e) => onChange(e.target.value)} />
+        <input className="ci-hex" value={value} onChange={(e) => onChange(e.target.value)} dir="ltr" spellCheck={false} />
+      </span>
+    </label>
+  )
+}
+
 export default function LandingEditor({ initial }: { initial: Form }) {
   const [f, setF] = useState<Form>(initial)
   const [sec, setSec] = useState<(typeof SECTIONS)[number]['id']>('hero')
@@ -56,6 +72,8 @@ export default function LandingEditor({ initial }: { initial: Form }) {
   const { t } = useDashLang()
 
   // Deep-ish setters over the two locale copies.
+  const setTheme = (p: Partial<LandingTheme>) => setF((f0) => ({ ...f0, theme: { ...f0.theme, ...p } }))
+  const setImages = (p: Partial<LandingImages>) => setF((f0) => ({ ...f0, images: { ...f0.images, ...p } }))
   const setKey = (key: keyof Copy, v: string, loc: 'ar' | 'en') =>
     setF((p) => ({ ...p, [loc]: { ...p[loc], [key]: v } }))
   const setNav = (key: keyof Copy['nav'], v: string, loc: 'ar' | 'en') =>
@@ -82,7 +100,7 @@ export default function LandingEditor({ initial }: { initial: Form }) {
 
   async function save() {
     setBusy(true)
-    await saveLanding(f.ar, f.en)
+    await saveLanding(f.ar, f.en, f.theme, f.images)
     setBusy(false)
     setToast(true)
     setTimeout(() => setToast(false), 1800)
@@ -174,6 +192,39 @@ export default function LandingEditor({ initial }: { initial: Form }) {
         )}
 
         {sec === 'footer' && <>{scalar('rights', t('حقوق النشر', 'Copyright text'))}</>}
+
+        {sec === 'style' && (
+          <div className="de-colors">
+            <ColorInput label={t('المميّز', 'Accent')} value={f.theme.accent} onChange={(v) => setTheme({ accent: v })} />
+            <ColorInput label={t('الخلفية', 'Background')} value={f.theme.bg} onChange={(v) => setTheme({ bg: v })} />
+            <ColorInput label={t('خلفية الكروت', 'Cards')} value={f.theme.bg2} onChange={(v) => setTheme({ bg2: v })} />
+            <ColorInput label={t('النص', 'Text')} value={f.theme.text} onChange={(v) => setTheme({ text: v })} />
+            <ColorInput label={t('النص الخافت', 'Muted')} value={f.theme.subtext} onChange={(v) => setTheme({ subtext: v })} />
+          </div>
+        )}
+
+        {sec === 'images' && (
+          <>
+            <label className="lbl">{t('لوجو الشريط العلوي', 'Nav logo')}</label>
+            <MediaUploader compact previewUrl={f.images.logoUrl} onUploaded={(m) => setImages({ logoId: m.id, logoUrl: m.thumbUrl })} />
+
+            <label className="lbl" style={{ marginTop: 18, display: 'block' }}>
+              {t('صورة القسم الرئيسي', 'Hero image')}
+            </label>
+            <MediaUploader big dim={f.images.heroDim} previewUrl={f.images.heroUrl} onUploaded={(m) => setImages({ heroId: m.id, heroUrl: m.url ?? m.thumbUrl })} />
+            <div style={{ marginTop: 12 }}>
+              <div className="lbl" style={{ marginBottom: 4 }}>
+                {t('التعتيم', 'Dim')}: {f.images.heroDim}%
+              </div>
+              <input type="range" min={0} max={100} value={f.images.heroDim} onChange={(e) => setImages({ heroDim: Number(e.target.value) })} style={{ width: '100%' }} />
+            </div>
+
+            <label className="lbl" style={{ marginTop: 18, display: 'block' }}>
+              {t('صورة المشاركة (واتساب/تويتر)', 'Share preview image')}
+            </label>
+            <MediaUploader compact previewUrl={f.images.ogUrl} onUploaded={(m) => setImages({ ogId: m.id, ogUrl: m.url ?? m.thumbUrl })} />
+          </>
+        )}
       </div>
 
       {toast && <div className="toast">{t('تم الحفظ ✓', 'Saved ✓')}</div>}
