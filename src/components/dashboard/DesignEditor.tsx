@@ -331,6 +331,7 @@ function ThemePanel({
           <>
             <MediaUploader
               big
+              dim={bg.dim}
               previewUrl={bg.imageUrl}
               label={tr('صورة الخلفية', 'Background image')}
               onUploaded={(m) => setBg({ imageId: m.id, imageUrl: m.url ?? m.thumbUrl })}
@@ -397,7 +398,7 @@ function ThemePanel({
 
             {r.mode === 'image' && (
               <>
-                <MediaUploader big previewUrl={r.imageUrl} label={tr('صورة', 'Image')} onUploaded={(m) => patchRow(i, { imageId: m.id, imageUrl: m.url ?? m.thumbUrl })} />
+                <MediaUploader big dim={r.dim} previewUrl={r.imageUrl} label={tr('صورة', 'Image')} onUploaded={(m) => patchRow(i, { imageId: m.id, imageUrl: m.url ?? m.thumbUrl })} />
                 <Opt
                   label={tr('السلوك عند التمرير', 'Scroll behaviour')}
                   value={r.fixed ? 'fixed' : 'scroll'}

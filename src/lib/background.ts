@@ -33,20 +33,24 @@ const TINTS: Record<string, string> = {
 export function pageBackground(bg?: BgConfig | null): {
   style: CSSProperties
   animated: boolean
+  /** Layer scrolls away with the page instead of being pinned to the viewport. */
+  scrolls: boolean
 } | null {
   if (!bg) return null
   const { type, color1, color2, color3 } = bg
 
   if (type === 'image' && bg.imageUrl) {
+    // The layer is normally pinned to the viewport, which *is* the parallax
+    // look. "Scrolls with the page" therefore can't be done with
+    // background-attachment — the element itself has to stop being fixed.
     return {
       style: {
         backgroundImage: `url(${JSON.stringify(bg.imageUrl)})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        // Parallax: the backdrop holds still while content scrolls over it.
-        backgroundAttachment: bg.imageFixed === false ? 'scroll' : 'fixed',
       },
       animated: false,
+      scrolls: bg.imageFixed === false,
     }
   }
 
@@ -59,6 +63,7 @@ export function pageBackground(bg?: BgConfig | null): {
         backgroundSize: '400% 400%',
       },
       animated: true,
+      scrolls: false,
     }
   }
 
@@ -66,6 +71,7 @@ export function pageBackground(bg?: BgConfig | null): {
     return {
       style: { background: `linear-gradient(160deg, ${color1}, ${color2 || 'transparent'})` },
       animated: false,
+      scrolls: false,
     }
   }
 
@@ -74,10 +80,10 @@ export function pageBackground(bg?: BgConfig | null): {
   // Solid: the chosen colour replaces the palette background, with the
   // decorative tint (if any) sitting on top of it.
   if (type === 'solid' && color1) {
-    return { style: { background: tint ? `${tint}, ${color1}` : color1 }, animated: false }
+    return { style: { background: tint ? `${tint}, ${color1}` : color1 }, animated: false, scrolls: false }
   }
 
-  return tint ? { style: { background: tint }, animated: false } : null
+  return tint ? { style: { background: tint }, animated: false, scrolls: false } : null
 }
 
 /** Dim strength (0–1) to lay over an image background so text stays readable. */

@@ -22,6 +22,7 @@ export default function MediaUploader({
   multiple = false,
   plus = false,
   aspect,
+  dim,
 }: {
   label?: string
   previewUrl?: string | null
@@ -38,6 +39,8 @@ export default function MediaUploader({
   plus?: boolean
   /** CSS aspect-ratio (e.g. '9 / 16') — frames the preview like the real cover. */
   aspect?: string
+  /** 0–100. Lays the same dim over the preview that the site will apply. */
+  dim?: number
 }) {
   const ref = useRef<HTMLInputElement>(null)
   const { t } = useDashLang()
@@ -98,6 +101,9 @@ export default function MediaUploader({
         {input}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={preview} alt="" />
+        {/* Show the dim at its real strength, so the slider previews the
+            published result instead of leaving you to guess. */}
+        {dim !== undefined && <span className="uploader-dim" style={{ opacity: dim / 100 }} />}
         <span className="uploader-replace">
           {busy ? t('جاري الرفع…', 'Uploading…') : t('⟳ استبدال', '⟳ Replace')}
         </span>

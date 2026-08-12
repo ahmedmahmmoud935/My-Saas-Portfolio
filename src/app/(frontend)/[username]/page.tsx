@@ -344,7 +344,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
     >
       {bgDark && (
         <div
-          className={`pf-bg-layer for-dark${bgDark.animated ? ' animated' : ''}`}
+          className={`pf-bg-layer for-dark${bgDark.animated ? ' animated' : ''}${bgDark.scrolls ? ' scrolls' : ''}`}
           style={bgDark.style}
         >
           {isImage(settings?.background) && (
@@ -354,7 +354,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
       )}
       {bgLight && (
         <div
-          className={`pf-bg-layer for-light${bgLight.animated ? ' animated' : ''}`}
+          className={`pf-bg-layer for-light${bgLight.animated ? ' animated' : ''}${bgLight.scrolls ? ' scrolls' : ''}`}
           style={bgLight.style}
         >
           {isImage(settings?.backgroundLight) && (

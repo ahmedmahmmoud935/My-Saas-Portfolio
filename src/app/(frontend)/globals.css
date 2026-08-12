@@ -36,8 +36,10 @@
   min-height: 100vh;
   /* Establish a stacking context so the z-index:-1 background layer paints
      above this element's own background instead of behind it — without it the
-     chosen page background is completely hidden by the palette colour. */
+     chosen page background is completely hidden by the palette colour.
+     `relative` anchors the scrolling variant of that layer to the document. */
   isolation: isolate;
+  position: relative;
 }
 html[data-theme='light'] body {
   background: var(--bg-light, #ffffff);
@@ -2320,6 +2322,14 @@ body {
   inset: 0;
   z-index: -1;
   pointer-events: none;
+}
+/* "Scrolls with the page": the layer covers the whole document instead of
+   being pinned to the viewport. Pinning IS the parallax look, so this can't be
+   done with background-attachment — the element itself has to stop being fixed. */
+.pf-bg-layer.scrolls {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 100%;
 }
 /* Both themes' backdrops are in the markup; only the active one is shown,
    because the theme switch happens in the browser after render. */
