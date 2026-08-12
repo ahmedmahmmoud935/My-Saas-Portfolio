@@ -88,8 +88,11 @@ export default function CardStack({ items }: { items: StackCard[] }) {
             ['--veil' as string]: String(depth * 0.12),
             // Hint the compositor so the deck animates on the GPU.
             willChange: 'transform, opacity',
+            // No transition on ANY card while a finger is down: the deck has to
+            // track the drag 1:1, otherwise the cards behind lag ~0.4s behind
+            // the one you're holding. The easing is for the release.
             transition:
-              start.current !== null && isTop
+              start.current !== null
                 ? 'none'
                 : 'transform .42s cubic-bezier(0.22, 1, 0.36, 1), opacity .42s ease',
           }
