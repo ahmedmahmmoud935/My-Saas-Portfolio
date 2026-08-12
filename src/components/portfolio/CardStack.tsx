@@ -31,7 +31,7 @@ export default function CardStack({ items }: { items: StackCard[] }) {
     window.setTimeout(() => {
       setOrder((o) => (dir === 1 ? [...o.slice(1), o[0]] : [o[o.length - 1], ...o.slice(0, -1)]))
       setExiting(0)
-    }, 340)
+    }, 420)
   }
 
   // Horizontal swipe so it works with touch (vertical stays for page scroll).
@@ -55,12 +55,20 @@ export default function CardStack({ items }: { items: StackCard[] }) {
   if (items.length === 0) return null
   const topOriginal = order[0]
 
+  // How far the deck has advanced, 0→1. While dragging it tracks the finger,
+  // so the cards behind creep forward with the top card instead of sitting
+  // frozen until it has finished leaving and then jumping into place.
+  const advanceT = exiting ? 1 : Math.min(1, Math.abs(drag) / 140)
+
   return (
     <div className="cs-wrap">
       <div className="cs-stack">
         {order.map((itemIdx, rank) => {
           const it = items[itemIdx]
           const isTop = rank === 0
+          // Fractional rank: the deck slides forward continuously.
+          const eff = isTop ? 0 : Math.max(0, rank - advanceT)
+          const depth = Math.min(eff, 4)
           const dragX = isTop ? drag : 0
           const flyX = isTop && exiting ? (exiting === 1 ? -460 : 460) : 0
           const rot = isTop ? (dragX + flyX) * 0.04 : 0
@@ -70,12 +78,14 @@ export default function CardStack({ items }: { items: StackCard[] }) {
             // Rotation folded into the transform: animating `rotate` as its own
             // property meant two separate animations on one element, and they
             // drifted apart just enough to look stuttery.
-            transform: `translate(${dragX + flyX}px, ${-rank * 34}px) scale(${
-              1 - Math.min(rank, 4) * 0.055
+            transform: `translate(${dragX + flyX}px, ${-depth * 34}px) scale(${
+              1 - depth * 0.055
             }) rotate(${rot}deg)`,
             // Depth comes from a dimming overlay in CSS rather than `filter`,
             // which forces a repaint of the whole card on every frame.
-            opacity: isTop && exiting ? 0 : Math.max(0, 1 - Math.max(0, rank - 2) * 0.42),
+            opacity: isTop && exiting ? 0 : Math.max(0, 1 - Math.max(0, eff - 2) * 0.42),
+            // Depth veil, continuous so it tracks the fractional rank.
+            ['--veil' as string]: String(depth * 0.12),
             // Hint the compositor so the deck animates on the GPU.
             willChange: 'transform, opacity',
             transition:
@@ -87,7 +97,6 @@ export default function CardStack({ items }: { items: StackCard[] }) {
             <div
               key={itemIdx}
               className={`cs-card${isTop ? ' top' : ''}`}
-              data-rank={Math.min(rank, 4)}
               style={style}
               onPointerDown={isTop ? onDown : undefined}
               onPointerMove={isTop ? onMove : undefined}

@@ -2570,30 +2570,17 @@ html[data-theme='light'] .pf-sec-dim {
   text-transform: none;
 }
 
-/* Deck depth: a dimming veil per rank, instead of animating `filter` on the
-   card itself (which repainted the whole card every frame and made the flip
-   feel choppy). */
-.cs-card[data-rank]::after {
+/* Deck depth: a dimming veil driven by the card's (fractional) rank, instead
+   of animating `filter` on the card itself — that repainted the whole card
+   every frame. The value is continuous so the veil eases as the deck slides. */
+.cs-card::after {
   content: '';
   position: absolute;
   inset: 0;
   border-radius: inherit;
   background: #000;
-  opacity: 0;
+  opacity: var(--veil, 0);
   pointer-events: none;
-  transition: opacity 0.42s ease;
-}
-.cs-card[data-rank='1']::after {
-  opacity: 0.12;
-}
-.cs-card[data-rank='2']::after {
-  opacity: 0.24;
-}
-.cs-card[data-rank='3']::after {
-  opacity: 0.36;
-}
-.cs-card[data-rank='4']::after {
-  opacity: 0.48;
 }
 
 /* Nav links jump between sections, so ease the jump — and keep the landing
@@ -2606,4 +2593,58 @@ html:has(.pf-root) {
   html:has(.pf-root) {
     scroll-behavior: auto;
   }
+}
+
+/* ═══ Component styles (Design → Theme → General → Components) ═══════════ */
+
+/* Cards. `--card-bg` / `--card-border` are what every panel surface reads. */
+.pf-root {
+  --card-bg: var(--bg-2);
+  --card-border: var(--border);
+  --card-blur: none;
+}
+.pf-root[data-card='glass'] {
+  --card-bg: color-mix(in srgb, var(--bg-2) 55%, transparent);
+  --card-border: color-mix(in srgb, var(--text) 14%, transparent);
+  --card-blur: blur(14px);
+}
+.pf-root[data-card='outline'] {
+  --card-bg: transparent;
+  --card-border: color-mix(in srgb, var(--text) 22%, transparent);
+}
+.pf-root[data-card] .card,
+.pf-root[data-card] .project-card,
+.pf-root[data-card] .cs-card,
+.pf-root[data-card] .counter,
+.pf-root[data-card] .exp-item,
+.pf-root[data-card] .tool-item,
+.pf-root[data-card] .edu-item,
+.pf-root[data-card] .testimonial,
+.pf-root[data-card] .contact-card,
+.pf-root[data-card] .chip {
+  background: var(--card-bg);
+  border-color: var(--card-border);
+  backdrop-filter: var(--card-blur);
+}
+
+/* Navbar */
+.pf-root[data-navbar='solid'] .nav {
+  background: var(--bg);
+  backdrop-filter: none;
+}
+.pf-root[data-navbar='transparent'] .nav {
+  background: transparent;
+  backdrop-filter: none;
+  border-bottom-color: transparent;
+}
+
+/* Buttons — one radius token drives every button and pill. */
+.pf-root[data-btn='pill'] {
+  --radius-btn: 999px;
+}
+.pf-root[data-btn='sharp'] {
+  --radius-btn: 2px;
+}
+.pf-root[data-btn='rounded'] {
+  --radius-btn: 10px;
 }

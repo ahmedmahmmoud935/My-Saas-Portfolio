@@ -314,6 +314,9 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
 
   // Design → runtime: fonts / motion / direction / decorative background.
   const st = (settings?.style ?? {}) as Record<string, string | undefined>
+  // Component styles were being saved but never read — nothing on the page
+  // looked at them, so the Components picker did nothing.
+  const comp = (settings?.themeConfig?.components ?? {}) as Record<string, string | undefined>
   const dirOverride: 'ltr' | 'rtl' =
     st.direction === 'ltr' ? 'ltr' : st.direction === 'rtl' ? 'rtl' : locale === 'en' ? 'ltr' : 'rtl'
   // Both themes' backgrounds are rendered; CSS shows whichever theme is active,
@@ -342,6 +345,9 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
       data-font={st.font || 'default'}
       data-anim={st.anim || 'fade-up'}
       data-cursor={st.cursor || 'default'}
+      data-card={comp.card || 'solid'}
+      data-navbar={comp.navbar || 'blur'}
+      data-btn={comp.button || 'rounded'}
     >
       {bgDark && (
         <div
