@@ -40,7 +40,7 @@ export default async function ContentPage() {
       btn1: L(c.hero?.btn1),
       btn2: L(c.hero?.btn2),
     },
-    about: { text: L(c.about?.text), tags: L(c.about?.tags) },
+    about: { title: L(c.about?.title), text: L(c.about?.text), tags: L(c.about?.tags) },
     expertise: {
       title: L(c.expertise?.title),
       items: ((c.expertise?.items as Record<string, unknown>[]) ?? []).map((it) => ({
@@ -59,6 +59,7 @@ export default async function ContentPage() {
       })),
     },
     experience: {
+      title: L(c.experience?.title),
       items: ((c.experience?.items as Record<string, unknown>[]) ?? []).map((it) => ({
         company: S(it.company),
         role: L(it.role),
@@ -67,6 +68,7 @@ export default async function ContentPage() {
       })),
     },
     education: {
+      title: L(c.education?.title),
       items: ((c.education?.items as Record<string, unknown>[]) ?? []).map((it) => ({
         title: L(it.title),
         org: L(it.org),
@@ -74,14 +76,17 @@ export default async function ContentPage() {
         description: L(it.description),
       })),
     },
-    skills: { items: L(c.skills?.items) },
+    skills: { title: L(c.skills?.title), items: L(c.skills?.items) },
     tools: {
+      title: L(c.tools?.title),
       items: ((c.tools?.items as Record<string, unknown>[]) ?? []).map((it) => ({
         name: S(it.name),
         ...iconOf(it.icon),
       })),
     },
     projects: { title: L(c.projects?.title), subtitle: L(c.projects?.subtitle) },
+    clients: { title: L(c.clients?.title) },
+    testimonials: { title: L(c.testimonials?.title) },
     contact: {
       title: L(c.contact?.title),
       subtitle: L(c.contact?.subtitle),

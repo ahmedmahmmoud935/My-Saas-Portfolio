@@ -123,7 +123,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
     ),
     about: (
       <About
-        title="About Me"
+        title={content.about?.title || 'About Me'}
         photoUrl={mediaUrl(brand.photo)}
         text={content.about?.text || undefined}
         tags={splitTags(content.about?.tags)}
@@ -198,7 +198,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
     ),
     experience: (
       <Experience
-        title="Experience"
+        title={content.experience?.title || 'Experience'}
         variant={settings?.style?.exp || 'classic'}
         items={(content.experience?.items ?? []).map((it) => ({
           company: it.company,
@@ -210,7 +210,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
     ),
     tools: (
       <Tools
-        title="Tools & Software"
+        title={content.tools?.title || 'Tools & Software'}
         variant={settings?.style?.tools || 'classic'}
         items={(content.tools?.items ?? []).map((it) => ({
           name: it.name,
@@ -220,7 +220,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
     ),
     education: (
       <Education
-        title="Education"
+        title={content.education?.title || 'Education'}
         items={(content.education?.items ?? []).map((it) => ({
           title: it.title,
           org: it.org,
@@ -231,7 +231,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
     ),
     skills: (
       <Skills
-        title="Soft Skills"
+        title={content.skills?.title || 'Soft Skills'}
         variant={settings?.style?.skills || 'tags'}
         items={(content.skills?.items || '')
           .split(',')
@@ -246,7 +246,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
     ),
     logos: (
       <Logos
-        title="Our Clients"
+        title={content.clients?.title || 'Our Clients'}
         items={logos.map((l) => ({
           id: l.id,
           name: l.name,
@@ -257,7 +257,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
     ),
     testimonials: (
       <Testimonials
-        title="Testimonials"
+        title={content.testimonials?.title || 'Testimonials'}
         items={testimonials.map((t) => ({
           id: t.id,
           name: t.name,

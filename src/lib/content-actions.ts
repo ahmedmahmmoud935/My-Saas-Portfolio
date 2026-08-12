@@ -21,7 +21,7 @@ function buildContent(form: ContentForm, loc: 'ar' | 'en', ids?: IdMap) {
       btn1: g(form.hero.btn1),
       btn2: g(form.hero.btn2),
     },
-    about: { text: g(form.about.text), tags: g(form.about.tags) },
+    about: { title: g(form.about.title), text: g(form.about.text), tags: g(form.about.tags) },
     expertise: {
       title: g(form.expertise.title),
       items: form.expertise.items.map((it, i) => ({
@@ -37,6 +37,7 @@ function buildContent(form: ContentForm, loc: 'ar' | 'en', ids?: IdMap) {
       })),
     },
     experience: {
+      title: g(form.experience.title),
       items: form.experience.items.map((it, i) => ({
         ...withId(ids?.experience[i]),
         company: it.company,
@@ -46,6 +47,7 @@ function buildContent(form: ContentForm, loc: 'ar' | 'en', ids?: IdMap) {
       })),
     },
     education: {
+      title: g(form.education.title),
       items: form.education.items.map((it, i) => ({
         ...withId(ids?.education[i]),
         title: g(it.title),
@@ -54,8 +56,9 @@ function buildContent(form: ContentForm, loc: 'ar' | 'en', ids?: IdMap) {
         description: g(it.description),
       })),
     },
-    skills: { items: g(form.skills.items) },
+    skills: { title: g(form.skills.title), items: g(form.skills.items) },
     tools: {
+      title: g(form.tools.title),
       items: form.tools.items.map((it, i) => ({
         ...withId(ids?.tools[i]),
         name: it.name,
@@ -63,6 +66,8 @@ function buildContent(form: ContentForm, loc: 'ar' | 'en', ids?: IdMap) {
       })),
     },
     projects: { title: g(form.projects.title), subtitle: g(form.projects.subtitle) },
+    clients: { title: g(form.clients.title) },
+    testimonials: { title: g(form.testimonials.title) },
     contact: {
       title: g(form.contact.title),
       subtitle: g(form.contact.subtitle),

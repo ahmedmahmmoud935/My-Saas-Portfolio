@@ -716,6 +716,7 @@ export interface SiteSetting {
       btn2?: string | null;
     };
     about?: {
+      title?: string | null;
       text?: string | null;
       /**
        * Comma-separated.
@@ -745,6 +746,7 @@ export interface SiteSetting {
         | null;
     };
     experience?: {
+      title?: string | null;
       items?:
         | {
             company?: string | null;
@@ -756,6 +758,7 @@ export interface SiteSetting {
         | null;
     };
     education?: {
+      title?: string | null;
       items?:
         | {
             title?: string | null;
@@ -767,12 +770,20 @@ export interface SiteSetting {
         | null;
     };
     skills?: {
+      title?: string | null;
       /**
        * Comma-separated.
        */
       items?: string | null;
     };
+    clients?: {
+      title?: string | null;
+    };
+    testimonials?: {
+      title?: string | null;
+    };
     tools?: {
+      title?: string | null;
       items?:
         | {
             name?: string | null;
@@ -1398,6 +1409,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         about?:
           | T
           | {
+              title?: T;
               text?: T;
               tags?: T;
             };
@@ -1422,6 +1434,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         experience?:
           | T
           | {
+              title?: T;
               items?:
                 | T
                 | {
@@ -1435,6 +1448,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         education?:
           | T
           | {
+              title?: T;
               items?:
                 | T
                 | {
@@ -1448,11 +1462,23 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         skills?:
           | T
           | {
+              title?: T;
               items?: T;
+            };
+        clients?:
+          | T
+          | {
+              title?: T;
+            };
+        testimonials?:
+          | T
+          | {
+              title?: T;
             };
         tools?:
           | T
           | {
+              title?: T;
               items?:
                 | T
                 | {

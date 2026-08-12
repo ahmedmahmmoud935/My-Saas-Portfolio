@@ -528,6 +528,7 @@ export const SiteSettings: CollectionConfig = {
                   name: 'about',
                   type: 'group',
                   fields: [
+                    { name: 'title', type: 'text', localized: true },
                     { name: 'text', type: 'textarea', localized: true },
                     { name: 'tags', type: 'text', localized: true, admin: { description: 'Comma-separated.' } },
                   ],
@@ -558,6 +559,7 @@ export const SiteSettings: CollectionConfig = {
                   name: 'experience',
                   type: 'group',
                   fields: [
+                    { name: 'title', type: 'text', localized: true },
                     {
                       name: 'items',
                       type: 'array',
@@ -574,6 +576,7 @@ export const SiteSettings: CollectionConfig = {
                   name: 'education',
                   type: 'group',
                   fields: [
+                    { name: 'title', type: 'text', localized: true },
                     {
                       name: 'items',
                       type: 'array',
@@ -590,13 +593,28 @@ export const SiteSettings: CollectionConfig = {
                   name: 'skills',
                   type: 'group',
                   fields: [
+                    { name: 'title', type: 'text', localized: true },
                     { name: 'items', type: 'text', localized: true, admin: { description: 'Comma-separated.' } },
                   ],
+                },
+                // Section headings for the two collection-driven sections. They
+                // have no other editable content, but the heading still has to
+                // be translatable like every other section.
+                {
+                  name: 'clients',
+                  type: 'group',
+                  fields: [{ name: 'title', type: 'text', localized: true }],
+                },
+                {
+                  name: 'testimonials',
+                  type: 'group',
+                  fields: [{ name: 'title', type: 'text', localized: true }],
                 },
                 {
                   name: 'tools',
                   type: 'group',
                   fields: [
+                    { name: 'title', type: 'text', localized: true },
                     {
                       name: 'items',
                       type: 'array',

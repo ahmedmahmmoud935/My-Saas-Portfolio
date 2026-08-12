@@ -135,6 +135,7 @@ export default function ContentEditor({ initial }: { initial: ContentForm }) {
 
         {sec === 'about' && (
           <>
+            <LocField label={t('عنوان القسم', 'Section title')} value={f.about.title} onChange={(v) => patch({ about: { ...f.about, title: v } })} />
             <LocField label={t('النبذة', 'Bio')} multiline value={f.about.text} onChange={(v) => patch({ about: { ...f.about, text: v } })} />
             <LocField label={t('الوسوم (مفصولة بفاصلة)', 'Tags (comma separated)')} value={f.about.tags} onChange={(v) => patch({ about: { ...f.about, tags: v } })} />
           </>
@@ -171,49 +172,55 @@ export default function ContentEditor({ initial }: { initial: ContentForm }) {
 
         {sec === 'experience' && (
           <>
+            <LocField label={t('عنوان القسم', 'Section title')} value={f.experience.title} onChange={(v) => patch({ experience: { ...f.experience, title: v } })} />
             {f.experience.items.map((it, i) => (
-              <ArrayCard key={i} onRemove={() => patch({ experience: { items: f.experience.items.filter((_, j) => j !== i) } })}>
+              <ArrayCard key={i} onRemove={() => patch({ experience: { ...f.experience, items: f.experience.items.filter((_, j) => j !== i) } })}>
                 <label className="lbl">{t('الشركة', 'Company')}</label>
-                <input className="field" value={it.company} onChange={(e) => patch({ experience: { items: f.experience.items.map((x, j) => (j === i ? { ...x, company: e.target.value } : x)) } })} />
-                <LocField label={t('المسمى الوظيفي', 'Job title')} value={it.role} onChange={(v) => patch({ experience: { items: f.experience.items.map((x, j) => (j === i ? { ...x, role: v } : x)) } })} />
+                <input className="field" value={it.company} onChange={(e) => patch({ experience: { ...f.experience, items: f.experience.items.map((x, j) => (j === i ? { ...x, company: e.target.value } : x)) } })} />
+                <LocField label={t('المسمى الوظيفي', 'Job title')} value={it.role} onChange={(v) => patch({ experience: { ...f.experience, items: f.experience.items.map((x, j) => (j === i ? { ...x, role: v } : x)) } })} />
                 <label className="lbl">{t('الفترة', 'Period')}</label>
-                <input className="field" value={it.period} onChange={(e) => patch({ experience: { items: f.experience.items.map((x, j) => (j === i ? { ...x, period: e.target.value } : x)) } })} />
-                <LocField label={t('الوصف', 'Description')} multiline value={it.description} onChange={(v) => patch({ experience: { items: f.experience.items.map((x, j) => (j === i ? { ...x, description: v } : x)) } })} />
+                <input className="field" value={it.period} onChange={(e) => patch({ experience: { ...f.experience, items: f.experience.items.map((x, j) => (j === i ? { ...x, period: e.target.value } : x)) } })} />
+                <LocField label={t('الوصف', 'Description')} multiline value={it.description} onChange={(v) => patch({ experience: { ...f.experience, items: f.experience.items.map((x, j) => (j === i ? { ...x, description: v } : x)) } })} />
               </ArrayCard>
             ))}
-            <button className="btn btn-ghost" onClick={() => patch({ experience: { items: [...f.experience.items, { company: '', role: emptyLoc(), period: '', description: emptyLoc() }] } })}>+ {t('خبرة', 'Experience')}</button>
+            <button className="btn btn-ghost" onClick={() => patch({ experience: { ...f.experience, items: [...f.experience.items, { company: '', role: emptyLoc(), period: '', description: emptyLoc() }] } })}>+ {t('خبرة', 'Experience')}</button>
           </>
         )}
 
         {sec === 'education' && (
           <>
+            <LocField label={t('عنوان القسم', 'Section title')} value={f.education.title} onChange={(v) => patch({ education: { ...f.education, title: v } })} />
             {f.education.items.map((it, i) => (
-              <ArrayCard key={i} onRemove={() => patch({ education: { items: f.education.items.filter((_, j) => j !== i) } })}>
-                <LocField label={t('المؤهل', 'Degree')} value={it.title} onChange={(v) => patch({ education: { items: f.education.items.map((x, j) => (j === i ? { ...x, title: v } : x)) } })} />
-                <LocField label={t('الجهة', 'Institution')} value={it.org} onChange={(v) => patch({ education: { items: f.education.items.map((x, j) => (j === i ? { ...x, org: v } : x)) } })} />
+              <ArrayCard key={i} onRemove={() => patch({ education: { ...f.education, items: f.education.items.filter((_, j) => j !== i) } })}>
+                <LocField label={t('المؤهل', 'Degree')} value={it.title} onChange={(v) => patch({ education: { ...f.education, items: f.education.items.map((x, j) => (j === i ? { ...x, title: v } : x)) } })} />
+                <LocField label={t('الجهة', 'Institution')} value={it.org} onChange={(v) => patch({ education: { ...f.education, items: f.education.items.map((x, j) => (j === i ? { ...x, org: v } : x)) } })} />
                 <label className="lbl">{t('الفترة', 'Period')}</label>
-                <input className="field" value={it.period} onChange={(e) => patch({ education: { items: f.education.items.map((x, j) => (j === i ? { ...x, period: e.target.value } : x)) } })} />
+                <input className="field" value={it.period} onChange={(e) => patch({ education: { ...f.education, items: f.education.items.map((x, j) => (j === i ? { ...x, period: e.target.value } : x)) } })} />
               </ArrayCard>
             ))}
-            <button className="btn btn-ghost" onClick={() => patch({ education: { items: [...f.education.items, { title: emptyLoc(), org: emptyLoc(), period: '', description: emptyLoc() }] } })}>+ {t('مؤهل', 'Qualification')}</button>
+            <button className="btn btn-ghost" onClick={() => patch({ education: { ...f.education, items: [...f.education.items, { title: emptyLoc(), org: emptyLoc(), period: '', description: emptyLoc() }] } })}>+ {t('مؤهل', 'Qualification')}</button>
           </>
         )}
 
         {sec === 'skills' && (
-          <LocField label={t('المهارات (مفصولة بفاصلة)', 'Skills (comma separated)')} value={f.skills.items} onChange={(v) => patch({ skills: { items: v } })} />
+          <>
+            <LocField label={t('عنوان القسم', 'Section title')} value={f.skills.title} onChange={(v) => patch({ skills: { ...f.skills, title: v } })} />
+            <LocField label={t('المهارات (مفصولة بفاصلة)', 'Skills (comma separated)')} value={f.skills.items} onChange={(v) => patch({ skills: { ...f.skills, items: v } })} />
+          </>
         )}
 
         {sec === 'tools' && (
           <>
+            <LocField label={t('عنوان القسم', 'Section title')} value={f.tools.title} onChange={(v) => patch({ tools: { ...f.tools, title: v } })} />
             {f.tools.items.map((it, i) => (
-              <ArrayCard key={i} onRemove={() => patch({ tools: { items: f.tools.items.filter((_, j) => j !== i) } })}>
+              <ArrayCard key={i} onRemove={() => patch({ tools: { ...f.tools, items: f.tools.items.filter((_, j) => j !== i) } })}>
                 <label className="lbl">{t('الاسم', 'Name')}</label>
-                <input className="field" value={it.name} onChange={(e) => patch({ tools: { items: f.tools.items.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)) } })} />
+                <input className="field" value={it.name} onChange={(e) => patch({ tools: { ...f.tools, items: f.tools.items.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)) } })} />
                 <label className="lbl">{t('أيقونة', 'Icon')}</label>
-                <MediaUploader compact previewUrl={it.iconUrl} onUploaded={(u) => patch({ tools: { items: f.tools.items.map((x, j) => (j === i ? { ...x, iconId: u.id, iconUrl: u.thumbUrl } : x)) } })} />
+                <MediaUploader compact previewUrl={it.iconUrl} onUploaded={(u) => patch({ tools: { ...f.tools, items: f.tools.items.map((x, j) => (j === i ? { ...x, iconId: u.id, iconUrl: u.thumbUrl } : x)) } })} />
               </ArrayCard>
             ))}
-            <button className="btn btn-ghost" onClick={() => patch({ tools: { items: [...f.tools.items, { name: '', iconId: null, iconUrl: null }] } })}>+ {t('أداة', 'Tool')}</button>
+            <button className="btn btn-ghost" onClick={() => patch({ tools: { ...f.tools, items: [...f.tools.items, { name: '', iconId: null, iconUrl: null }] } })}>+ {t('أداة', 'Tool')}</button>
           </>
         )}
 
@@ -222,6 +229,14 @@ export default function ContentEditor({ initial }: { initial: ContentForm }) {
             <LocField label={t('عنوان قسم المشاريع', 'Projects section title')} value={f.projects.title} onChange={(v) => patch({ projects: { ...f.projects, title: v } })} />
             <LocField label={t('العنوان الفرعي', 'Subtitle')} value={f.projects.subtitle} onChange={(v) => patch({ projects: { ...f.projects, subtitle: v } })} />
           </>
+        )}
+
+        {sec === 'clients' && (
+          <LocField label={t('عنوان القسم', 'Section title')} value={f.clients.title} onChange={(v) => patch({ clients: { ...f.clients, title: v } })} />
+        )}
+
+        {sec === 'testimonials' && (
+          <LocField label={t('عنوان القسم', 'Section title')} value={f.testimonials.title} onChange={(v) => patch({ testimonials: { ...f.testimonials, title: v } })} />
         )}
 
         {sec === 'contact' && (

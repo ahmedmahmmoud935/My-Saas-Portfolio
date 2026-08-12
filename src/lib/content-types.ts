@@ -21,13 +21,16 @@ export type ToolItem = { name: string; iconId: number | null; iconUrl: string | 
 
 export type ContentForm = {
   hero: { name: Loc; title: Loc; btn1: Loc; btn2: Loc }
-  about: { text: Loc; tags: Loc }
+  about: { title: Loc; text: Loc; tags: Loc }
   expertise: { title: Loc; items: ExpertiseItem[] }
-  experience: { items: ExperienceItem[] }
-  education: { items: EducationItem[] }
-  skills: { items: Loc }
-  tools: { items: ToolItem[] }
+  experience: { title: Loc; items: ExperienceItem[] }
+  education: { title: Loc; items: EducationItem[] }
+  skills: { title: Loc; items: Loc }
+  tools: { title: Loc; items: ToolItem[] }
   projects: { title: Loc; subtitle: Loc }
+  // Headings only — the entries themselves live in their own collections.
+  clients: { title: Loc }
+  testimonials: { title: Loc }
   contact: { title: Loc; subtitle: Loc; email: string; phone: string }
 }
 
@@ -42,5 +45,7 @@ export const CONTENT_SECTIONS: { id: keyof ContentForm; label: string }[] = [
   { id: 'skills', label: 'المهارات' },
   { id: 'tools', label: 'الأدوات' },
   { id: 'projects', label: 'المشاريع' },
+  { id: 'clients', label: 'العملاء' },
+  { id: 'testimonials', label: 'الآراء' },
   { id: 'contact', label: 'التواصل' },
 ]
