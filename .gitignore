@@ -34,5 +34,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 
-# generated
-/src/app/(payload)/admin/importMap.js
+# NOTE: (payload)/admin/importMap.js is generated, but it is committed on
+# purpose. `pnpm build` regenerates it first, so it can't go stale — and having
+# it in the build context means a container build can still resolve it if that
+# generation step no-ops (which is how the 2026-08-12 deploy broke).
