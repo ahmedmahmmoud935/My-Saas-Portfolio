@@ -24,6 +24,45 @@ const SECTION_IDS = [
   'contact',
 ] as const
 
+/**
+ * One page background. Used twice — once per theme — so the light and dark
+ * themes can look completely different rather than sharing a single backdrop.
+ */
+const backgroundFields = () => [
+  {
+    name: 'preset',
+    type: 'select' as const,
+    defaultValue: 'dark',
+    options: ['dark', 'ocean', 'sunset', 'forest', 'mono', 'pearl'].map((v) => ({
+      label: v,
+      value: v,
+    })),
+  },
+  {
+    name: 'type',
+    type: 'select' as const,
+    defaultValue: 'solid',
+    options: [
+      { label: 'Solid', value: 'solid' },
+      { label: 'Gradient', value: 'gradient' },
+      { label: 'Animated gradient', value: 'animated' },
+      { label: 'Image', value: 'image' },
+    ],
+  },
+  { name: 'color1', type: 'text' as const },
+  { name: 'color2', type: 'text' as const },
+  // Third stop — only the animated gradient uses it.
+  { name: 'color3', type: 'text' as const },
+  { name: 'image', type: 'upload' as const, relationTo: 'media' as const },
+  {
+    name: 'imageFixed',
+    type: 'checkbox' as const,
+    defaultValue: true,
+    label: 'Image stays put while the page scrolls',
+  },
+  { name: 'dim', type: 'number' as const, defaultValue: 55, min: 0, max: 100 },
+]
+
 export const SiteSettings: CollectionConfig = {
   slug: 'site-settings',
   labels: { singular: 'Site settings', plural: 'Site settings' },
@@ -145,30 +184,41 @@ export const SiteSettings: CollectionConfig = {
                 { name: 'subtextLight', type: 'text', defaultValue: '#495265' },
               ],
             },
+            // Page background, one per theme. `background` is the dark theme's
+            // (kept under the original name so existing data still applies).
+            { name: 'background', type: 'group', fields: backgroundFields() },
+            { name: 'backgroundLight', type: 'group', fields: backgroundFields() },
             {
-              name: 'background',
-              type: 'group',
+              name: 'sectionBg',
+              type: 'array',
+              label: 'Per-section backgrounds',
+              admin: {
+                description:
+                  'Override individual sections: a flat colour (per theme), an image, or a video. Sections not listed here use the page background.',
+              },
               fields: [
                 {
-                  name: 'preset',
+                  name: 'section',
                   type: 'select',
-                  defaultValue: 'dark',
-                  options: ['dark', 'ocean', 'sunset', 'forest', 'mono', 'pearl'].map((v) => ({
-                    label: v,
-                    value: v,
-                  })),
+                  options: SECTION_IDS.map((v) => ({ label: v, value: v })),
                 },
                 {
-                  name: 'type',
+                  name: 'mode',
                   type: 'select',
-                  defaultValue: 'solid',
+                  defaultValue: 'color',
                   options: [
-                    { label: 'Solid', value: 'solid' },
-                    { label: 'Gradient', value: 'gradient' },
+                    { label: 'Colour', value: 'color' },
+                    { label: 'Image', value: 'image' },
+                    { label: 'Video', value: 'video' },
                   ],
                 },
-                { name: 'color1', type: 'text' },
-                { name: 'color2', type: 'text' },
+                // Colour is per theme; the media is shared between the two.
+                { name: 'color', type: 'text', label: 'Colour (dark theme)' },
+                { name: 'colorLight', type: 'text', label: 'Colour (light theme)' },
+                { name: 'image', type: 'upload', relationTo: 'media' },
+                { name: 'videoUrl', type: 'text' },
+                { name: 'fixed', type: 'checkbox', label: 'Parallax (background stays put)' },
+                { name: 'dim', type: 'number', defaultValue: 45, min: 0, max: 100 },
               ],
             },
             {

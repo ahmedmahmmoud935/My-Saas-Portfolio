@@ -1,5 +1,99 @@
 // Client-safe types + option lists for the Design tab (no server imports).
 
+/** One theme's page background. */
+export type BgForm = {
+  preset: string
+  /** solid | gradient | animated | image */
+  type: string
+  color1: string
+  color2: string
+  color3: string
+  imageId: number | null
+  imageUrl: string | null
+  imageFixed: boolean
+  dim: number
+}
+
+/** A backdrop for a single section, overriding the page background. */
+export type SectionBgForm = {
+  section: string
+  /** color | image | video */
+  mode: string
+  color: string
+  colorLight: string
+  imageId: number | null
+  imageUrl: string | null
+  videoUrl: string
+  fixed: boolean
+  dim: number
+}
+
+export const emptyBg = (): BgForm => ({
+  preset: 'dark',
+  type: 'solid',
+  color1: '',
+  color2: '',
+  color3: '',
+  imageId: null,
+  imageUrl: null,
+  imageFixed: true,
+  dim: 55,
+})
+
+export const emptySectionBg = (): SectionBgForm => ({
+  section: 'about',
+  mode: 'color',
+  color: '',
+  colorLight: '',
+  imageId: null,
+  imageUrl: null,
+  videoUrl: '',
+  fixed: false,
+  dim: 45,
+})
+
+/** Sections a backdrop can be attached to (matches SECTION_IDS server-side). */
+export const BG_SECTIONS: { id: string; ar: string; en: string }[] = [
+  { id: 'hero', ar: 'الرئيسية', en: 'Hero' },
+  { id: 'about', ar: 'عن النفس', en: 'About' },
+  { id: 'projects', ar: 'المشاريع', en: 'Projects' },
+  { id: 'achievements', ar: 'الإنجازات', en: 'Achievements' },
+  { id: 'expertise', ar: 'الخدمات', en: 'Services' },
+  { id: 'testimonials', ar: 'الآراء', en: 'Testimonials' },
+  { id: 'logos', ar: 'العملاء', en: 'Clients' },
+  { id: 'experience', ar: 'الخبرات', en: 'Experience' },
+  { id: 'tools', ar: 'الأدوات', en: 'Tools' },
+  { id: 'education', ar: 'التعليم', en: 'Education' },
+  { id: 'skills', ar: 'المهارات', en: 'Skills' },
+  { id: 'contact', ar: 'التواصل', en: 'Contact' },
+]
+
+/** Ready-made gradients, offered per background type. */
+export const GRADIENT_SUGGESTIONS: { name: string; dark: string[]; light: string[] }[] = [
+  { name: 'Midnight', dark: ['#0F172A', '#1E293B'], light: ['#E2E8F0', '#F8FAFC'] },
+  { name: 'Ember', dark: ['#1C0A00', '#7C2D12'], light: ['#FFF7ED', '#FFEDD5'] },
+  { name: 'Ocean', dark: ['#082F49', '#0E7490'], light: ['#ECFEFF', '#CFFAFE'] },
+  { name: 'Forest', dark: ['#052E16', '#166534'], light: ['#F0FDF4', '#DCFCE7'] },
+  { name: 'Violet', dark: ['#2E1065', '#6D28D9'], light: ['#F5F3FF', '#EDE9FE'] },
+  { name: 'Mono', dark: ['#000000', '#1F1F1F'], light: ['#FFFFFF', '#F1F1F1'] },
+]
+
+/** Three-stop sets that read well once they're moving. */
+export const ANIMATED_SUGGESTIONS: { name: string; dark: string[]; light: string[] }[] = [
+  { name: 'Aurora', dark: ['#0F172A', '#7C3AED', '#0EA5E9'], light: ['#EDE9FE', '#DBEAFE', '#FAE8FF'] },
+  { name: 'Sunset', dark: ['#1E1B4B', '#B91C1C', '#F97316'], light: ['#FFE4E6', '#FFEDD5', '#FEF3C7'] },
+  { name: 'Lagoon', dark: ['#022C22', '#0F766E', '#0284C7'], light: ['#ECFDF5', '#CFFAFE', '#E0F2FE'] },
+  { name: 'Nebula', dark: ['#111827', '#4C1D95', '#BE185D'], light: ['#F3F4F6', '#EDE9FE', '#FCE7F3'] },
+]
+
+/** Flat page colours. */
+export const SOLID_SUGGESTIONS: { name: string; dark: string; light: string }[] = [
+  { name: 'Ink', dark: '#0A0A0A', light: '#FFFFFF' },
+  { name: 'Slate', dark: '#0F172A', light: '#F8FAFC' },
+  { name: 'Coffee', dark: '#1C1917', light: '#FAF9F7' },
+  { name: 'Navy', dark: '#0B1120', light: '#F1F5F9' },
+]
+
 export type DesignForm = {
   colors: {
     accent: string
@@ -13,7 +107,9 @@ export type DesignForm = {
     textLight: string
     subtextLight: string
   }
-  background: { preset: string; type: string; color1: string; color2: string }
+  background: BgForm
+  backgroundLight: BgForm
+  sectionBg: SectionBgForm[]
   style: {
     theme: string
     hero: string
@@ -110,7 +206,9 @@ export const emptyDesign = (): DesignForm => ({
     textLight: '#0C0F16',
     subtextLight: '#495265',
   },
-  background: { preset: 'dark', type: 'solid', color1: '', color2: '' },
+  background: emptyBg(),
+  backgroundLight: { ...emptyBg(), preset: 'pearl' },
+  sectionBg: [],
   style: {
     theme: 'default',
     hero: 'centered',

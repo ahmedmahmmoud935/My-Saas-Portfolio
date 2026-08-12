@@ -17,6 +17,13 @@ import {
   DIRECTION_OPTIONS,
   DARK_PALETTES,
   LIGHT_PALETTES,
+  BG_SECTIONS,
+  GRADIENT_SUGGESTIONS,
+  ANIMATED_SUGGESTIONS,
+  SOLID_SUGGESTIONS,
+  emptySectionBg,
+  type BgForm,
+  type SectionBgForm,
   type DesignForm,
 } from '@/lib/design-types'
 
@@ -80,12 +87,12 @@ const TOP_TABS = [
 
 type TopTab = (typeof TOP_TABS)[number]['id']
 
+// One tab per theme (each owns its palette, page background and per-section
+// backdrops), plus the settings that are shared by both.
 const THEME_SUBS = [
-  { id: 'colors', ar: 'الألوان', en: 'Colors', icon: 'palette' },
-  { id: 'background', ar: 'الخلفيات', en: 'Backgrounds', icon: 'image' },
-  { id: 'components', ar: 'المكوّنات', en: 'Components', icon: 'grid' },
-  { id: 'fonts', ar: 'الخطوط', en: 'Fonts', icon: 'text' },
-  { id: 'motion', ar: 'الحركة', en: 'Motion', icon: 'sparkles' },
+  { id: 'light', ar: 'ثيم فاتح', en: 'Light theme', icon: 'sun' },
+  { id: 'dark', ar: 'ثيم داكن', en: 'Dark theme', icon: 'moon' },
+  { id: 'general', ar: 'إعدادات عامة', en: 'General', icon: 'design' },
 ] as const
 
 type ThemeSub = (typeof THEME_SUBS)[number]['id']
@@ -172,10 +179,250 @@ function Slider({ label, value, min, max, onChange, suffix }: { label: string; v
   )
 }
 
+/**
+ * Everything that belongs to one theme: its palette, the page background, and
+ * any per-section backdrops. Rendered twice — once for light, once for dark —
+ * so the two can be styled completely independently.
+ */
+function ThemePanel({
+  mode,
+  f,
+  tr,
+  setColors,
+  setBgFor,
+  setSectionBg,
+}: {
+  mode: 'light' | 'dark'
+  f: DesignForm
+  tr: (ar: string, en: string) => string
+  setColors: (p: Partial<DesignForm['colors']>) => void
+  setBgFor: (mode: 'dark' | 'light', p: Partial<BgForm>) => void
+  setSectionBg: (rows: SectionBgForm[]) => void
+}) {
+  const dark = mode === 'dark'
+  const bg = dark ? f.background : f.backgroundLight
+  const setBg = (p: Partial<BgForm>) => setBgFor(mode, p)
+  const palettes = dark ? DARK_PALETTES : LIGHT_PALETTES
+
+  // Colour keys differ between the two halves of the palette.
+  const c = dark
+    ? { accent: 'accent', bg: 'bg', bg2: 'bg2', text: 'text', sub: 'subtext' }
+    : { accent: 'accentLight', bg: 'bgLight', bg2: 'bg2Light', text: 'textLight', sub: 'subtextLight' }
+  const cv = (k: string) => (f.colors as unknown as Record<string, string>)[k] || ''
+
+  const rows = f.sectionBg
+  const patchRow = (i: number, p: Partial<SectionBgForm>) =>
+    setSectionBg(rows.map((r, j) => (j === i ? { ...r, ...p } : r)))
+
+  const suggestions =
+    bg.type === 'animated' ? ANIMATED_SUGGESTIONS : bg.type === 'gradient' ? GRADIENT_SUGGESTIONS : []
+
+  return (
+    <>
+      <Group title={dark ? tr('🌙 ألوان الثيم الداكن', '🌙 Dark palette') : tr('☀️ ألوان الثيم الفاتح', '☀️ Light palette')}>
+        <div className="palette-row">
+          {palettes.map((p) => (
+            <button
+              key={p.name}
+              className="palette-chip"
+              onClick={() =>
+                setColors({
+                  [c.accent]: p.accent,
+                  [c.bg]: p.bg,
+                  [c.bg2]: p.bg2,
+                  [c.text]: p.text,
+                  [c.sub]: p.subtext,
+                } as Partial<DesignForm['colors']>)
+              }
+            >
+              <span className="palette-swatch">
+                <i style={{ background: p.accent }} />
+                <i style={{ background: p.bg }} />
+                <i style={{ background: p.bg2 }} />
+              </span>
+              {p.name}
+            </button>
+          ))}
+        </div>
+        <div style={{ marginTop: 14 }} />
+        <div className="de-grid">
+          <ColorInput label={tr('المميّز', 'Accent')} value={cv(c.accent)} onChange={(v) => setColors({ [c.accent]: v } as Partial<DesignForm['colors']>)} />
+          <ColorInput label={tr('الخلفية', 'Background')} value={cv(c.bg)} onChange={(v) => setColors({ [c.bg]: v } as Partial<DesignForm['colors']>)} />
+          <ColorInput label={tr('خلفية الكروت', 'Cards')} value={cv(c.bg2)} onChange={(v) => setColors({ [c.bg2]: v } as Partial<DesignForm['colors']>)} />
+          <ColorInput label={tr('النص', 'Text')} value={cv(c.text)} onChange={(v) => setColors({ [c.text]: v } as Partial<DesignForm['colors']>)} />
+          <ColorInput label={tr('النص الخافت', 'Muted')} value={cv(c.sub)} onChange={(v) => setColors({ [c.sub]: v } as Partial<DesignForm['colors']>)} />
+        </div>
+      </Group>
+
+      <Group title={tr('خلفية الصفحة', 'Page background')}>
+        <Opt
+          label={tr('النوع', 'Type')}
+          value={bg.type}
+          options={[
+            { value: 'solid', label: tr('لون', 'Solid') },
+            { value: 'gradient', label: tr('تدرّج', 'Gradient') },
+            { value: 'animated', label: tr('تدرّج متحرك', 'Animated') },
+            { value: 'image', label: tr('صورة', 'Image') },
+          ]}
+          onChange={(v) => setBg({ type: v })}
+        />
+
+        {bg.type === 'solid' && (
+          <>
+            <div className="bg-suggestions">
+              {SOLID_SUGGESTIONS.map((s) => (
+                <button key={s.name} className="bg-sugg" onClick={() => setBg({ color1: dark ? s.dark : s.light })}>
+                  <span className="bg-sugg-swatch" style={{ background: dark ? s.dark : s.light }} />
+                  {s.name}
+                </button>
+              ))}
+            </div>
+            <Opt label={tr('لمسة جاهزة', 'Preset tint')} value={bg.preset} options={BG_PRESETS} onChange={(v) => setBg({ preset: v })} />
+            <ColorInput label={tr('اللون', 'Colour')} value={bg.color1} onChange={(v) => setBg({ color1: v })} />
+          </>
+        )}
+
+        {(bg.type === 'gradient' || bg.type === 'animated') && (
+          <>
+            <div className="bg-suggestions">
+              {suggestions.map((s) => {
+                const cols = dark ? s.dark : s.light
+                return (
+                  <button
+                    key={s.name}
+                    className="bg-sugg"
+                    onClick={() => setBg({ color1: cols[0], color2: cols[1], color3: cols[2] || '' })}
+                  >
+                    <span
+                      className="bg-sugg-swatch"
+                      style={{ background: `linear-gradient(135deg, ${cols.join(', ')})` }}
+                    />
+                    {s.name}
+                  </button>
+                )
+              })}
+            </div>
+            <div className="de-grid">
+              <ColorInput label={tr('لون 1', 'Colour 1')} value={bg.color1} onChange={(v) => setBg({ color1: v })} />
+              <ColorInput label={tr('لون 2', 'Colour 2')} value={bg.color2} onChange={(v) => setBg({ color2: v })} />
+              {bg.type === 'animated' && (
+                <ColorInput label={tr('لون 3', 'Colour 3')} value={bg.color3} onChange={(v) => setBg({ color3: v })} />
+              )}
+            </div>
+            <div
+              className="bg-preview"
+              style={{
+                background: `linear-gradient(135deg, ${[bg.color1, bg.color2, bg.color3].filter(Boolean).join(', ') || 'transparent'})`,
+              }}
+            />
+          </>
+        )}
+
+        {bg.type === 'image' && (
+          <>
+            <MediaUploader
+              big
+              previewUrl={bg.imageUrl}
+              label={tr('صورة الخلفية', 'Background image')}
+              onUploaded={(m) => setBg({ imageId: m.id, imageUrl: m.url ?? m.thumbUrl })}
+            />
+            <Opt
+              label={tr('السلوك عند التمرير', 'Scroll behaviour')}
+              value={bg.imageFixed ? 'fixed' : 'scroll'}
+              options={[
+                { value: 'fixed', label: tr('ثابتة (بارالاكس)', 'Fixed (parallax)') },
+                { value: 'scroll', label: tr('تتحرك مع الصفحة', 'Scrolls with page') },
+              ]}
+              onChange={(v) => setBg({ imageFixed: v === 'fixed' })}
+            />
+            <Slider label={tr('التعتيم', 'Dim')} value={bg.dim} min={0} max={100} suffix="%" onChange={(v) => setBg({ dim: v })} />
+          </>
+        )}
+      </Group>
+
+      <Group title={tr('خلفيات الأقسام', 'Section backgrounds')}>
+        <p style={{ color: 'var(--sub)', fontSize: 13, margin: '0 0 12px' }}>
+          {tr(
+            'أي قسم مش مضاف هنا بياخد خلفية الصفحة. الألوان منفصلة لكل ثيم؛ الصورة والفيديو مشتركين.',
+            'Sections not listed here use the page background. Colours are per theme; image and video are shared.',
+          )}
+        </p>
+        {rows.map((r, i) => (
+          <div className="de-group" key={i} style={{ marginBottom: 12 }}>
+            <div className="mod-card-head">
+              <button className="icon-btn del" style={{ width: 30, height: 30 }} onClick={() => setSectionBg(rows.filter((_, j) => j !== i))}>
+                <NavIcon id="trash" size={14} />
+              </button>
+              <span style={{ color: 'var(--sub)', fontSize: 12 }}>
+                {BG_SECTIONS.find((s) => s.id === r.section)?.[tr('ar', 'en') as 'ar' | 'en'] || r.section}
+              </span>
+            </div>
+            <div className="de-grid">
+              <div>
+                <label className="lbl">{tr('القسم', 'Section')}</label>
+                <select className="field" value={r.section} onChange={(e) => patchRow(i, { section: e.target.value })}>
+                  {BG_SECTIONS.map((s) => (
+                    <option key={s.id} value={s.id}>{tr(s.ar, s.en)}</option>
+                  ))}
+                </select>
+              </div>
+              <Opt
+                label={tr('النوع', 'Type')}
+                value={r.mode}
+                options={[
+                  { value: 'color', label: tr('لون', 'Colour') },
+                  { value: 'image', label: tr('صورة', 'Image') },
+                  { value: 'video', label: tr('فيديو', 'Video') },
+                ]}
+                onChange={(v) => patchRow(i, { mode: v })}
+              />
+            </div>
+
+            {r.mode === 'color' && (
+              <ColorInput
+                label={dark ? tr('اللون (داكن)', 'Colour (dark)') : tr('اللون (فاتح)', 'Colour (light)')}
+                value={dark ? r.color : r.colorLight}
+                onChange={(v) => patchRow(i, dark ? { color: v } : { colorLight: v })}
+              />
+            )}
+
+            {r.mode === 'image' && (
+              <>
+                <MediaUploader big previewUrl={r.imageUrl} label={tr('صورة', 'Image')} onUploaded={(m) => patchRow(i, { imageId: m.id, imageUrl: m.url ?? m.thumbUrl })} />
+                <Opt
+                  label={tr('السلوك عند التمرير', 'Scroll behaviour')}
+                  value={r.fixed ? 'fixed' : 'scroll'}
+                  options={[
+                    { value: 'fixed', label: tr('ثابتة (بارالاكس)', 'Fixed (parallax)') },
+                    { value: 'scroll', label: tr('تتحرك', 'Scrolls') },
+                  ]}
+                  onChange={(v) => patchRow(i, { fixed: v === 'fixed' })}
+                />
+                <Slider label={tr('التعتيم', 'Dim')} value={r.dim} min={0} max={100} suffix="%" onChange={(v) => patchRow(i, { dim: v })} />
+              </>
+            )}
+
+            {r.mode === 'video' && (
+              <>
+                <label className="lbl">{tr('رابط الفيديو (mp4 مباشر)', 'Video URL (direct mp4)')}</label>
+                <input className="field" dir="ltr" value={r.videoUrl} onChange={(e) => patchRow(i, { videoUrl: e.target.value })} style={{ textAlign: 'start' }} />
+                <Slider label={tr('التعتيم', 'Dim')} value={r.dim} min={0} max={100} suffix="%" onChange={(v) => patchRow(i, { dim: v })} />
+              </>
+            )}
+          </div>
+        ))}
+        <button className="btn btn-ghost" onClick={() => setSectionBg([...rows, emptySectionBg()])}>
+          + {tr('خلفية قسم', 'Section background')}
+        </button>
+      </Group>
+    </>
+  )
+}
+
 export default function DesignEditor({ initial }: { initial: DesignForm }) {
   const [f, setF] = useState<DesignForm>(initial)
   const [tab, setTab] = useState<TopTab>('theme')
-  const [sub, setSub] = useState<ThemeSub>('colors')
+  const [sub, setSub] = useState<ThemeSub>('dark')
   const [busy, setBusy] = useState(false)
   const { t: tr } = useDashLang()
   const [toast, setToast] = useState(false)
@@ -183,7 +430,12 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
   const set = (patch: Partial<DesignForm>) => setF((p) => ({ ...p, ...patch }))
   const setColors = (p: Partial<DesignForm['colors']>) => set({ colors: { ...f.colors, ...p } })
   const setStyle = (p: Partial<DesignForm['style']>) => set({ style: { ...f.style, ...p } })
-  const setBg = (p: Partial<DesignForm['background']>) => set({ background: { ...f.background, ...p } })
+  // Each theme edits its own background group.
+  const setBgFor = (mode: 'dark' | 'light', p: Partial<BgForm>) =>
+    mode === 'dark'
+      ? set({ background: { ...f.background, ...p } })
+      : set({ backgroundLight: { ...f.backgroundLight, ...p } })
+  const setSectionBg = (rows: SectionBgForm[]) => set({ sectionBg: rows })
   const setComp = (p: Partial<DesignForm['components']>) => set({ components: { ...f.components, ...p } })
   const setCover = (p: Partial<DesignForm['heroCover']>) => set({ heroCover: { ...f.heroCover, ...p } })
 
@@ -247,80 +499,37 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
           </div>
 
           <div className="panel">
-            {sub === 'colors' && (
-              <div className="de-cols">
-                <Group title={tr('🌙 الوضع الداكن', '🌙 Dark mode')}>
-                  <div className="palette-row">
-                    {DARK_PALETTES.map((p) => (
-                      <button key={p.name} className="palette-chip" onClick={() => setColors({ accent: p.accent, bg: p.bg, bg2: p.bg2, text: p.text, subtext: p.subtext })}>
-                        <span className="palette-swatch">
-                          <i style={{ background: p.accent }} />
-                          <i style={{ background: p.bg }} />
-                          <i style={{ background: p.bg2 }} />
-                        </span>
-                        {p.name}
-                      </button>
-                    ))}
+            {(sub === 'light' || sub === 'dark') && (
+              <ThemePanel
+                mode={sub}
+                f={f}
+                tr={tr}
+                setColors={setColors}
+                setBgFor={setBgFor}
+                setSectionBg={setSectionBg}
+              />
+            )}
+
+            {sub === 'general' && (
+              <>
+                <Group title={tr('المكوّنات', 'Components')}>
+                  <div className="de-grid">
+                    <Opt label={tr('شكل الكروت', 'Card style')} value={f.components.card} options={COMPONENT_OPTIONS.card} onChange={(v) => setComp({ card: v })} />
+                    <Opt label={tr('الشريط العلوي', 'Navbar')} value={f.components.navbar} options={COMPONENT_OPTIONS.navbar} onChange={(v) => setComp({ navbar: v })} />
+                    <Opt label={tr('الأزرار', 'Buttons')} value={f.components.button} options={COMPONENT_OPTIONS.button} onChange={(v) => setComp({ button: v })} />
                   </div>
-                  <div style={{ marginTop: 14 }} />
-                  <ColorInput label={tr('المميّز', 'Accent')} value={f.colors.accent} onChange={(v) => setColors({ accent: v })} />
-                  <ColorInput label={tr('الخلفية', 'Background')} value={f.colors.bg} onChange={(v) => setColors({ bg: v })} />
-                  <ColorInput label={tr('خلفية الكروت', 'Cards')} value={f.colors.bg2} onChange={(v) => setColors({ bg2: v })} />
-                  <ColorInput label={tr('النص', 'Text')} value={f.colors.text} onChange={(v) => setColors({ text: v })} />
-                  <ColorInput label={tr('النص الخافت', 'Muted')} value={f.colors.subtext} onChange={(v) => setColors({ subtext: v })} />
                 </Group>
-                <Group title={tr('☀️ الوضع الفاتح', '☀️ Light mode')}>
-                  <div className="palette-row">
-                    {LIGHT_PALETTES.map((p) => (
-                      <button key={p.name} className="palette-chip" onClick={() => setColors({ accentLight: p.accent, bgLight: p.bg, bg2Light: p.bg2, textLight: p.text, subtextLight: p.subtext })}>
-                        <span className="palette-swatch">
-                          <i style={{ background: p.accent }} />
-                          <i style={{ background: p.bg }} />
-                          <i style={{ background: p.bg2 }} />
-                        </span>
-                        {p.name}
-                      </button>
-                    ))}
+                <Group title={tr('الخطوط', 'Fonts')}>
+                  <Opt label={tr('الخط (عربي · لاتيني)', 'Font (Arabic · Latin)')} value={f.style.font} options={FONT_OPTIONS} onChange={(v) => setStyle({ font: v })} />
+                </Group>
+                <Group title={tr('الحركة', 'Motion')}>
+                  <div className="de-grid">
+                    <Opt label={tr('الحركات', 'Animations')} value={f.style.anim} options={ANIM_OPTIONS} onChange={(v) => setStyle({ anim: v })} />
+                    <Opt label={tr('المؤشر', 'Cursor')} value={f.style.cursor} options={CURSOR_OPTIONS} onChange={(v) => setStyle({ cursor: v })} />
+                    <Opt label={tr('الاتجاه', 'Direction')} value={f.style.direction} options={DIRECTION_OPTIONS} onChange={(v) => setStyle({ direction: v })} />
                   </div>
-                  <div style={{ marginTop: 14 }} />
-                  <ColorInput label={tr('المميّز', 'Accent')} value={f.colors.accentLight} onChange={(v) => setColors({ accentLight: v })} />
-                  <ColorInput label={tr('الخلفية', 'Background')} value={f.colors.bgLight} onChange={(v) => setColors({ bgLight: v })} />
-                  <ColorInput label={tr('خلفية الكروت', 'Cards')} value={f.colors.bg2Light} onChange={(v) => setColors({ bg2Light: v })} />
-                  <ColorInput label={tr('النص', 'Text')} value={f.colors.textLight} onChange={(v) => setColors({ textLight: v })} />
-                  <ColorInput label={tr('النص الخافت', 'Muted')} value={f.colors.subtextLight} onChange={(v) => setColors({ subtextLight: v })} />
                 </Group>
-              </div>
-            )}
-
-            {sub === 'background' && (
-              <div className="de-cols">
-                <Opt label={tr('خلفية جاهزة', 'Preset background')} value={f.background.preset} options={BG_PRESETS} onChange={(v) => setBg({ preset: v })} />
-                <div>
-                  <Opt label={tr('النوع', 'Type')} value={f.background.type} options={['solid', 'gradient']} onChange={(v) => setBg({ type: v })} />
-                  <ColorInput label={tr('لون 1', 'Color 1')} value={f.background.color1} onChange={(v) => setBg({ color1: v })} />
-                  {f.background.type === 'gradient' && <ColorInput label={tr('لون 2', 'Color 2')} value={f.background.color2} onChange={(v) => setBg({ color2: v })} />}
-                </div>
-              </div>
-            )}
-
-            {sub === 'components' && (
-              <div className="de-grid">
-                <Opt label={tr('شكل الكروت', 'Card style')} value={f.components.card} options={COMPONENT_OPTIONS.card} onChange={(v) => setComp({ card: v })} />
-                <Opt label={tr('الشريط العلوي', 'Navbar')} value={f.components.navbar} options={COMPONENT_OPTIONS.navbar} onChange={(v) => setComp({ navbar: v })} />
-                <Opt label={tr('الأزرار', 'Buttons')} value={f.components.button} options={COMPONENT_OPTIONS.button} onChange={(v) => setComp({ button: v })} />
-              </div>
-            )}
-
-            {sub === 'fonts' && (
-              <Opt label={tr('الخط (عربي · لاتيني)', 'Font (Arabic · Latin)')} value={f.style.font} options={FONT_OPTIONS} onChange={(v) => setStyle({ font: v })} />
-            )}
-
-            {sub === 'motion' && (
-              <div className="de-grid">
-                <Opt label={tr('الحركات', 'Animations')} value={f.style.anim} options={ANIM_OPTIONS} onChange={(v) => setStyle({ anim: v })} />
-                <Opt label={tr('المؤشر', 'Cursor')} value={f.style.cursor} options={CURSOR_OPTIONS} onChange={(v) => setStyle({ cursor: v })} />
-                <Opt label={tr('الاتجاه', 'Direction')} value={f.style.direction} options={DIRECTION_OPTIONS} onChange={(v) => setStyle({ direction: v })} />
-              </div>
+              </>
             )}
           </div>
         </>

@@ -15,6 +15,8 @@ import Footer from '@/components/portfolio/Footer'
 import TrackVisit from '@/components/portfolio/TrackVisit'
 import MobileBar from '@/components/portfolio/MobileBar'
 import InstallApp from '@/components/portfolio/InstallApp'
+import SectionBg from '@/components/portfolio/SectionBg'
+import { pageBackground, dimOpacity } from '@/lib/background'
 import {
   Expertise,
   Experience,
@@ -313,20 +315,22 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
   const st = (settings?.style ?? {}) as Record<string, string | undefined>
   const dirOverride: 'ltr' | 'rtl' =
     st.direction === 'ltr' ? 'ltr' : st.direction === 'rtl' ? 'rtl' : locale === 'en' ? 'ltr' : 'rtl'
-  const bg = settings?.background
-  const bgTints: Record<string, string> = {
-    ocean: 'radial-gradient(1200px 640px at 82% -12%, rgba(56,189,248,0.16), transparent 60%)',
-    sunset: 'radial-gradient(1200px 640px at 82% -12%, rgba(249,115,22,0.16), transparent 60%)',
-    forest: 'radial-gradient(1200px 640px at 82% -12%, rgba(16,185,129,0.14), transparent 60%)',
-    mono: 'radial-gradient(1200px 640px at 82% -12%, rgba(160,160,160,0.10), transparent 60%)',
-    pearl: 'radial-gradient(1200px 640px at 82% -12%, rgba(120,120,120,0.08), transparent 60%)',
-  }
-  const bgLayer: React.CSSProperties | null =
-    bg?.type === 'gradient' && bg.color1
-      ? { background: `linear-gradient(160deg, ${bg.color1}, ${bg.color2 || 'transparent'})`, opacity: 0.6 }
-      : bg?.preset && bgTints[bg.preset]
-        ? { background: bgTints[bg.preset] }
-        : null
+  // Both themes' backgrounds are rendered; CSS shows whichever theme is active,
+  // because the light/dark switch happens in the browser after this is sent.
+  type RawBg = NonNullable<typeof settings>['background']
+  const toBg = (b: RawBg) => (b ? { ...b, imageUrl: mediaUrl(b.image, 'card') } : null)
+  const bgDark = pageBackground(toBg(settings?.background))
+  const bgLight = pageBackground(toBg(settings?.backgroundLight))
+  const dimDark = dimOpacity(settings?.background)
+  const dimLight = dimOpacity(settings?.backgroundLight)
+  const isImage = (b: RawBg) => b?.type === 'image' && Boolean(b?.image)
+
+  // Per-section background overrides, keyed by section id.
+  const sectionBg = new Map(
+    (settings?.sectionBg ?? [])
+      .filter((s) => s.section)
+      .map((s) => [String(s.section), { ...s, imageUrl: mediaUrl(s.image, 'card') }]),
+  )
 
   return (
     <div
@@ -338,7 +342,26 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
       data-anim={st.anim || 'fade-up'}
       data-cursor={st.cursor || 'default'}
     >
-      {bgLayer && <div className="pf-bg-layer" style={bgLayer} />}
+      {bgDark && (
+        <div
+          className={`pf-bg-layer for-dark${bgDark.animated ? ' animated' : ''}`}
+          style={bgDark.style}
+        >
+          {isImage(settings?.background) && (
+            <span className="pf-bg-dim" style={{ opacity: dimDark }} />
+          )}
+        </div>
+      )}
+      {bgLight && (
+        <div
+          className={`pf-bg-layer for-light${bgLight.animated ? ' animated' : ''}`}
+          style={bgLight.style}
+        >
+          {isImage(settings?.backgroundLight) && (
+            <span className="pf-bg-dim light" style={{ opacity: dimLight }} />
+          )}
+        </div>
+      )}
       <MotionFx anim={st.anim || 'fade-up'} cursor={st.cursor || 'default'} />
       <TrackVisit tenant={tenant.id} page="home" />
       <InstallApp
@@ -355,7 +378,9 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
         langLabel={locale === 'en' ? 'ع' : 'EN'}
       />
       {ordered.map((id) => (
-        <React.Fragment key={id}>{sectionEls[id]}</React.Fragment>
+        <SectionBg key={id} config={sectionBg.get(id)}>
+          {sectionEls[id]}
+        </SectionBg>
       ))}
       <Footer logo={logoText} name={content.hero?.name || tenant.name} />
 

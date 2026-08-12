@@ -2317,6 +2317,79 @@ body {
   z-index: -1;
   pointer-events: none;
 }
+/* Both themes' backdrops are in the markup; only the active one is shown,
+   because the theme switch happens in the browser after render. */
+.pf-bg-layer.for-light {
+  display: none;
+}
+html[data-theme='light'] .pf-bg-layer.for-dark {
+  display: none;
+}
+html[data-theme='light'] .pf-bg-layer.for-light {
+  display: block;
+}
+.pf-bg-layer.animated {
+  animation: pfBgShift 18s ease infinite;
+}
+@keyframes pfBgShift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+/* Dim over an image backdrop so body copy stays readable. */
+.pf-bg-dim {
+  position: absolute;
+  inset: 0;
+  background: #000;
+}
+.pf-bg-dim.light {
+  background: #fff;
+}
+
+/* ─── Per-section backgrounds ───────────────────────────────────────────── */
+.pf-sec-bg {
+  background: var(--sec-bg, transparent);
+}
+html[data-theme='light'] .pf-sec-bg {
+  background: var(--sec-bg-light, var(--sec-bg, transparent));
+}
+.pf-sec-bg.media {
+  position: relative;
+  isolation: isolate;
+  background: none;
+}
+.pf-sec-media {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background-size: cover;
+  background-position: center;
+}
+.pf-sec-dim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: #000;
+}
+html[data-theme='light'] .pf-sec-dim {
+  background: #fff;
+}
+.pf-sec-inner {
+  position: relative;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pf-bg-layer.animated {
+    animation: none;
+  }
+}
 
 /* ═══ Install-app bar (PWA) ══════════════════════════════════════════════ */
 .pwa-bar {

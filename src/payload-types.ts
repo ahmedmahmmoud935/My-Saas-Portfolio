@@ -549,10 +549,55 @@ export interface SiteSetting {
   };
   background?: {
     preset?: ('dark' | 'ocean' | 'sunset' | 'forest' | 'mono' | 'pearl') | null;
-    type?: ('solid' | 'gradient') | null;
+    type?: ('solid' | 'gradient' | 'animated' | 'image') | null;
     color1?: string | null;
     color2?: string | null;
+    color3?: string | null;
+    image?: (number | null) | Media;
+    imageFixed?: boolean | null;
+    dim?: number | null;
   };
+  backgroundLight?: {
+    preset?: ('dark' | 'ocean' | 'sunset' | 'forest' | 'mono' | 'pearl') | null;
+    type?: ('solid' | 'gradient' | 'animated' | 'image') | null;
+    color1?: string | null;
+    color2?: string | null;
+    color3?: string | null;
+    image?: (number | null) | Media;
+    imageFixed?: boolean | null;
+    dim?: number | null;
+  };
+  /**
+   * Override individual sections: a flat colour (per theme), an image, or a video. Sections not listed here use the page background.
+   */
+  sectionBg?:
+    | {
+        section?:
+          | (
+              | 'hero'
+              | 'about'
+              | 'projects'
+              | 'achievements'
+              | 'expertise'
+              | 'testimonials'
+              | 'logos'
+              | 'experience'
+              | 'tools'
+              | 'education'
+              | 'skills'
+              | 'contact'
+            )
+          | null;
+        mode?: ('color' | 'image' | 'video') | null;
+        color?: string | null;
+        colorLight?: string | null;
+        image?: (number | null) | Media;
+        videoUrl?: string | null;
+        fixed?: boolean | null;
+        dim?: number | null;
+        id?: string | null;
+      }[]
+    | null;
   style?: {
     theme?: ('default' | 'kinetic') | null;
     hero?: ('centered' | 'split' | 'massive' | 'cover-full' | 'minimal') | null;
@@ -1257,6 +1302,35 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         type?: T;
         color1?: T;
         color2?: T;
+        color3?: T;
+        image?: T;
+        imageFixed?: T;
+        dim?: T;
+      };
+  backgroundLight?:
+    | T
+    | {
+        preset?: T;
+        type?: T;
+        color1?: T;
+        color2?: T;
+        color3?: T;
+        image?: T;
+        imageFixed?: T;
+        dim?: T;
+      };
+  sectionBg?:
+    | T
+    | {
+        section?: T;
+        mode?: T;
+        color?: T;
+        colorLight?: T;
+        image?: T;
+        videoUrl?: T;
+        fixed?: T;
+        dim?: T;
+        id?: T;
       };
   style?:
     | T

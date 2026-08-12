@@ -1777,3 +1777,39 @@ textarea.field {
   padding: 4px;
   line-height: 1;
 }
+
+/* ─── Background suggestions (Theme tab) ────────────────────────────────── */
+.bg-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.bg-sugg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 7px 12px 7px 8px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.bg-sugg:hover {
+  border-color: var(--accent);
+}
+.bg-sugg-swatch {
+  width: 34px;
+  height: 20px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+}
+.bg-preview {
+  height: 72px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  margin-top: 12px;
+}

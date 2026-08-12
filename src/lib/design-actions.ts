@@ -1,7 +1,18 @@
 'use server'
 
 import { getDashboardContext, getTenantSettings } from './dashboard'
-import type { DesignForm } from './design-types'
+import type { BgForm, DesignForm } from './design-types'
+
+const toBg = (b: BgForm) => ({
+  preset: b.preset,
+  type: b.type,
+  color1: b.color1,
+  color2: b.color2,
+  color3: b.color3,
+  image: b.imageId ?? null,
+  imageFixed: b.imageFixed,
+  dim: b.dim,
+})
 
 /** Save the whole Design tab (all non-localized: colors, layouts, fonts, cover). */
 export async function saveDesign(form: DesignForm) {
@@ -18,7 +29,22 @@ export async function saveDesign(form: DesignForm) {
     id: settings.id,
     data: {
       colors: form.colors,
-      background: form.background,
+      // The editor carries the resolved image URL for previewing; only the id
+      // belongs in the document.
+      background: toBg(form.background),
+      backgroundLight: toBg(form.backgroundLight),
+      sectionBg: form.sectionBg
+        .filter((s) => s.section)
+        .map((s) => ({
+          section: s.section,
+          mode: s.mode,
+          color: s.color,
+          colorLight: s.colorLight,
+          image: s.imageId ?? null,
+          videoUrl: s.videoUrl,
+          fixed: s.fixed,
+          dim: s.dim,
+        })),
       style: form.style,
       themeConfig: { components: form.components },
       heroCover: {
