@@ -67,21 +67,27 @@ export default function CardStack({ items }: { items: StackCard[] }) {
           const style: React.CSSProperties = {
             zIndex: items.length - rank,
             touchAction: isTop ? 'pan-y' : undefined,
-            transform: `translate(${dragX + flyX}px, ${-rank * 34}px) scale(${1 - Math.min(rank, 4) * 0.055})`,
-            // Behind cards get progressively dimmer for depth (like a real deck).
-            filter: rank > 0 ? `brightness(${1 - Math.min(rank, 4) * 0.12})` : undefined,
-            // Fade the deck out gradually — the last card or two dissolve away.
+            // Rotation folded into the transform: animating `rotate` as its own
+            // property meant two separate animations on one element, and they
+            // drifted apart just enough to look stuttery.
+            transform: `translate(${dragX + flyX}px, ${-rank * 34}px) scale(${
+              1 - Math.min(rank, 4) * 0.055
+            }) rotate(${rot}deg)`,
+            // Depth comes from a dimming overlay in CSS rather than `filter`,
+            // which forces a repaint of the whole card on every frame.
             opacity: isTop && exiting ? 0 : Math.max(0, 1 - Math.max(0, rank - 2) * 0.42),
-            rotate: `${rot}deg`,
+            // Hint the compositor so the deck animates on the GPU.
+            willChange: 'transform, opacity',
             transition:
               start.current !== null && isTop
                 ? 'none'
-                : 'transform .34s ease, opacity .34s ease, rotate .34s ease, filter .34s ease',
+                : 'transform .42s cubic-bezier(0.22, 1, 0.36, 1), opacity .42s ease',
           }
           return (
             <div
               key={itemIdx}
               className={`cs-card${isTop ? ' top' : ''}`}
+              data-rank={Math.min(rank, 4)}
               style={style}
               onPointerDown={isTop ? onDown : undefined}
               onPointerMove={isTop ? onMove : undefined}

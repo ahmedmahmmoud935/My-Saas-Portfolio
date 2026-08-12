@@ -161,6 +161,17 @@ export default function StoryHighlights({ stories }: { stories: Story[] }) {
                   playsInline
                   preload="auto"
                   onEnded={next}
+                  // Progress comes from the clip's own clock, and it advances
+                  // itself at the end — `ended` alone isn't dependable across
+                  // encodings, and it left the story sitting on a finished
+                  // video waiting to be clicked.
+                  onTimeUpdate={(e) => {
+                    const v = e.currentTarget
+                    if (!v.duration || !isFinite(v.duration)) return
+                    const pct = (v.currentTime / v.duration) * 100
+                    setProgress(Math.min(100, pct))
+                    if (pct >= 99.5) next()
+                  }}
                   // A broken clip must not freeze the viewer — move on when
                   // there's more to show, otherwise say so instead of closing
                   // (an instant close reads as "the button does nothing").

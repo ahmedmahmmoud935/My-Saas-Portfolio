@@ -1077,7 +1077,9 @@ body {
 .story-media {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  /* `contain`, not `cover`: a square or landscape upload was being blown up and
+     cropped to fill the 9:16 frame. Show it whole, letterboxed. */
+  object-fit: contain;
 }
 .story-bars {
   position: absolute;
@@ -2559,4 +2561,30 @@ html[data-theme='light'] .pf-sec-dim {
 .pf-root[dir='rtl'] .detail-cat {
   letter-spacing: normal;
   text-transform: none;
+}
+
+/* Deck depth: a dimming veil per rank, instead of animating `filter` on the
+   card itself (which repainted the whole card every frame and made the flip
+   feel choppy). */
+.cs-card[data-rank]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.42s ease;
+}
+.cs-card[data-rank='1']::after {
+  opacity: 0.12;
+}
+.cs-card[data-rank='2']::after {
+  opacity: 0.24;
+}
+.cs-card[data-rank='3']::after {
+  opacity: 0.36;
+}
+.cs-card[data-rank='4']::after {
+  opacity: 0.48;
 }
