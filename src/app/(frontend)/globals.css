@@ -567,16 +567,18 @@ html[data-theme='light'] .hero-split .hero-bg {
 /* ─── Projects ──────────────────────────────────────────────────────────── */
 /* Primary media switch — a solid segmented control (distinct from category chips) */
 .media-tabs {
-  display: inline-flex;
+  /* Centred with auto margins on a fit-content box. The old
+     `left: 50%; translateX(-50%)` trick assumes LTR: in RTL the offset and the
+     translate pull the same way, which shoved this off the right edge and gave
+     the whole page a horizontal scrollbar. */
+  display: flex;
+  width: fit-content;
   gap: 4px;
   padding: 5px;
   margin: 0 auto 22px;
   background: var(--bg-2);
   border: 1px solid var(--border);
   border-radius: 14px;
-  position: relative;
-  left: 50%;
-  transform: translateX(-50%);
 }
 .media-tab {
   appearance: none;
