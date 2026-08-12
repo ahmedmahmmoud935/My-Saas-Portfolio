@@ -21,6 +21,7 @@ export default function Contact({
   phone,
   tenant,
   variant = 'classic',
+  locale = 'ar',
 }: {
   title: string
   subtitle?: string
@@ -28,7 +29,11 @@ export default function Contact({
   phone?: string
   tenant: number
   variant?: string
+  locale?: 'ar' | 'en'
 }) {
+  // The form's own labels were hard-coded Arabic, so an English portfolio
+  // showed an Arabic contact form under an English heading.
+  const t = (ar: string, en: string) => (locale === 'en' ? en : ar)
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
   const [status, setStatus] = useState<'idle' | 'sending' | 'ok' | 'err'>('idle')
 
@@ -62,15 +67,20 @@ export default function Contact({
         <div className={`contact-grid contact-${variant}`}>
           {/* ── Left: info ─────────────────────────────────────────── */}
           <div className="contact-info">
-            <span className="contact-eyebrow">تواصل معنا</span>
-            <p className="contact-lead">جاهز نبدأ مشروعك القادم؟ ابعتلنا وهنرد عليك في أقرب وقت.</p>
+            <span className="contact-eyebrow">{t('تواصل معنا', 'Get in touch')}</span>
+            <p className="contact-lead">
+              {t(
+                'جاهز نبدأ مشروعك القادم؟ ابعتلنا وهنرد عليك في أقرب وقت.',
+                'Ready to start your next project? Send a message and I’ll get back to you shortly.',
+              )}
+            </p>
 
             <div className="contact-lines">
               {email && (
                 <a className="contact-line" href={`mailto:${email}`}>
                   <span className="contact-ic">{IconMail}</span>
                   <span className="contact-line-txt">
-                    <strong>Email</strong>
+                    <strong>{t('البريد الإلكتروني', 'Email')}</strong>
                     <em dir="ltr">{email}</em>
                   </span>
                 </a>
@@ -79,7 +89,7 @@ export default function Contact({
                 <a className="contact-line" href={`tel:${phone.replace(/\s+/g, '')}`}>
                   <span className="contact-ic">{IconPhone}</span>
                   <span className="contact-line-txt">
-                    <strong>Phone</strong>
+                    <strong>{t('الهاتف', 'Phone')}</strong>
                     <em dir="ltr">{phone}</em>
                   </span>
                 </a>
@@ -89,18 +99,20 @@ export default function Contact({
 
           {/* ── Right: form card ───────────────────────────────────── */}
           <form className="contact-card" onSubmit={submit}>
-            <h3 className="contact-card-title">Send a message</h3>
-            <p className="contact-card-sub">املأ النموذج وهنرد عليك في أقرب وقت.</p>
+            <h3 className="contact-card-title">{t('أرسل رسالة', 'Send a message')}</h3>
+            <p className="contact-card-sub">
+              {t('املأ النموذج وهنرد عليك في أقرب وقت.', 'Fill in the form and I’ll reply soon.')}
+            </p>
 
             <div className="contact-row">
               <input
-                placeholder="الاسم"
+                placeholder={t('الاسم', 'Name')}
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 required
               />
               <input
-                placeholder="البريد الإلكتروني"
+                placeholder={t('البريد الإلكتروني', 'Email')}
                 type="email"
                 dir="ltr"
                 value={form.email}
@@ -109,12 +121,12 @@ export default function Contact({
               />
             </div>
             <input
-              placeholder="الموضوع"
+              placeholder={t('الموضوع', 'Subject')}
               value={form.subject}
               onChange={(e) => setForm({ ...form, subject: e.target.value })}
             />
             <textarea
-              placeholder="رسالتك"
+              placeholder={t('رسالتك', 'Your message')}
               rows={5}
               value={form.message}
               onChange={(e) => setForm({ ...form, message: e.target.value })}
@@ -126,13 +138,17 @@ export default function Contact({
               disabled={status === 'sending'}
               style={{ justifyContent: 'center' }}
             >
-              {status === 'sending' ? '...' : 'إرسال الرسالة'}
+              {status === 'sending' ? '…' : t('إرسال الرسالة', 'Send message')}
             </button>
             {status === 'ok' && (
-              <p className="contact-note" style={{ color: '#22c55e' }}>تم الإرسال ✓ شكرًا لتواصلك.</p>
+              <p className="contact-note" style={{ color: '#22c55e' }}>
+                {t('تم الإرسال ✓ شكرًا لتواصلك.', 'Sent ✓ thanks for reaching out.')}
+              </p>
             )}
             {status === 'err' && (
-              <p className="contact-note" style={{ color: '#ef4444' }}>حصل خطأ، حاول تاني.</p>
+              <p className="contact-note" style={{ color: '#ef4444' }}>
+                {t('حصل خطأ، حاول تاني.', 'Something went wrong — please try again.')}
+              </p>
             )}
           </form>
         </div>

@@ -281,6 +281,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
         phone={content.contact?.phone || undefined}
         tenant={tenant.id}
         variant={settings?.style?.contact || 'classic'}
+        locale={locale}
       />
     ),
   }

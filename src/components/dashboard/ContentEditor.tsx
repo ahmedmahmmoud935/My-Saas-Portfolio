@@ -54,6 +54,69 @@ function LocField({
   )
 }
 
+/**
+ * Tags, one row per tag instead of a single comma-separated box.
+ *
+ * Still stored as a comma-separated string per locale — splitting here rather
+ * than changing the schema keeps existing content working untouched.
+ */
+function TagsField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: Loc
+  onChange: (v: Loc) => void
+}) {
+  const { t } = useDashLang()
+  const split = (str: string) => str.split(',').map((x) => x.trim())
+  const ar = split(value.ar)
+  const en = split(value.en)
+  const pairs = Array.from({ length: Math.max(ar.length, en.length) }, (_, i) => ({
+    ar: ar[i] ?? '',
+    en: en[i] ?? '',
+  }))
+  // Blanks are dropped on the way out so an empty row never becomes a pill.
+  const commit = (next: { ar: string; en: string }[]) =>
+    onChange({
+      ar: next.map((p) => p.ar.trim()).filter(Boolean).join(','),
+      en: next.map((p) => p.en.trim()).filter(Boolean).join(','),
+    })
+
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <label className="lbl" style={{ display: 'block' }}>
+        {label}
+      </label>
+      {pairs.map((p, i) => (
+        <div className="tag-row" key={i}>
+          <input
+            className="field"
+            placeholder={t('عربي', 'Arabic')}
+            value={p.ar}
+            onChange={(e) => commit(pairs.map((x, j) => (j === i ? { ...x, ar: e.target.value } : x)))}
+          />
+          <input
+            className="field"
+            dir="ltr"
+            placeholder="English"
+            style={{ textAlign: 'start' }}
+            value={p.en}
+            onChange={(e) => commit(pairs.map((x, j) => (j === i ? { ...x, en: e.target.value } : x)))}
+          />
+          <button className="icon-btn del" title={t('حذف', 'Remove')} onClick={() => commit(pairs.filter((_, j) => j !== i))}>
+            ✕
+          </button>
+        </div>
+      ))}
+      <button className="btn btn-ghost" onClick={() => commit([...pairs, { ar: '', en: '' }])}>
+        + {t('وسم', 'Tag')}
+      </button>
+    </div>
+  )
+}
+
 function ArrayCard({
   children,
   onRemove,
@@ -137,7 +200,11 @@ export default function ContentEditor({ initial }: { initial: ContentForm }) {
           <>
             <LocField label={t('عنوان القسم', 'Section title')} value={f.about.title} onChange={(v) => patch({ about: { ...f.about, title: v } })} />
             <LocField label={t('النبذة', 'Bio')} multiline value={f.about.text} onChange={(v) => patch({ about: { ...f.about, text: v } })} />
-            <LocField label={t('الوسوم (مفصولة بفاصلة)', 'Tags (comma separated)')} value={f.about.tags} onChange={(v) => patch({ about: { ...f.about, tags: v } })} />
+            <TagsField
+              label={t('الوسوم', 'Tags')}
+              value={f.about.tags}
+              onChange={(v) => patch({ about: { ...f.about, tags: v } })}
+            />
           </>
         )}
 

@@ -540,10 +540,16 @@ html[data-theme='light'] .hero-split .hero-bg {
   margin-top: 18px;
 }
 .chip {
+  /* inline-flex + an explicit line-height: as plain inline text the glyphs sat
+     on their baseline and the pill looked top-heavy. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: var(--bg-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-pill);
-  padding: 6px 14px;
+  padding: 7px 14px;
+  line-height: 1.5;
   font-size: 13px;
   color: var(--sub);
 }
@@ -2536,4 +2542,19 @@ html[data-theme='light'] .pf-sec-dim {
     flex-wrap: wrap !important;
     justify-content: center !important;
   }
+}
+
+/* Arabic is cursive: letter-spacing prises the joins apart and the word reads
+   as loose disconnected glyphs. Uppercasing does nothing for it either. These
+   are the tracked-out "eyebrow" styles, so neutralise both for Arabic. */
+.pf-root[lang='ar'] .eyebrow,
+.pf-root[lang='ar'] .hero-eyebrow,
+.pf-root[lang='ar'] .contact-eyebrow,
+.pf-root[lang='ar'] .detail-cat,
+.pf-root[dir='rtl'] .eyebrow,
+.pf-root[dir='rtl'] .hero-eyebrow,
+.pf-root[dir='rtl'] .contact-eyebrow,
+.pf-root[dir='rtl'] .detail-cat {
+  letter-spacing: normal;
+  text-transform: none;
 }
