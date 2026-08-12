@@ -2352,16 +2352,23 @@ html[data-theme='light'] .pf-bg-layer.for-dark {
 html[data-theme='light'] .pf-bg-layer.for-light {
   display: block;
 }
+/* Drift the layer with a transform rather than animating background-position.
+   Position is a paint property: animating it repainted the whole viewport
+   every frame and made scrolling feel rough. A transform is composited. */
 .pf-bg-layer.animated {
-  animation: pfBgShift 18s ease infinite;
+  inset: -20%;
+  width: 140%;
+  height: 140%;
+  background-size: 100% 100% !important;
+  animation: pfBgDrift 20s ease-in-out infinite alternate;
+  will-change: transform;
 }
-@keyframes pfBgShift {
-  0%,
-  100% {
-    background-position: 0% 50%;
+@keyframes pfBgDrift {
+  from {
+    transform: translate3d(-7%, -5%, 0) scale(1.05);
   }
-  50% {
-    background-position: 100% 50%;
+  to {
+    transform: translate3d(7%, 5%, 0) scale(1.05);
   }
 }
 /* Dim over an image backdrop so body copy stays readable. */
@@ -2587,4 +2594,16 @@ html[data-theme='light'] .pf-sec-dim {
 }
 .cs-card[data-rank='4']::after {
   opacity: 0.48;
+}
+
+/* Nav links jump between sections, so ease the jump — and keep the landing
+   spot clear of the sticky navbar. Respects a reduced-motion preference. */
+html:has(.pf-root) {
+  scroll-behavior: smooth;
+  scroll-padding-top: 88px;
+}
+@media (prefers-reduced-motion: reduce) {
+  html:has(.pf-root) {
+    scroll-behavior: auto;
+  }
 }
