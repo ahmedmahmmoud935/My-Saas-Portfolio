@@ -40,15 +40,7 @@ export default function StoryHighlights({ stories }: { stories: Story[] }) {
   // A new slide gets a clean slate.
   useEffect(() => setFailed(false), [open, idx])
 
-  // Lock background scroll while the viewer is open.
-  useEffect(() => {
-    if (open === null) return
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = prevOverflow
-    }
-  }, [open])
+  // (Background scroll is frozen in CSS — see `html:has(.story-viewer)`.)
 
   const items = open !== null ? valid[open].items.filter((i) => i.url) : []
   const raw = items[idx]

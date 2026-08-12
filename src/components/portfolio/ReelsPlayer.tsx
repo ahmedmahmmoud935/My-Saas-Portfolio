@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { toEmbed } from '@/lib/video'
 
 export type Reel = { id: number; title: string; videoUrl?: string | null; coverUrl?: string | null }
@@ -15,10 +16,15 @@ export default function ReelsPlayer({
   onClose: () => void
 }) {
   const [i, setI] = useState(start)
+  const [mounted, setMounted] = useState(false)
   const cur = reels[i]
   const embed = toEmbed(cur?.videoUrl)
 
   const go = (d: number) => setI((p) => (p + d + reels.length) % reels.length)
+
+  useEffect(() => setMounted(true), [])
+
+  // (Background scroll is frozen in CSS — see `html:has(.reels)` in globals.)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -30,9 +36,13 @@ export default function ReelsPlayer({
     return () => window.removeEventListener('keydown', onKey)
   }, [reels.length])
 
-  if (!cur) return null
+  if (!cur || !mounted) return null
 
-  return (
+  // Portal to <body>: sections carry an entrance animation, and an element with
+  // a filling transform animation becomes the containing block for `position:
+  // fixed` children — so in place this overlay covered only its own section
+  // instead of the screen.
+  return createPortal(
     <div className="reels" onClick={onClose}>
       <button className="reels-close" onClick={onClose}>
         ✕
@@ -64,6 +74,7 @@ export default function ReelsPlayer({
         ) : null}
         <div className="reels-title">{cur.title}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
