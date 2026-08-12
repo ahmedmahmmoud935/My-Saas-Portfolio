@@ -64,12 +64,19 @@ export function pageBackground(bg?: BgConfig | null): {
 
   if (type === 'gradient' && color1) {
     return {
-      style: { background: `linear-gradient(160deg, ${color1}, ${color2 || 'transparent'})`, opacity: 0.6 },
+      style: { background: `linear-gradient(160deg, ${color1}, ${color2 || 'transparent'})` },
       animated: false,
     }
   }
 
   const tint = bg.preset ? TINTS[bg.preset] : ''
+
+  // Solid: the chosen colour replaces the palette background, with the
+  // decorative tint (if any) sitting on top of it.
+  if (type === 'solid' && color1) {
+    return { style: { background: tint ? `${tint}, ${color1}` : color1 }, animated: false }
+  }
+
   return tint ? { style: { background: tint }, animated: false } : null
 }
 

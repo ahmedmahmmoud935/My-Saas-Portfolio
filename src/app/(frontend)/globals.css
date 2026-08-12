@@ -34,6 +34,10 @@
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
+  /* Establish a stacking context so the z-index:-1 background layer paints
+     above this element's own background instead of behind it — without it the
+     chosen page background is completely hidden by the palette colour. */
+  isolation: isolate;
 }
 html[data-theme='light'] body {
   background: var(--bg-light, #ffffff);
