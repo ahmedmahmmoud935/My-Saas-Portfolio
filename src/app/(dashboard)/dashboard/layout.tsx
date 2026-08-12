@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { getDashboardContext } from '@/lib/dashboard'
 import Sidebar from '@/components/dashboard/Sidebar'
 import { DashLangProvider } from '@/components/dashboard/DashLang'
+import InstallApp from '@/components/portfolio/InstallApp'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const ctx = await getDashboardContext()
@@ -16,6 +17,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <DashLangProvider>
+      <InstallApp label="ثبّت لوحة التحكم على شاشتك" />
       <div className="dash">
         <main className="dash-main">{children}</main>
         <Sidebar

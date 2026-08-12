@@ -1,7 +1,7 @@
 import React from 'react'
 import { notFound } from 'next/navigation'
-import type { Metadata } from 'next'
-import { getPortfolio, mediaUrl, tenantCssVars } from '@/lib/portfolio'
+import type { Metadata, Viewport } from 'next'
+import { getPortfolio, isVideoSrc, mediaUrl, tenantCssVars } from '@/lib/portfolio'
 import Navbar from '@/components/portfolio/Navbar'
 import MotionFx from '@/components/portfolio/MotionFx'
 import Hero from '@/components/portfolio/Hero'
@@ -14,6 +14,7 @@ import Contact from '@/components/portfolio/Contact'
 import Footer from '@/components/portfolio/Footer'
 import TrackVisit from '@/components/portfolio/TrackVisit'
 import MobileBar from '@/components/portfolio/MobileBar'
+import InstallApp from '@/components/portfolio/InstallApp'
 import {
   Expertise,
   Experience,
@@ -33,6 +34,18 @@ const splitTags = (s?: string | null): string[] =>
     .map((t) => t.trim())
     .filter(Boolean)
 
+/** Paint the phone's browser/status bar in the portfolio's own background colour. */
+export async function generateViewport({ params }: Params): Promise<Viewport> {
+  const { username } = await params
+  const data = await getPortfolio(username)
+  return {
+    themeColor: [
+      { media: '(prefers-color-scheme: dark)', color: data?.settings?.colors?.bg || '#0A0A0A' },
+      { media: '(prefers-color-scheme: light)', color: data?.settings?.colors?.bgLight || '#FFFFFF' },
+    ],
+  }
+}
+
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { username } = await params
   const data = await getPortfolio(username)
@@ -42,9 +55,18 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const description = data.settings?.content?.about?.text || undefined
   const cover = mediaUrl(data.settings?.brand?.heroCover, 'card')
   const full = `${name} — ${title}`
+  // iOS ignores manifest icons — it reads apple-touch-icon — so point it at the
+  // same rendered PNG the manifest uses.
+  const appIcon = `/${username}/icon-512.png`
   return {
     title: full,
     description,
+    manifest: `/${username}/manifest.webmanifest`,
+    icons: { icon: appIcon, apple: appIcon },
+    appleWebApp: { capable: true, title: name, statusBarStyle: 'black-translucent' },
+    // Next emits the modern `mobile-web-app-capable`; older iOS Safari still
+    // only understands the apple-prefixed one.
+    other: { 'apple-mobile-web-app-capable': 'yes' },
     alternates: {
       languages: { ar: `/${username}?lang=ar`, en: `/${username}?lang=en` },
     },
@@ -135,12 +157,13 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
         highlights={(settings?.highlights ?? []).map((h) => ({
           title: h.title || '',
           coverUrl: mediaUrl(h.cover, 'thumb'),
-          items: (h.items ?? []).map((it) => ({
-            type: it.type || 'image',
+          items: (h.items ?? []).map((it) => {
             // Images: serve the optimised 1024px WebP so stories load light;
             // videos fall back to the original file (no image size exists).
-            url: mediaUrl(it.media, 'card'),
-          })),
+            const url = mediaUrl(it.media, 'card')
+            const mime = typeof it.media === 'object' ? it.media?.mimeType : null
+            return { type: isVideoSrc(url, mime) ? 'video' : it.type || 'image', url }
+          }),
         }))}
         projects={projects.map((p) => ({
           id: p.id,
@@ -318,6 +341,13 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
       {bgLayer && <div className="pf-bg-layer" style={bgLayer} />}
       <MotionFx anim={st.anim || 'fade-up'} cursor={st.cursor || 'default'} />
       <TrackVisit tenant={tenant.id} page="home" />
+      <InstallApp
+        label={
+          locale === 'en'
+            ? `Add ${content.hero?.name || tenant.name} to your home screen`
+            : `ثبّت ${content.hero?.name || tenant.name} على شاشتك`
+        }
+      />
       <Navbar
         logo={logoText}
         links={navLinks}

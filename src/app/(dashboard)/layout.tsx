@@ -11,6 +11,14 @@ const cairo = Cairo({
 
 export const metadata = {
   title: 'Portfolio Admin — ViralPX',
+  manifest: '/manifest.webmanifest',
+  icons: { icon: '/icon-192.png', apple: '/apple-touch-icon.png' },
+  appleWebApp: { capable: true, title: 'ViralPX', statusBarStyle: 'black-translucent' as const },
+  other: { 'apple-mobile-web-app-capable': 'yes' },
+}
+
+export const viewport = {
+  themeColor: '#0A0A0A',
 }
 
 export default function DashboardRootLayout({ children }: { children: React.ReactNode }) {

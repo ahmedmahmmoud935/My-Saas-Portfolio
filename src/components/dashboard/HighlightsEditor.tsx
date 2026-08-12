@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import PageHeader from './PageHeader'
 import MediaUploader from './MediaUploader'
 import { saveHighlights, type Highlight } from '@/lib/highlights-actions'
+import { isVideoSrc } from '@/lib/media-kind'
 import { useDashLang } from './DashLang'
 
 export default function HighlightsEditor({ initial }: { initial: Highlight[] }) {
@@ -62,10 +63,14 @@ export default function HighlightsEditor({ initial }: { initial: Highlight[] }) 
             <div className="gallery-grid">
               {h.items.map((it, k) => (
                 <div className="gallery-thumb" key={k}>
-                  {it.mediaUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={it.mediaUrl} alt="" />
-                  )}
+                  {it.mediaUrl &&
+                    (isVideoSrc(it.mediaUrl, null) || it.type === 'video' ? (
+                      // Only metadata — never pull a whole clip for a thumbnail.
+                      <video src={it.mediaUrl} muted playsInline preload="metadata" />
+                    ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={it.mediaUrl} alt="" />
+                    ))}
                   <button className="icon-btn del thumb-del" onClick={() => patch(i, { items: h.items.filter((_, z) => z !== k) })}>✕</button>
                 </div>
               ))}
@@ -78,7 +83,13 @@ export default function HighlightsEditor({ initial }: { initial: Highlight[] }) 
                   patch(i, {
                     items: [
                       ...h.items,
-                      ...ms.map((m) => ({ type: 'image' as const, mediaId: m.id, mediaUrl: m.thumbUrl })),
+                      // Record what was actually uploaded — a video saved as
+                      // "image" ends up inside an <img> and hangs the browser.
+                      ...ms.map((m) => ({
+                        type: isVideoSrc(m.url ?? m.thumbUrl, m.mimeType) ? 'video' : 'image',
+                        mediaId: m.id,
+                        mediaUrl: m.thumbUrl,
+                      })),
                     ],
                   })
                 }

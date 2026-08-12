@@ -4,7 +4,12 @@ import React, { useRef, useState } from 'react'
 import { uploadProjectMedia } from '@/lib/project-actions'
 import { useDashLang } from './DashLang'
 
-export type UploadedMedia = { id: number; url: string | null; thumbUrl: string | null }
+export type UploadedMedia = {
+  id: number
+  url: string | null
+  thumbUrl: string | null
+  mimeType?: string | null
+}
 
 export default function MediaUploader({
   label,

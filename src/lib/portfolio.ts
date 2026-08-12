@@ -29,6 +29,8 @@ export function mediaUrl(
   return m.url ?? null
 }
 
+export { isVideoSrc } from './media-kind'
+
 /**
  * Fetch everything needed to render a tenant's portfolio by username (slug).
  * Returns null when the slug maps to no tenant.

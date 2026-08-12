@@ -65,6 +65,7 @@ export async function uploadProjectMedia(formData: FormData) {
     id: media.id,
     url: media.url ?? null,
     thumbUrl: sizes?.thumb?.url ?? media.url ?? null,
+    mimeType: media.mimeType ?? mimetype ?? null,
   }
 }
 

@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { isVideoSrc } from '@/lib/media-kind'
 
 export type Story = {
   title: string
@@ -11,16 +12,33 @@ export type Story = {
 
 const IMAGE_MS = 4500
 
+/**
+ * The circle thumbnail. When a highlight has no cover we fall back to its first
+ * item — which may be a video, and putting a video URL in an <img> makes the
+ * browser download and fail to decode the whole clip. Use a metadata-only
+ * <video> for those so the page stays responsive.
+ */
+function Ring({ src, title }: { src: string; title: string }) {
+  if (!src) return null
+  if (isVideoSrc(src)) return <video src={`${src}#t=0.1`} muted playsInline preload="metadata" />
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={src} alt={title} />
+}
+
 export default function StoryHighlights({ stories }: { stories: Story[] }) {
   const valid = stories.filter((s) => s.items.some((i) => i.url))
   const [open, setOpen] = useState<number | null>(null)
   const [idx, setIdx] = useState(0)
   const [progress, setProgress] = useState(0)
   const [mounted, setMounted] = useState(false)
+  const [failed, setFailed] = useState(false)
   const timer = useRef<ReturnType<typeof setInterval> | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => setMounted(true), [])
+
+  // A new slide gets a clean slate.
+  useEffect(() => setFailed(false), [open, idx])
 
   // Lock background scroll while the viewer is open.
   useEffect(() => {
@@ -33,7 +51,10 @@ export default function StoryHighlights({ stories }: { stories: Story[] }) {
   }, [open])
 
   const items = open !== null ? valid[open].items.filter((i) => i.url) : []
-  const current = items[idx]
+  const raw = items[idx]
+  // Trust the file over the stored type: a video rendered in an <img> locks the
+  // whole page up while the browser tries to decode it.
+  const current = raw ? { ...raw, type: isVideoSrc(raw.url) ? 'video' : raw.type } : undefined
 
   // Play story videos with sound (opening a story is a user gesture). If the
   // browser still blocks unmuted playback, fall back to muted so it doesn't
@@ -109,10 +130,7 @@ export default function StoryHighlights({ stories }: { stories: Story[] }) {
             }}
           >
             <span className="story-ring">
-              {s.coverUrl || s.items[0]?.url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={s.coverUrl || s.items[0]?.url || ''} alt={s.title} />
-              ) : null}
+              <Ring src={s.coverUrl || s.items[0]?.url || ''} title={s.title} />
             </span>
             <span className="story-title">{s.title}</span>
           </button>
@@ -139,7 +157,9 @@ export default function StoryHighlights({ stories }: { stories: Story[] }) {
                 ✕
               </button>
 
-              {current.type === 'video' ? (
+              {failed ? (
+                <div className="story-fail">تعذّر تشغيل هذا المقطع · Couldn’t play this clip</div>
+              ) : current.type === 'video' ? (
                 <video
                   key={current.url || ''}
                   ref={videoRef}
@@ -149,6 +169,10 @@ export default function StoryHighlights({ stories }: { stories: Story[] }) {
                   playsInline
                   preload="auto"
                   onEnded={next}
+                  // A broken clip must not freeze the viewer — move on when
+                  // there's more to show, otherwise say so instead of closing
+                  // (an instant close reads as "the button does nothing").
+                  onError={() => (items.length > 1 ? next() : setFailed(true))}
                 />
               ) : (
                 // eslint-disable-next-line @next/next/no-img-element
