@@ -159,13 +159,22 @@ function ColorInput({
   value: string
   onChange: (v: string) => void
 }) {
+  // Label above, swatch and hex fused into one control — side-by-side they
+  // drifted to opposite ends of the grid column and read as unrelated.
   return (
     <label className="color-input">
-      <span style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      <span className="ci-label">{label}</span>
+      <span className="ci-control">
         <input type="color" value={value || '#000000'} onChange={(e) => onChange(e.target.value)} />
-        <input className="field" value={value} onChange={(e) => onChange(e.target.value)} dir="ltr" style={{ width: 110, textAlign: 'start' }} />
+        <input
+          className="ci-hex"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          dir="ltr"
+          placeholder="#000000"
+          spellCheck={false}
+        />
       </span>
-      <span style={{ color: 'var(--sub)', fontSize: 13 }}>{label}</span>
     </label>
   )
 }
@@ -245,7 +254,7 @@ function ThemePanel({
           ))}
         </div>
         <div style={{ marginTop: 14 }} />
-        <div className="de-grid">
+        <div className="de-colors">
           <ColorInput label={tr('المميّز', 'Accent')} value={cv(c.accent)} onChange={(v) => setColors({ [c.accent]: v } as Partial<DesignForm['colors']>)} />
           <ColorInput label={tr('الخلفية', 'Background')} value={cv(c.bg)} onChange={(v) => setColors({ [c.bg]: v } as Partial<DesignForm['colors']>)} />
           <ColorInput label={tr('خلفية الكروت', 'Cards')} value={cv(c.bg2)} onChange={(v) => setColors({ [c.bg2]: v } as Partial<DesignForm['colors']>)} />
@@ -302,7 +311,7 @@ function ThemePanel({
                 )
               })}
             </div>
-            <div className="de-grid">
+            <div className="de-colors">
               <ColorInput label={tr('لون 1', 'Colour 1')} value={bg.color1} onChange={(v) => setBg({ color1: v })} />
               <ColorInput label={tr('لون 2', 'Colour 2')} value={bg.color2} onChange={(v) => setBg({ color2: v })} />
               {bg.type === 'animated' && (
