@@ -81,11 +81,6 @@ body {
    the browser's default font. Listing the Arabic family right after the Latin
    one fixes that per-glyph: Latin renders in the display face, Arabic in the
    chosen Arabic face. Both halves are re-pointed by the [data-font] presets. */
-:root {
-  --font-display: var(--font-montserrat), var(--font-cairo), 'Montserrat', 'Cairo',
-    system-ui, sans-serif;
-}
-
 body {
   background: var(--bg);
   color: var(--text);
@@ -2213,24 +2208,37 @@ body {
   border: 3px solid var(--bg);
 }
 
-/* ═══ Fonts picker — remap the two font vars per chosen pair ═══════════════ */
+/* ═══ Fonts picker ════════════════════════════════════════════════════════
+   Each preset sets BOTH the body face (--font-cairo) and the heading stack
+   (--font-display) here on .pf-root.
+
+   --font-display can't be composed once on :root from --font-montserrat: a
+   custom property's var() is substituted where it is *declared*, so a copy
+   living on :root froze with the default Montserrat and no preset could ever
+   change the headings. Naming the Latin family literally also keeps Next's
+   metric-fallback (a system font with Arabic coverage) out of the stack, so
+   Arabic headings reach this preset's Arabic face instead of always landing
+   on Tajawal. */
+.pf-root {
+  --font-display: 'Montserrat', var(--font-cairo), system-ui, sans-serif;
+}
 .pf-root[data-font='cairo'] {
   --font-cairo: var(--f-cairo);
 }
 .pf-root[data-font='modern'] {
-  --font-montserrat: var(--f-inter);
+  --font-display: 'Inter', var(--font-cairo), system-ui, sans-serif;
 }
 .pf-root[data-font='editorial'] {
   --font-cairo: var(--f-almarai);
-  --font-montserrat: var(--f-playfair);
+  --font-display: 'Playfair Display', var(--font-cairo), system-ui, sans-serif;
 }
 .pf-root[data-font='elegant'] {
   --font-cairo: var(--f-markazi);
-  --font-montserrat: var(--f-cormorant);
+  --font-display: 'Cormorant', var(--font-cairo), system-ui, sans-serif;
 }
 .pf-root[data-font='bold'] {
   --font-cairo: var(--f-cairo);
-  --font-montserrat: var(--f-bebas);
+  --font-display: 'Bebas Neue', var(--font-cairo), system-ui, sans-serif;
 }
 
 /* ═══ Motion — entrance animations (pure CSS, play on load) ═══════════════ */
