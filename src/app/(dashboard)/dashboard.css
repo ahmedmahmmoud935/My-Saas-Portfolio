@@ -1934,3 +1934,57 @@ input[type='range']::-moz-range-thumb {
     grid-template-columns: 1fr 34px;
   }
 }
+
+/* Background image beside its settings — stacked, the preview pushed the
+   controls out of sight. */
+.bg-image-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .bg-image-row {
+    grid-template-columns: 1fr;
+  }
+}
+.uploader-remove {
+  position: absolute;
+  top: 10px;
+  inset-inline-end: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.62);
+  color: #fff;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 2;
+}
+.uploader-remove:hover {
+  background: var(--danger);
+}
+
+/* Sub-headings inside a theme panel read as headings, not as faint captions. */
+.panel .de-group-title {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+}
+.panel .de-group-title::before {
+  content: '';
+  width: 4px;
+  height: 16px;
+  border-radius: 3px;
+  background: var(--accent);
+  flex: none;
+}

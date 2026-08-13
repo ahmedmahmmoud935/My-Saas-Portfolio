@@ -328,25 +328,30 @@ function ThemePanel({
         )}
 
         {bg.type === 'image' && (
-          <>
+          // Image beside its settings: stacked, the preview pushed the controls
+          // so far down you couldn't see what you were adjusting.
+          <div className="bg-image-row">
             <MediaUploader
               big
               dim={bg.dim}
               previewUrl={bg.imageUrl}
               label={tr('صورة الخلفية', 'Background image')}
               onUploaded={(m) => setBg({ imageId: m.id, imageUrl: m.url ?? m.thumbUrl })}
+              onRemove={() => setBg({ imageId: null, imageUrl: null })}
             />
-            <Opt
-              label={tr('السلوك عند التمرير', 'Scroll behaviour')}
-              value={bg.imageFixed ? 'fixed' : 'scroll'}
-              options={[
-                { value: 'fixed', label: tr('ثابتة (بارالاكس)', 'Fixed (parallax)') },
-                { value: 'scroll', label: tr('تتحرك مع الصفحة', 'Scrolls with page') },
-              ]}
-              onChange={(v) => setBg({ imageFixed: v === 'fixed' })}
-            />
-            <Slider label={tr('التعتيم', 'Dim')} value={bg.dim} min={0} max={100} suffix="%" onChange={(v) => setBg({ dim: v })} />
-          </>
+            <div>
+              <Opt
+                label={tr('السلوك عند التمرير', 'Scroll behaviour')}
+                value={bg.imageFixed ? 'fixed' : 'scroll'}
+                options={[
+                  { value: 'fixed', label: tr('ثابتة (بارالاكس)', 'Fixed (parallax)') },
+                  { value: 'scroll', label: tr('تتحرك مع الصفحة', 'Scrolls with page') },
+                ]}
+                onChange={(v) => setBg({ imageFixed: v === 'fixed' })}
+              />
+              <Slider label={tr('التعتيم', 'Dim')} value={bg.dim} min={0} max={100} suffix="%" onChange={(v) => setBg({ dim: v })} />
+            </div>
+          </div>
         )}
       </Group>
 
@@ -397,8 +402,16 @@ function ThemePanel({
             )}
 
             {r.mode === 'image' && (
-              <>
-                <MediaUploader big dim={r.dim} previewUrl={r.imageUrl} label={tr('صورة', 'Image')} onUploaded={(m) => patchRow(i, { imageId: m.id, imageUrl: m.url ?? m.thumbUrl })} />
+              <div className="bg-image-row">
+                <MediaUploader
+                  big
+                  dim={r.dim}
+                  previewUrl={r.imageUrl}
+                  label={tr('صورة', 'Image')}
+                  onUploaded={(m) => patchRow(i, { imageId: m.id, imageUrl: m.url ?? m.thumbUrl })}
+                  onRemove={() => patchRow(i, { imageId: null, imageUrl: null })}
+                />
+                <div>
                 <Opt
                   label={tr('السلوك عند التمرير', 'Scroll behaviour')}
                   value={r.fixed ? 'fixed' : 'scroll'}
@@ -409,7 +422,8 @@ function ThemePanel({
                   onChange={(v) => patchRow(i, { fixed: v === 'fixed' })}
                 />
                 <Slider label={tr('التعتيم', 'Dim')} value={r.dim} min={0} max={100} suffix="%" onChange={(v) => patchRow(i, { dim: v })} />
-              </>
+                </div>
+              </div>
             )}
 
             {r.mode === 'video' && (

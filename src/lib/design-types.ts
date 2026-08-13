@@ -149,8 +149,12 @@ export const LAYOUT_OPTIONS = {
   exp: ['classic', 'timeline'],
 } as const
 
+// Labels name the faces that actually render. `default` used to claim Cairo
+// while the variable held Tajawal, which is why the dashboard and the site
+// disagreed; Cairo is now its own option.
 export const FONT_OPTIONS = [
-  { value: 'default', label: 'Cairo · Montserrat' },
+  { value: 'default', label: 'Tajawal · Montserrat' },
+  { value: 'cairo', label: 'Cairo · Montserrat' },
   { value: 'modern', label: 'Tajawal · Inter' },
   { value: 'editorial', label: 'Almarai · Playfair' },
   { value: 'elegant', label: 'Markazi · Cormorant' },

@@ -2214,6 +2214,9 @@ body {
 }
 
 /* ═══ Fonts picker — remap the two font vars per chosen pair ═══════════════ */
+.pf-root[data-font='cairo'] {
+  --font-cairo: var(--f-cairo);
+}
 .pf-root[data-font='modern'] {
   --font-montserrat: var(--f-inter);
 }
@@ -2382,8 +2385,14 @@ html[data-theme='light'] .pf-bg-layer.for-light {
 }
 
 /* ─── Per-section backgrounds ───────────────────────────────────────────── */
+/* A section with its own backdrop needs breathing room BELOW its content too.
+   `.section` only pads the top (that's what keeps the rhythm even between
+   plain sections), so a coloured band ended flush against the last line.
+   Adding it here — on the wrapper, which only exists when a backdrop is
+   configured — leaves untouched sections spaced exactly as before. */
 .pf-sec-bg {
   background: var(--sec-bg, transparent);
+  padding-bottom: var(--section-pad);
 }
 html[data-theme='light'] .pf-sec-bg {
   background: var(--sec-bg-light, var(--sec-bg, transparent));

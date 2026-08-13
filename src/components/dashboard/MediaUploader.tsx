@@ -23,6 +23,7 @@ export default function MediaUploader({
   plus = false,
   aspect,
   dim,
+  onRemove,
 }: {
   label?: string
   previewUrl?: string | null
@@ -41,6 +42,8 @@ export default function MediaUploader({
   aspect?: string
   /** 0–100. Lays the same dim over the preview that the site will apply. */
   dim?: number
+  /** When given, the preview gets a button to clear the image. */
+  onRemove?: () => void
 }) {
   const ref = useRef<HTMLInputElement>(null)
   const { t } = useDashLang()
@@ -107,6 +110,20 @@ export default function MediaUploader({
         <span className="uploader-replace">
           {busy ? t('جاري الرفع…', 'Uploading…') : t('⟳ استبدال', '⟳ Replace')}
         </span>
+        {onRemove && (
+          <button
+            type="button"
+            className="uploader-remove"
+            title={t('حذف الصورة', 'Remove image')}
+            onClick={(e) => {
+              e.stopPropagation()
+              setPreview(null)
+              onRemove()
+            }}
+          >
+            ✕
+          </button>
+        )}
       </div>
     )
   }
