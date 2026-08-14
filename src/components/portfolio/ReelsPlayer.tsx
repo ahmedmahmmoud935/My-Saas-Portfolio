@@ -59,7 +59,17 @@ export default function ReelsPlayer({
       )}
       <div className="reels-stage" onClick={(e) => e.stopPropagation()}>
         {embed?.kind === 'file' ? (
-          <video className="reels-media" src={embed.src} autoPlay controls playsInline loop />
+          <video
+            className="reels-media"
+            src={embed.src}
+            // The cover shows instantly while the clip buffers, instead of a
+            // black rectangle.
+            poster={cur.coverUrl || undefined}
+            autoPlay
+            controls
+            playsInline
+            loop
+          />
         ) : embed ? (
           <iframe
             className="reels-media"
@@ -72,7 +82,6 @@ export default function ReelsPlayer({
           // eslint-disable-next-line @next/next/no-img-element
           <img className="reels-media" src={cur.coverUrl} alt={cur.title} />
         ) : null}
-        <div className="reels-title">{cur.title}</div>
       </div>
     </div>,
     document.body,

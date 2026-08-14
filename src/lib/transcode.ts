@@ -11,9 +11,12 @@ import path from 'path'
  */
 export async function compressVideo(
   input: Buffer,
+  /** Source mime — a non-mp4 is always re-encoded, even if it doesn't shrink. */
+  sourceMime?: string,
 ): Promise<{ buf: Buffer; mimetype: string; ext: string } | null> {
   // Skip tiny clips — not worth the CPU.
   if (input.length < 400 * 1024) return null
+  const notMp4 = Boolean(sourceMime && sourceMime !== 'video/mp4')
 
   let dir = ''
   try {
@@ -27,15 +30,25 @@ export async function compressVideo(
         '-y',
         '-i',
         inPath,
-        // Cap width at 1080 (only downscales); keep aspect, even dims.
+        // Cap the LONGEST side at 1280 — capping width alone left a portrait
+        // reel at 1080×1920, which is what made these heavy on mobile.
         '-vf',
-        "scale='min(1080,iw)':-2",
+        "scale='if(gt(iw,ih),min(1280,iw),-2)':'if(gt(iw,ih),-2,min(1280,ih))'",
         '-c:v',
         'libx264',
         '-preset',
         'veryfast',
         '-crf',
-        '28',
+        '30',
+        // Phone-friendly profile, and keyframes often enough to seek quickly.
+        '-profile:v',
+        'high',
+        '-level',
+        '4.0',
+        '-g',
+        '48',
+        '-pix_fmt',
+        'yuv420p',
         '-c:a',
         'aac',
         '-b:a',
@@ -53,8 +66,9 @@ export async function compressVideo(
     })
 
     const out = await readFile(outPath)
-    // Only use it if it actually got smaller.
-    if (out.length >= input.length) return null
+    // Keep the re-encode when it shrinks — or whenever the source wasn't mp4,
+    // since .mov plays badly (or not at all) in some browsers.
+    if (out.length >= input.length && !notMp4) return null
     return { buf: out, mimetype: 'video/mp4', ext: 'mp4' }
   } catch (e) {
     console.error('[transcode]', (e as Error).message)

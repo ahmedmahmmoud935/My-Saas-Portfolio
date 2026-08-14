@@ -9,11 +9,22 @@ export function toEmbed(url: string | null | undefined): Embed {
   if (!url) return null
   const u = url.trim()
 
+  // Params trimmed for weight: the privacy hosts skip the tracking scripts,
+  // and title/byline/portrait off drops Vimeo's own overlay (and the extra
+  // avatar request that comes with it).
   const yt = u.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{6,})/)
-  if (yt) return { kind: 'youtube', src: `https://www.youtube.com/embed/${yt[1]}?autoplay=1&playsinline=1&rel=0` }
+  if (yt)
+    return {
+      kind: 'youtube',
+      src: `https://www.youtube-nocookie.com/embed/${yt[1]}?autoplay=1&playsinline=1&rel=0&modestbranding=1`,
+    }
 
   const vm = u.match(/vimeo\.com\/(?:video\/)?(\d+)/)
-  if (vm) return { kind: 'vimeo', src: `https://player.vimeo.com/video/${vm[1]}?autoplay=1&playsinline=1` }
+  if (vm)
+    return {
+      kind: 'vimeo',
+      src: `https://player.vimeo.com/video/${vm[1]}?autoplay=1&playsinline=1&dnt=1&title=0&byline=0&portrait=0`,
+    }
 
   if (/\.(mp4|webm|mov|m4v)(\?|$)/i.test(u)) return { kind: 'file', src: u }
 

@@ -48,7 +48,7 @@ export async function uploadProjectMedia(formData: FormData) {
   // Compress videos on upload (H.264 MP4). Falls back to the original if ffmpeg
   // isn't available or doesn't shrink it.
   if (file.type.startsWith('video/')) {
-    const c = await compressVideo(buf)
+    const c = await compressVideo(buf, file.type)
     if (c) {
       buf = c.buf
       mimetype = c.mimetype
@@ -337,7 +337,7 @@ export async function recompressVideos() {
         continue
       }
       const buf = Buffer.from(await r.arrayBuffer())
-      const c = await compressVideo(buf)
+      const c = await compressVideo(buf, m.mimeType)
       if (!c) continue // ffmpeg missing, error, or not smaller
       const oldSize = m.filesize ?? buf.length
       await ctx.payload.update({
