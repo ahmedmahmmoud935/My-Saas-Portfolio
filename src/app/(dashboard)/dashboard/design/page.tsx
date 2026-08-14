@@ -33,10 +33,10 @@ export default async function DesignPage() {
     background: readBg(d.background, s.background),
     backgroundLight: readBg(d.backgroundLight, s.backgroundLight),
     sectionBg: ((s.sectionBg as unknown as Record<string, unknown>[]) ?? []).map((r) => ({
+      theme: String(r.theme ?? 'dark'),
       section: String(r.section ?? 'about'),
       mode: String(r.mode ?? 'color'),
       color: String(r.color ?? ''),
-      colorLight: String(r.colorLight ?? ''),
       imageId: relId(r.image),
       imageUrl: mediaUrl((r.image as never) ?? null, 'thumb'),
       videoUrl: String(r.videoUrl ?? ''),

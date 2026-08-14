@@ -3,54 +3,20 @@ import React from 'react'
 export type SectionBgConfig = {
   mode?: string | null
   color?: string | null
-  colorLight?: string | null
   imageUrl?: string | null
   videoUrl?: string | null
   fixed?: boolean | null
   dim?: number | null
 }
 
-/**
- * Wraps one page section so it can carry its own backdrop — a flat colour, a
- * photo, or a looping video — independently of the page background.
- *
- * Colours are supplied for both themes at once (as CSS variables) rather than
- * picked here, because the light/dark switch happens client-side after this
- * markup is already rendered.
- */
-export default function SectionBg({
-  config,
-  children,
-}: {
-  config?: SectionBgConfig | null
-  children: React.ReactNode
-}) {
-  if (!config) return <>{children}</>
+const dimOf = (c?: SectionBgConfig | null) => Math.min(100, Math.max(0, c?.dim ?? 45)) / 100
 
+/** One theme's backdrop layer. Both are rendered; CSS reveals the active one. */
+function Layer({ config, theme }: { config: SectionBgConfig; theme: 'dark' | 'light' }) {
   const mode = config.mode || 'color'
-  const dim = Math.min(100, Math.max(0, config.dim ?? 45)) / 100
-
-  if (mode === 'color') {
-    const color = config.color || config.colorLight
-    if (!color && !config.colorLight) return <>{children}</>
-    return (
-      <div
-        className="pf-sec-bg"
-        style={
-          {
-            '--sec-bg': config.color || 'transparent',
-            '--sec-bg-light': config.colorLight || config.color || 'transparent',
-          } as React.CSSProperties
-        }
-      >
-        {children}
-      </div>
-    )
-  }
-
   if (mode === 'image' && config.imageUrl) {
     return (
-      <div className="pf-sec-bg media">
+      <span className={`pf-sec-layer for-${theme}`}>
         <span
           className="pf-sec-media"
           style={{
@@ -58,30 +24,59 @@ export default function SectionBg({
             backgroundAttachment: config.fixed ? 'fixed' : 'scroll',
           }}
         />
-        <span className="pf-sec-dim" style={{ opacity: dim }} />
-        <div className="pf-sec-inner">{children}</div>
-      </div>
+        <span className="pf-sec-dim" style={{ opacity: dimOf(config) }} />
+      </span>
     )
   }
-
   if (mode === 'video' && config.videoUrl) {
     return (
-      <div className="pf-sec-bg media">
-        <video
-          className="pf-sec-media"
-          src={config.videoUrl}
-          autoPlay
-          muted
-          loop
-          playsInline
-          // Decorative only — never pull it in before the page is usable.
-          preload="none"
-        />
-        <span className="pf-sec-dim" style={{ opacity: dim }} />
-        <div className="pf-sec-inner">{children}</div>
-      </div>
+      <span className={`pf-sec-layer for-${theme}`}>
+        <video className="pf-sec-media" src={config.videoUrl} autoPlay muted loop playsInline preload="none" />
+        <span className="pf-sec-dim" style={{ opacity: dimOf(config) }} />
+      </span>
     )
   }
+  return null
+}
 
-  return <>{children}</>
+/**
+ * Wraps one page section so it can carry its own backdrop — a flat colour, a
+ * photo, or a looping video — independently of the page background.
+ *
+ * Light and dark are configured separately and both are rendered here, because
+ * the theme switch happens in the browser after this markup is already sent.
+ */
+export default function SectionBg({
+  dark,
+  light,
+  children,
+}: {
+  dark?: SectionBgConfig | null
+  light?: SectionBgConfig | null
+  children: React.ReactNode
+}) {
+  if (!dark && !light) return <>{children}</>
+
+  const colourOf = (c?: SectionBgConfig | null) =>
+    c && (c.mode || 'color') === 'color' ? c.color || null : null
+  const darkColour = colourOf(dark)
+  const lightColour = colourOf(light)
+  const hasMedia =
+    (dark && dark.mode !== 'color') || (light && light.mode !== 'color') ? true : false
+
+  return (
+    <div
+      className={`pf-sec-bg${hasMedia ? ' media' : ''}`}
+      style={
+        {
+          ...(darkColour ? { '--sec-bg': darkColour } : {}),
+          ...(lightColour ? { '--sec-bg-light': lightColour } : {}),
+        } as React.CSSProperties
+      }
+    >
+      {dark && <Layer config={dark} theme="dark" />}
+      {light && <Layer config={light} theme="light" />}
+      {hasMedia ? <div className="pf-sec-inner">{children}</div> : children}
+    </div>
+  )
 }

@@ -568,10 +568,11 @@ export interface SiteSetting {
     dim?: number | null;
   };
   /**
-   * Override individual sections: a flat colour (per theme), an image, or a video. Sections not listed here use the page background.
+   * Override individual sections. Each row belongs to ONE theme, so light and dark can differ completely — different type, image, even video. Sections not listed use the page background.
    */
   sectionBg?:
     | {
+        theme?: ('dark' | 'light') | null;
         section?:
           | (
               | 'hero'
@@ -590,7 +591,6 @@ export interface SiteSetting {
           | null;
         mode?: ('color' | 'image' | 'video') | null;
         color?: string | null;
-        colorLight?: string | null;
         image?: (number | null) | Media;
         videoUrl?: string | null;
         fixed?: boolean | null;
@@ -1322,10 +1322,10 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   sectionBg?:
     | T
     | {
+        theme?: T;
         section?: T;
         mode?: T;
         color?: T;
-        colorLight?: T;
         image?: T;
         videoUrl?: T;
         fixed?: T;

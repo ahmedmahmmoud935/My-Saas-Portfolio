@@ -194,9 +194,18 @@ export const SiteSettings: CollectionConfig = {
               label: 'Per-section backgrounds',
               admin: {
                 description:
-                  'Override individual sections: a flat colour (per theme), an image, or a video. Sections not listed here use the page background.',
+                  'Override individual sections. Each row belongs to ONE theme, so light and dark can differ completely — different type, image, even video. Sections not listed use the page background.',
               },
               fields: [
+                {
+                  name: 'theme',
+                  type: 'select',
+                  defaultValue: 'dark',
+                  options: [
+                    { label: 'Dark theme', value: 'dark' },
+                    { label: 'Light theme', value: 'light' },
+                  ],
+                },
                 {
                   name: 'section',
                   type: 'select',
@@ -212,9 +221,7 @@ export const SiteSettings: CollectionConfig = {
                     { label: 'Video', value: 'video' },
                   ],
                 },
-                // Colour is per theme; the media is shared between the two.
-                { name: 'color', type: 'text', label: 'Colour (dark theme)' },
-                { name: 'colorLight', type: 'text', label: 'Colour (light theme)' },
+                { name: 'color', type: 'text' },
                 { name: 'image', type: 'upload', relationTo: 'media' },
                 { name: 'videoUrl', type: 'text' },
                 { name: 'fixed', type: 'checkbox', label: 'Parallax (background stays put)' },

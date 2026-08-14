@@ -14,13 +14,15 @@ export type BgForm = {
   dim: number
 }
 
-/** A backdrop for a single section, overriding the page background. */
+/** A backdrop for a single section, overriding the page background.
+ *  Each row belongs to one theme, so light and dark are fully independent. */
 export type SectionBgForm = {
+  /** dark | light */
+  theme: string
   section: string
   /** color | image | video */
   mode: string
   color: string
-  colorLight: string
   imageId: number | null
   imageUrl: string | null
   videoUrl: string
@@ -40,11 +42,11 @@ export const emptyBg = (): BgForm => ({
   dim: 55,
 })
 
-export const emptySectionBg = (): SectionBgForm => ({
+export const emptySectionBg = (theme = 'dark'): SectionBgForm => ({
+  theme,
   section: 'about',
   mode: 'color',
   color: '',
-  colorLight: '',
   imageId: null,
   imageUrl: null,
   videoUrl: '',

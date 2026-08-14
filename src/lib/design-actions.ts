@@ -36,10 +36,10 @@ export async function saveDesign(form: DesignForm) {
       sectionBg: form.sectionBg
         .filter((s) => s.section)
         .map((s) => ({
+          theme: s.theme || 'dark',
           section: s.section,
           mode: s.mode,
           color: s.color,
-          colorLight: s.colorLight,
           image: s.imageId ?? null,
           videoUrl: s.videoUrl,
           fixed: s.fixed,

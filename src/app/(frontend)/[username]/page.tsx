@@ -329,12 +329,17 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
   const dimLight = dimOpacity(settings?.backgroundLight)
   const isImage = (b: RawBg) => b?.type === 'image' && Boolean(b?.image)
 
-  // Per-section background overrides, keyed by section id.
-  const sectionBg = new Map(
-    (settings?.sectionBg ?? [])
-      .filter((s) => s.section)
-      .map((s) => [String(s.section), { ...s, imageUrl: mediaUrl(s.image, 'card') }]),
-  )
+  // Per-section background overrides — one map per theme, since a row now
+  // belongs to exactly one of them.
+  const bgRows = (settings?.sectionBg ?? []).filter((s) => s.section)
+  const mapFor = (theme: string) =>
+    new Map(
+      bgRows
+        .filter((s) => (s.theme || 'dark') === theme)
+        .map((s) => [String(s.section), { ...s, imageUrl: mediaUrl(s.image, 'card') }]),
+    )
+  const sectionBgDark = mapFor('dark')
+  const sectionBgLight = mapFor('light')
 
   return (
     <div
@@ -385,7 +390,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
         langLabel={locale === 'en' ? 'ع' : 'EN'}
       />
       {ordered.map((id) => (
-        <SectionBg key={id} config={sectionBg.get(id)}>
+        <SectionBg key={id} dark={sectionBgDark.get(id)} light={sectionBgLight.get(id)}>
           {sectionEls[id]}
         </SectionBg>
       ))}

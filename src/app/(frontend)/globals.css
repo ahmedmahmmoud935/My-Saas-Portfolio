@@ -2421,6 +2421,23 @@ html[data-theme='light'] .pf-sec-bg {
   isolation: isolate;
   background: none;
 }
+/* One layer per theme; only the active one is shown, because the light/dark
+   switch happens in the browser after this markup is sent. */
+.pf-sec-layer {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: block;
+}
+.pf-sec-layer.for-light {
+  display: none;
+}
+html[data-theme='light'] .pf-sec-layer.for-dark {
+  display: none;
+}
+html[data-theme='light'] .pf-sec-layer.for-light {
+  display: block;
+}
 .pf-sec-media {
   position: absolute;
   inset: 0;

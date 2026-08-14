@@ -219,9 +219,19 @@ function ThemePanel({
     : { accent: 'accentLight', bg: 'bgLight', bg2: 'bg2Light', text: 'textLight', sub: 'subtextLight' }
   const cv = (k: string) => (f.colors as unknown as Record<string, string>)[k] || ''
 
-  const rows = f.sectionBg
-  const patchRow = (i: number, p: Partial<SectionBgForm>) =>
-    setSectionBg(rows.map((r, j) => (j === i ? { ...r, ...p } : r)))
+  // Only this theme's rows — light and dark keep entirely separate lists, so
+  // one theme's image or video can't leak into the other.
+  const all = f.sectionBg
+  const rows = all.filter((r) => (r.theme || 'dark') === mode)
+  const idxOf = (i: number) => all.indexOf(rows[i])
+  const patchRow = (i: number, p: Partial<SectionBgForm>) => {
+    const target = idxOf(i)
+    setSectionBg(all.map((r, j) => (j === target ? { ...r, ...p } : r)))
+  }
+  const removeRow = (i: number) => {
+    const target = idxOf(i)
+    setSectionBg(all.filter((_, j) => j !== target))
+  }
 
   const suggestions =
     bg.type === 'animated' ? ANIMATED_SUGGESTIONS : bg.type === 'gradient' ? GRADIENT_SUGGESTIONS : []
@@ -358,14 +368,14 @@ function ThemePanel({
       <Group title={tr('خلفيات الأقسام', 'Section backgrounds')}>
         <p style={{ color: 'var(--sub)', fontSize: 13, margin: '0 0 12px' }}>
           {tr(
-            'أي قسم مش مضاف هنا بياخد خلفية الصفحة. الألوان منفصلة لكل ثيم؛ الصورة والفيديو مشتركين.',
-            'Sections not listed here use the page background. Colours are per theme; image and video are shared.',
+            `أي قسم مش مضاف هنا بياخد خلفية الصفحة. دي خلفيات ${dark ? 'الثيم الداكن' : 'الثيم الفاتح'} وحده — مستقلة تمامًا عن الثيم التاني.`,
+            `Sections not listed here use the page background. These belong to the ${dark ? 'dark' : 'light'} theme only — completely separate from the other one.`,
           )}
         </p>
         {rows.map((r, i) => (
           <div className="de-group" key={i} style={{ marginBottom: 12 }}>
             <div className="mod-card-head">
-              <button className="icon-btn del" style={{ width: 30, height: 30 }} onClick={() => setSectionBg(rows.filter((_, j) => j !== i))}>
+              <button className="icon-btn del" style={{ width: 30, height: 30 }} onClick={() => removeRow(i)}>
                 <NavIcon id="trash" size={14} />
               </button>
               <span style={{ color: 'var(--sub)', fontSize: 12 }}>
@@ -395,9 +405,9 @@ function ThemePanel({
 
             {r.mode === 'color' && (
               <ColorInput
-                label={dark ? tr('اللون (داكن)', 'Colour (dark)') : tr('اللون (فاتح)', 'Colour (light)')}
-                value={dark ? r.color : r.colorLight}
-                onChange={(v) => patchRow(i, dark ? { color: v } : { colorLight: v })}
+                label={tr('اللون', 'Colour')}
+                value={r.color}
+                onChange={(v) => patchRow(i, { color: v })}
               />
             )}
 
@@ -435,7 +445,7 @@ function ThemePanel({
             )}
           </div>
         ))}
-        <button className="btn btn-ghost" onClick={() => setSectionBg([...rows, emptySectionBg()])}>
+        <button className="btn btn-ghost" onClick={() => setSectionBg([...all, emptySectionBg(mode)])}>
           + {tr('خلفية قسم', 'Section background')}
         </button>
       </Group>
