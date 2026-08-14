@@ -14,6 +14,7 @@ import * as migration_20260812_105131 from './20260812_105131';
 import * as migration_20260812_110603 from './20260812_110603';
 import * as migration_20260812_201359 from './20260812_201359';
 import * as migration_20260815_000255_section_bg_per_theme from './20260815_000255_section_bg_per_theme';
+import * as migration_20260815_010000_drop_dead_design_fields from './20260815_010000_drop_dead_design_fields';
 
 export const migrations = [
   {
@@ -95,5 +96,10 @@ export const migrations = [
     up: migration_20260815_000255_section_bg_per_theme.up,
     down: migration_20260815_000255_section_bg_per_theme.down,
     name: '20260815_000255_section_bg_per_theme'
+  },
+  {
+    up: migration_20260815_010000_drop_dead_design_fields.up,
+    down: migration_20260815_010000_drop_dead_design_fields.down,
+    name: '20260815_010000_drop_dead_design_fields'
   },
 ];

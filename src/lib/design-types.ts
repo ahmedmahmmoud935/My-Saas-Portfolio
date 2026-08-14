@@ -2,7 +2,6 @@
 
 /** One theme's page background. */
 export type BgForm = {
-  preset: string
   /** solid | gradient | animated | image */
   type: string
   color1: string
@@ -31,7 +30,6 @@ export type SectionBgForm = {
 }
 
 export const emptyBg = (): BgForm => ({
-  preset: 'dark',
   type: 'solid',
   color1: '',
   color2: '',
@@ -113,7 +111,6 @@ export type DesignForm = {
   backgroundLight: BgForm
   sectionBg: SectionBgForm[]
   style: {
-    theme: string
     hero: string
     about: string
     projects: string
@@ -143,7 +140,7 @@ export type DesignForm = {
 export const LAYOUT_OPTIONS = {
   hero: ['centered', 'split', 'massive', 'cover-full', 'minimal'],
   about: ['classic', 'visual', 'simple'],
-  projects: ['grid', 'masonry', 'list', 'freegrid'],
+  projects: ['grid', 'masonry', 'list'],
   expertise: ['grid', 'stack'],
   contact: ['classic', 'split'],
   skills: ['tags', 'inline', 'bars'],
@@ -169,7 +166,6 @@ export const COMPONENT_OPTIONS = {
   button: ['rounded', 'sharp', 'pill'],
 } as const
 
-export const BG_PRESETS = ['dark', 'ocean', 'sunset', 'forest', 'mono', 'pearl']
 export const ANIM_OPTIONS = ['fade-up', 'fade', 'none']
 export const CURSOR_OPTIONS = ['default', 'dot-ring']
 export const DIRECTION_OPTIONS = ['auto', 'rtl', 'ltr']
@@ -213,10 +209,9 @@ export const emptyDesign = (): DesignForm => ({
     subtextLight: '#495265',
   },
   background: emptyBg(),
-  backgroundLight: { ...emptyBg(), preset: 'pearl' },
+  backgroundLight: emptyBg(),
   sectionBg: [],
   style: {
-    theme: 'default',
     hero: 'centered',
     about: 'classic',
     projects: 'grid',

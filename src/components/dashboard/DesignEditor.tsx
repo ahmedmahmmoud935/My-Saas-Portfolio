@@ -11,7 +11,6 @@ import {
   LAYOUT_OPTIONS,
   FONT_OPTIONS,
   COMPONENT_OPTIONS,
-  BG_PRESETS,
   ANIM_OPTIONS,
   CURSOR_OPTIONS,
   DIRECTION_OPTIONS,
@@ -296,7 +295,6 @@ function ThemePanel({
                 </button>
               ))}
             </div>
-            <Opt label={tr('لمسة جاهزة', 'Preset tint')} value={bg.preset} options={BG_PRESETS} onChange={(v) => setBg({ preset: v })} />
             <ColorInput label={tr('اللون', 'Colour')} value={bg.color1} onChange={(v) => setBg({ color1: v })} />
           </>
         )}

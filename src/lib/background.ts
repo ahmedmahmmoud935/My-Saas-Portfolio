@@ -2,7 +2,6 @@ import type { CSSProperties } from 'react'
 
 /** The shape the Design tab saves for one theme's page background. */
 export type BgConfig = {
-  preset?: string | null
   type?: string | null
   color1?: string | null
   color2?: string | null
@@ -10,16 +9,6 @@ export type BgConfig = {
   imageUrl?: string | null
   imageFixed?: boolean | null
   dim?: number | null
-}
-
-/** Soft decorative tints — the original "preset" backgrounds. */
-const TINTS: Record<string, string> = {
-  dark: '',
-  ocean: 'radial-gradient(1200px 640px at 82% -12%, rgba(56,189,248,0.16), transparent 60%)',
-  sunset: 'radial-gradient(1200px 640px at 82% -12%, rgba(249,115,22,0.16), transparent 60%)',
-  forest: 'radial-gradient(1200px 640px at 82% -12%, rgba(16,185,129,0.14), transparent 60%)',
-  mono: 'radial-gradient(1200px 640px at 82% -12%, rgba(160,160,160,0.10), transparent 60%)',
-  pearl: 'radial-gradient(1200px 640px at 82% -12%, rgba(120,120,120,0.08), transparent 60%)',
 }
 
 /**
@@ -75,15 +64,12 @@ export function pageBackground(bg?: BgConfig | null): {
     }
   }
 
-  const tint = bg.preset ? TINTS[bg.preset] : ''
-
-  // Solid: the chosen colour replaces the palette background, with the
-  // decorative tint (if any) sitting on top of it.
+  // Solid: the chosen colour replaces the palette background.
   if (type === 'solid' && color1) {
-    return { style: { background: tint ? `${tint}, ${color1}` : color1 }, animated: false, scrolls: false }
+    return { style: { background: color1 }, animated: false, scrolls: false }
   }
 
-  return tint ? { style: { background: tint }, animated: false, scrolls: false } : null
+  return null
 }
 
 /** Dim strength (0–1) to lay over an image background so text stays readable. */

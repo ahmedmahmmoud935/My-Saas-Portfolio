@@ -548,7 +548,6 @@ export interface SiteSetting {
     subtextLight?: string | null;
   };
   background?: {
-    preset?: ('dark' | 'ocean' | 'sunset' | 'forest' | 'mono' | 'pearl') | null;
     type?: ('solid' | 'gradient' | 'animated' | 'image') | null;
     color1?: string | null;
     color2?: string | null;
@@ -558,7 +557,6 @@ export interface SiteSetting {
     dim?: number | null;
   };
   backgroundLight?: {
-    preset?: ('dark' | 'ocean' | 'sunset' | 'forest' | 'mono' | 'pearl') | null;
     type?: ('solid' | 'gradient' | 'animated' | 'image') | null;
     color1?: string | null;
     color2?: string | null;
@@ -599,7 +597,6 @@ export interface SiteSetting {
       }[]
     | null;
   style?: {
-    theme?: ('default' | 'kinetic') | null;
     hero?: ('centered' | 'split' | 'massive' | 'cover-full' | 'minimal') | null;
     about?: ('classic' | 'visual' | 'simple') | null;
     projects?: ('grid' | 'masonry' | 'list' | 'freegrid') | null;
@@ -1298,7 +1295,6 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   background?:
     | T
     | {
-        preset?: T;
         type?: T;
         color1?: T;
         color2?: T;
@@ -1310,7 +1306,6 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   backgroundLight?:
     | T
     | {
-        preset?: T;
         type?: T;
         color1?: T;
         color2?: T;
@@ -1335,7 +1330,6 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   style?:
     | T
     | {
-        theme?: T;
         hero?: T;
         about?: T;
         projects?: T;

@@ -4,7 +4,6 @@ import { getDashboardContext, getTenantSettings } from './dashboard'
 import type { BgForm, DesignForm } from './design-types'
 
 const toBg = (b: BgForm) => ({
-  preset: b.preset,
   type: b.type,
   color1: b.color1,
   color2: b.color2,

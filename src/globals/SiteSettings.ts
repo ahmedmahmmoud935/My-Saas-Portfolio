@@ -30,15 +30,6 @@ const SECTION_IDS = [
  */
 const backgroundFields = () => [
   {
-    name: 'preset',
-    type: 'select' as const,
-    defaultValue: 'dark',
-    options: ['dark', 'ocean', 'sunset', 'forest', 'mono', 'pearl'].map((v) => ({
-      label: v,
-      value: v,
-    })),
-  },
-  {
     name: 'type',
     type: 'select' as const,
     defaultValue: 'solid',
@@ -236,12 +227,6 @@ export const SiteSettings: CollectionConfig = {
                 {
                   type: 'row',
                   fields: [
-                    {
-                      name: 'theme',
-                      type: 'select',
-                      defaultValue: 'default',
-                      options: ['default', 'kinetic'].map((v) => ({ label: v, value: v })),
-                    },
                     {
                       name: 'hero',
                       type: 'select',
