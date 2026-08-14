@@ -227,7 +227,11 @@ img {
 .section {
   padding-block: var(--section-pad) 0;
 }
-.section:last-of-type {
+/* Only the genuinely last section on the page. Unscoped, this also matched
+   every backdropped section (each is an only child inside its wrapper), which
+   is why coloured bands ended up with double the space below the content. */
+.pf-root > .section:last-of-type,
+.pf-root > .pf-sec-bg:last-of-type > .section {
   padding-bottom: var(--section-pad);
 }
 .section-head {
@@ -2393,14 +2397,21 @@ html[data-theme='light'] .pf-bg-layer.for-light {
 }
 
 /* ─── Per-section backgrounds ───────────────────────────────────────────── */
-/* A section with its own backdrop needs breathing room BELOW its content too.
-   `.section` only pads the top (that's what keeps the rhythm even between
-   plain sections), so a coloured band ended flush against the last line.
-   Adding it here — on the wrapper, which only exists when a backdrop is
-   configured — leaves untouched sections spaced exactly as before. */
+/* A backdropped section pads both sides equally: `.section` only pads the top
+   (that's what keeps the rhythm even between plain sections), so a coloured
+   band would otherwise end flush against its last line. Plain sections are
+   untouched. */
+.pf-sec-bg > .section {
+  padding-bottom: var(--section-pad);
+}
+/* …and it shouldn't butt straight up against whatever precedes it. The hero is
+   exempt — it sits directly under the navbar by design. */
 .pf-sec-bg {
   background: var(--sec-bg, transparent);
-  padding-bottom: var(--section-pad);
+  margin-top: var(--section-pad);
+}
+.pf-sec-bg:has(> #hero) {
+  margin-top: 0;
 }
 html[data-theme='light'] .pf-sec-bg {
   background: var(--sec-bg-light, var(--sec-bg, transparent));
