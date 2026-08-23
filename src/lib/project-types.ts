@@ -74,3 +74,13 @@ export function editModuleToInput(m: EditModule): ModuleInput {
       return { type: 'separator', spacing: m.spacing }
   }
 }
+
+/** What happened to an uploaded video — surfaced in the dashboard so a file
+ *  that couldn't be compressed doesn't go up unnoticed. */
+export type VideoReport = {
+  compressed: boolean
+  fromMb: number
+  toMb: number
+  /** too-small | no-ffmpeg | ffmpeg-failed | no-gain */
+  reason?: string
+}

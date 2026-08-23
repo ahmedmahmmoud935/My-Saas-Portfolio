@@ -2078,3 +2078,11 @@ input[type='range']::-moz-range-thumb {
   background: var(--accent);
   flex: none;
 }
+
+/* Result of a video upload (compressed from → to, or a warning). */
+.upload-note {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--sub);
+}

@@ -3,22 +3,39 @@ import { mkdtemp, readFile, rm, writeFile } from 'fs/promises'
 import { tmpdir } from 'os'
 import path from 'path'
 
+/** Outcome of a compression attempt, so callers can report what happened. */
+export type TranscodeResult = {
+  buf: Buffer | null
+  mimetype?: string
+  /** Why nothing was replaced — for reporting, never for failing the upload. */
+  reason?: 'too-small' | 'no-ffmpeg' | 'ffmpeg-failed' | 'no-gain'
+  fromBytes: number
+  toBytes?: number
+}
+
+/** Give up on a stuck encode rather than hold the request open forever. */
+const TIMEOUT_MS = 10 * 60 * 1000
+
 /**
- * Re-encode an uploaded video to a smaller H.264 MP4 (fast-start, capped width,
- * CRF 28). Returns null on any failure — the caller then keeps the original, so
- * a missing/broken ffmpeg never breaks uploads. Runs ffmpeg as a subprocess so
- * it doesn't block the Node event loop.
+ * Re-encode an uploaded video to a smaller H.264 MP4 (fast-start, longest side
+ * capped at 1280, CRF 30).
+ *
+ * Compression never fails an upload: on any problem the caller keeps the
+ * original file and the reason is reported instead. A phone/CapCut export is
+ * the normal input here, so this has to survive large files and odd codecs.
  */
 export async function compressVideo(
   input: Buffer,
   /** Source mime — a non-mp4 is always re-encoded, even if it doesn't shrink. */
   sourceMime?: string,
-): Promise<{ buf: Buffer; mimetype: string; ext: string } | null> {
+): Promise<TranscodeResult> {
+  const fromBytes = input.length
   // Skip tiny clips — not worth the CPU.
-  if (input.length < 400 * 1024) return null
+  if (fromBytes < 400 * 1024) return { buf: null, reason: 'too-small', fromBytes }
   const notMp4 = Boolean(sourceMime && sourceMime !== 'video/mp4')
 
   let dir = ''
+  let spawnFailed = false
   try {
     dir = await mkdtemp(path.join(tmpdir(), 'vpx-vid-'))
     const inPath = path.join(dir, 'in')
@@ -61,18 +78,40 @@ export async function compressVideo(
       ff.stderr.on('data', (d) => {
         err += d.toString()
       })
-      ff.on('error', reject) // ffmpeg not installed
-      ff.on('close', (code) => (code === 0 ? resolve() : reject(new Error(`ffmpeg ${code}: ${err.slice(-300)}`))))
+      const timer = setTimeout(() => {
+        ff.kill('SIGKILL')
+        reject(new Error(`ffmpeg timed out after ${TIMEOUT_MS / 1000}s`))
+      }, TIMEOUT_MS)
+      ff.on('error', (e) => {
+        // ENOENT here means ffmpeg isn't installed in this environment.
+        spawnFailed = true
+        clearTimeout(timer)
+        reject(e)
+      })
+      ff.on('close', (code) => {
+        clearTimeout(timer)
+        code === 0 ? resolve() : reject(new Error(`ffmpeg ${code}: ${err.slice(-300)}`))
+      })
     })
 
     const out = await readFile(outPath)
     // Keep the re-encode when it shrinks — or whenever the source wasn't mp4,
     // since .mov plays badly (or not at all) in some browsers.
-    if (out.length >= input.length && !notMp4) return null
-    return { buf: out, mimetype: 'video/mp4', ext: 'mp4' }
+    if (out.length >= fromBytes && !notMp4) {
+      return { buf: null, reason: 'no-gain', fromBytes, toBytes: out.length }
+    }
+    console.log(
+      `[transcode] ${(fromBytes / 1048576).toFixed(1)}MB -> ${(out.length / 1048576).toFixed(1)}MB`,
+    )
+    return { buf: out, mimetype: 'video/mp4', fromBytes, toBytes: out.length }
   } catch (e) {
-    console.error('[transcode]', (e as Error).message)
-    return null
+    const msg = (e as Error).message
+    console.error('[transcode] failed:', msg)
+    return {
+      buf: null,
+      reason: spawnFailed ? 'no-ffmpeg' : 'ffmpeg-failed',
+      fromBytes,
+    }
   } finally {
     if (dir) await rm(dir, { recursive: true, force: true }).catch(() => {})
   }

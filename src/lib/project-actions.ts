@@ -3,6 +3,7 @@
 import { getDashboardContext, getTenantSettings } from './dashboard'
 import { compressVideo } from './transcode'
 import type { ProjectInput, ModuleInput } from './project-types'
+import type { VideoReport } from './project-types'
 import type { Project } from '../payload-types'
 
 type Blocks = NonNullable<Project['modules']>
@@ -45,14 +46,21 @@ export async function uploadProjectMedia(formData: FormData) {
   let buf: Buffer = Buffer.from(await file.arrayBuffer())
   let mimetype = file.type
   let name = file.name
-  // Compress videos on upload (H.264 MP4). Falls back to the original if ffmpeg
-  // isn't available or doesn't shrink it.
+  // Videos are compressed here; the result is reported back so the dashboard
+  // can say what happened rather than silently storing a 70MB phone export.
+  let video: VideoReport | undefined
   if (file.type.startsWith('video/')) {
     const c = await compressVideo(buf, file.type)
-    if (c) {
+    if (c.buf && c.mimetype) {
       buf = c.buf
       mimetype = c.mimetype
       name = name.replace(/\.[^.]+$/, '') + '.mp4'
+    }
+    video = {
+      compressed: Boolean(c.buf),
+      fromMb: +(c.fromBytes / 1048576).toFixed(1),
+      toMb: +((c.toBytes ?? c.fromBytes) / 1048576).toFixed(1),
+      reason: c.reason,
     }
   }
   const media = await ctx.payload.create({
@@ -66,6 +74,7 @@ export async function uploadProjectMedia(formData: FormData) {
     url: media.url ?? null,
     thumbUrl: sizes?.thumb?.url ?? media.url ?? null,
     mimeType: media.mimeType ?? mimetype ?? null,
+    video,
   }
 }
 
@@ -338,7 +347,7 @@ export async function recompressVideos() {
       }
       const buf = Buffer.from(await r.arrayBuffer())
       const c = await compressVideo(buf, m.mimeType)
-      if (!c) continue // ffmpeg missing, error, or not smaller
+      if (!c.buf || !c.mimetype) continue // ffmpeg missing, error, or not smaller
       const oldSize = m.filesize ?? buf.length
       await ctx.payload.update({
         collection: 'media',

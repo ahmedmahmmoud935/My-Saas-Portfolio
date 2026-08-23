@@ -5,11 +5,14 @@ import { uploadProjectMedia } from '@/lib/project-actions'
 import { useDashLang } from './DashLang'
 import { actionErrorMessage, isStaleDeployment } from '@/lib/action-error'
 
+import type { VideoReport } from '@/lib/project-types'
+
 export type UploadedMedia = {
   id: number
   url: string | null
   thumbUrl: string | null
   mimeType?: string | null
+  video?: VideoReport
 }
 
 export default function MediaUploader({
@@ -50,6 +53,7 @@ export default function MediaUploader({
   const { t, lang } = useDashLang()
   const [busy, setBusy] = useState(false)
   const [preview, setPreview] = useState<string | null>(previewUrl ?? null)
+  const [note, setNote] = useState<string | null>(null)
   const lbl = label ?? t('رفع صورة', 'Upload image')
 
   async function pickFiles(files: File[]) {
@@ -64,6 +68,23 @@ export default function MediaUploader({
       }
       const last = results[results.length - 1]
       setPreview(last?.thumbUrl ?? last?.url ?? null)
+      // Say what happened to a video: a file that couldn't be compressed would
+      // otherwise go up silently and be slow for every visitor.
+      const v = results.find((r) => r.video)?.video
+      if (v) {
+        if (v.compressed) {
+          setNote(
+            t(`تم الضغط: ${v.fromMb} ← ${v.toMb} ميجابايت ✓`, `Compressed: ${v.fromMb} → ${v.toMb} MB ✓`),
+          )
+        } else if (v.reason !== 'too-small' && v.reason !== 'no-gain') {
+          setNote(
+            t(
+              `اترفع من غير ضغط (${v.fromMb} ميجابايت) — الضغط فشل على السيرفر.`,
+              `Uploaded uncompressed (${v.fromMb} MB) — compression failed on the server.`,
+            ),
+          )
+        }
+      }
       if (onUploadedMany) onUploadedMany(results)
       else results.forEach((r) => onUploaded?.(r))
     } catch (err) {
@@ -91,19 +112,26 @@ export default function MediaUploader({
     />
   )
 
+  const withNote = (el: React.ReactNode) => (
+    <>
+      {el}
+      {note && <p className="upload-note">{note}</p>}
+    </>
+  )
+
   // "+" tile — add more images to a gallery.
   if (plus) {
-    return (
+    return withNote(
       <button type="button" className="uploader-plus" onClick={() => ref.current?.click()} title={lbl}>
         {input}
         {busy ? '…' : '+'}
-      </button>
+      </button>,
     )
   }
 
   // Full-width preview with a replace badge — clicking re-opens the picker.
   if (big && preview) {
-    return (
+    return withNote(
       <div className="uploader uploader-big" onClick={() => ref.current?.click()}>
         {input}
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -128,7 +156,7 @@ export default function MediaUploader({
             ✕
           </button>
         )}
-      </div>
+      </div>,
     )
   }
 
@@ -136,7 +164,7 @@ export default function MediaUploader({
   if (aspect) {
     const [w, h] = aspect.split('/').map((n) => parseFloat(n))
     const portrait = w && h ? w / h < 1 : false
-    return (
+    return withNote(
       <div
         className="uploader uploader-aspect"
         onClick={() => ref.current?.click()}
@@ -150,11 +178,11 @@ export default function MediaUploader({
           <span className="uploader-aspect-label">{busy ? t('جاري الرفع…', 'Uploading…') : `⬆ ${lbl}`}</span>
         )}
         <span className="uploader-replace">{busy ? t('جاري الرفع…', 'Uploading…') : preview ? t('⟳ استبدال', '⟳ Replace') : ''}</span>
-      </div>
+      </div>,
     )
   }
 
-  return (
+  return withNote(
     <div
       className="uploader"
       onClick={() => ref.current?.click()}
@@ -185,6 +213,6 @@ export default function MediaUploader({
           {busy ? t('جاري الرفع…', 'Uploading…') : `⬆ ${lbl}`}
         </span>
       )}
-    </div>
+    </div>,
   )
 }
