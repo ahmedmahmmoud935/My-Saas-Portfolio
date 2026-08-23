@@ -543,21 +543,24 @@ button {
 }
 .proj-manage-grid {
   display: grid;
-  /* Mirror the public site: same column count AND card size. The site grid sits
-     in a ~1160px container, so a column caps at ~380px — cap here too (via
-     minmax) so wide dashboards don't blow the cards up out of proportion. */
-  grid-template-columns: repeat(var(--pm-cols, 3), minmax(0, 380px));
+  /* Always three across here, whatever the site's own column setting is: this
+     is a management list, not a preview of the published layout, and browsing
+     it two-up wasted half the screen. */
+  grid-template-columns: repeat(3, minmax(0, 380px));
   justify-content: start;
+  /* Cards size to their own cover. Stretching them to the row's tallest was
+     what left dark gaps under the shorter images. */
+  align-items: start;
   gap: 16px;
 }
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .proj-manage-grid {
-    grid-template-columns: repeat(var(--pm-cols-t, 2), minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-@media (max-width: 540px) {
+@media (max-width: 560px) {
   .proj-manage-grid {
-    grid-template-columns: repeat(var(--pm-cols-m, 2), minmax(0, 1fr));
+    grid-template-columns: 1fr;
   }
 }
 /* Uniform, cover-filled cards (matches the public site): media-type badge at the
@@ -574,8 +577,14 @@ button {
   background: var(--bg-3);
   display: grid;
   place-items: center;
+  overflow: hidden;
 }
+/* Absolute, not in-flow: an in-flow <img> forces the box to its own intrinsic
+   height, which beat `aspect-ratio` — so every card took the shape of whatever
+   was uploaded instead of one uniform tile. */
 .pm-cover img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -995,20 +1004,101 @@ textarea.field {
 }
 
 @media (max-width: 820px) {
+  /* The sidebar becomes a top bar. It used to just wrap into a flex row, which
+     spilled ten nav items, the brand, both toggles and the whole footer across
+     half the screen before any content showed. Now: one compact header line, a
+     nav strip that scrolls sideways, and the footer links at the end. */
   .dash {
     grid-template-columns: 1fr;
   }
   .sidebar {
-    position: static;
+    position: sticky;
+    top: 0;
+    z-index: 60;
     height: auto;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 6px;
-    order: -1;
+    overflow: visible;
+    border-inline-end: none;
+    border-bottom: 1px solid var(--border);
+    padding: 10px 12px;
+    gap: 10px;
   }
-  .sidebar-foot,
-  .lang-pill {
-    width: 100%;
+  .sidebar-brand {
+    padding: 0;
+    font-size: 15px;
+  }
+  /* Brand and the two toggles share one line. */
+  .sidebar-controls {
+    grid-template-columns: auto auto;
+    justify-content: flex-end;
+    margin-bottom: 0;
+  }
+  .chrome-toggle {
+    padding: 7px 11px;
+    font-size: 12px;
+  }
+  .sidebar > nav {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    /* Bleed to the edges so the strip reads as scrollable. */
+    margin-inline: -12px;
+    padding-inline: 12px;
+  }
+  .sidebar > nav::-webkit-scrollbar {
+    display: none;
+  }
+  .nav-item {
+    flex: none;
+    justify-content: center;
+    gap: 7px;
+    padding: 8px 13px;
+    font-size: 13px;
+    white-space: nowrap;
+    border-radius: 999px;
+    border-inline-end: none;
+    background: var(--bg-3);
+  }
+  .nav-item.active {
+    border-inline-end: none;
+    background: var(--accent-soft);
+  }
+  /* Footer: links only, laid out inline; the storage bar isn't worth the room. */
+  .sidebar-foot {
+    margin-top: 0;
+    padding-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .sidebar-foot .who,
+  .storage-bar {
+    display: none;
+  }
+  .foot-link {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .dash-main {
+    padding: 18px 14px 48px;
+  }
+  /* Page header: title above its buttons, buttons free to wrap. */
+  .page-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .page-head h1 {
+    font-size: 21px;
+  }
+  .head-actions {
+    flex-wrap: wrap;
+  }
+  .panel {
+    padding: 16px;
   }
   .grid-2 {
     grid-template-columns: 1fr;
