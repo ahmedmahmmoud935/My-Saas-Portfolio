@@ -83,7 +83,7 @@ export default function ProjectsGrid({
   if (colCfg?.m) colVars['--cols-m'] = String(colCfg.m)
 
   const openVideo = (clicked: ProjectCard) => {
-    const reels: Reel[] = groups[activeTab].map((p) => ({ id: p.id, title: p.title, videoUrl: p.videoUrl, coverUrl: p.coverUrl }))
+    const reels: Reel[] = groups[activeTab].map((p) => ({ id: p.id, title: p.title, videoUrl: p.videoUrl, coverUrl: p.coverUrl, kind: p.videoKind }))
     const start = Math.max(0, reels.findIndex((r) => r.id === clicked.id))
     setPlayer({ reels, start })
   }

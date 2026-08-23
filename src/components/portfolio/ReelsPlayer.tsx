@@ -4,7 +4,14 @@ import React, { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { toEmbed } from '@/lib/video'
 
-export type Reel = { id: number; title: string; videoUrl?: string | null; coverUrl?: string | null }
+export type Reel = {
+  id: number
+  title: string
+  videoUrl?: string | null
+  coverUrl?: string | null
+  /** 'reel' = 9:16 portrait, 'video' = 16:9 landscape. */
+  kind?: string | null
+}
 
 export default function ReelsPlayer({
   reels,
@@ -57,7 +64,12 @@ export default function ReelsPlayer({
           </button>
         </>
       )}
-      <div className="reels-stage" onClick={(e) => e.stopPropagation()}>
+      <div
+        // Landscape clips were letterboxed inside a 9:16 portrait stage and
+        // came out tiny; the stage takes the clip's own shape now.
+        className={`reels-stage${cur.kind === 'video' ? ' wide' : ''}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         {embed?.kind === 'file' ? (
           <video
             className="reels-media"
