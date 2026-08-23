@@ -1,0 +1,137 @@
+/* Instagram-style slider: one continuous track you drag, not a cross-fade.
+   Used by the public project page and by the dashboard preview, so both show
+   exactly the same thing. */
+
+.wrap {
+  position: relative;
+  margin: 18px 0;
+}
+
+.track {
+  display: flex;
+  height: var(--mc-h, min(56vh, 480px));
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  /* Keep a horizontal swipe inside the slider instead of triggering the
+     browser's back gesture. */
+  overscroll-behavior-x: contain;
+  border-radius: 10px;
+  background: var(--bg-2, #111);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+.slide {
+  position: relative;
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+}
+/* The slide's own image, blurred, fills the empty space either side of a
+   portrait shot — same trick Instagram uses. */
+.slide::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: inherit;
+  background-size: cover;
+  background-position: center;
+  filter: blur(26px) brightness(0.45) saturate(120%);
+  transform: scale(1.15);
+}
+.slide img,
+.slide video {
+  position: relative;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  cursor: zoom-in;
+}
+
+.arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #fff;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  transition: background 0.2s, opacity 0.2s;
+}
+.arrow:hover {
+  background: rgba(255, 255, 255, 0.24);
+}
+.arrow[disabled] {
+  opacity: 0;
+  pointer-events: none;
+}
+.prev {
+  inset-inline-start: 10px;
+}
+.next {
+  inset-inline-end: 10px;
+}
+/* Touch devices swipe; the arrows are only clutter there. */
+@media (hover: none) {
+  .arrow {
+    display: none;
+  }
+}
+
+.count {
+  position: absolute;
+  top: 12px;
+  inset-inline-end: 12px;
+  z-index: 2;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+}
+
+.dots {
+  display: flex;
+  gap: 7px;
+  justify-content: center;
+  margin-top: 12px;
+}
+.dots button {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(150, 150, 150, 0.45);
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+.dots button.on {
+  background: var(--accent, #f97316);
+  transform: scale(1.15);
+}

@@ -1,9 +1,9 @@
 'use client'
 
 import React, { useEffect, useRef, useState } from 'react'
-import { uploadProjectMedia } from '@/lib/project-actions'
 import { useDashLang } from './DashLang'
-import { actionErrorMessage, isStaleDeployment } from '@/lib/action-error'
+import { isStaleDeployment } from '@/lib/action-error'
+import { uploadFile, type UploadPhase } from '@/lib/upload-client'
 import {
   VIDEO_QUALITY_DEFAULT,
   VIDEO_QUALITY_OPTIONS,
@@ -11,15 +11,8 @@ import {
   type VideoQuality,
 } from '@/lib/video-quality'
 
-import type { VideoReport } from '@/lib/project-types'
-
-export type UploadedMedia = {
-  id: number
-  url: string | null
-  thumbUrl: string | null
-  mimeType?: string | null
-  video?: VideoReport
-}
+export type { UploadedMedia } from '@/lib/upload-client'
+import type { UploadedMedia } from '@/lib/upload-client'
 
 export default function MediaUploader({
   label,
@@ -56,10 +49,21 @@ export default function MediaUploader({
   onRemove?: () => void
 }) {
   const ref = useRef<HTMLInputElement>(null)
-  const { t, lang } = useDashLang()
+  const { t } = useDashLang()
   const [busy, setBusy] = useState(false)
   const [preview, setPreview] = useState<string | null>(previewUrl ?? null)
   const [note, setNote] = useState<string | null>(null)
+  const [phase, setPhase] = useState<UploadPhase | null>(null)
+  const [error, setError] = useState<{ text: string; reload: boolean } | null>(null)
+  // Compression has no progress to report, so show the clock instead of a bar
+  // that isn't moving.
+  const [secs, setSecs] = useState(0)
+  useEffect(() => {
+    if (phase?.stage !== 'processing') return
+    setSecs(0)
+    const id = setInterval(() => setSecs((n) => n + 1), 1000)
+    return () => clearInterval(id)
+  }, [phase?.stage, phase?.index])
   const lbl = label ?? t('رفع صورة', 'Upload image')
   // Videos get compressed on the server; let the picker choose the trade-off
   // and remember it, so it isn't re-picked on every upload.
@@ -74,13 +78,19 @@ export default function MediaUploader({
   async function pickFiles(files: File[]) {
     if (!files.length) return
     setBusy(true)
+    setError(null)
+    setNote(null)
     try {
       const results: UploadedMedia[] = []
-      for (const file of files) {
-        const fd = new FormData()
-        fd.append('file', file)
-        if (file.type.startsWith('video/')) fd.append('quality', quality)
-        results.push(await uploadProjectMedia(fd))
+      for (const [i, file] of files.entries()) {
+        results.push(
+          await uploadFile(file, {
+            quality,
+            index: i + 1,
+            total: files.length,
+            onPhase: setPhase,
+          }),
+        )
       }
       const last = results[results.length - 1]
       setPreview(last?.thumbUrl ?? last?.url ?? null)
@@ -108,11 +118,25 @@ export default function MediaUploader({
       if (onUploadedMany) onUploadedMany(results)
       else results.forEach((r) => onUploaded?.(r))
     } catch (err) {
-      // A page left open across a deploy calls an action id that no longer
-      // exists — reload rather than blame the file.
-      alert(actionErrorMessage(err, lang))
-      if (isStaleDeployment(err)) location.reload()
+      // Never reload on its own here: an open editor holds unsaved work, and
+      // pulling the page out from under it is how uploads used to "kick you
+      // out". Say what happened and let the picker be clicked again.
+      const msg = err instanceof Error ? err.message : ''
+      if (msg === 'unauthorized') {
+        setError({
+          text: t('انتهت الجلسة. سجّل الدخول تاني في تبويب جديد وبعدين جرّب.', 'Session expired. Sign in again in a new tab, then retry.'),
+          reload: true,
+        })
+      } else if (isStaleDeployment(err)) {
+        setError({ text: t('الموقع اتحدّث. حدّث الصفحة وجرّب تاني.', 'The site was updated. Refresh the page and retry.'), reload: true })
+      } else {
+        setError({
+          text: t(`فشل الرفع${msg ? `: ${msg}` : ''} — جرّب تاني.`, `Upload failed${msg ? `: ${msg}` : ''} — try again.`),
+          reload: false,
+        })
+      }
     } finally {
+      setPhase(null)
       setBusy(false)
     }
   }
@@ -161,10 +185,52 @@ export default function MediaUploader({
     </div>
   )
 
+  const progress = phase && (
+    <div className="up-prog" role="status" aria-live="polite">
+      <div className="up-prog-head">
+        <span className="up-spin" aria-hidden />
+        <span>
+          {phase.stage === 'uploading'
+            ? t(`جاري الرفع… ${phase.pct}%`, `Uploading… ${phase.pct}%`)
+            : phase.isVideo
+              ? t(`جاري ضغط الفيديو… ${secs} ث`, `Compressing video… ${secs}s`)
+              : t('جاري المعالجة…', 'Processing…')}
+        </span>
+        {phase.total > 1 && (
+          <span className="up-count">{t(`ملف ${phase.index} من ${phase.total}`, `File ${phase.index} of ${phase.total}`)}</span>
+        )}
+      </div>
+      <div className="up-bar">
+        <div
+          // Uploading has a real percentage; compression doesn't, so the bar
+          // switches to a moving stripe rather than pretending to know.
+          className={`up-bar-fill${phase.stage === 'processing' ? ' indet' : ''}`}
+          style={phase.stage === 'uploading' ? { width: `${phase.pct}%` } : undefined}
+        />
+      </div>
+      {phase.stage === 'processing' && phase.isVideo && (
+        <p className="up-hint">
+          {t('سيبها تخلّص — الفيديو الطويل ممكن ياخد دقيقة أو اتنين.', "Hang on — a long clip can take a minute or two.")}
+        </p>
+      )}
+    </div>
+  )
+
   const withNote = (el: React.ReactNode) => (
     <>
       {picker}
       {el}
+      {progress}
+      {error && (
+        <p className="upload-err">
+          {error.text}
+          {error.reload && (
+            <button type="button" className="link-btn" onClick={() => location.reload()}>
+              {t('تحديث الصفحة', 'Refresh')}
+            </button>
+          )}
+        </p>
+      )}
       {note && <p className="upload-note">{note}</p>}
     </>
   )

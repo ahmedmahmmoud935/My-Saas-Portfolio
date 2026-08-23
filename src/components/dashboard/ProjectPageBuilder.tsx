@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import MediaUploader from './MediaUploader'
 import NavIcon from './icons'
 import ModulesEditor, { MODULE_ADD_BUTTONS, blankModule } from './ModulesEditor'
-import { saveProject, uploadProjectMedia } from '@/lib/project-actions'
+import { saveProject } from '@/lib/project-actions'
+import { uploadFile } from '@/lib/upload-client'
 import { biEmpty, editModuleToInput, emptyBi, type Bi, type EditModule } from '@/lib/project-types'
 import BiText from './BiText'
 import { useDashLang } from './DashLang'
@@ -58,10 +59,8 @@ export default function ProjectPageBuilder({
     if (!type || files.length === 0) return
     try {
       const results = []
-      for (const f of files) {
-        const fd = new FormData()
-        fd.append('file', f)
-        results.push(await uploadProjectMedia(fd))
+      for (const [i, f] of files.entries()) {
+        results.push(await uploadFile(f, { index: i + 1, total: files.length }))
       }
       const mod: EditModule =
         type === 'image'

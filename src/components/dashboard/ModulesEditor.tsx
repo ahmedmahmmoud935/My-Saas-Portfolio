@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import MediaUploader from './MediaUploader'
 import NavIcon from './icons'
+import Carousel from '@/components/shared/Carousel'
 import { resolveVideoUrl } from '@/lib/video'
 import type { EditModule } from '@/lib/project-types'
 import { emptyBi } from '@/lib/project-types'
@@ -159,68 +160,80 @@ export default function ModulesEditor({
           )}
 
           {(m.type === 'grid' || m.type === 'carousel') && (
-            <ModuleImages
-              items={m.items}
-              onReorder={(items) => update(i, { ...m, items })}
-              render={(dragProps) => (
-            <div className="gallery-grid">
-              {m.items.map((it, k) => (
-                <div className="gallery-thumb" key={it.id} {...dragProps(k)}>
-                  {/* Click the thumb to swap this image (استبدال). */}
-                  <MediaUploader
-                    big
-                    previewUrl={it.url}
-                    onUploaded={(u) =>
-                      update(i, {
-                        ...m,
-                        items: m.items.map((x, z) => (z === k ? { id: u.id, url: u.thumbUrl } : x)),
-                      })
-                    }
+            <>
+              {/* Show it the way the site will: a carousel slides, a grid is a
+                  proportional row. Guessing from square crops was the reason
+                  you had to publish to see what you'd made. */}
+              {m.type === 'carousel' && m.items.length > 0 && (
+                <div className="mod-preview">
+                  <span className="mod-preview-tag">{t('معاينة', 'Preview')}</span>
+                  <Carousel
+                    images={m.items.map((it) => it.url).filter((u): u is string => Boolean(u))}
+                    height="min(46vh, 360px)"
                   />
-                  <button
-                    className="icon-btn del thumb-del"
-                    onClick={() =>
-                      update(i, { ...m, items: m.items.filter((_, z) => z !== k) })
-                    }
-                  >
-                    <NavIcon id="x" size={13} />
-                  </button>
-                  {/* Reorder after the fact — uploading in the wrong order
-                      shouldn't mean deleting and starting again. */}
-                  <div className="thumb-move">
-                    <button
-                      className="icon-btn"
-                      disabled={k === 0}
-                      title={t('تحريك للخلف', 'Move earlier')}
-                      onClick={() => update(i, { ...m, items: moveItem(m.items, k, k - 1) })}
-                    >
-                      <NavIcon id="back" size={13} />
-                    </button>
-                    <button
-                      className="icon-btn"
-                      disabled={k === m.items.length - 1}
-                      title={t('تحريك للأمام', 'Move later')}
-                      onClick={() => update(i, { ...m, items: moveItem(m.items, k, k + 1) })}
-                    >
-                      <NavIcon id="external" size={13} />
-                    </button>
-                  </div>
                 </div>
-              ))}
-              <MediaUploader
-                plus
-                multiple
-                label={t('إضافة صور', 'Add images')}
-                onUploadedMany={(us) =>
-                  update(i, {
-                    ...m,
-                    items: [...m.items, ...us.map((u) => ({ id: u.id, url: u.thumbUrl }))],
-                  })
-                }
-              />
-            </div>
               )}
-            />
+              <ModuleImages
+                items={m.items}
+                onReorder={(items) => update(i, { ...m, items })}
+                render={(dragProps) => (
+                  <div className={`gallery-grid${m.type === 'grid' ? ' as-row' : ' as-strip'}`}>
+                    {m.items.map((it, k) => (
+                      <div className="gallery-thumb" key={it.id} {...dragProps(k)}>
+                        {/* Click the thumb to swap this image (استبدال). */}
+                        <MediaUploader
+                          big
+                          previewUrl={it.url}
+                          onUploaded={(u) =>
+                            update(i, {
+                              ...m,
+                              items: m.items.map((x, z) => (z === k ? { id: u.id, url: u.thumbUrl } : x)),
+                            })
+                          }
+                        />
+                        <button
+                          className="icon-btn del thumb-del"
+                          onClick={() => update(i, { ...m, items: m.items.filter((_, z) => z !== k) })}
+                        >
+                          <NavIcon id="x" size={13} />
+                        </button>
+                        {/* Reorder after the fact — uploading in the wrong order
+                            shouldn't mean deleting and starting again. */}
+                        <div className="thumb-move">
+                          <button
+                            className="icon-btn"
+                            disabled={k === 0}
+                            title={t('تحريك للخلف', 'Move earlier')}
+                            onClick={() => update(i, { ...m, items: moveItem(m.items, k, k - 1) })}
+                          >
+                            <NavIcon id="back" size={13} />
+                          </button>
+                          <button
+                            className="icon-btn"
+                            disabled={k === m.items.length - 1}
+                            title={t('تحريك للأمام', 'Move later')}
+                            onClick={() => update(i, { ...m, items: moveItem(m.items, k, k + 1) })}
+                          >
+                            <NavIcon id="external" size={13} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    <MediaUploader
+                      plus
+                      multiple
+                      label={t('إضافة صور', 'Add images')}
+                      onUploadedMany={(us) =>
+                        update(i, {
+                          ...m,
+                          items: [...m.items, ...us.map((u) => ({ id: u.id, url: u.thumbUrl }))],
+                        })
+                      }
+                    />
+                  </div>
+                )}
+              />
+            </>
           )}
 
           {m.type === 'video' && (

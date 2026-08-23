@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+import Carousel from '@/components/shared/Carousel'
 import { resolveVideoUrl } from '@/lib/video'
 
 export type Mod =
@@ -102,66 +103,6 @@ function BeforeAfter({
         <span className="ba-label" style={{ insetInlineEnd: 12 }}>
           {labelAfter}
         </span>
-      )}
-    </div>
-  )
-}
-
-/* ── Carousel: centred image, sides show a blurred peek of the prev/next ──── */
-function Carousel({ images, onOpen }: { images: string[]; onOpen: (src: string) => void }) {
-  const [idx, setIdx] = useState(0)
-  if (images.length === 0) return null
-  const n = images.length
-  const go = (d: number) => setIdx((i) => (i + d + n) % n)
-  const prevSrc = n > 1 ? images[(idx - 1 + n) % n] : null
-  const nextSrc = n > 1 ? images[(idx + 1) % n] : null
-  return (
-    <div className="mod-carousel">
-      <div className="mc-viewport">
-        {/* Blurred peek of the previous (start side) and next (end side) images. */}
-        {prevSrc && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img className="mc-side mc-side-start" src={prevSrc} alt="" aria-hidden="true" />
-        )}
-        {nextSrc && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img className="mc-side mc-side-end" src={nextSrc} alt="" aria-hidden="true" />
-        )}
-        {/* Sharp current image, cross-fading. */}
-        {images.map((src, i) => (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            key={i}
-            className={`mc-fg${i === idx ? ' active' : ''}`}
-            src={src}
-            alt=""
-            loading="lazy"
-            onClick={() => onOpen(src)}
-          />
-        ))}
-        {n > 1 && (
-          <>
-            <button className="mc-arrow mc-prev" onClick={() => go(-1)} aria-label="previous">
-              ‹
-            </button>
-            <button className="mc-arrow mc-next" onClick={() => go(1)} aria-label="next">
-              ›
-            </button>
-          </>
-        )}
-      </div>
-      {n > 1 && (
-        <div className="mc-dots">
-          {images.map((_, i) => (
-            <span
-              key={i}
-              className={i === idx ? 'on' : ''}
-              onClick={() => setIdx(i)}
-              role="button"
-              aria-label={`slide ${i + 1}`}
-            />
-          ))}
-        </div>
       )}
     </div>
   )
