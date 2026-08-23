@@ -117,13 +117,20 @@ export async function saveProject(input: ProjectInput) {
     return { ok: true, id: input.id }
   }
 
-  const count = await ctx.payload.count({
+  // New work goes to the FRONT of the list, on the site and in the dashboard —
+  // the newest project is the one you want seen first. Taking one below the
+  // current minimum avoids renumbering every existing row.
+  const first = await ctx.payload.find({
     collection: 'projects',
     where: { tenant: { equals: ctx.tenantId } },
+    sort: 'sortOrder',
+    limit: 1,
+    depth: 0,
   })
+  const minOrder = (first.docs[0] as { sortOrder?: number } | undefined)?.sortOrder ?? 0
   const created = await ctx.payload.create({
     collection: 'projects',
-    data: { ...data, sortOrder: count.totalDocs },
+    data: { ...data, sortOrder: minOrder - 1 },
   })
   return { ok: true, id: created.id }
 }

@@ -135,7 +135,7 @@ export default function MediaUploader({
       <div className="uploader uploader-big" onClick={() => ref.current?.click()}>
         {input}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={preview} alt="" />
+        <img src={preview} alt="" draggable={false} />
         {/* Show the dim at its real strength, so the slider previews the
             published result instead of leaving you to guess. */}
         {dim !== undefined && <span className="uploader-dim" style={{ opacity: dim / 100 }} />}

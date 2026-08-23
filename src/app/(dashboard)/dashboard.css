@@ -2086,3 +2086,45 @@ input[type='range']::-moz-range-thumb {
   line-height: 1.5;
   color: var(--sub);
 }
+
+/* Reorder controls on an image thumb (appear on hover/focus). */
+.gallery-thumb {
+  position: relative;
+}
+/* Reordering is drag-and-drop with a mouse. Touch gets the arrows instead,
+   because HTML5 drag events don't fire on touch at all. */
+.thumb-move {
+  display: none;
+  position: absolute;
+  inset-inline: 0;
+  bottom: 5px;
+  justify-content: center;
+  gap: 5px;
+}
+.gallery-thumb {
+  cursor: grab;
+}
+.gallery-thumb[data-dragging] {
+  opacity: 0.45;
+  cursor: grabbing;
+}
+.thumb-move .icon-btn {
+  width: 24px;
+  height: 24px;
+  background: rgba(0, 0, 0, 0.62);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+.thumb-move .icon-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+@media (hover: none) {
+  .thumb-move {
+    display: flex;
+  }
+}

@@ -6,6 +6,16 @@ import ModulesEditor from './ModulesEditor'
 import { saveProject } from '@/lib/project-actions'
 import { editModuleToInput, type ProjectInput, type EditModule } from '@/lib/project-types'
 import { useDashLang } from './DashLang'
+import { useDragReorder } from './useDragReorder'
+
+/** Move one entry of a list to a new index, returning a new array. */
+function moveItem<T>(list: T[], from: number, to: number): T[] {
+  if (to < 0 || to >= list.length) return list
+  const next = [...list]
+  const [item] = next.splice(from, 1)
+  next.splice(to, 0, item)
+  return next
+}
 
 export type EditableProject = {
   id?: number
@@ -39,6 +49,8 @@ export default function ProjectEditor({
   const { t } = useDashLang()
   const [busy, setBusy] = useState(false)
   const set = (patch: Partial<EditableProject>) => setP((prev) => ({ ...prev, ...patch }))
+  // Drag a thumbnail onto a neighbour to reorder the gallery.
+  const dragProps = useDragReorder(p.images ?? [], (images) => set({ images }))
 
   async function submit() {
     if (!p.title.trim()) {
@@ -185,10 +197,10 @@ export default function ProjectEditor({
           <label className="lbl">{t('صور المعرض', 'Gallery images')}</label>
           <div className="gallery-grid">
             {(p.images ?? []).map((im, i) => (
-              <div className="gallery-thumb" key={im.id}>
+              <div className="gallery-thumb" key={im.id} {...dragProps(i)}>
                 {im.url && (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={im.url} alt="" />
+                  <img src={im.url} alt="" draggable={false} />
                 )}
                 <button
                   className="icon-btn del thumb-del"
@@ -196,6 +208,25 @@ export default function ProjectEditor({
                 >
                   ✕
                 </button>
+                {/* Reorder after uploading, rather than delete and re-add. */}
+                <div className="thumb-move">
+                  <button
+                    className="icon-btn"
+                    disabled={i === 0}
+                    title={t('تحريك للخلف', 'Move earlier')}
+                    onClick={() => set({ images: moveItem(p.images ?? [], i, i - 1) })}
+                  >
+                    ‹
+                  </button>
+                  <button
+                    className="icon-btn"
+                    disabled={i === (p.images ?? []).length - 1}
+                    title={t('تحريك للأمام', 'Move later')}
+                    onClick={() => set({ images: moveItem(p.images ?? [], i, i + 1) })}
+                  >
+                    ›
+                  </button>
+                </div>
               </div>
             ))}
             <MediaUploader

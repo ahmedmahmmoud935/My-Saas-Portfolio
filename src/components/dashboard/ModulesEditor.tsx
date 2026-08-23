@@ -6,6 +6,35 @@ import NavIcon from './icons'
 import { resolveVideoUrl } from '@/lib/video'
 import type { EditModule } from '@/lib/project-types'
 import { useDashLang } from './DashLang'
+import { useDragReorder } from './useDragReorder'
+
+type Img = { id: number; url: string | null }
+
+/**
+ * Hosts the drag-reorder hook for one module's image list. A hook can't live
+ * inside the modules .map(), so the list gets its own component.
+ */
+function ModuleImages({
+  items,
+  onReorder,
+  render,
+}: {
+  items: Img[]
+  onReorder: (next: Img[]) => void
+  render: (dragProps: ReturnType<typeof useDragReorder<Img>>) => React.ReactNode
+}) {
+  const dragProps = useDragReorder(items, onReorder)
+  return <>{render(dragProps)}</>
+}
+
+/** Move one entry of a list to a new index, returning a new array. */
+function moveItem<T>(list: T[], from: number, to: number): T[] {
+  if (to < 0 || to >= list.length) return list
+  const next = [...list]
+  const [item] = next.splice(from, 1)
+  next.splice(to, 0, item)
+  return next
+}
 
 export const MODULE_ADD_BUTTONS: { type: EditModule['type']; label: string; labelEn: string; icon: string }[] = [
   { type: 'image', label: 'صورة كاملة', labelEn: 'Full image', icon: 'image' },
@@ -128,9 +157,13 @@ export default function ModulesEditor({
           )}
 
           {(m.type === 'grid' || m.type === 'carousel') && (
+            <ModuleImages
+              items={m.items}
+              onReorder={(items) => update(i, { ...m, items })}
+              render={(dragProps) => (
             <div className="gallery-grid">
               {m.items.map((it, k) => (
-                <div className="gallery-thumb" key={it.id}>
+                <div className="gallery-thumb" key={it.id} {...dragProps(k)}>
                   {/* Click the thumb to swap this image (استبدال). */}
                   <MediaUploader
                     big
@@ -150,6 +183,26 @@ export default function ModulesEditor({
                   >
                     <NavIcon id="x" size={13} />
                   </button>
+                  {/* Reorder after the fact — uploading in the wrong order
+                      shouldn't mean deleting and starting again. */}
+                  <div className="thumb-move">
+                    <button
+                      className="icon-btn"
+                      disabled={k === 0}
+                      title={t('تحريك للخلف', 'Move earlier')}
+                      onClick={() => update(i, { ...m, items: moveItem(m.items, k, k - 1) })}
+                    >
+                      <NavIcon id="back" size={13} />
+                    </button>
+                    <button
+                      className="icon-btn"
+                      disabled={k === m.items.length - 1}
+                      title={t('تحريك للأمام', 'Move later')}
+                      onClick={() => update(i, { ...m, items: moveItem(m.items, k, k + 1) })}
+                    >
+                      <NavIcon id="external" size={13} />
+                    </button>
+                  </div>
                 </div>
               ))}
               <MediaUploader
@@ -164,6 +217,8 @@ export default function ModulesEditor({
                 }
               />
             </div>
+              )}
+            />
           )}
 
           {m.type === 'video' && (
