@@ -231,7 +231,17 @@ export default function ProjectView({ project }: { project: SerializedProject })
         {project.category && <div className="detail-cat">{project.category}</div>}
         <h1>{project.title}</h1>
         {project.description && (
-          <p style={{ color: 'var(--sub)', lineHeight: 1.9 }}>{project.description}</p>
+          <div
+            className="mod-rich"
+            style={{ color: 'var(--sub)', lineHeight: 1.9 }}
+            // Same rich editor as the text modules — HTML, or legacy plain text.
+            // eslint-disable-next-line react/no-danger
+            dangerouslySetInnerHTML={{
+              __html: /<[a-z][\s\S]*>/i.test(project.description)
+                ? project.description
+                : project.description.replace(/\n/g, '<br />'),
+            }}
+          />
         )}
       </div>
 
@@ -264,10 +274,19 @@ export default function ProjectView({ project }: { project: SerializedProject })
         <div className="mod-wrap">
           {project.modules.map((m, i) => {
             switch (m.type) {
-              case 'text':
-                if (m.textType === 'h1') return <h1 className="mod-h1" key={i}>{m.value}</h1>
-                if (m.textType === 'h2') return <h2 className="mod-h2" key={i}>{m.value}</h2>
-                return <p className="mod-p" key={i}>{m.value}</p>
+              case 'text': {
+                // Text modules are authored in the dashboard's rich editor, so
+                // the stored value is HTML. Older projects hold plain text —
+                // keep their line breaks instead of collapsing them.
+                const html = {
+                  __html: /<[a-z][\s\S]*>/i.test(m.value)
+                    ? m.value
+                    : m.value.replace(/\n/g, '<br />'),
+                }
+                const cls = m.textType === 'h1' ? 'mod-h1' : m.textType === 'h2' ? 'mod-h2' : 'mod-p'
+                // eslint-disable-next-line react/no-danger
+                return <div className={`${cls} mod-rich`} key={i} dangerouslySetInnerHTML={html} />
+              }
               case 'image':
                 return m.src ? (
                   // eslint-disable-next-line @next/next/no-img-element

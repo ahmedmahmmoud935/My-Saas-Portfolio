@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { getDashboardContext, getTenantSettings } from '@/lib/dashboard'
 import { mediaUrl } from '@/lib/portfolio'
 import ProjectsManager, { type ProjectRow } from '@/components/dashboard/ProjectsManager'
-import type { EditModule } from '@/lib/project-types'
+import type { Bi, EditModule } from '@/lib/project-types'
 
 const mid = (x: unknown): number | null =>
   x && typeof x === 'object' ? ((x as { id: number }).id ?? null) : ((x as number) ?? null)
@@ -17,7 +17,7 @@ function serializeEditModules(modules: unknown): EditModule[] {
         out.push({
           type: 'text',
           textType: (m.textType as 'h1' | 'h2' | 'p') || 'p',
-          value: String(m.value ?? ''),
+          value: bi(m.value),
         })
         break
       case 'image':
@@ -64,6 +64,15 @@ function serializeEditModules(modules: unknown): EditModule[] {
   return out
 }
 
+/** `locale: 'all'` hands back {ar, en} objects (or a bare string on old rows). */
+function bi(v: unknown): Bi {
+  if (v && typeof v === 'object') {
+    const o = v as { ar?: string; en?: string }
+    return { ar: o.ar ?? '', en: o.en ?? '' }
+  }
+  return { ar: typeof v === 'string' ? v : '', en: '' }
+}
+
 export default async function ProjectsPage() {
   const ctx = await getDashboardContext()
   if (!ctx) redirect('/login')
@@ -75,14 +84,15 @@ export default async function ProjectsPage() {
     sort: 'sortOrder',
     limit: 300,
     depth: 1,
-    locale: 'ar',
+    // Both locales: the editor writes each language separately.
+    locale: 'all',
   })
 
   const projects: ProjectRow[] = res.docs.map((p) => ({
     id: p.id,
-    title: p.title,
+    title: bi(p.title),
     category: p.category ?? undefined,
-    description: p.description ?? undefined,
+    description: bi(p.description),
     mediaType: p.mediaType,
     projectType: p.projectType,
     coverId: typeof p.cover === 'object' ? p.cover?.id : (p.cover ?? null),

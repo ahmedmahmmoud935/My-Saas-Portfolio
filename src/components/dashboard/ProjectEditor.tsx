@@ -4,7 +4,15 @@ import React, { useState } from 'react'
 import MediaUploader, { type UploadedMedia } from './MediaUploader'
 import ModulesEditor from './ModulesEditor'
 import { saveProject } from '@/lib/project-actions'
-import { editModuleToInput, type ProjectInput, type EditModule } from '@/lib/project-types'
+import {
+  biEmpty,
+  editModuleToInput,
+  emptyBi,
+  type Bi,
+  type ProjectInput,
+  type EditModule,
+} from '@/lib/project-types'
+import BiText from './BiText'
 import { useDashLang } from './DashLang'
 import { useDragReorder } from './useDragReorder'
 
@@ -19,9 +27,9 @@ function moveItem<T>(list: T[], from: number, to: number): T[] {
 
 export type EditableProject = {
   id?: number
-  title: string
+  title: Bi
   category?: string
-  description?: string
+  description?: Bi
   mediaType: 'image' | 'video'
   projectType: 'grid' | 'free' | 'stacked'
   coverId?: number | null
@@ -48,12 +56,13 @@ export default function ProjectEditor({
   const [p, setP] = useState<EditableProject>(initial)
   const { t } = useDashLang()
   const [busy, setBusy] = useState(false)
+  const [toast, setToast] = useState(false)
   const set = (patch: Partial<EditableProject>) => setP((prev) => ({ ...prev, ...patch }))
   // Drag a thumbnail onto a neighbour to reorder the gallery.
   const dragProps = useDragReorder(p.images ?? [], (images) => set({ images }))
 
   async function submit() {
-    if (!p.title.trim()) {
+    if (biEmpty(p.title.ar) && biEmpty(p.title.en)) {
       alert(t('اكتب عنوان المشروع', 'Enter the project title'))
       return
     }
@@ -74,7 +83,9 @@ export default function ProjectEditor({
     }
     try {
       await saveProject(input)
-      onSaved()
+      setToast(true)
+      // Let the confirmation land before the modal closes.
+      setTimeout(onSaved, 900)
     } catch {
       alert(t('فشل الحفظ', 'Save failed'))
     } finally {
@@ -94,7 +105,22 @@ export default function ProjectEditor({
 
         <div className="modal-body">
           <label className="lbl">{t('العنوان', 'Title')}</label>
-          <input className="field" value={p.title} onChange={(e) => set({ title: e.target.value })} />
+          <div className="grid-2">
+            <input
+              className="field"
+              placeholder={t('عربي', 'Arabic')}
+              value={p.title.ar}
+              onChange={(e) => set({ title: { ...p.title, ar: e.target.value } })}
+            />
+            <input
+              className="field"
+              dir="ltr"
+              placeholder="English"
+              style={{ textAlign: 'start' }}
+              value={p.title.en}
+              onChange={(e) => set({ title: { ...p.title, en: e.target.value } })}
+            />
+          </div>
 
           <div className="grid-2">
             <div>
@@ -125,12 +151,11 @@ export default function ProjectEditor({
             </div>
           </div>
 
-          <label className="lbl">{t('الوصف', 'Description')}</label>
-          <textarea
-            className="field"
-            rows={3}
-            value={p.description ?? ''}
-            onChange={(e) => set({ description: e.target.value })}
+          <BiText
+            label={t('الوصف', 'Description')}
+            value={p.description ?? emptyBi()}
+            onChange={(description) => set({ description })}
+            minHeight={130}
           />
 
           <label className="lbl">{t('تخطيط صفحة التفاصيل', 'Detail page layout')}</label>
@@ -261,6 +286,7 @@ export default function ProjectEditor({
           </button>
         </div>
       </div>
+      {toast && <div className="toast">{t('تم الحفظ ✓', 'Saved ✓')}</div>}
     </div>
   )
 }

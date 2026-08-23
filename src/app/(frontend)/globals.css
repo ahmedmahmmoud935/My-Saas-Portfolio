@@ -2704,3 +2704,35 @@ html:has(.pf-root) {
 .pf-root[data-btn='rounded'] {
   --radius-btn: 10px;
 }
+
+/* Rich-text module output (headings, lists, links from the editor). */
+.mod-rich h1,
+.mod-rich h2,
+.mod-rich h3 {
+  margin: 0.5em 0 0.3em;
+  line-height: 1.25;
+}
+.mod-rich p {
+  margin: 0 0 0.8em;
+}
+.mod-rich ul,
+.mod-rich ol {
+  margin: 0 0 0.9em;
+  padding-inline-start: 24px;
+}
+.mod-rich li {
+  margin-bottom: 0.35em;
+}
+.mod-rich blockquote {
+  margin: 0.8em 0;
+  padding-inline-start: 16px;
+  border-inline-start: 3px solid var(--accent);
+  color: var(--sub);
+}
+.mod-rich a {
+  color: var(--accent);
+  text-decoration: underline;
+}
+.mod-rich :last-child {
+  margin-bottom: 0;
+}

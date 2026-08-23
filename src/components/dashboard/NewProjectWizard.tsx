@@ -6,6 +6,7 @@ import { saveProject } from '@/lib/project-actions'
 import NavIcon from './icons'
 import type { EditableProject } from './ProjectEditor'
 import { useDashLang } from './DashLang'
+import { emptyBi } from '@/lib/project-types'
 
 type Kind = 'design' | 'video'
 
@@ -32,7 +33,7 @@ export default function NewProjectWizard({
     setBusy(true)
     try {
       const res = await saveProject({
-        title: t('مشروع جديد', 'New project'),
+        title: { ar: 'مشروع جديد', en: 'New project' },
         mediaType: 'image',
         projectType: 'free',
         published: false, // start as a draft; publish from the editor
@@ -45,11 +46,11 @@ export default function NewProjectWizard({
   }
 
   function pickGrid() {
-    onPickModal({ title: '', mediaType: 'image', projectType: 'grid', images: [] })
+    onPickModal({ title: emptyBi(), mediaType: 'image', projectType: 'grid', images: [] })
   }
   function pickVideo(videoKind: 'reel' | 'video') {
     onPickModal({
-      title: '',
+      title: emptyBi(),
       mediaType: 'video',
       projectType: 'grid',
       videoKind,

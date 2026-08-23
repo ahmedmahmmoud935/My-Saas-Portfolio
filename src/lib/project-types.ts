@@ -1,7 +1,16 @@
 // Shared, client-safe types for project editing (no server imports).
 
+/** A value in both site languages. Either side may be blank — the public page
+ *  falls back to whichever is filled. */
+export type Bi = { ar: string; en: string }
+
+export const emptyBi = (): Bi => ({ ar: '', en: '' })
+
+/** True when the HTML has no visible text. */
+export const biEmpty = (html: string) => !html.replace(/<[^>]*>/g, '').trim()
+
 export type ModuleInput =
-  | { type: 'text'; textType: 'h1' | 'h2' | 'p'; value: string }
+  | { type: 'text'; textType: 'h1' | 'h2' | 'p'; value: Bi }
   | { type: 'image'; srcId: number | null }
   | { type: 'grid'; itemIds: number[] }
   | { type: 'carousel'; itemIds: number[] }
@@ -17,9 +26,9 @@ export type ModuleInput =
 
 export type ProjectInput = {
   id?: number
-  title: string
+  title: Bi
   category?: string
-  description?: string
+  description?: Bi
   mediaType: 'image' | 'video'
   projectType: 'grid' | 'free' | 'stacked'
   coverId?: number | null
@@ -33,7 +42,7 @@ export type ProjectInput = {
 
 /** Editor-side module: like ModuleInput but carries preview URLs for display. */
 export type EditModule =
-  | { type: 'text'; textType: 'h1' | 'h2' | 'p'; value: string }
+  | { type: 'text'; textType: 'h1' | 'h2' | 'p'; value: Bi }
   | { type: 'image'; srcId: number | null; srcUrl: string | null }
   | { type: 'grid'; items: { id: number; url: string | null }[] }
   | { type: 'carousel'; items: { id: number; url: string | null }[] }

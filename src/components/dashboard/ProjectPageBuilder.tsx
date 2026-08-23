@@ -6,14 +6,15 @@ import MediaUploader from './MediaUploader'
 import NavIcon from './icons'
 import ModulesEditor, { MODULE_ADD_BUTTONS, blankModule } from './ModulesEditor'
 import { saveProject, uploadProjectMedia } from '@/lib/project-actions'
-import { editModuleToInput, type EditModule } from '@/lib/project-types'
+import { biEmpty, editModuleToInput, emptyBi, type Bi, type EditModule } from '@/lib/project-types'
+import BiText from './BiText'
 import { useDashLang } from './DashLang'
 
 export type BuilderProject = {
   id: number
-  title: string
+  title: Bi
   category?: string
-  description?: string
+  description?: Bi
   coverId: number | null
   coverUrl: string | null
   modules: EditModule[]
@@ -73,7 +74,7 @@ export default function ProjectPageBuilder({
   }
 
   async function save(published: boolean, exit: boolean) {
-    if (!p.title.trim()) {
+    if (biEmpty(p.title.ar) && biEmpty(p.title.en)) {
       alert(t('اكتب عنوان المشروع', 'Enter the project title'))
       return
     }
@@ -156,7 +157,22 @@ export default function ProjectPageBuilder({
             {t('معلومات', 'Info')}
           </div>
           <label className="lbl">{t('العنوان *', 'Title *')}</label>
-          <input className="field" value={p.title} onChange={(e) => setP({ ...p, title: e.target.value })} />
+          <div className="grid-2">
+            <input
+              className="field"
+              placeholder={t('عربي', 'Arabic')}
+              value={p.title.ar}
+              onChange={(e) => setP({ ...p, title: { ...p.title, ar: e.target.value } })}
+            />
+            <input
+              className="field"
+              dir="ltr"
+              placeholder="English"
+              style={{ textAlign: 'start' }}
+              value={p.title.en}
+              onChange={(e) => setP({ ...p, title: { ...p.title, en: e.target.value } })}
+            />
+          </div>
           <label className="lbl">{t('التصنيف', 'Category')}</label>
           <select
             className="field"
@@ -170,12 +186,11 @@ export default function ProjectPageBuilder({
               </option>
             ))}
           </select>
-          <label className="lbl">{t('الوصف', 'Description')}</label>
-          <textarea
-            className="field"
-            rows={3}
-            value={p.description ?? ''}
-            onChange={(e) => setP({ ...p, description: e.target.value })}
+          <BiText
+            label={t('الوصف', 'Description')}
+            value={p.description ?? emptyBi()}
+            onChange={(description) => setP({ ...p, description })}
+            minHeight={120}
           />
           <label className="lbl">{t('صورة الغلاف', 'Cover image')}</label>
           <MediaUploader

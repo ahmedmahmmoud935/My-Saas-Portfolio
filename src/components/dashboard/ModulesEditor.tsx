@@ -5,6 +5,8 @@ import MediaUploader from './MediaUploader'
 import NavIcon from './icons'
 import { resolveVideoUrl } from '@/lib/video'
 import type { EditModule } from '@/lib/project-types'
+import { emptyBi } from '@/lib/project-types'
+import BiText from './BiText'
 import { useDashLang } from './DashLang'
 import { useDragReorder } from './useDragReorder'
 
@@ -49,7 +51,7 @@ export const MODULE_ADD_BUTTONS: { type: EditModule['type']; label: string; labe
 export function blankModule(type: EditModule['type']): EditModule {
   switch (type) {
     case 'text':
-      return { type: 'text', textType: 'p', value: '' }
+      return { type: 'text', textType: 'p', value: emptyBi() }
     case 'image':
       return { type: 'image', srcId: null, srcUrl: null }
     case 'grid':
@@ -139,11 +141,11 @@ export default function ModulesEditor({
                 <option value="h2">{t('عنوان (H2)', 'Subheading (H2)')}</option>
                 <option value="p">{t('فقرة', 'Paragraph')}</option>
               </select>
-              <textarea
-                className="field"
-                rows={3}
+              <BiText
+                label={t('النص', 'Text')}
                 value={m.value}
-                onChange={(e) => update(i, { ...m, value: e.target.value })}
+                onChange={(value) => update(i, { ...m, value })}
+                minHeight={150}
               />
             </>
           )}

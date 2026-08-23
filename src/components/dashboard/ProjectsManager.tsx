@@ -59,7 +59,9 @@ export default function ProjectsManager({
   gridCols: GridCols
 }) {
   const router = useRouter()
-  const { t: tr } = useDashLang()
+  const { t: tr, lang } = useDashLang()
+  // Show the title in the dashboard's language, falling back to the other.
+  const titleOf = (p: ProjectRow) => (lang === 'en' ? p.title.en || p.title.ar : p.title.ar || p.title.en)
   const [tab, setTab] = useState<TabId>('designs')
   const [cat, setCat] = useState('all')
   const [editing, setEditing] = useState<EditableProject | null>(null)
@@ -316,7 +318,7 @@ export default function ProjectsManager({
                 <div className="pm-cover">
                   {p.coverUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={p.coverUrl} alt={p.title} draggable={false} />
+                    <img src={p.coverUrl} alt={titleOf(p)} draggable={false} />
                   ) : (
                     <span className="pm-nocover">
                       <NavIcon id="image" size={30} />
@@ -331,7 +333,7 @@ export default function ProjectsManager({
 
                   {/* title + category overlaid on the cover */}
                   <div className="pm-overlay">
-                    <strong>{p.title}</strong>
+                    <strong>{titleOf(p)}</strong>
                     {p.category && <span>{p.category}</span>}
                   </div>
 

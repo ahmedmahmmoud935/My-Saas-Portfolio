@@ -2,26 +2,48 @@
 
 import { getDashboardContext, getTenantSettings } from './dashboard'
 import { compressVideo } from './transcode'
-import type { ProjectInput, ModuleInput } from './project-types'
+import type { ProjectInput, ModuleInput, Bi } from './project-types'
+import { biEmpty } from './project-types'
 import type { VideoReport } from './project-types'
 import type { Project } from '../payload-types'
 
 type Blocks = NonNullable<Project['modules']>
 
-/** Map editor modules → Payload blocks. */
-function toBlocks(modules: ModuleInput[] | undefined): Blocks {
-  return (modules ?? []).map((m) => {
+/**
+ * Map editor modules → Payload blocks for ONE locale.
+ *
+ * `ids` comes from the Arabic pass: reusing each block's id makes the English
+ * pass update the same rows instead of replacing the list, which is what keeps
+ * the two languages lined up.
+ */
+/** Pick one language, falling back to the other when a side was left blank.
+ *  The dashboard only warns about a missing language, so the public page must
+ *  still show *something* in both — an empty string wouldn't trigger Payload's
+ *  locale fallback, and that fallback only points at Arabic anyway. */
+function pick(v: Bi | undefined, locale: 'ar' | 'en'): string {
+  if (!v) return ''
+  const other = locale === 'ar' ? v.en : v.ar
+  return biEmpty(v[locale]) ? other : v[locale]
+}
+
+function toBlocks(
+  modules: ModuleInput[] | undefined,
+  locale: 'ar' | 'en',
+  ids?: (string | undefined)[],
+): Blocks {
+  return (modules ?? []).map((m, i) => {
+    const id = ids?.[i] ? { id: ids[i] } : {}
     switch (m.type) {
       case 'text':
-        return { blockType: 'text', textType: m.textType, value: m.value }
+        return { ...id, blockType: 'text', textType: m.textType, value: pick(m.value, locale) }
       case 'image':
-        return { blockType: 'image', src: m.srcId }
+        return { ...id, blockType: 'image', src: m.srcId }
       case 'grid':
-        return { blockType: 'grid', items: m.itemIds.map((src) => ({ src })) }
+        return { ...id, blockType: 'grid', items: m.itemIds.map((src) => ({ src })) }
       case 'carousel':
-        return { blockType: 'carousel', items: m.itemIds.map((src) => ({ src })) }
+        return { ...id, blockType: 'carousel', items: m.itemIds.map((src) => ({ src })) }
       case 'video':
-        return { blockType: 'video', embedUrl: m.embedUrl }
+        return { ...id, blockType: 'video', embedUrl: m.embedUrl }
       case 'beforeafter':
         return {
           blockType: 'beforeafter',
@@ -31,7 +53,7 @@ function toBlocks(modules: ModuleInput[] | undefined): Blocks {
           labelAfter: m.labelAfter,
         }
       case 'separator':
-        return { blockType: 'separator', spacing: m.spacing }
+        return { ...id, blockType: 'separator', spacing: m.spacing }
     }
   }) as unknown as Blocks
 }
@@ -93,11 +115,10 @@ export async function saveProject(input: ProjectInput) {
   const ctx = await getDashboardContext()
   if (!ctx) throw new Error('unauthorized')
 
-  const data = {
+  // Non-localized fields are identical in both passes.
+  const shared = {
     tenant: ctx.tenantId,
-    title: input.title,
     category: input.category ?? null,
-    description: input.description ?? null,
     mediaType: input.mediaType,
     projectType: input.projectType,
     cover: input.coverId ?? null,
@@ -105,15 +126,41 @@ export async function saveProject(input: ProjectInput) {
     videoKind: input.videoKind ?? 'reel',
     aspectRatio: input.aspectRatio ?? '9:16',
     images: (input.imageIds ?? []).map((image) => ({ image })),
-    modules: toBlocks(input.modules),
     // Only touch `published` when explicitly provided (the toggle is a separate
     // action) — new projects fall back to the collection default (true).
     ...(input.published !== undefined ? { published: input.published } : {}),
   }
 
+  const dataFor = (locale: 'ar' | 'en', ids?: (string | undefined)[]) => ({
+    ...shared,
+    title: pick(input.title, locale),
+    description: pick(input.description, locale) || null,
+    modules: toBlocks(input.modules, locale, ids),
+  })
+
+  /** Write Arabic, read back the block ids, then write English onto the same
+   *  rows. Without the ids the second pass would rebuild the list and the two
+   *  languages would drift apart. */
+  const writeBothLocales = async (id: number) => {
+    await ctx.payload.update({
+      collection: 'projects',
+      id,
+      data: dataFor('ar') as never,
+      locale: 'ar',
+    })
+    const saved = await ctx.payload.findByID({ collection: 'projects', id, depth: 0, locale: 'ar' })
+    const ids = ((saved.modules ?? []) as { id?: string | null }[]).map((b) => b.id ?? undefined)
+    await ctx.payload.update({
+      collection: 'projects',
+      id,
+      data: dataFor('en', ids) as never,
+      locale: 'en',
+    })
+  }
+
   if (input.id) {
     await assertOwnsProject(ctx, input.id)
-    await ctx.payload.update({ collection: 'projects', id: input.id, data })
+    await writeBothLocales(input.id)
     return { ok: true, id: input.id }
   }
 
@@ -130,8 +177,10 @@ export async function saveProject(input: ProjectInput) {
   const minOrder = (first.docs[0] as { sortOrder?: number } | undefined)?.sortOrder ?? 0
   const created = await ctx.payload.create({
     collection: 'projects',
-    data: { ...data, sortOrder: minOrder - 1 },
+    data: { ...dataFor('ar'), sortOrder: minOrder - 1 } as never,
+    locale: 'ar',
   })
+  await writeBothLocales(created.id)
   return { ok: true, id: created.id }
 }
 
@@ -288,7 +337,8 @@ export async function importFromBehance(token: string) {
     } else if (m.type === 'embed' && m.url) {
       modules.push({ type: 'video', embedUrl: m.url })
     } else if (m.type === 'text' && m.content) {
-      modules.push({ type: 'text', textType: 'p', value: m.content })
+      // Behance gives one language; the other side stays blank.
+      modules.push({ type: 'text', textType: 'p', value: { ar: m.content, en: m.content } })
     }
     // 'video' (raw file URLs) are skipped — Behance blocks server download.
   }
@@ -296,7 +346,7 @@ export async function importFromBehance(token: string) {
   if (modules.length === 0) return { ok: false, error: 'no-media' as const }
 
   const created = await saveProject({
-    title: data.title || 'Behance import',
+    title: { ar: data.title || 'Behance import', en: data.title || 'Behance import' },
     mediaType: 'image',
     projectType: 'free',
     coverId,
