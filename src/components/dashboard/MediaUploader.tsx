@@ -3,6 +3,7 @@
 import React, { useRef, useState } from 'react'
 import { uploadProjectMedia } from '@/lib/project-actions'
 import { useDashLang } from './DashLang'
+import { actionErrorMessage, isStaleDeployment } from '@/lib/action-error'
 
 export type UploadedMedia = {
   id: number
@@ -46,7 +47,7 @@ export default function MediaUploader({
   onRemove?: () => void
 }) {
   const ref = useRef<HTMLInputElement>(null)
-  const { t } = useDashLang()
+  const { t, lang } = useDashLang()
   const [busy, setBusy] = useState(false)
   const [preview, setPreview] = useState<string | null>(previewUrl ?? null)
   const lbl = label ?? t('رفع صورة', 'Upload image')
@@ -65,8 +66,11 @@ export default function MediaUploader({
       setPreview(last?.thumbUrl ?? last?.url ?? null)
       if (onUploadedMany) onUploadedMany(results)
       else results.forEach((r) => onUploaded?.(r))
-    } catch {
-      alert(t('فشل الرفع', 'Upload failed'))
+    } catch (err) {
+      // A page left open across a deploy calls an action id that no longer
+      // exists — reload rather than blame the file.
+      alert(actionErrorMessage(err, lang))
+      if (isStaleDeployment(err)) location.reload()
     } finally {
       setBusy(false)
     }
