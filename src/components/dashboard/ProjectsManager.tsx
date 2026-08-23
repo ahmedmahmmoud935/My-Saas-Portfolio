@@ -72,7 +72,18 @@ export default function ProjectsManager({
   const [recompressing, setRecompressing] = useState(false)
 
   async function runRecompress() {
-    if (!confirm(tr('إعادة ضغط كل الفيديوهات المرفوعة؟ ممكن تاخد وقت حسب عددها.', 'Re-compress all uploaded videos? May take a while depending on how many.'))) return
+    // Worth saying plainly: this only shrinks what's stored. A clip that was
+    // already compressed can't get its detail back — that needs the original
+    // file re-uploaded.
+    if (
+      !confirm(
+        tr(
+          'إعادة ضغط كل الفيديوهات المرفوعة؟ ممكن تاخد وقت حسب عددها.\n\nملحوظة: الضغط بيصغّر الحجم بس؛ الفيديو اللي اتضغط قبل كده مش هترجع جودته — لازم ترفع الملف الأصلي تاني.',
+          'Re-compress all uploaded videos? May take a while depending on how many.\n\nNote: this only reduces size — a clip that was already compressed cannot regain quality; re-upload the original for that.',
+        ),
+      )
+    )
+      return
     setRecompressing(true)
     try {
       const r = await recompressVideos()

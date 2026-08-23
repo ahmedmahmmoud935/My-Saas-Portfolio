@@ -2,6 +2,7 @@
 
 import { getDashboardContext, getTenantSettings } from './dashboard'
 import { compressVideo } from './transcode'
+import { VIDEO_QUALITY_DEFAULT, isVideoQuality } from './video-quality'
 import type { ProjectInput, ModuleInput, Bi } from './project-types'
 import { biEmpty } from './project-types'
 import type { VideoReport } from './project-types'
@@ -72,7 +73,10 @@ export async function uploadProjectMedia(formData: FormData) {
   // can say what happened rather than silently storing a 70MB phone export.
   let video: VideoReport | undefined
   if (file.type.startsWith('video/')) {
-    const c = await compressVideo(buf, file.type)
+    // The uploader sends the quality the client picked; anything else is the
+    // balanced default.
+    const q = formData.get('quality')
+    const c = await compressVideo(buf, file.type, isVideoQuality(q) ? q : VIDEO_QUALITY_DEFAULT)
     if (c.buf && c.mimetype) {
       buf = c.buf
       mimetype = c.mimetype
@@ -83,6 +87,7 @@ export async function uploadProjectMedia(formData: FormData) {
       fromMb: +(c.fromBytes / 1048576).toFixed(1),
       toMb: +((c.toBytes ?? c.fromBytes) / 1048576).toFixed(1),
       reason: c.reason,
+      height: c.height,
     }
   }
   const media = await ctx.payload.create({

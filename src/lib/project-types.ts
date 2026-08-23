@@ -92,4 +92,6 @@ export type VideoReport = {
   toMb: number
   /** too-small | no-ffmpeg | ffmpeg-failed | no-gain */
   reason?: string
+  /** Vertical resolution of the stored clip (1080, 720…). */
+  height?: number
 }

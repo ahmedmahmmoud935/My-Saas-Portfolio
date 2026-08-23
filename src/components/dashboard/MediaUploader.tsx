@@ -1,9 +1,15 @@
 'use client'
 
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { uploadProjectMedia } from '@/lib/project-actions'
 import { useDashLang } from './DashLang'
 import { actionErrorMessage, isStaleDeployment } from '@/lib/action-error'
+import {
+  VIDEO_QUALITY_DEFAULT,
+  VIDEO_QUALITY_OPTIONS,
+  isVideoQuality,
+  type VideoQuality,
+} from '@/lib/video-quality'
 
 import type { VideoReport } from '@/lib/project-types'
 
@@ -55,6 +61,15 @@ export default function MediaUploader({
   const [preview, setPreview] = useState<string | null>(previewUrl ?? null)
   const [note, setNote] = useState<string | null>(null)
   const lbl = label ?? t('رفع صورة', 'Upload image')
+  // Videos get compressed on the server; let the picker choose the trade-off
+  // and remember it, so it isn't re-picked on every upload.
+  const takesVideo = accept.includes('video')
+  const [quality, setQuality] = useState<VideoQuality>(VIDEO_QUALITY_DEFAULT)
+  useEffect(() => {
+    if (!takesVideo) return
+    const saved = localStorage.getItem('vpx-video-quality')
+    if (isVideoQuality(saved)) setQuality(saved)
+  }, [takesVideo])
 
   async function pickFiles(files: File[]) {
     if (!files.length) return
@@ -64,6 +79,7 @@ export default function MediaUploader({
       for (const file of files) {
         const fd = new FormData()
         fd.append('file', file)
+        if (file.type.startsWith('video/')) fd.append('quality', quality)
         results.push(await uploadProjectMedia(fd))
       }
       const last = results[results.length - 1]
@@ -73,8 +89,12 @@ export default function MediaUploader({
       const v = results.find((r) => r.video)?.video
       if (v) {
         if (v.compressed) {
+          const res = v.height ? ` · ${v.height}p` : ''
           setNote(
-            t(`تم الضغط: ${v.fromMb} ← ${v.toMb} ميجابايت ✓`, `Compressed: ${v.fromMb} → ${v.toMb} MB ✓`),
+            t(
+              `تم الضغط: ${v.fromMb} ← ${v.toMb} ميجابايت${res} ✓`,
+              `Compressed: ${v.fromMb} → ${v.toMb} MB${res} ✓`,
+            ),
           )
         } else if (v.reason !== 'too-small' && v.reason !== 'no-gain') {
           setNote(
@@ -112,8 +132,38 @@ export default function MediaUploader({
     />
   )
 
+  const picker = takesVideo && (
+    <div className="vq-row">
+      <span className="vq-label">{t('جودة الفيديو', 'Video quality')}</span>
+      <div className="vq-opts">
+        {VIDEO_QUALITY_OPTIONS.map((o) => (
+          <button
+            key={o.id}
+            type="button"
+            className={`vq-opt${quality === o.id ? ' active' : ''}`}
+            title={t(o.hintAr, o.hintEn)}
+            onClick={(e) => {
+              e.stopPropagation()
+              setQuality(o.id)
+              localStorage.setItem('vpx-video-quality', o.id)
+            }}
+          >
+            {t(o.ar, o.en)}
+          </button>
+        ))}
+      </div>
+      <p className="vq-hint">
+        {t(
+          VIDEO_QUALITY_OPTIONS.find((o) => o.id === quality)?.hintAr ?? '',
+          VIDEO_QUALITY_OPTIONS.find((o) => o.id === quality)?.hintEn ?? '',
+        )}
+      </p>
+    </div>
+  )
+
   const withNote = (el: React.ReactNode) => (
     <>
+      {picker}
       {el}
       {note && <p className="upload-note">{note}</p>}
     </>
