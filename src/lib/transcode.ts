@@ -35,7 +35,14 @@ const LEVELS: Record<VideoQuality, { maxSide: number; crf: number; maxrateK: num
   small: { maxSide: 1280, crf: 28, maxrateK: 2400, budgetMb: 10 },
 }
 
-type Probe = { width?: number; height?: number; duration?: number }
+type Probe = {
+  width?: number
+  height?: number
+  duration?: number
+  /** smpte2084 / arib-std-b67 mean the source is HDR. */
+  transfer?: string
+  fps?: number
+}
 
 /** Read dimensions and duration. Best effort — the encode runs regardless. */
 async function probe(file: string): Promise<Probe> {
@@ -43,7 +50,7 @@ async function probe(file: string): Promise<Probe> {
     const ff = spawn('ffprobe', [
       '-v', 'error',
       '-select_streams', 'v:0',
-      '-show_entries', 'stream=width,height:format=duration',
+      '-show_entries', 'stream=width,height,color_transfer,r_frame_rate:format=duration',
       '-of', 'json',
       file,
     ])
@@ -53,10 +60,15 @@ async function probe(file: string): Promise<Probe> {
     ff.on('close', () => {
       try {
         const j = JSON.parse(out)
+        const st = j.streams?.[0] ?? {}
+        // r_frame_rate comes back as a fraction, e.g. "60000/1001".
+        const [num, den] = String(st.r_frame_rate ?? '').split('/').map(Number)
         resolve({
-          width: j.streams?.[0]?.width,
-          height: j.streams?.[0]?.height,
+          width: st.width,
+          height: st.height,
           duration: parseFloat(j.format?.duration) || undefined,
+          transfer: st.color_transfer,
+          fps: num && den ? num / den : undefined,
         })
       } catch {
         resolve({})
@@ -79,13 +91,40 @@ function speedPreset(p: Probe, maxSide: number): string {
   return 'medium'
 }
 
+/** HDR sources (iPhone and most modern phones, some editors) are 10-bit; just
+ *  forcing 8-bit yuv420p makes them look grey and washed out. */
+const isHdr = (p: Probe) => p.transfer === 'smpte2084' || p.transfer === 'arib-std-b67'
+
 function encode(
   inPath: string,
   outPath: string,
-  opts: { maxSide: number; crf: number; maxrateK: number; preset: string },
+  opts: {
+    maxSide: number
+    crf: number
+    maxrateK: number
+    preset: string
+    tonemap?: boolean
+    fpsCap?: number
+  },
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    const { maxSide, crf, maxrateK, preset } = opts
+    const { maxSide, crf, maxrateK, preset, tonemap, fpsCap } = opts
+    const filters = [
+      // Cap the LONGEST side (so a portrait reel is capped on its height),
+      // and never upscale.
+      `scale='if(gt(iw,ih),min(${maxSide},iw),-2)':'if(gt(iw,ih),-2,min(${maxSide},ih))'`,
+    ]
+    // Proper HDR→SDR conversion instead of a flat bit-depth cut.
+    if (tonemap)
+      filters.push(
+        'zscale=t=linear:npl=100',
+        'format=gbrpf32le',
+        'zscale=p=bt709',
+        'tonemap=tonemap=hable:desat=0',
+        'zscale=t=bt709:m=bt709:r=tv',
+        'format=yuv420p',
+      )
+    if (fpsCap) filters.push(`fps=${fpsCap}`)
     const ff = spawn('ffmpeg', [
       '-y',
       '-i',
@@ -95,10 +134,8 @@ function encode(
       // actually is.
       '-sws_flags',
       'lanczos',
-      // Cap the LONGEST side (so a portrait reel is capped on its height),
-      // and never upscale.
       '-vf',
-      `scale='if(gt(iw,ih),min(${maxSide},iw),-2)':'if(gt(iw,ih),-2,min(${maxSide},ih))'`,
+      filters.join(','),
       '-c:v',
       'libx264',
       '-preset',
@@ -159,8 +196,9 @@ function encode(
  * stays sharp and a long one still can't turn into a 200MB download.
  *
  * Compression never fails an upload: on any problem the caller keeps the
- * original file and the reason is reported instead. A phone/CapCut export is
- * the normal input here, so this has to survive large files and odd codecs.
+ * original file and the reason is reported instead. The input can come from
+ * any editor or phone — large files, 10-bit HDR, high frame rates, and odd
+ * containers all have to survive this path.
  */
 export async function compressVideo(
   input: Buffer,
@@ -183,13 +221,33 @@ export async function compressVideo(
     await writeFile(inPath, input)
 
     const info = await probe(inPath)
+    // Slow-motion and 120fps exports: 60 is as much as any browser will show,
+    // and the extra frames only cost bitrate that detail could have used.
+    const fpsCap = info.fps && info.fps > 61 ? 60 : undefined
     const startedAt = Date.now()
-    await encode(inPath, outPath, {
-      maxSide: level.maxSide,
-      crf: level.crf,
-      maxrateK: level.maxrateK,
-      preset: speedPreset(info, level.maxSide),
-    })
+    const pass = (o: Partial<Parameters<typeof encode>[2]> = {}) =>
+      encode(inPath, outPath, {
+        maxSide: level.maxSide,
+        crf: level.crf,
+        maxrateK: level.maxrateK,
+        preset: speedPreset(info, level.maxSide),
+        fpsCap,
+        ...o,
+      })
+
+    if (isHdr(info)) {
+      // Not every ffmpeg build ships zimg/tonemap; if this one doesn't, the
+      // plain encode still runs rather than the upload losing its video.
+      try {
+        await pass({ tonemap: true })
+      } catch (e) {
+        if ((e as Error & { spawnFailed?: boolean }).spawnFailed) throw e
+        console.warn('[transcode] tonemap unavailable, encoding without it')
+        await pass()
+      }
+    } else {
+      await pass()
+    }
     let out = await readFile(outPath)
     let maxSide = level.maxSide
 
@@ -199,11 +257,12 @@ export async function compressVideo(
     if (out.length > level.budgetMb * 1048576 && firstPassMs < 4 * 60 * 1000) {
       // 'high' was chosen on purpose — trim it less than the other levels.
       maxSide = Math.min(maxSide, quality === 'high' ? 1440 : 1280)
-      await encode(inPath, outPath, {
+      await pass({
         maxSide,
         crf: level.crf + 4,
         maxrateK: Math.round(level.maxrateK * 0.6),
         preset: speedPreset(info, maxSide),
+        tonemap: isHdr(info),
       })
       out = await readFile(outPath)
     }
