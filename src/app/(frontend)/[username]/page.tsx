@@ -115,6 +115,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
         btn2={content.hero?.btn2 || undefined}
         coverUrl={mediaUrl(brand.heroCover)}
         overlay={settings?.heroCover?.overlay ?? 45}
+        overlayLight={settings?.heroCover?.overlayLight ?? 25}
         heightVh={settings?.heroCover?.height ?? 82}
         variant={settings?.style?.hero || 'split'}
         coverSize={settings?.heroCover?.size || 'cover'}

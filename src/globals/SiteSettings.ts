@@ -140,6 +140,7 @@ export const SiteSettings: CollectionConfig = {
                     { name: 'posX', type: 'number', defaultValue: 50, min: 0, max: 100 },
                     { name: 'posY', type: 'number', defaultValue: 50, min: 0, max: 100 },
                     { name: 'overlay', type: 'number', defaultValue: 0, min: 0, max: 100 },
+                    { name: 'overlayLight', type: 'number', defaultValue: 25, min: 0, max: 100 },
                     { name: 'height', type: 'number', defaultValue: 85, admin: { description: 'vh' } },
                   ],
                 },

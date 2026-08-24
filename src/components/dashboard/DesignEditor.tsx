@@ -619,7 +619,10 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
               </>
             )}
 
-            <Slider label={tr('شدّة الطبقة السوداء', 'Overlay strength')} value={f.heroCover.overlay} min={0} max={100} suffix="%" onChange={(v) => setCover({ overlay: v })} />
+            {/* One strength for both themes painted black over a light page,
+                which reads as a stain rather than as help for the headline. */}
+            <Slider label={tr('شدّة الطبقة فوق الثيم الداكن (سوداء)', 'Veil over the dark theme (black)')} value={f.heroCover.overlay} min={0} max={100} suffix="%" onChange={(v) => setCover({ overlay: v })} />
+            <Slider label={tr('شدّة الطبقة فوق الثيم الفاتح (بيضاء)', 'Veil over the light theme (white)')} value={f.heroCover.overlayLight} min={0} max={100} suffix="%" onChange={(v) => setCover({ overlayLight: v })} />
             <Slider label={tr('ارتفاع القسم', 'Section height')} value={f.heroCover.height} min={40} max={100} suffix="vh" onChange={(v) => setCover({ height: v })} />
           </div>
         </div>

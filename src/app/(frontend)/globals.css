@@ -269,9 +269,19 @@ img {
 .hero-overlay {
   position: absolute;
   inset: 0;
+  /* The veil is black over the dark theme and WHITE over the light one: the
+     headline is light on one and dark on the other, so the same black wash that
+     rescues it in the dark theme only dirties the cover in the light one. Both
+     strengths come in from the editor; the theme picks. */
+  --hero-veil-rgb: 0, 0, 0;
+  --hero-overlay: var(--hero-veil-dark, 0.45);
   background: linear-gradient(90deg, var(--bg) 8%, transparent 70%),
-    rgba(0, 0, 0, var(--hero-overlay, 0.45));
+    rgba(var(--hero-veil-rgb), var(--hero-overlay));
   z-index: 1;
+}
+html[data-theme='light'] .pf-root .hero-overlay {
+  --hero-veil-rgb: 255, 255, 255;
+  --hero-overlay: var(--hero-veil-light, 0.25);
 }
 .hero-inner {
   position: relative;
@@ -378,7 +388,7 @@ html[data-theme='light'] .hero-split .hero-bg {
   box-shadow: 0 22px 55px -18px rgba(15, 23, 42, 0.3);
 }
 .hero-split .hero-overlay {
-  background: rgba(0, 0, 0, var(--hero-overlay, 0));
+  background: rgba(var(--hero-veil-rgb, 0, 0, 0), var(--hero-overlay, 0));
   pointer-events: none;
 }
 .hero-split .hero-inner {

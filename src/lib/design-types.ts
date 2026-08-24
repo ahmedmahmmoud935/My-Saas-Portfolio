@@ -68,30 +68,39 @@ export const BG_SECTIONS: { id: string; ar: string; en: string }[] = [
   { id: 'contact', ar: 'التواصل', en: 'Contact' },
 ]
 
-/** Ready-made gradients, offered per background type. */
+/**
+ * Ready-made gradients, offered per background type.
+ *
+ * The light halves used to be two near-whites each, which is why every
+ * suggestion looked like the same pale smudge: a gradient needs somewhere to
+ * travel. Each light pair now moves from a tinted stop to a paler one, and the
+ * dark pairs open up too.
+ */
 export const GRADIENT_SUGGESTIONS: { name: string; dark: string[]; light: string[] }[] = [
-  { name: 'Midnight', dark: ['#0F172A', '#1E293B'], light: ['#E2E8F0', '#F8FAFC'] },
-  { name: 'Ember', dark: ['#1C0A00', '#7C2D12'], light: ['#FFF7ED', '#FFEDD5'] },
-  { name: 'Ocean', dark: ['#082F49', '#0E7490'], light: ['#ECFEFF', '#CFFAFE'] },
-  { name: 'Forest', dark: ['#052E16', '#166534'], light: ['#F0FDF4', '#DCFCE7'] },
-  { name: 'Violet', dark: ['#2E1065', '#6D28D9'], light: ['#F5F3FF', '#EDE9FE'] },
-  { name: 'Mono', dark: ['#000000', '#1F1F1F'], light: ['#FFFFFF', '#F1F1F1'] },
+  { name: 'Midnight', dark: ['#0B1024', '#243B6B'], light: ['#E7ECF7', '#FFFFFF'] },
+  { name: 'Ember', dark: ['#1A0A05', '#8A3B12'], light: ['#FFE7D2', '#FFF6EC'] },
+  { name: 'Ocean', dark: ['#04202E', '#0B6E8C'], light: ['#C9E9F5', '#F0FBFF'] },
+  { name: 'Forest', dark: ['#04180E', '#1B5E3A'], light: ['#CFE8D8', '#F3FBF6'] },
+  { name: 'Plum', dark: ['#1A0A2E', '#6B21A8'], light: ['#E2D2F7', '#F8F3FF'] },
+  { name: 'Mono', dark: ['#000000', '#2E2E2E'], light: ['#D8D8D8', '#FFFFFF'] },
 ]
 
 /** Three-stop sets that read well once they're moving. */
 export const ANIMATED_SUGGESTIONS: { name: string; dark: string[]; light: string[] }[] = [
-  { name: 'Aurora', dark: ['#0F172A', '#7C3AED', '#0EA5E9'], light: ['#EDE9FE', '#DBEAFE', '#FAE8FF'] },
-  { name: 'Sunset', dark: ['#1E1B4B', '#B91C1C', '#F97316'], light: ['#FFE4E6', '#FFEDD5', '#FEF3C7'] },
-  { name: 'Lagoon', dark: ['#022C22', '#0F766E', '#0284C7'], light: ['#ECFDF5', '#CFFAFE', '#E0F2FE'] },
-  { name: 'Nebula', dark: ['#111827', '#4C1D95', '#BE185D'], light: ['#F3F4F6', '#EDE9FE', '#FCE7F3'] },
+  { name: 'Aurora', dark: ['#0B1024', '#7C3AED', '#0EA5E9'], light: ['#DCE7FF', '#EFD9FF', '#CFF3FF'] },
+  { name: 'Sunset', dark: ['#1E1B4B', '#B91C1C', '#F97316'], light: ['#FFD9C7', '#FFC9D6', '#FFE9B8'] },
+  { name: 'Lagoon', dark: ['#022C22', '#0F766E', '#0284C7'], light: ['#CFF0E4', '#BFE9F5', '#D8E6FF'] },
+  { name: 'Nebula', dark: ['#111827', '#4C1D95', '#BE185D'], light: ['#E4E6F5', '#D9CBF5', '#F8CFE4'] },
 ]
 
-/** Flat page colours. */
+/** Flat page colours — one per palette above, so the two pickers agree. */
 export const SOLID_SUGGESTIONS: { name: string; dark: string; light: string }[] = [
   { name: 'Ink', dark: '#0A0A0A', light: '#FFFFFF' },
-  { name: 'Slate', dark: '#0F172A', light: '#F8FAFC' },
-  { name: 'Coffee', dark: '#1C1917', light: '#FAF9F7' },
-  { name: 'Navy', dark: '#0B1120', light: '#F1F5F9' },
+  { name: 'Ash', dark: '#16181D', light: '#E7E9EE' },
+  { name: 'Midnight', dark: '#0B1024', light: '#EEF2F7' },
+  { name: 'Forest', dark: '#08150F', light: '#F0F5F1' },
+  { name: 'Plum', dark: '#140A1E', light: '#FDF2F4' },
+  { name: 'Espresso', dark: '#16100C', light: '#FBF6EC' },
 ]
 
 export type DesignForm = {
@@ -129,7 +138,10 @@ export type DesignForm = {
     size: string
     posX: number
     posY: number
+    /** Veil strength over the cover in the dark theme. */
     overlay: number
+    /** …and in the light theme, where the veil is white, not black. */
+    overlayLight: number
     height: number
     gradient: string
   }
@@ -172,24 +184,58 @@ export const DIRECTION_OPTIONS = ['auto', 'rtl', 'ltr']
 
 export type Palette = { name: string; accent: string; bg: string; bg2: string; text: string; subtext: string }
 
+/**
+ * The two palette sets, paired by position: the first dark option and the first
+ * light option are the same idea in two keys, and so on down the row.
+ *
+ * The previous sets read as one palette six times over. Every dark option was
+ * near-black and every light one near-white, so the only thing that actually
+ * changed was the accent — which is what the swatches showed: six identical
+ * chips with a different dot. These vary on the two things the eye reads first,
+ * temperature (neutral / cool / blue / green / violet / warm) and value: Ash and
+ * Fog are deliberately several steps off the extremes, so the page reads as grey
+ * rather than as black or as white.
+ *
+ * Card colour separates from the page colour in every option — a card that is
+ * the same colour as the page behind it can only be found by its border.
+ *
+ * Body text clears 4.5:1 against its own page colour in all twelve, and muted
+ * text clears it too rather than settling for the 3:1 large-text allowance.
+ */
+
 /** Dark-mode ready palettes (set the accent/bg/bg2/text/subtext dark colours). */
 export const DARK_PALETTES: Palette[] = [
-  { name: 'Orange', accent: '#F97316', bg: '#0A0A0A', bg2: '#111111', text: '#FFFFFF', subtext: '#999999' },
-  { name: 'Violet', accent: '#8B5CF6', bg: '#0A0A0A', bg2: '#121016', text: '#FFFFFF', subtext: '#9a93a8' },
-  { name: 'Ocean', accent: '#38BDF8', bg: '#0A1628', bg2: '#0F1F3D', text: '#FFFFFF', subtext: '#9fb3c8' },
-  { name: 'Emerald', accent: '#10B981', bg: '#0A1A0F', bg2: '#0F2A1F', text: '#FFFFFF', subtext: '#9fb3a8' },
-  { name: 'Rose', accent: '#F43F5E', bg: '#1A0A14', bg2: '#3A1520', text: '#FFFFFF', subtext: '#c89fae' },
-  { name: 'Slate', accent: '#60A5FA', bg: '#0B0F1A', bg2: '#141B2D', text: '#FFFFFF', subtext: '#9aa7bd' },
+  // Neutral black — the default, and the one that lets the work carry the page.
+  { name: 'Ink', accent: '#F97316', bg: '#0A0A0A', bg2: '#161616', text: '#FFFFFF', subtext: '#A3A3A3' },
+  // Lifted grey. Not black: softer under long reading, and photographs sit in
+  // it instead of floating on it.
+  { name: 'Ash', accent: '#7C9CFF', bg: '#16181D', bg2: '#212530', text: '#F2F4F8', subtext: '#A7AFC0' },
+  // Deep navy — cold, editorial.
+  { name: 'Midnight', accent: '#4DA3FF', bg: '#0B1024', bg2: '#161E3C', text: '#EAF0FF', subtext: '#96A5C9' },
+  // Deep green — calm, and kind to warm photography.
+  { name: 'Forest', accent: '#34D399', bg: '#08150F', bg2: '#102618', text: '#ECFDF5', subtext: '#92B8A5' },
+  // Violet-magenta — the loudest of the six.
+  { name: 'Plum', accent: '#C084FC', bg: '#140A1E', bg2: '#221134', text: '#F5EDFF', subtext: '#B29EC9' },
+  // Warm brown — reads as paper's opposite rather than as a screen.
+  { name: 'Espresso', accent: '#F0A868', bg: '#16100C', bg2: '#251B14', text: '#FBF3EA', subtext: '#C1AA92' },
 ]
 
 /** Light-mode ready palettes (set the *Light colours). */
 export const LIGHT_PALETTES: Palette[] = [
-  { name: 'Pearl', accent: '#EA6C0A', bg: '#FFFFFF', bg2: '#F3F5F8', text: '#0C0F16', subtext: '#495265' },
-  { name: 'Cream', accent: '#C2410C', bg: '#FBF8F2', bg2: '#FFFFFF', text: '#1A140C', subtext: '#6B5E4E' },
-  { name: 'Sky', accent: '#0284C7', bg: '#F6FAFF', bg2: '#FFFFFF', text: '#0B1B2B', subtext: '#3E5468' },
-  { name: 'Mint', accent: '#047857', bg: '#F5FBF7', bg2: '#FFFFFF', text: '#0B1F16', subtext: '#3F5A4E' },
-  { name: 'Blush', accent: '#BE123C', bg: '#FFF7F9', bg2: '#FFFFFF', text: '#2A0E15', subtext: '#6B4550' },
-  { name: 'Graphite', accent: '#4F46E5', bg: '#F4F5F7', bg2: '#FFFFFF', text: '#14161C', subtext: '#4A5060' },
+  // White page, grey cards.
+  // #EA6C0A was the old default and only reached 3.2:1 on white — orange has
+  // to be taken down a long way before it holds up as a link colour there.
+  { name: 'Paper', accent: '#B4530A', bg: '#FFFFFF', bg2: '#F4F5F7', text: '#14161C', subtext: '#5A6172' },
+  // Mid grey page, white cards — the light theme with actual contrast in it.
+  { name: 'Fog', accent: '#4338CA', bg: '#E7E9EE', bg2: '#F8F9FB', text: '#111318', subtext: '#4C5261' },
+  // Cool blue-grey.
+  { name: 'Mist', accent: '#1D4ED8', bg: '#EEF2F7', bg2: '#FFFFFF', text: '#0E1726', subtext: '#4A5568' },
+  // Green tint.
+  { name: 'Sage', accent: '#15803D', bg: '#F0F5F1', bg2: '#FFFFFF', text: '#10201A', subtext: '#4A6155' },
+  // Pink tint.
+  { name: 'Blush', accent: '#BE123C', bg: '#FDF2F4', bg2: '#FFFFFF', text: '#2A0E15', subtext: '#6E4A52' },
+  // Warm cream.
+  { name: 'Cream', accent: '#B45309', bg: '#FBF6EC', bg2: '#FFFCF6', text: '#221A10', subtext: '#6E6152' },
 ]
 
 /** Back-compat alias (was a single flat list). */
@@ -226,7 +272,7 @@ export const emptyDesign = (): DesignForm => ({
     anim: 'fade-up',
   },
   components: { card: 'solid', navbar: 'blur', button: 'rounded' },
-  heroCover: { size: 'cover', posX: 50, posY: 50, overlay: 45, height: 82, gradient: 'none' },
+  heroCover: { size: 'cover', posX: 50, posY: 50, overlay: 45, overlayLight: 25, height: 82, gradient: 'none' },
   heroCoverId: null,
   heroCoverUrl: null,
 })

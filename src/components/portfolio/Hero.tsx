@@ -19,6 +19,7 @@ export default function Hero({
   btn2,
   coverUrl,
   overlay = 45,
+  overlayLight = 25,
   heightVh = 82,
   variant = 'split',
   coverSize = 'cover',
@@ -32,6 +33,7 @@ export default function Hero({
   btn2?: string
   coverUrl?: string | null
   overlay?: number
+  overlayLight?: number
   heightVh?: number
   variant?: string
   coverSize?: string
@@ -45,7 +47,15 @@ export default function Hero({
     <header
       className={`hero hero-${variant}`}
       id="hero"
-      style={{ minHeight: `${heightVh}vh`, ['--hero-overlay' as string]: overlay / 100 } as React.CSSProperties}
+      style={
+        {
+          minHeight: `${heightVh}vh`,
+          // Both strengths travel to CSS; the theme decides which one is used
+          // and whether the veil is black or white.
+          ['--hero-veil-dark' as string]: overlay / 100,
+          ['--hero-veil-light' as string]: overlayLight / 100,
+        } as React.CSSProperties
+      }
     >
       {showGradient && (
         <>

@@ -529,6 +529,7 @@ export interface SiteSetting {
     posX?: number | null;
     posY?: number | null;
     overlay?: number | null;
+    overlayLight?: number | null;
     /**
      * vh
      */
@@ -1278,6 +1279,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         posX?: T;
         posY?: T;
         overlay?: T;
+        overlayLight?: T;
         height?: T;
         gradient?: T;
       };

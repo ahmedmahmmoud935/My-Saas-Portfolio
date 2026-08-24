@@ -51,6 +51,7 @@ export async function saveDesign(form: DesignForm) {
         posX: form.heroCover.posX,
         posY: form.heroCover.posY,
         overlay: form.heroCover.overlay,
+        overlayLight: form.heroCover.overlayLight,
         height: form.heroCover.height,
         gradient: form.heroCover.gradient,
       },
