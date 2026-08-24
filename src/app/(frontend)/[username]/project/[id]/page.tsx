@@ -128,7 +128,11 @@ export default async function ProjectDetailPage({ params }: Params) {
   ]
 
   return (
-    <div style={cssVars}>
+    // `pf-root` is what carries the light palette: the tenant's colours are
+    // set inline here, and the light-mode rules override them through that
+    // class. Without it a project page stayed on the dark tokens — white
+    // heading on a white page.
+    <div className="pf-root" style={cssVars}>
       <Navbar logo={tenant.name?.[0]?.toUpperCase() || 'V'} links={navLinks} />
       <ProjectView project={serialized} />
     </div>

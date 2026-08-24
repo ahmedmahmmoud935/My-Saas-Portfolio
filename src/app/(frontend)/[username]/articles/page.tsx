@@ -41,7 +41,7 @@ export default async function ArticlesListPage({ params }: Params) {
   const logo = tenant.name?.[0]?.toUpperCase() || 'V'
 
   return (
-    <div style={tenantCssVars(settings) as React.CSSProperties}>
+    <div className="pf-root" style={tenantCssVars(settings) as React.CSSProperties}>
       <Navbar logo={logo} links={[{ label: 'الرئيسية', href: `/${tenant.slug}` }]} />
       <section className="section">
         <div className="container">

@@ -74,7 +74,7 @@ export default async function ArticlePage({ params }: Params) {
   }
 
   return (
-    <div style={tenantCssVars(settings) as React.CSSProperties}>
+    <div className="pf-root" style={tenantCssVars(settings) as React.CSSProperties}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Navbar logo={logo} links={[{ label: 'المقالات', href: `/${tenant.slug}/articles` }, { label: 'الرئيسية', href: `/${tenant.slug}` }]} />
       <article className="section">

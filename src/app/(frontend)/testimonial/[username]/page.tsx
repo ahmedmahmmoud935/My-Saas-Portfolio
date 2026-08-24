@@ -67,6 +67,7 @@ export default async function TestimonialPage({ params, searchParams }: Params) 
 
   return (
     <div
+      className="pf-root"
       style={{ ...cssVars, minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)' }}
       dir={locale === 'en' ? 'ltr' : 'rtl'}
       lang={locale}
