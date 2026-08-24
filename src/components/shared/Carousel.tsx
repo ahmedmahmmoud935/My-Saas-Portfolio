@@ -90,6 +90,14 @@ export default function Carousel({
 
   const onScroll = useCallback(() => setIdx(currentIndex()), [currentIndex])
 
+  // Where the last arrow press was headed. Two quick presses would otherwise
+  // both read the track mid-animation, aim at the same slide, and lose a step.
+  const aim = useRef<{ i: number; at: number } | null>(null)
+  const fromHere = () => {
+    const a = aim.current
+    return a && Date.now() - a.at < 600 ? a.i : currentIndex()
+  }
+
   // Wraps around: past the last slide is the first one again. The arrows used
   // to switch off at the ends, and a switched-off arrow is transparent and
   // click-through — so pressing it opened the lightbox on the slide behind it.
@@ -98,6 +106,7 @@ export default function Carousel({
     const wrapped = ((i % n) + n) % n
     const slide = el?.children[childOf(wrapped)] as HTMLElement | undefined
     if (!el || !slide) return
+    aim.current = { i: wrapped, at: Date.now() }
     const from = el.scrollLeft
     // Sliding the whole track back for a wrap is a long, confusing sweep; jump.
     const behavior = wrapped === i ? 'smooth' : 'auto'
@@ -178,14 +187,14 @@ export default function Carousel({
           </span>
           <button
             className={`${s.arrow} ${s.prev}`}
-            onClick={() => goTo(currentIndex() - 1)}
+            onClick={() => goTo(fromHere() - 1)}
             aria-label="previous"
           >
             ‹
           </button>
           <button
             className={`${s.arrow} ${s.next}`}
-            onClick={() => goTo(currentIndex() + 1)}
+            onClick={() => goTo(fromHere() + 1)}
             aria-label="next"
           >
             ›
