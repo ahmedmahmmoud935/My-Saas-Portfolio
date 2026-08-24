@@ -44,7 +44,7 @@ function toBlocks(
       case 'carousel':
         return { ...id, blockType: 'carousel', items: m.itemIds.map((src) => ({ src })) }
       case 'video':
-        return { ...id, blockType: 'video', embedUrl: m.embedUrl }
+        return { ...id, blockType: 'video', embedUrl: m.embedUrl, poster: m.posterId }
       case 'beforeafter':
         return {
           blockType: 'beforeafter',
@@ -347,7 +347,7 @@ export async function importFromBehance(token: string) {
         coverId ??= ids[0]
       }
     } else if (m.type === 'embed' && m.url) {
-      modules.push({ type: 'video', embedUrl: m.url })
+      modules.push({ type: 'video', embedUrl: m.url, posterId: null })
     } else if (m.type === 'text' && m.content) {
       // Behance gives one language; the other side stays blank.
       modules.push({ type: 'text', textType: 'p', value: { ar: m.content, en: m.content } })

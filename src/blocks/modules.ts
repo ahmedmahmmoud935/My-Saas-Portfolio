@@ -94,6 +94,15 @@ export const VideoBlock: Block = {
       required: true,
       admin: { description: 'YouTube / Vimeo / direct embed URL.' },
     },
+    {
+      name: 'poster',
+      type: 'upload',
+      relationTo: 'media',
+      admin: {
+        description:
+          'Cover shown before the video plays. Only used for uploaded files — YouTube and Vimeo bring their own.',
+      },
+    },
   ],
 }
 

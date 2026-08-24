@@ -156,6 +156,14 @@ export default function ProjectPageBuilder({
           <div className="builder-side-title" style={{ marginTop: 18 }}>
             {t('معلومات', 'Info')}
           </div>
+          <label className="lbl">{t('صورة الغلاف', 'Cover image')}</label>
+          <MediaUploader
+            previewUrl={p.coverUrl}
+            onUploaded={(m) => setP({ ...p, coverId: m.id, coverUrl: m.thumbUrl })}
+          />
+          <p style={{ color: 'var(--sub)', fontSize: 12, marginTop: 6 }}>
+            {t('الغلاف هو اللي بيظهر في كارت المشروع بالقائمة.', 'The cover is what shows on the project card in the list.')}
+          </p>
           <label className="lbl">{t('العنوان *', 'Title *')}</label>
           <div className="grid-2">
             <input
@@ -192,14 +200,6 @@ export default function ProjectPageBuilder({
             onChange={(description) => setP({ ...p, description })}
             minHeight={120}
           />
-          <label className="lbl">{t('صورة الغلاف', 'Cover image')}</label>
-          <MediaUploader
-            previewUrl={p.coverUrl}
-            onUploaded={(m) => setP({ ...p, coverId: m.id, coverUrl: m.thumbUrl })}
-          />
-          <p style={{ color: 'var(--sub)', fontSize: 12, marginTop: 6 }}>
-            {t('الغلاف هو اللي بيظهر في كارت المشروع بالقائمة.', 'The cover is what shows on the project card in the list.')}
-          </p>
         </aside>
       </div>
 

@@ -30,13 +30,31 @@ export default function Carousel({
   // outlier stretch the whole set.
   const [ratio, setRatio] = useState<number | null>(null)
   const n = images.length
+  const first = images[0]
 
-  const noteRatio = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const img = e.currentTarget
-    if (!img.naturalWidth || !img.naturalHeight) return
+  // Measure the first slide. An `onLoad` prop alone is not enough: an image
+  // already in the browser's cache finishes loading before React attaches the
+  // handler, so the event never arrives and the frame keeps its 4:3 default —
+  // which is exactly what a returning visitor saw.
+  useEffect(() => {
+    if (!first) return
+    let alive = true
     // 4:5 is as tall as Instagram goes; 1.91:1 as wide.
-    setRatio(Math.max(0.8, Math.min(1.91, img.naturalWidth / img.naturalHeight)))
-  }
+    const apply = (w: number, h: number) => {
+      if (alive && w && h) setRatio(Math.max(0.8, Math.min(1.91, w / h)))
+    }
+    const shown = track.current?.querySelector('img')
+    if (shown?.complete && shown.naturalWidth) {
+      apply(shown.naturalWidth, shown.naturalHeight)
+      return
+    }
+    const probe = new window.Image()
+    probe.onload = () => apply(probe.naturalWidth, probe.naturalHeight)
+    probe.src = first
+    return () => {
+      alive = false
+    }
+  }, [first])
 
   // Which slide is showing = how far along the track we are. Works in RTL too,
   // where scrollLeft counts the other way (and is negative in some engines).
@@ -90,7 +108,6 @@ export default function Carousel({
               alt=""
               loading={i === 0 ? undefined : 'lazy'}
               draggable={false}
-              onLoad={i === 0 ? noteRatio : undefined}
               onClick={onOpen ? () => onOpen(src) : undefined}
               style={onOpen ? undefined : { cursor: 'default' }}
             />

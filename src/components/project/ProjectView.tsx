@@ -2,7 +2,8 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Carousel from '@/components/shared/Carousel'
-import { looksLikeDocument, recoverEscapedHtml, scopeCss, splitHtmlDocument } from '@/lib/html-embed'
+import HtmlEmbed from '@/components/shared/HtmlEmbed'
+import { isEmbeddablePage, recoverEscapedHtml } from '@/lib/html-embed'
 import { resolveVideoUrl } from '@/lib/video'
 
 export type Mod =
@@ -10,7 +11,7 @@ export type Mod =
   | { type: 'image'; src: string | null }
   | { type: 'grid'; items: { src: string; ar: number }[] }
   | { type: 'carousel'; items: string[] }
-  | { type: 'video'; embedUrl: string }
+  | { type: 'video'; embedUrl: string; poster?: string | null }
   | {
       type: 'beforeafter'
       before: string | null
@@ -222,21 +223,9 @@ export default function ProjectView({ project }: { project: SerializedProject })
                 const raw = recoverEscapedHtml(m.value)
 
                 // A whole HTML page pasted in as a case study: render it with
-                // its own stylesheet, confined to this element.
-                if (looksLikeDocument(raw) || /<style[\s>]/i.test(raw)) {
-                  const { html, css } = splitHtmlDocument(raw)
-                  const cls = `mod-embed-${i}`
-                  return (
-                    <div className={`mod-embed ${cls}`} key={i}>
-                      {css && (
-                        // eslint-disable-next-line react/no-danger
-                        <style dangerouslySetInnerHTML={{ __html: scopeCss(css, `.${cls}`) }} />
-                      )}
-                      {/* eslint-disable-next-line react/no-danger */}
-                      <div dangerouslySetInnerHTML={{ __html: html }} />
-                    </div>
-                  )
-                }
+                // its own stylesheet, confined to this element. Same component
+                // the dashboard previews with.
+                if (isEmbeddablePage(raw)) return <HtmlEmbed key={i} value={raw} />
 
                 // Ordinary rich text. Older projects hold plain text — keep
                 // their line breaks instead of collapsing them.
@@ -278,7 +267,15 @@ export default function ProjectView({ project }: { project: SerializedProject })
                 return (
                   <div className="mod-video" key={i}>
                     {v.kind === 'file' ? (
-                      <video src={v.url} controls playsInline preload="metadata" />
+                      // With a cover set, don't spend the visitor's bandwidth
+                      // fetching a first frame nobody will see.
+                      <video
+                        src={v.url}
+                        poster={m.poster || undefined}
+                        controls
+                        playsInline
+                        preload={m.poster ? 'none' : 'metadata'}
+                      />
                     ) : (
                       <iframe
                         src={v.url}

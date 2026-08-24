@@ -44,6 +44,15 @@ export function recoverEscapedHtml(value: string): string {
   return value
 }
 
+/**
+ * Worth rendering as a page of its own rather than as rich text: a whole
+ * document, or a fragment that carries its own <style>.
+ */
+export const isEmbeddablePage = (s: string) => {
+  const v = recoverEscapedHtml(s)
+  return looksLikeDocument(v) || /<style[\s>]/i.test(v)
+}
+
 export type EmbeddedHtml = { html: string; css: string }
 
 /** Split a pasted document into renderable markup + its stylesheet. */
@@ -51,11 +60,24 @@ export function splitHtmlDocument(raw: string): EmbeddedHtml {
   let src = recoverEscapedHtml(raw)
   const styles: string[] = []
 
+  // A linked stylesheet (a web font, usually) lives in the <head> that gets
+  // dropped below — carry it over as an @import so the type still loads.
+  src.replace(/<link\b[^>]*>/gi, (tag: string) => {
+    if (!/rel\s*=\s*['"]?stylesheet/i.test(tag)) return tag
+    const href = tag.match(/href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i)
+    const url = href && (href[1] || href[2] || href[3])
+    if (url && /^https?:\/\//i.test(url)) styles.push(`@import url('${url}');`)
+    return tag
+  })
+
   // Collect <style> blocks wherever they are, then drop them from the markup.
   src = src.replace(/<style[^>]*>([\s\S]*?)<\/style>/gi, (_m, css: string) => {
     styles.push(css)
     return ''
   })
+  // The markup keeps no <link> tags: a stylesheet reference inside a <div> is
+  // valid but pointless once its @import is hoisted, and the rest are icons.
+  src = src.replace(/<link\b[^>]*>/gi, '')
   // Never carry scripts across — they don't run via innerHTML anyway, and
   // leaving them in only means dead code in the page source.
   src = src.replace(/<script[\s\S]*?<\/script>/gi, '')
@@ -70,38 +92,146 @@ export function splitHtmlDocument(raw: string): EmbeddedHtml {
   return { html: src.trim(), css: styles.join('\n').trim() }
 }
 
-/**
- * Confine a pasted stylesheet to one element using CSS nesting.
+/* ── CSS scoping ──────────────────────────────────────────────────────
  *
- * `:root`, `html` and `body` selectors are rewritten to the wrapper itself —
- * otherwise the custom properties and page background the author relied on
- * would simply never match.
+ * A pasted page brings its own stylesheet. It has to be confined to the one
+ * element that holds the page, or it would restyle the whole site.
+ *
+ * This walks the stylesheet rule by rule instead of running a regex over it.
+ * The regex version broke on the first `;` inside `@import url(...&wght@400;500)`
+ * — a Google-Fonts import, i.e. the most common first line there is — which
+ * cut the import in half and took the entire stylesheet down with it.
+ */
+
+const skipString = (s: string, i: number) => {
+  const quote = s[i]
+  i += 1
+  while (i < s.length) {
+    if (s[i] === '\\') i += 2
+    else if (s[i] === quote) return i + 1
+    else i += 1
+  }
+  return i
+}
+
+const skipComment = (s: string, i: number) => {
+  const end = s.indexOf('*/', i + 2)
+  return end === -1 ? s.length : end + 2
+}
+
+/** Index of the `}` closing the `{` at `start`, ignoring braces in strings. */
+function closingBrace(s: string, start: number): number {
+  let depth = 0
+  let i = start
+  while (i < s.length) {
+    const c = s[i]
+    if (c === '"' || c === "'") {
+      i = skipString(s, i)
+      continue
+    }
+    if (c === '/' && s[i + 1] === '*') {
+      i = skipComment(s, i)
+      continue
+    }
+    if (c === '{') depth += 1
+    else if (c === '}') {
+      depth -= 1
+      if (depth === 0) return i
+    }
+    i += 1
+  }
+  return -1
+}
+
+/** At-rules whose body is more rules, so the scoping has to go inside them. */
+const NESTS_RULES = /^@(media|supports|layer|container|scope|document)\b/i
+/** At-rules to copy through untouched (their "selectors" aren't selectors). */
+const STATEMENT_AT = /^@(import|charset|namespace)\b/i
+
+/** Point every selector in a list at the wrapper. */
+function scopeSelectorList(list: string, scope: string): string {
+  return list
+    .split(',')
+    .map((part) => {
+      const sel = part.trim()
+      if (!sel) return ''
+      // The author's page-level selectors describe the wrapper now — without
+      // this the custom properties they set on :root would never apply.
+      if (/^(:root|html|body)$/i.test(sel)) return scope
+      const page = sel.match(/^(?::root|html|body)\b([\s\S]*)$/i)
+      if (page) {
+        const rest = page[1].trim()
+        if (!rest) return scope
+        // `html.dark` / `body[data-x]` qualify the wrapper itself.
+        return /^[.#[:]/.test(rest) ? `${scope}${rest}` : `${scope} ${rest}`
+      }
+      if (sel.startsWith('&')) return scope + sel.slice(1)
+      return `${scope} ${sel}`
+    })
+    .filter(Boolean)
+    .join(', ')
+}
+
+function walkRules(css: string, scope: string, imports: string[]): string {
+  let out = ''
+  let prelude = ''
+  let i = 0
+
+  while (i < css.length) {
+    const c = css[i]
+    if (c === '"' || c === "'") {
+      const end = skipString(css, i)
+      prelude += css.slice(i, end)
+      i = end
+      continue
+    }
+    if (c === '/' && css[i + 1] === '*') {
+      i = skipComment(css, i)
+      continue
+    }
+    if (c === ';') {
+      const stmt = prelude.trim()
+      // @import has to sit at the top of the sheet, so it gets hoisted out.
+      if (/^@import\b/i.test(stmt)) imports.push(`${stmt};`)
+      // @charset/@namespace and stray declarations are dropped.
+      prelude = ''
+      i += 1
+      continue
+    }
+    if (c === '{') {
+      const end = closingBrace(css, i)
+      const body = css.slice(i + 1, end === -1 ? css.length : end)
+      const head = prelude.trim()
+
+      if (head.startsWith('@')) {
+        if (NESTS_RULES.test(head)) out += `${head}{${walkRules(body, scope, imports)}}`
+        else if (!STATEMENT_AT.test(head)) out += `${head}{${body}}` // keyframes, font-face…
+      } else if (head) {
+        out += `${scopeSelectorList(head, scope)}{${body}}`
+      }
+
+      prelude = ''
+      i = end === -1 ? css.length : end + 1
+      continue
+    }
+    prelude += c
+    i += 1
+  }
+
+  return out
+}
+
+/**
+ * Confine a pasted stylesheet to one element.
+ *
+ * `:root`, `html` and `body` rules are re-pointed at the wrapper — otherwise
+ * the custom properties and page background the author relied on would simply
+ * never match.
  */
 export function scopeCss(css: string, scopeSelector: string): string {
   if (!css.trim()) return ''
-  // @import has to stay at the top level of the stylesheet.
   const imports: string[] = []
-  const body = css.replace(/@import[^;]+;/gi, (m) => {
-    imports.push(m)
-    return ''
-  })
-
-  // Rewrite whole-page selectors so they land on the wrapper.
-  const rewritten = body.replace(
-    /(^|[},])([^{}]*?)(?=\{)/g,
-    (_m, lead: string, selector: string) => {
-      if (/^\s*@/.test(selector)) return lead + selector // at-rules pass through
-      const fixed = selector
-        .split(',')
-        .map((part) => {
-          const s = part.trim()
-          if (/^(:root|html|body)$/i.test(s)) return '&'
-          return s.replace(/^(:root|html|body)\b/i, '&')
-        })
-        .join(', ')
-      return lead + fixed
-    },
-  )
-
-  return `${imports.join('\n')}\n${scopeSelector} {\n${rewritten}\n}`
+  const body = walkRules(css, scopeSelector, imports)
+  const hoisted = [...new Set(imports)]
+  return hoisted.length ? `${hoisted.join('\n')}\n${body}` : body
 }

@@ -958,6 +958,32 @@ textarea.field {
   background: var(--accent-soft);
   color: var(--accent);
 }
+/* Cover picker for an uploaded video file. */
+.video-cover {
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-2);
+}
+.video-cover-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.video-cover-head .btn-sm {
+  padding: 3px 10px;
+  font-size: 11.5px;
+}
+.video-cover-note {
+  margin: 8px 0 0;
+  color: var(--sub);
+  font-size: 11.5px;
+  line-height: 1.6;
+}
+
 .video-preview {
   position: relative;
   width: 100%;
@@ -2446,6 +2472,18 @@ input[type='range']::-moz-range-thumb {
    ordering strip — but big enough to tell the shots apart. */
 .gallery-grid.as-strip {
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+}
+
+/* A pasted HTML page, rendered the way the site renders it. Capped so a long
+   case study doesn't push the rest of the editor off the screen. */
+.rt-preview {
+  max-height: 60vh;
+  overflow: auto;
+  padding: 12px;
+  background: var(--bg-2);
+}
+.rt-preview > .mod-embed {
+  margin: 0;
 }
 
 .rt-note {

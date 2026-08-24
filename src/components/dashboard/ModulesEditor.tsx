@@ -60,7 +60,7 @@ export function blankModule(type: EditModule['type']): EditModule {
     case 'carousel':
       return { type: 'carousel', items: [] }
     case 'video':
-      return { type: 'video', embedUrl: '' }
+      return { type: 'video', embedUrl: '', posterId: null, posterUrl: null }
     case 'beforeafter':
       return {
         type: 'beforeafter',
@@ -237,7 +237,12 @@ export default function ModulesEditor({
           )}
 
           {m.type === 'video' && (
-            <VideoBody value={m.embedUrl} onChange={(embedUrl) => update(i, { ...m, embedUrl })} />
+            <VideoBody
+              value={m.embedUrl}
+              onChange={(embedUrl) => update(i, { ...m, embedUrl })}
+              posterUrl={m.posterUrl}
+              onPoster={(posterId, posterUrl) => update(i, { ...m, posterId, posterUrl })}
+            />
           )}
 
           {m.type === 'beforeafter' && (
@@ -315,7 +320,17 @@ const VIDEO_MODES = [
 ] as const
 type VideoMode = (typeof VIDEO_MODES)[number]['id']
 
-function VideoBody({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+function VideoBody({
+  value,
+  onChange,
+  posterUrl,
+  onPoster,
+}: {
+  value: string
+  onChange: (v: string) => void
+  posterUrl: string | null
+  onPoster: (id: number | null, url: string | null) => void
+}) {
   const [mode, setMode] = useState<VideoMode>('link')
   const { t } = useDashLang()
   const resolved = resolveVideoUrl(value)
@@ -366,11 +381,46 @@ function VideoBody({ value, onChange }: { value: string; onChange: (v: string) =
         />
       )}
 
+      {/* A cover for an uploaded file. Embeds bring their own thumbnail, so
+          offering one there would just be a control that does nothing. */}
+      {resolved?.kind === 'file' && (
+        <div className="video-cover">
+          <div className="video-cover-head">
+            <label className="lbl" style={{ margin: 0 }}>
+              {t('كفر الفيديو', 'Video cover')}
+            </label>
+            {posterUrl && (
+              <button type="button" className="btn btn-ghost btn-sm" onClick={() => onPoster(null, null)}>
+                {t('إزالة', 'Remove')}
+              </button>
+            )}
+          </div>
+          <MediaUploader
+            big
+            previewUrl={posterUrl}
+            label={t('اختر صورة الكفر', 'Choose a cover image')}
+            onUploaded={(u) => onPoster(u.id, u.url ?? u.thumbUrl)}
+          />
+          <p className="video-cover-note">
+            {t(
+              'الصورة اللي هتظهر قبل ما الفيديو يشتغل. من غيرها المتصفح بيعرض أول لقطة.',
+              'Shown before the video plays. Without one the browser shows the first frame.',
+            )}
+          </p>
+        </div>
+      )}
+
       {/* Live preview so the user sees it working before saving. */}
       {resolved && (
         <div className="video-preview">
           {resolved.kind === 'file' ? (
-            <video src={resolved.url} controls playsInline preload="metadata" />
+            <video
+              src={resolved.url}
+              poster={posterUrl || undefined}
+              controls
+              playsInline
+              preload={posterUrl ? 'none' : 'metadata'}
+            />
           ) : (
             <iframe
               src={resolved.url}

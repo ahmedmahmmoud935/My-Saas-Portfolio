@@ -211,7 +211,6 @@ export interface Media {
   id: number;
   tenant?: (number | null) | Tenant;
   alt?: string | null;
-  prefix?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -324,6 +323,10 @@ export interface Project {
              * YouTube / Vimeo / direct embed URL.
              */
             embedUrl: string;
+            /**
+             * Cover shown before the video plays. Only used for uploaded files — YouTube and Vimeo bring their own.
+             */
+            poster?: (number | null) | Media;
             id?: string | null;
             blockName?: string | null;
             blockType: 'video';
@@ -1013,7 +1016,6 @@ export interface TenantsSelect<T extends boolean = true> {
 export interface MediaSelect<T extends boolean = true> {
   tenant?: T;
   alt?: T;
-  prefix?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -1117,6 +1119,7 @@ export interface ProjectsSelect<T extends boolean = true> {
           | T
           | {
               embedUrl?: T;
+              poster?: T;
               id?: T;
               blockName?: T;
             };

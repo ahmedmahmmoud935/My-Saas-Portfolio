@@ -40,7 +40,12 @@ function serializeEditModules(modules: unknown): EditModule[] {
         })
         break
       case 'video':
-        out.push({ type: 'video', embedUrl: String(m.embedUrl ?? '') })
+        out.push({
+          type: 'video',
+          embedUrl: String(m.embedUrl ?? ''),
+          posterId: mid(m.poster),
+          posterUrl: mediaUrl(m.poster as never, 'card'),
+        })
         break
       case 'beforeafter':
         out.push({

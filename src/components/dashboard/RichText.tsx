@@ -2,7 +2,8 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import { useDashLang } from './DashLang'
-import { looksLikeDocument, looksLikeHtml } from '@/lib/html-embed'
+import HtmlEmbed from '@/components/shared/HtmlEmbed'
+import { isEmbeddablePage, looksLikeDocument, looksLikeHtml } from '@/lib/html-embed'
 
 /**
  * A small WYSIWYG field: formatting toolbar over a contentEditable, with a
@@ -29,14 +30,16 @@ export default function RichText({
   const { t } = useDashLang()
   const box = useRef<HTMLDivElement>(null)
   const [html, setHtml] = useState(false)
+  // A pasted page is shown as a design, with the source one click away.
+  const isPage = isEmbeddablePage(value)
 
   // Only write into the box when the value came from outside; doing it on every
   // keystroke would reset the caret to the start.
   useEffect(() => {
     const el = box.current
-    if (!el || html) return
+    if (!el || html || isPage) return
     if (el.innerHTML !== value) el.innerHTML = value || ''
-  }, [value, html])
+  }, [value, html, isPage])
 
   /**
    * Pasting markup should produce markup. The visual editor's default is to
@@ -48,10 +51,11 @@ export default function RichText({
     if (!text || !looksLikeHtml(text)) return // ordinary text: default paste
     e.preventDefault()
     if (looksLikeDocument(text)) {
-      // A complete page — keep the source intact and show it in the HTML view
-      // rather than letting contentEditable rewrite it.
+      // A complete page — keep the source intact (contentEditable would rewrite
+      // it) and show it rendered. Landing in the source view was the reason a
+      // pasted design looked like it "stayed code".
       onChange(text)
-      setHtml(true)
+      setHtml(false)
       return
     }
     document.execCommand('insertHTML', false, text)
@@ -168,12 +172,17 @@ export default function RichText({
         </button>
       </div>
 
-      {html && looksLikeDocument(value) && (
+      {isPage && (
         <p className="rt-note">
-          {t(
-            'دي صفحة HTML كاملة — هتتعرض بستايلاتها جوه المشروع، والستايل مش هيأثر على باقي الموقع.',
-            "This is a full HTML page — it renders with its own styles inside the project, and they can't affect the rest of the site.",
-          )}
+          {html
+            ? t(
+                'دي صفحة HTML كاملة — اقفل وضع الكود عشان تشوف التصميم.',
+                'This is a full HTML page — leave code view to see the design.',
+              )
+            : t(
+                'دي صفحة HTML كاملة، وشكلها تحت هو نفس شكلها على الموقع. للتعديل على الكود اضغط <> HTML.',
+                'A full HTML page — what you see below is what the site shows. Press <> HTML to edit the source.',
+              )}
         </p>
       )}
 
@@ -186,6 +195,12 @@ export default function RichText({
           onChange={(e) => onChange(e.target.value)}
           spellCheck={false}
         />
+      ) : isPage ? (
+        // Rendered, not editable: contentEditable mangles a whole document the
+        // moment you click into it.
+        <div className="rt-preview">
+          <HtmlEmbed value={value} />
+        </div>
       ) : (
         <div
           ref={box}

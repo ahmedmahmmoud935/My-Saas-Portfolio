@@ -14,7 +14,7 @@ export type ModuleInput =
   | { type: 'image'; srcId: number | null }
   | { type: 'grid'; itemIds: number[] }
   | { type: 'carousel'; itemIds: number[] }
-  | { type: 'video'; embedUrl: string }
+  | { type: 'video'; embedUrl: string; posterId: number | null }
   | {
       type: 'beforeafter'
       beforeId: number | null
@@ -46,7 +46,7 @@ export type EditModule =
   | { type: 'image'; srcId: number | null; srcUrl: string | null }
   | { type: 'grid'; items: { id: number; url: string | null }[] }
   | { type: 'carousel'; items: { id: number; url: string | null }[] }
-  | { type: 'video'; embedUrl: string }
+  | { type: 'video'; embedUrl: string; posterId: number | null; posterUrl: string | null }
   | {
       type: 'beforeafter'
       beforeId: number | null
@@ -70,7 +70,7 @@ export function editModuleToInput(m: EditModule): ModuleInput {
     case 'carousel':
       return { type: 'carousel', itemIds: m.items.map((i) => i.id) }
     case 'video':
-      return { type: 'video', embedUrl: m.embedUrl }
+      return { type: 'video', embedUrl: m.embedUrl, posterId: m.posterId }
     case 'beforeafter':
       return {
         type: 'beforeafter',

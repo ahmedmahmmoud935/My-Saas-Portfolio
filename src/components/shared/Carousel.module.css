@@ -8,8 +8,10 @@
   width: 100%;
   /* Cap the frame by HEIGHT, not width: a tall portrait set narrows the whole
      carousel (the way Instagram does on desktop) instead of growing into a
-     1250px-tall wall. --mc-ar is a plain number so it works in both places. */
-  max-width: calc(var(--mc-max, 72vh) * var(--mc-ar, 1.3333));
+     1250px-tall wall. --mc-ar is a plain number so it works in both places.
+     The cap is in px, not vh: tied to the window height it collapsed to ~400px
+     on a laptop, next to images and videos that were 960px wide. */
+  max-width: calc(var(--mc-max, 720px) * var(--mc-ar, 1.3333));
 }
 
 .track {

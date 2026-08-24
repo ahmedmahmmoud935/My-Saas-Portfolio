@@ -46,7 +46,11 @@ function serializeModules(modules: unknown[]): Mod[] {
         })
         break
       case 'video':
-        out.push({ type: 'video', embedUrl: String(m.embedUrl ?? '') })
+        out.push({
+          type: 'video',
+          embedUrl: String(m.embedUrl ?? ''),
+          poster: mediaUrl(m.poster as never, 'card'),
+        })
         break
       case 'beforeafter':
         out.push({
