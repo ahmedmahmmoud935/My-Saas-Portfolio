@@ -187,7 +187,7 @@ export default function ModulesEditor({
                           onUploaded={(u) =>
                             update(i, {
                               ...m,
-                              items: m.items.map((x, z) => (z === k ? { id: u.id, url: u.thumbUrl } : x)),
+                              items: m.items.map((x, z) => (z === k ? { id: u.id, url: u.url ?? u.thumbUrl } : x)),
                             })
                           }
                         />
@@ -226,7 +226,7 @@ export default function ModulesEditor({
                       onUploadedMany={(us) =>
                         update(i, {
                           ...m,
-                          items: [...m.items, ...us.map((u) => ({ id: u.id, url: u.thumbUrl }))],
+                          items: [...m.items, ...us.map((u) => ({ id: u.id, url: u.url ?? u.thumbUrl }))],
                         })
                       }
                     />

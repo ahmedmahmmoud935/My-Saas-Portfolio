@@ -2621,3 +2621,11 @@ html:has(.pf-root) {
 .mod-rich :last-child {
   margin-bottom: 0;
 }
+
+/* A whole HTML page pasted in as a case study. Its stylesheet is scoped to
+   this box, so it only has to be given room. */
+.mod-embed {
+  width: 100%;
+  margin: 20px 0;
+  overflow-x: hidden;
+}

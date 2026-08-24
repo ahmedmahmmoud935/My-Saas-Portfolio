@@ -136,11 +136,18 @@ export async function saveProject(input: ProjectInput) {
     ...(input.published !== undefined ? { published: input.published } : {}),
   }
 
+  // A text block's `value` is required, so one empty text element rejected the
+  // whole save with a bare "فشل الحفظ". An element with nothing written in it
+  // has nothing to publish either — drop it instead of blocking the save.
+  const modules = (input.modules ?? []).filter(
+    (m) => m.type !== 'text' || !biEmpty(m.value.ar) || !biEmpty(m.value.en),
+  )
+
   const dataFor = (locale: 'ar' | 'en', ids?: (string | undefined)[]) => ({
     ...shared,
     title: pick(input.title, locale),
     description: pick(input.description, locale) || null,
-    modules: toBlocks(input.modules, locale, ids),
+    modules: toBlocks(modules, locale, ids),
   })
 
   /** Write Arabic, read back the block ids, then write English onto the same

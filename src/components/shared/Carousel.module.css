@@ -4,12 +4,20 @@
 
 .wrap {
   position: relative;
-  margin: 18px 0;
+  margin: 18px auto;
+  width: 100%;
+  /* Cap the frame by HEIGHT, not width: a tall portrait set narrows the whole
+     carousel (the way Instagram does on desktop) instead of growing into a
+     1250px-tall wall. --mc-ar is a plain number so it works in both places. */
+  max-width: calc(var(--mc-max, 72vh) * var(--mc-ar, 1.3333));
 }
 
 .track {
   display: flex;
-  height: var(--mc-h, min(56vh, 480px));
+  /* Height follows the pictures (set from the tallest slide) rather than a
+     fixed box that crops or strands them. */
+  width: 100%;
+  aspect-ratio: var(--mc-ar, 1.3333);
   overflow-x: auto;
   overflow-y: hidden;
   scroll-snap-type: x mandatory;
@@ -51,10 +59,10 @@
 .slide img,
 .slide video {
   position: relative;
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
+  /* Fill the frame in both directions — `max-*` alone left a small source
+     image sitting at its natural size in the middle of the slide. */
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   cursor: zoom-in;
 }

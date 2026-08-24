@@ -18,13 +18,25 @@ export default function Carousel({
   images: string[]
   /** Click a slide (e.g. to open the lightbox). Omit to make slides inert. */
   onOpen?: (src: string) => void
-  /** CSS height for the track — the dashboard preview runs shorter. */
+  /** Max height for the track — the dashboard preview runs shorter. */
   height?: string
   className?: string
 }) {
   const track = useRef<HTMLDivElement>(null)
   const [idx, setIdx] = useState(0)
+  // Shape the frame around the actual pictures. A fixed 16:9 box left a
+  // portrait shot as a stamp in the middle of a blurred field. The FIRST slide
+  // sets the shape (as on Instagram) — taking the tallest would let one
+  // outlier stretch the whole set.
+  const [ratio, setRatio] = useState<number | null>(null)
   const n = images.length
+
+  const noteRatio = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget
+    if (!img.naturalWidth || !img.naturalHeight) return
+    // 4:5 is as tall as Instagram goes; 1.91:1 as wide.
+    setRatio(Math.max(0.8, Math.min(1.91, img.naturalWidth / img.naturalHeight)))
+  }
 
   // Which slide is showing = how far along the track we are. Works in RTL too,
   // where scrollLeft counts the other way (and is negative in some engines).
@@ -36,9 +48,16 @@ export default function Carousel({
 
   const goTo = (i: number) => {
     const el = track.current
-    if (!el) return
-    const rtl = getComputedStyle(el).direction === 'rtl'
-    el.scrollTo({ left: (rtl ? -1 : 1) * i * el.clientWidth, behavior: 'smooth' })
+    const slide = el?.children[i] as HTMLElement | undefined
+    if (!el || !slide) return
+    const from = el.scrollLeft
+    slide.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+    // Some engines quietly ignore a smooth scroll on an RTL track. If nothing
+    // has moved a moment later, jump — arriving without the animation beats a
+    // button that does nothing.
+    setTimeout(() => {
+      if (el.scrollLeft === from) slide.scrollIntoView({ inline: 'center', block: 'nearest' })
+    }, 250)
   }
 
   useEffect(() => {
@@ -53,7 +72,15 @@ export default function Carousel({
   if (n === 0) return null
 
   return (
-    <div className={`${s.wrap} ${className}`} style={height ? ({ ['--mc-h']: height } as React.CSSProperties) : undefined}>
+    <div
+      className={`${s.wrap} ${className}`}
+      style={
+        {
+          ...(height ? { ['--mc-max']: height } : {}),
+          ...(ratio ? { ['--mc-ar']: String(ratio) } : {}),
+        } as React.CSSProperties
+      }
+    >
       <div className={s.track} ref={track} onScroll={onScroll}>
         {images.map((src, i) => (
           <div className={s.slide} key={i} style={{ backgroundImage: `url(${src})` }}>
@@ -63,6 +90,7 @@ export default function Carousel({
               alt=""
               loading={i === 0 ? undefined : 'lazy'}
               draggable={false}
+              onLoad={i === 0 ? noteRatio : undefined}
               onClick={onOpen ? () => onOpen(src) : undefined}
               style={onOpen ? undefined : { cursor: 'default' }}
             />

@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Carousel from '@/components/shared/Carousel'
+import { looksLikeDocument, recoverEscapedHtml, scopeCss, splitHtmlDocument } from '@/lib/html-embed'
 import { resolveVideoUrl } from '@/lib/video'
 
 export type Mod =
@@ -216,13 +217,31 @@ export default function ProjectView({ project }: { project: SerializedProject })
           {project.modules.map((m, i) => {
             switch (m.type) {
               case 'text': {
-                // Text modules are authored in the dashboard's rich editor, so
-                // the stored value is HTML. Older projects hold plain text —
-                // keep their line breaks instead of collapsing them.
+                // Markup pasted into the visual editor was stored escaped, so
+                // the page used to print `<!doctype html>` at the reader.
+                const raw = recoverEscapedHtml(m.value)
+
+                // A whole HTML page pasted in as a case study: render it with
+                // its own stylesheet, confined to this element.
+                if (looksLikeDocument(raw) || /<style[\s>]/i.test(raw)) {
+                  const { html, css } = splitHtmlDocument(raw)
+                  const cls = `mod-embed-${i}`
+                  return (
+                    <div className={`mod-embed ${cls}`} key={i}>
+                      {css && (
+                        // eslint-disable-next-line react/no-danger
+                        <style dangerouslySetInnerHTML={{ __html: scopeCss(css, `.${cls}`) }} />
+                      )}
+                      {/* eslint-disable-next-line react/no-danger */}
+                      <div dangerouslySetInnerHTML={{ __html: html }} />
+                    </div>
+                  )
+                }
+
+                // Ordinary rich text. Older projects hold plain text — keep
+                // their line breaks instead of collapsing them.
                 const html = {
-                  __html: /<[a-z][\s\S]*>/i.test(m.value)
-                    ? m.value
-                    : m.value.replace(/\n/g, '<br />'),
+                  __html: /<[a-z][\s\S]*>/i.test(raw) ? raw : raw.replace(/\n/g, '<br />'),
                 }
                 const cls = m.textType === 'h1' ? 'mod-h1' : m.textType === 'h2' ? 'mod-h2' : 'mod-p'
                 // eslint-disable-next-line react/no-danger

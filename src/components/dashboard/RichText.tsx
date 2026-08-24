@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import { useDashLang } from './DashLang'
+import { looksLikeDocument, looksLikeHtml } from '@/lib/html-embed'
 
 /**
  * A small WYSIWYG field: formatting toolbar over a contentEditable, with a
@@ -36,6 +37,26 @@ export default function RichText({
     if (!el || html) return
     if (el.innerHTML !== value) el.innerHTML = value || ''
   }, [value, html])
+
+  /**
+   * Pasting markup should produce markup. The visual editor's default is to
+   * paste as text, which is how a whole case-study page ended up printed on
+   * the site as source code.
+   */
+  const onPaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    const text = e.clipboardData.getData('text/plain')
+    if (!text || !looksLikeHtml(text)) return // ordinary text: default paste
+    e.preventDefault()
+    if (looksLikeDocument(text)) {
+      // A complete page — keep the source intact and show it in the HTML view
+      // rather than letting contentEditable rewrite it.
+      onChange(text)
+      setHtml(true)
+      return
+    }
+    document.execCommand('insertHTML', false, text)
+    if (box.current) onChange(box.current.innerHTML)
+  }
 
   const exec = (cmd: string, arg?: string) => {
     box.current?.focus()
@@ -147,6 +168,15 @@ export default function RichText({
         </button>
       </div>
 
+      {html && looksLikeDocument(value) && (
+        <p className="rt-note">
+          {t(
+            'دي صفحة HTML كاملة — هتتعرض بستايلاتها جوه المشروع، والستايل مش هيأثر على باقي الموقع.',
+            "This is a full HTML page — it renders with its own styles inside the project, and they can't affect the rest of the site.",
+          )}
+        </p>
+      )}
+
       {html ? (
         <textarea
           className="field rt-html"
@@ -165,6 +195,7 @@ export default function RichText({
           contentEditable
           suppressContentEditableWarning
           data-placeholder={placeholder || ''}
+          onPaste={onPaste}
           onInput={(e) => onChange((e.target as HTMLDivElement).innerHTML)}
           onBlur={(e) => onChange((e.target as HTMLDivElement).innerHTML)}
         />

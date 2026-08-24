@@ -2435,8 +2435,26 @@ input[type='range']::-moz-range-thumb {
   object-fit: contain;
 }
 
+.gallery-grid.as-row .uploader-plus {
+  flex: 0 0 110px;
+  width: 110px;
+  align-self: stretch;
+  min-height: 110px;
+}
+
 /* Carousel module: the slider above is the preview, so these are just the
    ordering strip — but big enough to tell the shots apart. */
 .gallery-grid.as-strip {
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+}
+
+.rt-note {
+  margin: 8px 0 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.6;
 }

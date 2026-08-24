@@ -97,8 +97,9 @@ export default function ProjectPageBuilder({
         setToast(true)
         setTimeout(() => setToast(false), 1800)
       }
-    } catch {
-      alert(t('فشل الحفظ', 'Save failed'))
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : ''
+      alert(t(`فشل الحفظ${msg ? `: ${msg}` : ''}`, `Save failed${msg ? `: ${msg}` : ''}`))
     } finally {
       setBusy(false)
     }

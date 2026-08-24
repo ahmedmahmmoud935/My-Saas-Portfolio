@@ -86,8 +86,9 @@ export default function ProjectEditor({
       setToast(true)
       // Let the confirmation land before the modal closes.
       setTimeout(onSaved, 900)
-    } catch {
-      alert(t('فشل الحفظ', 'Save failed'))
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : ''
+      alert(t(`فشل الحفظ${msg ? `: ${msg}` : ''}`, `Save failed${msg ? `: ${msg}` : ''}`))
     } finally {
       setBusy(false)
     }
