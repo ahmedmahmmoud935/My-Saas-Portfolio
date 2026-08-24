@@ -8,7 +8,7 @@ for the product brief (extracted from the real old app — **don't invent featur
 - **Next.js 16 (App Router) + React 19 + TypeScript**, **Payload CMS 3.85** (admin+API inside Next),
   **PostgreSQL** (`@payloadcms/db-postgres`), **Cloudflare R2** (`@payloadcms/storage-s3`),
   **multi-tenant plugin**, localization `ar`(RTL,default)+`en`. Package manager **pnpm**.
-- Local path: `/Users/apple/Downloads/ViralPX-SaaS/`. Git remote: `github.com/ahmedmahmmoud935/My-Saas-Portfolio` (branch `main`).
+- Local path: `/Users/apple/Projects/ViralPX/` (moved out of `~/Downloads` on 2026-08-24 so it no longer shares a session with an unrelated project). Git remote: `github.com/ahmedmahmmoud935/My-Saas-Portfolio` (branch `main`).
 - pnpm is installed in `~/.local/bin` (via corepack) — add to PATH: `export PATH="$HOME/.local/bin:$PATH"`.
 
 ### Route groups (`src/app/`)
@@ -170,3 +170,33 @@ Local uses R2-off (disk media). Demo login: `ahmed@viralpx.test` / `password123`
   `t89m1pc1g2wse6zretd22i9d`**; server uuid `pwmq9ab728vjapjfkr08ab67`; project `ojey45nxoqznmpwrzdmjjgr6`
   ("My first project"); env `production`. Backup schedule uuid `duxp5gb99hv4awkjfq67yd4g`; S3 storage `r2-backups`.
 - R2 keys, Resend key, Coolify API token, demo login. GitHub push uses the machine's cached credentials.
+
+## Session state — 2026-08-24
+
+Everything below is committed and pushed; **a deploy still has to be triggered
+by hand** (see the deploy section — a push does not deploy).
+
+Recently landed, in order:
+- **Project text**: one rich editor per text element (headings, lists, links,
+  raw-HTML view), bilingual AR/EN with the right writing direction, a warning
+  (not a block) when only one language is filled, and a blank side falling back
+  to the filled one so no visitor sees an empty page. `saveProject` writes
+  Arabic, reads the block ids back, then writes English onto the same rows.
+- **Video compression** (`src/lib/transcode.ts`): quality-first — 1080p kept,
+  CRF 24 on the balanced default, lanczos scaling, preset `medium` stepping down
+  for long clips, a maxrate ceiling, one cheaper retry if the size budget is
+  blown, HDR→SDR tone mapping (with a fallback if the build lacks zimg), and a
+  60fps cap. The uploader offers جودة عالية / متوازنة / أصغر حجم.
+- **Uploads** moved off a Server Action to `POST /api/upload-media`: an action's
+  response re-renders the route's server tree, which was resetting an open
+  editor mid-session. Real byte progress + a compression clock now show.
+- **Slider** (`src/components/shared/Carousel.tsx`): one scroll-snap track
+  shared by the public page and the dashboard preview; frame shaped by the first
+  slide, capped by height.
+- **Pasted HTML pages** (`src/lib/html-embed.ts`): a full document pasted into a
+  text element renders with its own stylesheet, scoped to that element.
+
+Known open items:
+- The user should re-upload an original clip and report the compression note.
+- Dashboard-only UI (theme tab, mobile top bar, editor previews) still needs his
+  eyes — it can't be checked from here without logging in.
