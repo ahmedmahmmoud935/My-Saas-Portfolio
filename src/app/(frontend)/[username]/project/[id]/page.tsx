@@ -6,7 +6,10 @@ import { mediaUrl, tenantCssVars } from '@/lib/portfolio'
 import ProjectView, { type Mod, type SerializedProject } from '@/components/project/ProjectView'
 import Navbar from '@/components/portfolio/Navbar'
 
-type Params = { params: Promise<{ username: string; id: string }> }
+type Params = {
+  params: Promise<{ username: string; id: string }>
+  searchParams?: Promise<{ lang?: string }>
+}
 
 function serializeModules(modules: unknown[]): Mod[] {
   if (!Array.isArray(modules)) return []
@@ -70,8 +73,13 @@ function serializeModules(modules: unknown[]): Mod[] {
   return out
 }
 
-export default async function ProjectDetailPage({ params }: Params) {
+export default async function ProjectDetailPage({ params, searchParams }: Params) {
   const { username, id } = await params
+  // Same rule as the portfolio page: English unless ?lang=ar. The page used to
+  // read Arabic no matter what, so opening a project from an English site
+  // switched language underneath the visitor.
+  const { lang } = (await searchParams) ?? {}
+  const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
   const payload = await getPayload({ config })
 
   const tenants = await payload.find({
@@ -85,7 +93,13 @@ export default async function ProjectDetailPage({ params }: Params) {
 
   let project
   try {
-    project = await payload.findByID({ collection: 'projects', id, depth: 2, locale: 'ar' })
+    project = await payload.findByID({
+      collection: 'projects',
+      id,
+      depth: 2,
+      locale,
+      fallbackLocale: locale === 'ar' ? 'en' : 'ar',
+    })
   } catch {
     notFound()
   }
@@ -99,6 +113,8 @@ export default async function ProjectDetailPage({ params }: Params) {
     where: { tenant: { equals: tenant.id } },
     limit: 1,
     depth: 0,
+    locale,
+    fallbackLocale: locale === 'ar' ? 'en' : 'ar',
   })
 
   const serialized: SerializedProject = {
@@ -119,21 +135,43 @@ export default async function ProjectDetailPage({ params }: Params) {
   // The portfolio's own navbar, kept on the project page — leaving the visitor
   // with nothing but a Back button meant no way to reach any other section.
   // The links are anchors on the portfolio page, so they need its path here.
+  const qs = `?lang=${locale}`
   const navLinks = [
     ...((settings as { navbarLinks?: { linkId?: string; label?: string; visible?: boolean }[] } | null)
       ?.navbarLinks ?? [])
       .filter((l) => l.visible !== false)
-      .map((l) => ({ label: l.label || l.linkId || '', href: `/${tenant.slug}#${l.linkId ?? ''}` })),
-    { label: 'المقالات', href: `/${tenant.slug}/articles` },
+      .map((l) => ({
+        label: l.label || l.linkId || '',
+        href: `/${tenant.slug}${qs}#${l.linkId ?? ''}`,
+      })),
+    {
+      label: locale === 'en' ? 'Articles' : 'المقالات',
+      href: `/${tenant.slug}/articles${qs}`,
+    },
   ]
+
+  // The tenant can pin a direction in the Design tab; otherwise it follows the
+  // language, exactly as the portfolio page does.
+  const st = ((settings as { style?: Record<string, string | undefined> } | null)?.style ?? {}) as Record<
+    string,
+    string | undefined
+  >
+  const dir: 'ltr' | 'rtl' =
+    st.direction === 'ltr' ? 'ltr' : st.direction === 'rtl' ? 'rtl' : locale === 'en' ? 'ltr' : 'rtl'
 
   return (
     // `pf-root` is what carries the light palette: the tenant's colours are
     // set inline here, and the light-mode rules override them through that
     // class. Without it a project page stayed on the dark tokens — white
     // heading on a white page.
-    <div className="pf-root" style={cssVars}>
-      <Navbar logo={tenant.name?.[0]?.toUpperCase() || 'V'} links={navLinks} />
+    <div className="pf-root" style={cssVars} dir={dir} lang={locale}>
+      <Navbar
+        logo={tenant.name?.[0]?.toUpperCase() || 'V'}
+        links={navLinks}
+        // The toggle stays on this project instead of being a dead control.
+        langHref={`?lang=${locale === 'en' ? 'ar' : 'en'}`}
+        langLabel={locale === 'en' ? 'ع' : 'EN'}
+      />
       <ProjectView project={serialized} />
     </div>
   )

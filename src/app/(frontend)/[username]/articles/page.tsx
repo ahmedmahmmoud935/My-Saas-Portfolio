@@ -7,22 +7,23 @@ import { mediaUrl, tenantCssVars } from '@/lib/portfolio'
 import Navbar from '@/components/portfolio/Navbar'
 import Footer from '@/components/portfolio/Footer'
 
-type Params = { params: Promise<{ username: string }> }
+type Params = { params: Promise<{ username: string }>; searchParams?: Promise<{ lang?: string }> }
 
-async function load(username: string) {
+async function load(username: string, locale: 'ar' | 'en') {
   const payload = await getPayload({ config })
   const t = await payload.find({ collection: 'tenants', where: { slug: { equals: username } }, limit: 1, depth: 0 })
   const tenant = t.docs[0]
   if (!tenant) return null
   const [settingsRes, articlesRes] = await Promise.all([
-    payload.find({ collection: 'site-settings', where: { tenant: { equals: tenant.id } }, limit: 1, depth: 0, locale: 'ar' }),
+    payload.find({ collection: 'site-settings', where: { tenant: { equals: tenant.id } }, limit: 1, depth: 0, locale, fallbackLocale: locale === 'ar' ? 'en' : 'ar' }),
     payload.find({
       collection: 'articles',
       where: { and: [{ tenant: { equals: tenant.id } }, { published: { equals: true } }] },
       sort: '-createdAt',
       limit: 100,
       depth: 1,
-      locale: 'ar',
+      locale,
+      fallbackLocale: locale === 'ar' ? 'en' : 'ar',
     }),
   ])
   return { tenant, settings: settingsRes.docs[0] ?? null, articles: articlesRes.docs }
@@ -33,27 +34,40 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   return { title: `مقالات ${username}` }
 }
 
-export default async function ArticlesListPage({ params }: Params) {
+export default async function ArticlesListPage({ params, searchParams }: Params) {
   const { username } = await params
-  const data = await load(username)
+  const { lang } = (await searchParams) ?? {}
+  const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
+  const data = await load(username, locale)
   if (!data) notFound()
   const { tenant, settings, articles } = data
   const logo = tenant.name?.[0]?.toUpperCase() || 'V'
+  const st = ((settings as { style?: Record<string, string | undefined> } | null)?.style ?? {}) as Record<
+    string,
+    string | undefined
+  >
+  const dir: 'ltr' | 'rtl' =
+    st.direction === 'ltr' ? 'ltr' : st.direction === 'rtl' ? 'rtl' : locale === 'en' ? 'ltr' : 'rtl'
 
   return (
-    <div className="pf-root" style={tenantCssVars(settings) as React.CSSProperties}>
-      <Navbar logo={logo} links={[{ label: 'الرئيسية', href: `/${tenant.slug}` }]} />
+    <div className="pf-root" style={tenantCssVars(settings) as React.CSSProperties} dir={dir} lang={locale}>
+      <Navbar
+        logo={logo}
+        links={[{ label: locale === 'en' ? 'Home' : 'الرئيسية', href: `/${tenant.slug}?lang=${locale}` }]}
+        langHref={`?lang=${locale === 'en' ? 'ar' : 'en'}`}
+        langLabel={locale === 'en' ? 'ع' : 'EN'}
+      />
       <section className="section">
         <div className="container">
           <div className="section-head">
-            <h2 className="section-title">المقالات</h2>
+            <h2 className="section-title">{locale === 'en' ? 'Articles' : 'المقالات'}</h2>
           </div>
           {articles.length === 0 ? (
             <p style={{ textAlign: 'center', color: 'var(--sub)' }}>لا توجد مقالات بعد.</p>
           ) : (
             <div className="tst-grid">
               {articles.map((a) => (
-                <a key={a.id} href={`/${tenant.slug}/articles/${a.slug}`} className="tst" style={{ padding: 0, overflow: 'hidden', display: 'block' }}>
+                <a key={a.id} href={`/${tenant.slug}/articles/${a.slug}?lang=${locale}`} className="tst" style={{ padding: 0, overflow: 'hidden', display: 'block' }}>
                   {mediaUrl(a.cover, 'card') && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={mediaUrl(a.cover, 'card')!} alt={a.title} style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover' }} />

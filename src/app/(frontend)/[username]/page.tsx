@@ -100,7 +100,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
     ...(settings?.navbarLinks ?? [])
       .filter((l) => l.visible !== false)
       .map((l) => ({ label: l.label || l.linkId || '', href: `#${l.linkId}` })),
-    { label: locale === 'en' ? 'Articles' : 'المقالات', href: `/${tenant.slug}/articles` },
+    { label: locale === 'en' ? 'Articles' : 'المقالات', href: `/${tenant.slug}/articles?lang=${locale}` },
   ]
 
   const logoText = tenant.name?.[0]?.toUpperCase() || 'V'
@@ -139,6 +139,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
         imageCategories={(settings?.categories?.image ?? []).map((c) => c.name || '').filter(Boolean)}
         videoCategories={(settings?.categories?.video ?? []).map((c) => c.name || '').filter(Boolean)}
         username={tenant.slug}
+        lang={locale}
         tabLabels={{
           designs: settings?.projTabs?.designs?.label || undefined,
           reels: settings?.projTabs?.reels?.label || undefined,

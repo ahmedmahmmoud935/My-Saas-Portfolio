@@ -53,7 +53,12 @@ export const isEmbeddablePage = (s: string) => {
   return looksLikeDocument(v) || /<style[\s>]/i.test(v)
 }
 
-export type EmbeddedHtml = { html: string; css: string }
+export type EmbeddedHtml = {
+  html: string
+  css: string
+  /** The document's own `dir`, if it declared one. */
+  dir?: 'rtl' | 'ltr'
+}
 
 /** Split a pasted document into renderable markup + its stylesheet. */
 export function splitHtmlDocument(raw: string): EmbeddedHtml {
@@ -82,6 +87,13 @@ export function splitHtmlDocument(raw: string): EmbeddedHtml {
   // leaving them in only means dead code in the page source.
   src = src.replace(/<script[\s\S]*?<\/script>/gi, '')
 
+  // The document's own writing direction, before the tag carrying it is
+  // dropped. An Arabic page pasted into a site being read in English would
+  // otherwise inherit the site's `ltr` and lay itself out backwards.
+  let dir: 'rtl' | 'ltr' | undefined
+  const dirTag = src.match(/<(?:html|body)\b[^>]*\bdir\s*=\s*(?:"|')?(rtl|ltr)/i)
+  if (dirTag) dir = dirTag[1].toLowerCase() as 'rtl' | 'ltr'
+
   if (looksLikeDocument(src)) {
     src = src
       .replace(/<!doctype[^>]*>/gi, '')
@@ -89,7 +101,7 @@ export function splitHtmlDocument(raw: string): EmbeddedHtml {
       .replace(/<\/?(html|head|body)[^>]*>/gi, '')
   }
 
-  return { html: src.trim(), css: styles.join('\n').trim() }
+  return { html: src.trim(), css: styles.join('\n').trim(), dir }
 }
 
 /* ── CSS scoping ──────────────────────────────────────────────────────

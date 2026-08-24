@@ -20,7 +20,7 @@ export default function HtmlEmbed({
 }) {
   // A stable class per instance, so two pasted pages can't restyle each other.
   const cls = `embed-${useId().replace(/[^a-zA-Z0-9]/g, '')}`
-  const { html, css } = splitHtmlDocument(value)
+  const { html, css, dir } = splitHtmlDocument(value)
   // The same token renames the page's own classes on both sides, so the site's
   // `.hero` / `.section` / `.eyebrow` can't reach in and restyle it.
   const markup = prefixHtmlClasses(html, cls)
@@ -42,7 +42,7 @@ export default function HtmlEmbed({
         <style dangerouslySetInnerHTML={{ __html: scopeCss(css, `.${cls}`, cls) }} />
       )}
       {/* eslint-disable-next-line react/no-danger */}
-      <div className={cls} dangerouslySetInnerHTML={{ __html: markup }} />
+      <div className={cls} dir={dir} dangerouslySetInnerHTML={{ __html: markup }} />
     </div>
   )
 }

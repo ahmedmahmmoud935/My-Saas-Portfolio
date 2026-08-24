@@ -7,9 +7,12 @@ import { mediaUrl, tenantCssVars } from '@/lib/portfolio'
 import Navbar from '@/components/portfolio/Navbar'
 import Footer from '@/components/portfolio/Footer'
 
-type Params = { params: Promise<{ username: string; slug: string }> }
+type Params = {
+  params: Promise<{ username: string; slug: string }>
+  searchParams?: Promise<{ lang?: string }>
+}
 
-async function load(username: string, slugRaw: string) {
+async function load(username: string, slugRaw: string, locale: 'ar' | 'en') {
   // Next passes the raw (percent-encoded) URL segment; decode so non-ASCII
   // (Arabic) slugs match the stored value. Idempotent for already-decoded slugs.
   let slug = slugRaw
@@ -23,13 +26,14 @@ async function load(username: string, slugRaw: string) {
   const tenant = t.docs[0]
   if (!tenant) return null
   const [settingsRes, articleRes] = await Promise.all([
-    payload.find({ collection: 'site-settings', where: { tenant: { equals: tenant.id } }, limit: 1, depth: 0, locale: 'ar' }),
+    payload.find({ collection: 'site-settings', where: { tenant: { equals: tenant.id } }, limit: 1, depth: 0, locale, fallbackLocale: locale === 'ar' ? 'en' : 'ar' }),
     payload.find({
       collection: 'articles',
       where: { and: [{ tenant: { equals: tenant.id } }, { slug: { equals: slug } }] },
       limit: 1,
       depth: 1,
-      locale: 'ar',
+      locale,
+      fallbackLocale: locale === 'ar' ? 'en' : 'ar',
     }),
   ])
   const article = articleRes.docs[0]
@@ -37,9 +41,10 @@ async function load(username: string, slugRaw: string) {
   return { tenant, settings: settingsRes.docs[0] ?? null, article }
 }
 
-export async function generateMetadata({ params }: Params): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Params): Promise<Metadata> {
   const { username, slug } = await params
-  const data = await load(username, slug)
+  const { lang } = (await searchParams) ?? {}
+  const data = await load(username, slug, lang === 'ar' ? 'ar' : 'en')
   if (!data) return { title: 'غير موجود' }
   const cover = mediaUrl(data.article.cover, 'card')
   return {
@@ -54,13 +59,21 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   }
 }
 
-export default async function ArticlePage({ params }: Params) {
+export default async function ArticlePage({ params, searchParams }: Params) {
   const { username, slug } = await params
-  const data = await load(username, slug)
+  const { lang } = (await searchParams) ?? {}
+  const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
+  const data = await load(username, slug, locale)
   if (!data) notFound()
   const { tenant, settings, article } = data
   const logo = tenant.name?.[0]?.toUpperCase() || 'V'
   const cover = mediaUrl(article.cover)
+  const st = ((settings as { style?: Record<string, string | undefined> } | null)?.style ?? {}) as Record<
+    string,
+    string | undefined
+  >
+  const dir: 'ltr' | 'rtl' =
+    st.direction === 'ltr' ? 'ltr' : st.direction === 'rtl' ? 'rtl' : locale === 'en' ? 'ltr' : 'rtl'
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -74,14 +87,22 @@ export default async function ArticlePage({ params }: Params) {
   }
 
   return (
-    <div className="pf-root" style={tenantCssVars(settings) as React.CSSProperties}>
+    <div className="pf-root" style={tenantCssVars(settings) as React.CSSProperties} dir={dir} lang={locale}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <Navbar logo={logo} links={[{ label: 'المقالات', href: `/${tenant.slug}/articles` }, { label: 'الرئيسية', href: `/${tenant.slug}` }]} />
+      <Navbar
+        logo={logo}
+        links={[
+          { label: locale === 'en' ? 'Articles' : 'المقالات', href: `/${tenant.slug}/articles?lang=${locale}` },
+          { label: locale === 'en' ? 'Home' : 'الرئيسية', href: `/${tenant.slug}?lang=${locale}` },
+        ]}
+        langHref={`?lang=${locale === 'en' ? 'ar' : 'en'}`}
+        langLabel={locale === 'en' ? 'ع' : 'EN'}
+      />
       <article className="section">
         <div className="container" style={{ maxWidth: 760 }}>
           <h1 style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 900, lineHeight: 1.2 }}>{article.title}</h1>
           <div style={{ color: 'var(--sub)', fontSize: 13, marginBottom: 20 }}>
-            {new Date(article.createdAt).toLocaleDateString('ar')} {article.readMin ? `· ${article.readMin} دقيقة` : ''}
+            {new Date(article.createdAt).toLocaleDateString(locale === 'en' ? 'en-GB' : 'ar')} {article.readMin ? `· ${article.readMin} ${locale === 'en' ? 'min read' : 'دقيقة'}` : ''}
           </div>
           {cover && (
             // eslint-disable-next-line @next/next/no-img-element

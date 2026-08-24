@@ -25,6 +25,7 @@ export default function ProjectsGrid({
   videoCategories,
   projects,
   username,
+  lang,
   tabLabels,
   cols,
   highlights,
@@ -36,6 +37,8 @@ export default function ProjectsGrid({
   videoCategories: string[]
   projects: ProjectCard[]
   username: string
+  /** Carried into the project link so opening one doesn't switch language. */
+  lang?: 'ar' | 'en'
   tabLabels?: Partial<Record<TabId, string>>
   cols?: {
     image?: { d?: number | null; t?: number | null; m?: number | null }
@@ -148,7 +151,7 @@ export default function ProjectsGrid({
                 {inner}
               </button>
             ) : (
-              <a className="project-card" key={p.id} href={`/${username}/project/${p.id}`}>
+              <a className="project-card" key={p.id} href={`/${username}/project/${p.id}${lang ? `?lang=${lang}` : ''}`}>
                 {inner}
               </a>
             )
