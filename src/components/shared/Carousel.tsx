@@ -58,11 +58,13 @@ export default function Carousel({
 
   // Which slide is showing = how far along the track we are. Works in RTL too,
   // where scrollLeft counts the other way (and is negative in some engines).
-  const onScroll = useCallback(() => {
+  const currentIndex = useCallback(() => {
     const el = track.current
-    if (!el || !el.clientWidth) return
-    setIdx(Math.max(0, Math.min(n - 1, Math.round(Math.abs(el.scrollLeft) / el.clientWidth))))
+    if (!el || !el.clientWidth) return 0
+    return Math.max(0, Math.min(n - 1, Math.round(Math.abs(el.scrollLeft) / el.clientWidth)))
   }, [n])
+
+  const onScroll = useCallback(() => setIdx(currentIndex()), [currentIndex])
 
   // Wraps around: past the last slide is the first one again. The arrows used
   // to switch off at the ends, and a switched-off arrow is transparent and
@@ -128,14 +130,14 @@ export default function Carousel({
           </span>
           <button
             className={`${s.arrow} ${s.prev}`}
-            onClick={() => goTo(idx - 1)}
+            onClick={() => goTo(currentIndex() - 1)}
             aria-label="previous"
           >
             ‹
           </button>
           <button
             className={`${s.arrow} ${s.next}`}
-            onClick={() => goTo(idx + 1)}
+            onClick={() => goTo(currentIndex() + 1)}
             aria-label="next"
           >
             ›
