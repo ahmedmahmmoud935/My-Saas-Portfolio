@@ -159,9 +159,10 @@ export default function Carousel({
       <div className={s.track} ref={track} onScroll={onScroll}>
         {strip.map((src, i) => {
           const copy = peeks && (i === 0 || i === strip.length - 1)
+          const centred = !copy && (peeks ? i - 1 : i) === idx
           return (
             <div
-              className={`${s.slide}${copy ? ` ${s.copy}` : ''}`}
+              className={`${s.slide}${copy ? ` ${s.copy}` : ''}${centred ? ` ${s.active}` : ''}`}
               key={i}
               style={{ backgroundImage: `url(${src})` }}
               aria-hidden={copy || undefined}

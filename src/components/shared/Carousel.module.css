@@ -34,22 +34,6 @@
      browser's back gesture. */
   overscroll-behavior-x: contain;
   scroll-padding-inline: var(--mc-pad);
-  /* The peeking neighbours fade out across exactly the strip they occupy, so
-     the centred slide is never dimmed. */
-  -webkit-mask-image: linear-gradient(
-    to right,
-    transparent 0,
-    #000 var(--mc-pad),
-    #000 calc(100% - var(--mc-pad)),
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    to right,
-    transparent 0,
-    #000 var(--mc-pad),
-    #000 calc(100% - var(--mc-pad)),
-    transparent 100%
-  );
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -70,6 +54,14 @@
   overflow: hidden;
   background-size: cover;
   background-position: center;
+  /* The neighbours sit back a little so the centred slide reads as the one
+     you're looking at. A gradient across the edges was tried first and looked
+     like a smear on the frame. */
+  opacity: 0.6;
+  transition: opacity 0.25s ease;
+}
+.active {
+  opacity: 1;
 }
 /* The copies at either end are scenery: they can't be snapped to, clicked, or
    reached with a keyboard. */
