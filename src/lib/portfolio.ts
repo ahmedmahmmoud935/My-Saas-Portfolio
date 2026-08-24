@@ -66,7 +66,9 @@ export async function getPortfolio(
         collection: 'projects',
         // Hide drafts (published === false); legacy rows with null stay visible.
         where: { and: [tenantFilter, { published: { not_equals: false } }] },
-        sort: 'sortOrder',
+        // Hand-ordered first; otherwise newest first. Every migrated project
+        // shares sortOrder 0, so without the tiebreak they came out oldest-first.
+        sort: ['sortOrder', '-createdAt'],
         limit: 200,
         depth: 1,
         locale,

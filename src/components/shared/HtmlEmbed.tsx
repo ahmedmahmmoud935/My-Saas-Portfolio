@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useId } from 'react'
-import { scopeCss, splitHtmlDocument } from '@/lib/html-embed'
+import { prefixHtmlClasses, scopeCss, splitHtmlDocument } from '@/lib/html-embed'
 
 /**
  * A whole HTML page pasted in as a case study, rendered with its own
@@ -21,15 +21,18 @@ export default function HtmlEmbed({
   // A stable class per instance, so two pasted pages can't restyle each other.
   const cls = `embed-${useId().replace(/[^a-zA-Z0-9]/g, '')}`
   const { html, css } = splitHtmlDocument(value)
+  // The same token renames the page's own classes on both sides, so the site's
+  // `.hero` / `.section` / `.eyebrow` can't reach in and restyle it.
+  const markup = prefixHtmlClasses(html, cls)
 
   return (
     <div className={`mod-embed ${cls} ${className}`.trim()}>
       {css && (
         // eslint-disable-next-line react/no-danger
-        <style dangerouslySetInnerHTML={{ __html: scopeCss(css, `.${cls}`) }} />
+        <style dangerouslySetInnerHTML={{ __html: scopeCss(css, `.${cls}`, cls) }} />
       )}
       {/* eslint-disable-next-line react/no-danger */}
-      <div dangerouslySetInnerHTML={{ __html: html }} />
+      <div dangerouslySetInnerHTML={{ __html: markup }} />
     </div>
   )
 }

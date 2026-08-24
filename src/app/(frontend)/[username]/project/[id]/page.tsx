@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { mediaUrl, tenantCssVars } from '@/lib/portfolio'
 import ProjectView, { type Mod, type SerializedProject } from '@/components/project/ProjectView'
+import Navbar from '@/components/portfolio/Navbar'
 
 type Params = { params: Promise<{ username: string; id: string }> }
 
@@ -112,10 +113,23 @@ export default async function ProjectDetailPage({ params }: Params) {
     modules: serializeModules(project.modules as unknown[]),
   }
 
-  const cssVars = tenantCssVars(settingsRes.docs[0] ?? null) as React.CSSProperties
+  const settings = settingsRes.docs[0] ?? null
+  const cssVars = tenantCssVars(settings) as React.CSSProperties
+
+  // The portfolio's own navbar, kept on the project page — leaving the visitor
+  // with nothing but a Back button meant no way to reach any other section.
+  // The links are anchors on the portfolio page, so they need its path here.
+  const navLinks = [
+    ...((settings as { navbarLinks?: { linkId?: string; label?: string; visible?: boolean }[] } | null)
+      ?.navbarLinks ?? [])
+      .filter((l) => l.visible !== false)
+      .map((l) => ({ label: l.label || l.linkId || '', href: `/${tenant.slug}#${l.linkId ?? ''}` })),
+    { label: 'المقالات', href: `/${tenant.slug}/articles` },
+  ]
 
   return (
     <div style={cssVars}>
+      <Navbar logo={tenant.name?.[0]?.toUpperCase() || 'V'} links={navLinks} />
       <ProjectView project={serialized} />
     </div>
   )

@@ -64,12 +64,18 @@ export default function Carousel({
     setIdx(Math.max(0, Math.min(n - 1, Math.round(Math.abs(el.scrollLeft) / el.clientWidth))))
   }, [n])
 
+  // Wraps around: past the last slide is the first one again. The arrows used
+  // to switch off at the ends, and a switched-off arrow is transparent and
+  // click-through — so pressing it opened the lightbox on the slide behind it.
   const goTo = (i: number) => {
     const el = track.current
-    const slide = el?.children[i] as HTMLElement | undefined
+    const wrapped = ((i % n) + n) % n
+    const slide = el?.children[wrapped] as HTMLElement | undefined
     if (!el || !slide) return
     const from = el.scrollLeft
-    slide.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+    // Sliding the whole track back for a wrap is a long, confusing sweep; jump.
+    const behavior = wrapped === i ? 'smooth' : 'auto'
+    slide.scrollIntoView({ behavior, inline: 'center', block: 'nearest' })
     // Some engines quietly ignore a smooth scroll on an RTL track. If nothing
     // has moved a moment later, jump — arriving without the animation beats a
     // button that does nothing.
@@ -123,7 +129,6 @@ export default function Carousel({
           <button
             className={`${s.arrow} ${s.prev}`}
             onClick={() => goTo(idx - 1)}
-            disabled={idx === 0}
             aria-label="previous"
           >
             ‹
@@ -131,7 +136,6 @@ export default function Carousel({
           <button
             className={`${s.arrow} ${s.next}`}
             onClick={() => goTo(idx + 1)}
-            disabled={idx === n - 1}
             aria-label="next"
           >
             ›

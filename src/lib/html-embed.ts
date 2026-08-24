@@ -148,12 +148,48 @@ const NESTS_RULES = /^@(media|supports|layer|container|scope|document)\b/i
 /** At-rules to copy through untouched (their "selectors" aren't selectors). */
 const STATEMENT_AT = /^@(import|charset|namespace)\b/i
 
+/**
+ * Rename the pasted page's own classes and ids.
+ *
+ * Scoping stops the pasted CSS getting OUT. It does nothing about the site's
+ * CSS getting IN: this site styles `.hero`, `.section` and `.eyebrow`, and a
+ * pasted case study uses exactly those names. `.hero { display:flex;
+ * min-height:82vh }` from the portfolio turned the pasted hero into a row two
+ * thirds of a screen tall — the author's own rules never mentioned display or
+ * height, so there was nothing to override it with. Renaming both sides makes
+ * the collision impossible instead of fighting it with specificity.
+ */
+export function prefixSelectorNames(sel: string, prefix: string): string {
+  if (!prefix) return sel
+  // Attribute selectors may quote text containing dots — step over them whole.
+  return sel.replace(/\[[^\]]*\]|([.#])(-?[_a-zA-Z][\w-]*)/g, (m, sym: string, name: string) =>
+    sym ? `${sym}${prefix}-${name}` : m,
+  )
+}
+
+/** The markup half of the rename: class, id, and same-page anchor targets. */
+export function prefixHtmlClasses(html: string, prefix: string): string {
+  if (!prefix) return html
+  const attr = /(\s(?:class|id|href)\s*=\s*)(?:"([^"]*)"|'([^']*)')/gi
+  return html.replace(attr, (m, lead: string, dq?: string, sq?: string) => {
+    const value = (dq ?? sq ?? '').trim()
+    const name = lead.trim().slice(0, -1).trim().toLowerCase()
+    if (name === 'class') {
+      if (!value) return m
+      return `${lead}"${value.split(/\s+/).map((c) => `${prefix}-${c}`).join(' ')}"`
+    }
+    if (name === 'id') return value ? `${lead}"${prefix}-${value}"` : m
+    // href: only in-page anchors, never a real link.
+    return value.startsWith('#') && value.length > 1 ? `${lead}"#${prefix}-${value.slice(1)}"` : m
+  })
+}
+
 /** Point every selector in a list at the wrapper. */
-function scopeSelectorList(list: string, scope: string): string {
+function scopeSelectorList(list: string, scope: string, prefix: string): string {
   return list
     .split(',')
-    .map((part) => {
-      const sel = part.trim()
+    .map((raw) => {
+      const sel = prefixSelectorNames(raw.trim(), prefix)
       if (!sel) return ''
       // The author's page-level selectors describe the wrapper now — without
       // this the custom properties they set on :root would never apply.
@@ -172,7 +208,7 @@ function scopeSelectorList(list: string, scope: string): string {
     .join(', ')
 }
 
-function walkRules(css: string, scope: string, imports: string[]): string {
+function walkRules(css: string, scope: string, imports: string[], prefix: string): string {
   let out = ''
   let prelude = ''
   let i = 0
@@ -204,10 +240,10 @@ function walkRules(css: string, scope: string, imports: string[]): string {
       const head = prelude.trim()
 
       if (head.startsWith('@')) {
-        if (NESTS_RULES.test(head)) out += `${head}{${walkRules(body, scope, imports)}}`
+        if (NESTS_RULES.test(head)) out += `${head}{${walkRules(body, scope, imports, prefix)}}`
         else if (!STATEMENT_AT.test(head)) out += `${head}{${body}}` // keyframes, font-face…
       } else if (head) {
-        out += `${scopeSelectorList(head, scope)}{${body}}`
+        out += `${scopeSelectorList(head, scope, prefix)}{${body}}`
       }
 
       prelude = ''
@@ -228,10 +264,10 @@ function walkRules(css: string, scope: string, imports: string[]): string {
  * the custom properties and page background the author relied on would simply
  * never match.
  */
-export function scopeCss(css: string, scopeSelector: string): string {
+export function scopeCss(css: string, scopeSelector: string, classPrefix = ''): string {
   if (!css.trim()) return ''
   const imports: string[] = []
-  const body = walkRules(css, scopeSelector, imports)
+  const body = walkRules(css, scopeSelector, imports, classPrefix)
   const hoisted = [...new Set(imports)]
   return hoisted.length ? `${hoisted.join('\n')}\n${body}` : body
 }

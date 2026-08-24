@@ -86,7 +86,8 @@ export default async function ProjectsPage() {
   const res = await ctx.payload.find({
     collection: 'projects',
     where: { tenant: { equals: ctx.tenantId } },
-    sort: 'sortOrder',
+    // Same order the site shows: hand-ordered first, then newest first.
+    sort: ['sortOrder', '-createdAt'],
     limit: 300,
     depth: 1,
     // Both locales: the editor writes each language separately.

@@ -93,10 +93,6 @@
 .arrow:hover {
   background: rgba(255, 255, 255, 0.24);
 }
-.arrow[disabled] {
-  opacity: 0;
-  pointer-events: none;
-}
 .prev {
   inset-inline-start: 10px;
 }
