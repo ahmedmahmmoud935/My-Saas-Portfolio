@@ -6,28 +6,50 @@
   position: relative;
   margin: 18px auto;
   width: 100%;
-  /* Cap the frame by HEIGHT, not width: a tall portrait set narrows the whole
-     carousel (the way Instagram does on desktop) instead of growing into a
-     1250px-tall wall. --mc-ar is a plain number so it works in both places.
-     The cap is in px, not vh: tied to the window height it collapsed to ~400px
-     on a laptop, next to images and videos that were 960px wide. */
-  max-width: calc(var(--mc-max, 720px) * var(--mc-ar, 1.3333));
+  /* Cap the SLIDE by height, not width: a tall portrait set narrows the frame
+     (the way Instagram does on desktop) instead of growing into a 1250px-tall
+     wall. --mc-ar is a plain number so it works in both places. The cap is in
+     px, not vh: tied to the window height it collapsed to ~400px on a laptop,
+     next to images and videos that were 960px wide. */
+  --mc-w: min(100%, calc(var(--mc-max, 720px) * var(--mc-ar, 1.3333)));
+  /* Whatever the slide leaves over, split either side — that's where the
+     neighbouring slides show through instead of dead space. */
+  --mc-pad: calc((100% - var(--mc-w)) / 2);
 }
 
 .track {
   display: flex;
-  /* Height follows the pictures (set from the tallest slide) rather than a
-     fixed box that crops or strands them. */
+  gap: 14px;
+  /* Height follows the pictures rather than a fixed box that crops or strands
+     them. The side padding lets the first and last slide reach the centre. */
   width: 100%;
-  aspect-ratio: var(--mc-ar, 1.3333);
+  padding-inline: var(--mc-pad);
   overflow-x: auto;
   overflow-y: hidden;
   scroll-snap-type: x mandatory;
+  /* Slides run left→right whatever the page direction: they're a sequence of
+     pictures, not text, and it keeps scrollLeft a plain 0→max on every engine. */
+  direction: ltr;
   /* Keep a horizontal swipe inside the slider instead of triggering the
      browser's back gesture. */
   overscroll-behavior-x: contain;
-  border-radius: 10px;
-  background: var(--bg-2, #111);
+  scroll-padding-inline: var(--mc-pad);
+  /* The peeking neighbours fade out across exactly the strip they occupy, so
+     the centred slide is never dimmed. */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 var(--mc-pad),
+    #000 calc(100% - var(--mc-pad)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 var(--mc-pad),
+    #000 calc(100% - var(--mc-pad)),
+    transparent 100%
+  );
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -37,7 +59,10 @@
 
 .slide {
   position: relative;
-  flex: 0 0 100%;
+  flex: 0 0 var(--mc-w);
+  aspect-ratio: var(--mc-ar, 1.3333);
+  border-radius: 10px;
+  background-color: var(--bg-2, #111);
   scroll-snap-align: center;
   scroll-snap-stop: always;
   display: grid;
@@ -46,6 +71,13 @@
   background-size: cover;
   background-position: center;
 }
+/* The copies at either end are scenery: they can't be snapped to, clicked, or
+   reached with a keyboard. */
+.copy {
+  scroll-snap-align: none;
+  pointer-events: none;
+}
+
 /* The slide's own image, blurred, fills the empty space either side of a
    portrait shot — same trick Instagram uses. */
 .slide::before {
@@ -94,10 +126,10 @@
   background: rgba(255, 255, 255, 0.24);
 }
 .prev {
-  inset-inline-start: 10px;
+  inset-inline-start: calc(var(--mc-pad) + 10px);
 }
 .next {
-  inset-inline-end: 10px;
+  inset-inline-end: calc(var(--mc-pad) + 10px);
 }
 /* Touch devices swipe; the arrows are only clutter there. */
 @media (hover: none) {
@@ -109,7 +141,7 @@
 .count {
   position: absolute;
   top: 12px;
-  inset-inline-end: 12px;
+  inset-inline-end: calc(var(--mc-pad) + 12px);
   z-index: 2;
   padding: 3px 10px;
   border-radius: 999px;

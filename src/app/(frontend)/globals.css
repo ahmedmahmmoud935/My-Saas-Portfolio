@@ -2628,4 +2628,12 @@ html:has(.pf-root) {
   width: 100%;
   margin: 20px 0;
   overflow-x: hidden;
+  /* The canvas a browser paints behind a standalone document. A pasted page is
+     drawn against the white it was designed on, whatever theme the site is in —
+     otherwise its dark text sat on the site's black and disappeared. The page's
+     own body background covers this whenever it sets one. */
+  background: #fff;
+  color: #000;
+  color-scheme: light;
+  border-radius: 12px;
 }

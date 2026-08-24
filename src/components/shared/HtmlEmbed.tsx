@@ -25,14 +25,21 @@ export default function HtmlEmbed({
   // `.hero` / `.section` / `.eyebrow` can't reach in and restyle it.
   const markup = prefixHtmlClasses(html, cls)
 
+  // Two elements on purpose. The outer one is the CANVAS — what a browser
+  // paints behind a standalone document — and the pasted CSS can never target
+  // it. The inner one stands in for <body>, which is where the page's own
+  // `body { … }` rules land. Sharing one element meant `body{background:
+  // transparent}` cleared the canvas, so a case study drawn on white was
+  // rendered on the site's black: its dark text vanished in dark mode and
+  // reappeared in light mode.
   return (
-    <div className={`mod-embed ${cls} ${className}`.trim()}>
+    <div className={`mod-embed ${className}`.trim()}>
       {css && (
         // eslint-disable-next-line react/no-danger
         <style dangerouslySetInnerHTML={{ __html: scopeCss(css, `.${cls}`, cls) }} />
       )}
       {/* eslint-disable-next-line react/no-danger */}
-      <div dangerouslySetInnerHTML={{ __html: markup }} />
+      <div className={cls} dangerouslySetInnerHTML={{ __html: markup }} />
     </div>
   )
 }

@@ -32,6 +32,15 @@ export default function Carousel({
   const n = images.length
   const first = images[0]
 
+  // With more than one picture the track carries a copy of the LAST slide
+  // before the first and of the FIRST after the last. They are only there to
+  // be looked at: they fill the strip either side of the centred slide, so the
+  // ends of the carousel show the wrapped-around neighbour instead of a gap.
+  const peeks = n > 1
+  const strip = peeks ? [images[n - 1], ...images, images[0]] : images
+  /** Track child for a real slide index. */
+  const childOf = useCallback((i: number) => (peeks ? i + 1 : i), [peeks])
+
   // Measure the first slide. An `onLoad` prop alone is not enough: an image
   // already in the browser's cache finishes loading before React attaches the
   // handler, so the event never arrives and the frame keeps its 4:3 default —
@@ -61,8 +70,23 @@ export default function Carousel({
   const currentIndex = useCallback(() => {
     const el = track.current
     if (!el || !el.clientWidth) return 0
-    return Math.max(0, Math.min(n - 1, Math.round(Math.abs(el.scrollLeft) / el.clientWidth)))
-  }, [n])
+    // Whichever slide sits closest to the middle. Dividing scroll distance by
+    // the track width stopped working once the track grew side padding for the
+    // peeking neighbours and a gap between slides.
+    const centre = Math.abs(el.scrollLeft) + el.clientWidth / 2
+    let best = 0
+    let bestGap = Infinity
+    for (let i = 0; i < el.children.length; i++) {
+      const c = el.children[i] as HTMLElement
+      const gap = Math.abs(c.offsetLeft + c.offsetWidth / 2 - centre)
+      if (gap < bestGap) {
+        bestGap = gap
+        best = i
+      }
+    }
+    // Back to a real slide index — the copies at either end don't count.
+    return Math.max(0, Math.min(n - 1, peeks ? best - 1 : best))
+  }, [n, peeks])
 
   const onScroll = useCallback(() => setIdx(currentIndex()), [currentIndex])
 
@@ -72,7 +96,7 @@ export default function Carousel({
   const goTo = (i: number) => {
     const el = track.current
     const wrapped = ((i % n) + n) % n
-    const slide = el?.children[wrapped] as HTMLElement | undefined
+    const slide = el?.children[childOf(wrapped)] as HTMLElement | undefined
     if (!el || !slide) return
     const from = el.scrollLeft
     // Sliding the whole track back for a wrap is a long, confusing sweep; jump.
@@ -85,6 +109,22 @@ export default function Carousel({
       if (el.scrollLeft === from) slide.scrollIntoView({ inline: 'center', block: 'nearest' })
     }, 250)
   }
+
+  // Start on the first real slide: scroll position 0 would park the carousel
+  // on the copy of the last one.
+  useEffect(() => {
+    const el = track.current
+    if (!el || !peeks) return
+    const centreFirst = () => {
+      const slide = el.children[1] as HTMLElement | undefined
+      if (!slide || !el.clientWidth) return
+      el.scrollLeft = slide.offsetLeft - (el.clientWidth - slide.offsetWidth) / 2
+    }
+    centreFirst()
+    // The slides are sized from the picture, so do it again once it has loaded.
+    const t = setTimeout(centreFirst, 120)
+    return () => clearTimeout(t)
+  }, [peeks, ratio, n])
 
   useEffect(() => {
     const el = track.current
@@ -108,19 +148,27 @@ export default function Carousel({
       }
     >
       <div className={s.track} ref={track} onScroll={onScroll}>
-        {images.map((src, i) => (
-          <div className={s.slide} key={i} style={{ backgroundImage: `url(${src})` }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={src}
-              alt=""
-              loading={i === 0 ? undefined : 'lazy'}
-              draggable={false}
-              onClick={onOpen ? () => onOpen(src) : undefined}
-              style={onOpen ? undefined : { cursor: 'default' }}
-            />
-          </div>
-        ))}
+        {strip.map((src, i) => {
+          const copy = peeks && (i === 0 || i === strip.length - 1)
+          return (
+            <div
+              className={`${s.slide}${copy ? ` ${s.copy}` : ''}`}
+              key={i}
+              style={{ backgroundImage: `url(${src})` }}
+              aria-hidden={copy || undefined}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={src}
+                alt=""
+                loading={i <= 1 ? undefined : 'lazy'}
+                draggable={false}
+                onClick={onOpen && !copy ? () => onOpen(src) : undefined}
+                style={onOpen && !copy ? undefined : { cursor: 'default' }}
+              />
+            </div>
+          )
+        })}
       </div>
 
       {n > 1 && (
