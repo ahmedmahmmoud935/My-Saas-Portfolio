@@ -412,7 +412,7 @@ html[data-theme='light'] .hero-split .hero-bg {
     width: 100%;
     border-radius: 0;
     background: linear-gradient(90deg, var(--bg) 8%, transparent 75%),
-      rgba(0, 0, 0, var(--hero-overlay, 0.45));
+      rgba(var(--hero-veil-rgb, 0, 0, 0), var(--hero-overlay, 0.45));
   }
   .hero-split .hero-inner {
     max-width: none;
@@ -443,7 +443,7 @@ html[data-theme='light'] .hero-split .hero-bg {
   justify-content: center;
 }
 .hero-centered .hero-overlay {
-  background: rgba(0, 0, 0, var(--hero-overlay, 0.4));
+  background: rgba(var(--hero-veil-rgb, 0, 0, 0), var(--hero-overlay, 0.4));
 }
 
 /* massive — oversized name, eyebrow above it */
@@ -468,8 +468,8 @@ html[data-theme='light'] .hero-split .hero-bg {
   padding-bottom: clamp(40px, 8vh, 96px);
 }
 .hero-cover-full .hero-overlay {
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.85) 5%, transparent 55%),
-    rgba(0, 0, 0, var(--hero-overlay, 0.1));
+  background: linear-gradient(0deg, rgba(var(--hero-veil-rgb, 0, 0, 0), 0.85) 5%, transparent 55%),
+    rgba(var(--hero-veil-rgb, 0, 0, 0), var(--hero-overlay, 0.1));
 }
 
 /* minimal — shorter section, restrained type, no heavy overlay */
@@ -483,7 +483,7 @@ html[data-theme='light'] .hero-split .hero-bg {
 }
 .hero-minimal .hero-overlay {
   background: linear-gradient(90deg, var(--bg) 6%, transparent 55%),
-    rgba(0, 0, 0, var(--hero-overlay, 0.25));
+    rgba(var(--hero-veil-rgb, 0, 0, 0), var(--hero-overlay, 0.25));
 }
 
 /* ── Hero cover gradients (shown when there's no image) ─────────────────────
@@ -2474,7 +2474,12 @@ html[data-theme='light'] .pf-sec-dim {
     margin: 0 !important;
     width: 100% !important;
     border-radius: 0 !important;
-    background: linear-gradient(0deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.6)) !important;
+    background: linear-gradient(
+      0deg,
+      rgba(var(--hero-veil-rgb, 0, 0, 0), 0.7),
+      rgba(var(--hero-veil-rgb, 0, 0, 0), 0.4) 50%,
+      rgba(var(--hero-veil-rgb, 0, 0, 0), 0.6)
+    ) !important;
   }
   .pf-root .hero .hero-inner {
     max-width: none !important;
