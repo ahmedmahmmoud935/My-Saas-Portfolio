@@ -502,6 +502,20 @@ button {
 }
 
 /* ─── Projects tab ──────────────────────────────────────────────────────── */
+/* Sits with the filter tabs but acts, not filters — so it reads as a button. */
+.ftab.sort-newest {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-inline-end: auto;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.ftab.sort-newest:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 .filter-tabs {
   display: flex;
   gap: 8px;

@@ -223,6 +223,44 @@ export async function reorderProjects(ids: number[]) {
   return { ok: true }
 }
 
+/**
+ * Renumber this tenant's projects so the newest upload leads.
+ *
+ * New projects have taken a sort order below the current minimum since
+ * 2026-08-23, but everything created before that was numbered by total count —
+ * newest LAST — and the whole imported set carries the old site's order. This
+ * is the one-click correction for that history.
+ *
+ * The imported projects all share a single timestamp (they were written in one
+ * migration run), so their existing order breaks the tie and their arrangement
+ * survives untouched. Updates run one at a time: concurrent writes on the same
+ * tenant's rows contend for locks and hang.
+ */
+export async function sortProjectsNewestFirst() {
+  const ctx = await getDashboardContext()
+  if (!ctx) throw new Error('unauthorized')
+
+  const res = await ctx.payload.find({
+    collection: 'projects',
+    where: { tenant: { equals: ctx.tenantId } },
+    sort: 'sortOrder',
+    limit: 500,
+    depth: 0,
+  })
+  const docs = res.docs as { id: number; sortOrder?: number | null; createdAt?: string }[]
+
+  const ordered = [...docs].sort((a, b) => {
+    const byDate = Date.parse(b.createdAt ?? '') - Date.parse(a.createdAt ?? '')
+    return byDate || (a.sortOrder ?? 0) - (b.sortOrder ?? 0)
+  })
+
+  for (let i = 0; i < ordered.length; i++) {
+    if (ordered[i].sortOrder === i) continue
+    await ctx.payload.update({ collection: 'projects', id: ordered[i].id, data: { sortOrder: i } })
+  }
+  return { ok: true, count: ordered.length }
+}
+
 /** Save the "items per row" grid config (per-breakpoint columns) for the tenant. */
 export async function saveGridCols(cols: {
   imageMobile?: number

@@ -11,6 +11,7 @@ import CategoriesModal from './CategoriesModal'
 import {
   deleteProject,
   reorderProjects,
+  sortProjectsNewestFirst,
   saveGridCols,
   setProjectPublished,
   importFromBehance,
@@ -173,6 +174,23 @@ export default function ProjectsManager({
     })
   }
 
+  const [sorting, setSorting] = useState(false)
+
+  // One click to apply "newest first" to the whole list. Projects created
+  // before 2026-08-23 were numbered newest-LAST, and dragging ~40 cards by hand
+  // is not a reasonable way to undo that.
+  async function applyNewestFirst() {
+    if (sorting) return
+    if (!confirm(tr('هيتم ترتيب كل المشاريع: الأحدث أولاً. تقدر تسحب أي كارت بعدها لتغيير الترتيب.', 'All projects will be reordered newest first. You can still drag any card afterwards.'))) return
+    setSorting(true)
+    try {
+      await sortProjectsNewestFirst()
+      router.refresh()
+    } finally {
+      setSorting(false)
+    }
+  }
+
   async function commitOrder() {
     dragId.current = null
     setDragging(null)
@@ -237,6 +255,10 @@ export default function ProjectsManager({
       )}
 
       <div className="filter-tabs">
+        <button className="ftab sort-newest" onClick={applyNewestFirst} disabled={sorting}>
+          <NavIcon id="down" size={14} />
+          {sorting ? tr('بيرتّب…', 'Sorting…') : tr('الأحدث أولاً', 'Newest first')}
+        </button>
         {TABS.map((tb) => (
           <button
             key={tb.id}
