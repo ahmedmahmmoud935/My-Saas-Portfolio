@@ -6,6 +6,7 @@ import MediaUploader from './MediaUploader'
 import { saveHighlights, type Highlight } from '@/lib/highlights-actions'
 import { isVideoSrc } from '@/lib/media-kind'
 import { useDashLang } from './DashLang'
+import NavIcon from './icons'
 
 export default function HighlightsEditor({ initial }: { initial: Highlight[] }) {
   const [hls, setHls] = useState<Highlight[]>(initial)
@@ -61,19 +62,30 @@ export default function HighlightsEditor({ initial }: { initial: Highlight[] }) 
             </div>
             <label className="lbl">{t('العناصر', 'Items')}</label>
             <div className="gallery-grid">
-              {h.items.map((it, k) => (
-                <div className="gallery-thumb" key={k}>
-                  {it.mediaUrl &&
-                    (isVideoSrc(it.mediaUrl, null) || it.type === 'video' ? (
-                      // Only metadata — never pull a whole clip for a thumbnail.
-                      <video src={it.mediaUrl} muted playsInline preload="metadata" />
-                    ) : (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={it.mediaUrl} alt="" />
-                    ))}
-                  <button className="icon-btn del thumb-del" onClick={() => patch(i, { items: h.items.filter((_, z) => z !== k) })}>✕</button>
-                </div>
-              ))}
+              {h.items.map((it, k) => {
+                const isVideo = it.mediaUrl ? isVideoSrc(it.mediaUrl, null) || it.type === 'video' : false
+                return (
+                  <div className="gallery-thumb" key={k}>
+                    {it.mediaUrl &&
+                      (isVideo ? (
+                        // `#t=0.1` asks for a frame a moment in, so the tile
+                        // shows the clip instead of the black rectangle a
+                        // poster-less video paints. Metadata only — never pull
+                        // a whole clip down for a thumbnail.
+                        <video src={`${it.mediaUrl}#t=0.1`} muted playsInline preload="metadata" />
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={it.mediaUrl} alt="" />
+                      ))}
+                    {isVideo && (
+                      <span className="thumb-kind" title={t('فيديو', 'Video')}>
+                        <NavIcon id="video" size={13} />
+                      </span>
+                    )}
+                    <button className="icon-btn del thumb-del" onClick={() => patch(i, { items: h.items.filter((_, z) => z !== k) })}>✕</button>
+                  </div>
+                )
+              })}
               <MediaUploader
                 plus
                 multiple

@@ -69,10 +69,19 @@ export default function MediaUploader({
   // and remember it, so it isn't re-picked on every upload.
   const takesVideo = accept.includes('video')
   const [quality, setQuality] = useState<VideoQuality>(VIDEO_QUALITY_DEFAULT)
+  const savedQuality = (): VideoQuality | null => {
+    try {
+      const saved = localStorage.getItem('vpx-video-quality')
+      return isVideoQuality(saved) ? saved : null
+    } catch {
+      return null
+    }
+  }
   useEffect(() => {
     if (!takesVideo) return
-    const saved = localStorage.getItem('vpx-video-quality')
-    if (isVideoQuality(saved)) setQuality(saved)
+    const saved = savedQuality()
+    if (saved) setQuality(saved)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [takesVideo])
 
   async function pickFiles(files: File[]) {
@@ -85,7 +94,9 @@ export default function MediaUploader({
       for (const [i, file] of files.entries()) {
         results.push(
           await uploadFile(file, {
-            quality,
+            // Read the saved choice rather than this instance's state: an
+            // uploader that doesn't show the picker still honours it.
+            quality: savedQuality() ?? quality,
             index: i + 1,
             total: files.length,
             onPhase: setPhase,
@@ -156,7 +167,10 @@ export default function MediaUploader({
     />
   )
 
-  const picker = takesVideo && (
+  // Not on a "+" tile: that one is a cell in a gallery grid, and a three-button
+  // settings column beside the thumbnails wrecked the row. The choice is saved
+  // globally, so a "+" upload still uses whatever was picked elsewhere.
+  const picker = takesVideo && !plus && (
     <div className="vq-row">
       <span className="vq-label">{t('جودة الفيديو', 'Video quality')}</span>
       <div className="vq-opts">

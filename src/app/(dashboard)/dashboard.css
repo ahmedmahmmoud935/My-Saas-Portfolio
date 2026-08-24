@@ -2484,6 +2484,22 @@ input[type='range']::-moz-range-thumb {
 
 /* Carousel module: the slider above is the preview, so these are just the
    ordering strip — but big enough to tell the shots apart. */
+/* Marks a gallery tile that holds a clip, so a dark first frame still reads as
+   a video rather than a failed image. */
+.thumb-kind {
+  position: absolute;
+  inset-block-start: 6px;
+  inset-inline-start: 6px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  pointer-events: none;
+}
+
 .gallery-grid.as-strip {
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
 }
