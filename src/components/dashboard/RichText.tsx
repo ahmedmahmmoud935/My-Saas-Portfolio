@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useDashLang } from './DashLang'
 import HtmlEmbed from '@/components/shared/HtmlEmbed'
 import { isEmbeddablePage, looksLikeDocument, looksLikeHtml } from '@/lib/html-embed'
+import { PASTE_GUIDE_AR, PASTE_GUIDE_EN } from '@/lib/paste-guide'
 
 /**
  * A small WYSIWYG field: formatting toolbar over a contentEditable, with a
@@ -32,6 +33,8 @@ export default function RichText({
   const [html, setHtml] = useState(false)
   // A pasted page is shown as a design, with the source one click away.
   const isPage = isEmbeddablePage(value)
+  const [guide, setGuide] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   // Only write into the box when the value came from outside; doing it on every
   // keystroke would reset the caret to the start.
@@ -170,7 +173,40 @@ export default function RichText({
         >
           {'<> HTML'}
         </button>
+        <button
+          type="button"
+          className={`rt-btn wide${guide ? ' on' : ''}`}
+          title={t('تعليمات تديها للـ AI قبل ما يكتب الصفحة', 'The brief to give an AI before it writes the page')}
+          onClick={() => setGuide((v) => !v)}
+        >
+          {t('تعليمات الـ AI', 'AI brief')}
+        </button>
       </div>
+
+      {guide && (
+        <div className="rt-guide">
+          <div className="rt-guide-head">
+            <span>
+              {t(
+                'الصقها للـ AI قبل ما يكتب الصفحة — كده ألوان التصميم هتتغيّر مع الوضع الليلي/النهاري وألوان الموقع.',
+                'Paste this to an AI before it writes the page — the design then follows dark/light mode and the site palette.',
+              )}
+            </span>
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={async () => {
+                await navigator.clipboard.writeText(t(PASTE_GUIDE_AR, PASTE_GUIDE_EN))
+                setCopied(true)
+                setTimeout(() => setCopied(false), 1800)
+              }}
+            >
+              {copied ? t('اتنسخت ✓', 'Copied ✓') : t('نسخ', 'Copy')}
+            </button>
+          </div>
+          <pre>{t(PASTE_GUIDE_AR, PASTE_GUIDE_EN)}</pre>
+        </div>
+      )}
 
       {isPage && (
         <p className="rt-note">

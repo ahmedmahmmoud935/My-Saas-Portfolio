@@ -2504,6 +2504,38 @@ input[type='range']::-moz-range-thumb {
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
 }
 
+/* The brief for whoever writes the page. Long, so it scrolls in place. */
+.rt-guide {
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-2);
+}
+.rt-guide-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  color: var(--sub);
+  font-size: 11.5px;
+  line-height: 1.6;
+}
+.rt-guide-head .btn-sm {
+  padding: 3px 12px;
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+.rt-guide pre {
+  margin: 0;
+  padding: 0 12px 12px;
+  max-height: 300px;
+  overflow: auto;
+  white-space: pre-wrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11.5px;
+  line-height: 1.7;
+  color: var(--text);
+}
+
 /* A pasted HTML page, rendered the way the site renders it. Capped so a long
    case study doesn't push the rest of the editor off the screen. */
 .rt-preview {

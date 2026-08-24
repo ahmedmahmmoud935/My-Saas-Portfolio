@@ -2637,3 +2637,11 @@ html:has(.pf-root) {
   color-scheme: light;
   border-radius: 12px;
 }
+/* Unless the page was written against the site's own tokens — then it changes
+   with the theme like everything else, and a canvas underneath would only show
+   as white edges around it. */
+.mod-embed.themed {
+  background: transparent;
+  color: inherit;
+  color-scheme: normal;
+}

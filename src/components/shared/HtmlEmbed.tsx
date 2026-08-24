@@ -24,6 +24,9 @@ export default function HtmlEmbed({
   // The same token renames the page's own classes on both sides, so the site's
   // `.hero` / `.section` / `.eyebrow` can't reach in and restyle it.
   const markup = prefixHtmlClasses(html, cls)
+  // A page written against the site's tokens follows the site instead of
+  // standing on its own paper — so it gets no canvas to stand on.
+  const themed = /var\(\s*--(bg|bg-2|bg-3|text|sub|border|accent)\b/.test(css)
 
   // Two elements on purpose. The outer one is the CANVAS — what a browser
   // paints behind a standalone document — and the pasted CSS can never target
@@ -33,7 +36,7 @@ export default function HtmlEmbed({
   // rendered on the site's black: its dark text vanished in dark mode and
   // reappeared in light mode.
   return (
-    <div className={`mod-embed ${className}`.trim()}>
+    <div className={`mod-embed${themed ? ' themed' : ''} ${className}`.trim()}>
       {css && (
         // eslint-disable-next-line react/no-danger
         <style dangerouslySetInnerHTML={{ __html: scopeCss(css, `.${cls}`, cls) }} />
