@@ -610,6 +610,14 @@ export interface SiteSetting {
     tools?: ('classic' | 'compact') | null;
     exp?: ('classic' | 'timeline') | null;
     font?: ('default' | 'modern' | 'editorial' | 'elegant' | 'bold') | null;
+    /**
+     * tajawal | cairo | almarai | markazi
+     */
+    fontAr?: string | null;
+    /**
+     * montserrat | inter | playfair | cormorant | bebas
+     */
+    fontLatin?: string | null;
     direction?: ('auto' | 'rtl' | 'ltr') | null;
     cursor?: ('default' | 'dot-ring') | null;
     anim?: ('fade-up' | 'fade' | 'none') | null;
@@ -1344,6 +1352,8 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         tools?: T;
         exp?: T;
         font?: T;
+        fontAr?: T;
+        fontLatin?: T;
         direction?: T;
         cursor?: T;
         anim?: T;

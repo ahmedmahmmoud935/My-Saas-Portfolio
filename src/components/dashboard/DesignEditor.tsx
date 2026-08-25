@@ -9,7 +9,8 @@ import { saveDesign } from '@/lib/design-actions'
 import { useDashLang } from './DashLang'
 import {
   LAYOUT_OPTIONS,
-  FONT_OPTIONS,
+  FONT_AR_OPTIONS,
+  FONT_LATIN_OPTIONS,
   COMPONENT_OPTIONS,
   ANIM_OPTIONS,
   CURSOR_OPTIONS,
@@ -458,6 +459,7 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
   const [busy, setBusy] = useState(false)
   const { t: tr } = useDashLang()
   const [toast, setToast] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const set = (patch: Partial<DesignForm>) => setF((p) => ({ ...p, ...patch }))
   const setColors = (p: Partial<DesignForm['colors']>) => set({ colors: { ...f.colors, ...p } })
@@ -473,10 +475,18 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
 
   async function save() {
     setBusy(true)
-    await saveDesign(f)
-    setBusy(false)
-    setToast(true)
-    setTimeout(() => setToast(false), 1800)
+    setError(null)
+    try {
+      await saveDesign(f)
+      setToast(true)
+      setTimeout(() => setToast(false), 1800)
+    } catch (e) {
+      // Without this the button sat on "…" for ever and the failure was
+      // invisible — which is exactly how a rejected field looked.
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setBusy(false)
+    }
   }
 
   const usingGradient = f.heroCover.gradient !== 'none'
@@ -552,7 +562,8 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
                   </div>
                 </Group>
                 <Group title={tr('الخطوط', 'Fonts')}>
-                  <Opt label={tr('الخط (عربي · لاتيني)', 'Font (Arabic · Latin)')} value={f.style.font} options={FONT_OPTIONS} onChange={(v) => setStyle({ font: v })} />
+                  <Opt label={tr('الخط العربي', 'Arabic font')} value={f.style.fontAr} options={FONT_AR_OPTIONS} onChange={(v) => setStyle({ fontAr: v })} />
+                  <Opt label={tr('الخط اللاتيني (العناوين)', 'Latin font (headings)')} value={f.style.fontLatin} options={FONT_LATIN_OPTIONS} onChange={(v) => setStyle({ fontLatin: v })} />
                 </Group>
                 <Group title={tr('الحركة', 'Motion')}>
                   <div className="de-grid">
@@ -645,6 +656,12 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
       )}
 
       {toast && <div className="toast">{tr('تم الحفظ ✓', 'Saved ✓')}</div>}
+      {error && (
+        <div className="toast toast-error" onClick={() => setError(null)}>
+          {tr('الحفظ فشل: ', 'Save failed: ')}
+          {error}
+        </div>
+      )}
     </div>
   )
 }

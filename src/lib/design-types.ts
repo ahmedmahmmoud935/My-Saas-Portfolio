@@ -129,6 +129,8 @@ export type DesignForm = {
     tools: string
     exp: string
     font: string
+    fontAr: string
+    fontLatin: string
     direction: string
     cursor: string
     anim: string
@@ -160,17 +162,41 @@ export const LAYOUT_OPTIONS = {
   exp: ['classic', 'timeline'],
 } as const
 
-// Labels name the faces that actually render. `default` used to claim Cairo
-// while the variable held Tajawal, which is why the dashboard and the site
-// disagreed; Cairo is now its own option.
-export const FONT_OPTIONS = [
-  { value: 'default', label: 'Tajawal · Montserrat' },
-  { value: 'cairo', label: 'Cairo · Montserrat' },
-  { value: 'modern', label: 'Tajawal · Inter' },
-  { value: 'editorial', label: 'Almarai · Playfair' },
-  { value: 'elegant', label: 'Markazi · Cormorant' },
-  { value: 'bold', label: 'Cairo · Bebas Neue' },
+/**
+ * The two faces are picked separately.
+ *
+ * They used to come as six fixed pairs, which meant six combinations out of the
+ * nine faces already being loaded. Choosing each side gives twenty from exactly
+ * the same downloads — Arabic and Latin type are chosen for different reasons
+ * anyway, and pairing them was someone else's decision baked into a list.
+ */
+export const FONT_AR_OPTIONS = [
+  { value: 'tajawal', label: 'Tajawal · تجوّل' },
+  { value: 'cairo', label: 'Cairo · القاهرة' },
+  { value: 'almarai', label: 'Almarai · المراعي' },
+  { value: 'markazi', label: 'Markazi · مركزي' },
 ]
+
+export const FONT_LATIN_OPTIONS = [
+  { value: 'montserrat', label: 'Montserrat' },
+  { value: 'inter', label: 'Inter' },
+  { value: 'playfair', label: 'Playfair Display' },
+  { value: 'cormorant', label: 'Cormorant' },
+  { value: 'bebas', label: 'Bebas Neue' },
+]
+
+/**
+ * The old fixed pairs, kept only to read tenants saved before the split.
+ * Nothing writes `style.font` any more.
+ */
+export const LEGACY_FONT_PAIRS: Record<string, { ar: string; latin: string }> = {
+  default: { ar: 'tajawal', latin: 'montserrat' },
+  cairo: { ar: 'cairo', latin: 'montserrat' },
+  modern: { ar: 'tajawal', latin: 'inter' },
+  editorial: { ar: 'almarai', latin: 'playfair' },
+  elegant: { ar: 'markazi', latin: 'cormorant' },
+  bold: { ar: 'cairo', latin: 'bebas' },
+}
 
 export const COMPONENT_OPTIONS = {
   card: ['solid', 'glass', 'outline'],
@@ -267,6 +293,8 @@ export const emptyDesign = (): DesignForm => ({
     tools: 'classic',
     exp: 'classic',
     font: 'default',
+    fontAr: 'tajawal',
+    fontLatin: 'montserrat',
     direction: 'auto',
     cursor: 'default',
     anim: 'fade-up',

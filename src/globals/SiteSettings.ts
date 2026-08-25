@@ -293,6 +293,8 @@ export const SiteSettings: CollectionConfig = {
                       options: ['classic', 'timeline'].map((v) => ({ label: v, value: v })),
                     },
                     {
+                      // Legacy: the six fixed pairs. Read for tenants saved
+                      // before the split; nothing writes it any more.
                       name: 'font',
                       type: 'select',
                       defaultValue: 'default',
@@ -300,6 +302,21 @@ export const SiteSettings: CollectionConfig = {
                         label: v,
                         value: v,
                       })),
+                    },
+                    {
+                      // Deliberately text, not select: the option list lived in
+                      // two places and drifted, and a value the enum didn't know
+                      // rejected the WHOLE Design save with a 400.
+                      name: 'fontAr',
+                      type: 'text',
+                      defaultValue: 'tajawal',
+                      admin: { description: 'tajawal | cairo | almarai | markazi' },
+                    },
+                    {
+                      name: 'fontLatin',
+                      type: 'text',
+                      defaultValue: 'montserrat',
+                      admin: { description: 'montserrat | inter | playfair | cormorant | bebas' },
                     },
                   ],
                 },

@@ -1595,7 +1595,11 @@ body {
 .tool {
   position: relative;
   display: flex;
-  align-items: center;
+  /* The index and the name are different sizes. Centring aligns their line
+     boxes, which leaves their BASELINES apart — the number then sits off the
+     name's line, by about 1.7px here. Baseline alignment is what puts two
+     different sizes on one line. */
+  align-items: baseline;
   gap: 12px;
   padding: 16px 18px;
   border-radius: 14px;
@@ -2132,22 +2136,34 @@ body {
 .pf-root {
   --font-display: 'Montserrat', var(--font-cairo), system-ui, sans-serif;
 }
-.pf-root[data-font='cairo'] {
+
+/* Arabic / body face. Tajawal is what --font-cairo already holds, so it needs
+   no rule of its own. */
+.pf-root[data-font-ar='cairo'] {
   --font-cairo: var(--f-cairo);
 }
-.pf-root[data-font='modern'] {
+.pf-root[data-font-ar='almarai'] {
+  --font-cairo: var(--f-almarai);
+}
+.pf-root[data-font-ar='markazi'] {
+  --font-cairo: var(--f-markazi);
+}
+
+/* Latin / heading face. Naming the family literally keeps Next's metric
+   fallback (a system font with Arabic coverage) out of the stack, so Arabic
+   headings reach the chosen Arabic face instead of always landing on Tajawal.
+   Both declarations sit on .pf-root, so the var() below resolves against
+   whichever --font-cairo this element ends up with. */
+.pf-root[data-font-latin='inter'] {
   --font-display: 'Inter', var(--font-cairo), system-ui, sans-serif;
 }
-.pf-root[data-font='editorial'] {
-  --font-cairo: var(--f-almarai);
+.pf-root[data-font-latin='playfair'] {
   --font-display: 'Playfair Display', var(--font-cairo), system-ui, sans-serif;
 }
-.pf-root[data-font='elegant'] {
-  --font-cairo: var(--f-markazi);
+.pf-root[data-font-latin='cormorant'] {
   --font-display: 'Cormorant', var(--font-cairo), system-ui, sans-serif;
 }
-.pf-root[data-font='bold'] {
-  --font-cairo: var(--f-cairo);
+.pf-root[data-font-latin='bebas'] {
   --font-display: 'Bebas Neue', var(--font-cairo), system-ui, sans-serif;
 }
 

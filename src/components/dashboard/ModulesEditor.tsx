@@ -381,46 +381,36 @@ function VideoBody({
         />
       )}
 
-      {/* A cover for an uploaded file. Embeds bring their own thumbnail, so
-          offering one there would just be a control that does nothing. */}
-      {resolved?.kind === 'file' && (
-        <div className="video-cover">
-          <div className="video-cover-head">
-            <label className="lbl" style={{ margin: 0 }}>
-              {t('كفر الفيديو', 'Video cover')}
-            </label>
-            {posterUrl && (
-              <button type="button" className="btn btn-ghost btn-sm" onClick={() => onPoster(null, null)}>
-                {t('إزالة', 'Remove')}
-              </button>
-            )}
-          </div>
-          <MediaUploader
-            big
-            previewUrl={posterUrl}
-            label={t('اختر صورة الكفر', 'Choose a cover image')}
-            onUploaded={(u) => onPoster(u.id, u.url ?? u.thumbUrl)}
-          />
-          <p className="video-cover-note">
-            {t(
-              'الصورة اللي هتظهر قبل ما الفيديو يشتغل. من غيرها المتصفح بيعرض أول لقطة.',
-              'Shown before the video plays. Without one the browser shows the first frame.',
-            )}
-          </p>
-        </div>
-      )}
-
-      {/* Live preview so the user sees it working before saving. */}
+      {/* Live preview so the user sees it working before saving. The cover is
+          set ON this preview rather than in a block of its own: it IS the
+          poster, so showing it twice made the module look like two elements. */}
       {resolved && (
         <div className="video-preview">
           {resolved.kind === 'file' ? (
-            <video
-              src={resolved.url}
-              poster={posterUrl || undefined}
-              controls
-              playsInline
-              preload={posterUrl ? 'none' : 'metadata'}
-            />
+            <>
+              <video
+                src={resolved.url}
+                poster={posterUrl || undefined}
+                controls
+                playsInline
+                preload={posterUrl ? 'none' : 'metadata'}
+              />
+              {/* Sits over a corner of the player, clear of the controls. An
+                  embed brings its own thumbnail, so it gets no cover control. */}
+              <div className="video-cover-bar">
+                <MediaUploader
+                  compact
+                  previewUrl={null}
+                  label={posterUrl ? t('تغيير الكفر', 'Change cover') : t('إضافة كفر', 'Add cover')}
+                  onUploaded={(u) => onPoster(u.id, u.url ?? u.thumbUrl)}
+                />
+                {posterUrl && (
+                  <button type="button" className="btn btn-ghost btn-sm" onClick={() => onPoster(null, null)}>
+                    {t('إزالة', 'Remove')}
+                  </button>
+                )}
+              </div>
+            </>
           ) : (
             <iframe
               src={resolved.url}

@@ -3,6 +3,9 @@
 import { getDashboardContext, getTenantSettings } from './dashboard'
 import type { BgForm, DesignForm } from './design-types'
 
+/** The values `style.font` is allowed to hold in the database. */
+const LEGACY_FONT_IDS = new Set(['default', 'modern', 'editorial', 'elegant', 'bold'])
+
 const toBg = (b: BgForm) => ({
   type: b.type,
   color1: b.color1,
@@ -44,7 +47,14 @@ export async function saveDesign(form: DesignForm) {
           fixed: s.fixed,
           dim: s.dim,
         })),
-      style: form.style,
+      // `style.font` is a select whose options once drifted from the editor's
+      // list; an unknown value made Payload reject the entire save. Only ever
+      // send a value the schema knows, and let the two new fields carry the
+      // real choice.
+      style: {
+        ...form.style,
+        font: LEGACY_FONT_IDS.has(form.style.font) ? form.style.font : 'default',
+      },
       themeConfig: { components: form.components },
       heroCover: {
         size: form.heroCover.size,

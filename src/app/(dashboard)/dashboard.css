@@ -972,30 +972,29 @@ textarea.field {
   background: var(--accent-soft);
   color: var(--accent);
 }
-/* Cover picker for an uploaded video file. */
-.video-cover {
-  margin-top: 12px;
-  padding: 10px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--bg-2);
-}
-.video-cover-head {
+/* The cover control rides on the player: top corner, clear of the transport
+   controls at the bottom. */
+.video-cover-bar {
+  position: absolute;
+  top: 10px;
+  inset-inline-start: 10px;
+  z-index: 2;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 8px;
+  gap: 6px;
 }
-.video-cover-head .btn-sm {
-  padding: 3px 10px;
+.video-cover-bar .btn-sm,
+.video-cover-bar label,
+.video-cover-bar button {
+  padding: 5px 12px;
   font-size: 11.5px;
-}
-.video-cover-note {
-  margin: 8px 0 0;
-  color: var(--sub);
-  font-size: 11.5px;
-  line-height: 1.6;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #fff;
+  white-space: nowrap;
 }
 
 .video-preview {
@@ -2505,6 +2504,15 @@ input[type='range']::-moz-range-thumb {
 }
 
 /* The brief for whoever writes the page. Long, so it scrolls in place. */
+/* A failed save has to say so — silence read as a hung button. */
+.toast-error {
+  background: #7f1d1d;
+  color: #fff;
+  max-width: min(460px, 80vw);
+  line-height: 1.6;
+  cursor: pointer;
+}
+
 .rt-guide {
   border-bottom: 1px solid var(--border);
   background: var(--bg-2);

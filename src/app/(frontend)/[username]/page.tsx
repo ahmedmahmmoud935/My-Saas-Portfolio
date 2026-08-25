@@ -17,6 +17,7 @@ import MobileBar from '@/components/portfolio/MobileBar'
 import InstallApp from '@/components/portfolio/InstallApp'
 import SectionBg from '@/components/portfolio/SectionBg'
 import { pageBackground, dimOpacity } from '@/lib/background'
+import { LEGACY_FONT_PAIRS } from '@/lib/design-types'
 import {
   Expertise,
   Experience,
@@ -349,7 +350,10 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
       style={cssVars}
       dir={dirOverride}
       lang={locale}
-      data-font={st.font || 'default'}
+      // Two attributes, one per script. Tenants saved before the split have
+      // only the old pair id, so it maps to the same two halves.
+      data-font-ar={st.fontAr || LEGACY_FONT_PAIRS[st.font || 'default']?.ar || 'tajawal'}
+      data-font-latin={st.fontLatin || LEGACY_FONT_PAIRS[st.font || 'default']?.latin || 'montserrat'}
       data-anim={st.anim || 'fade-up'}
       data-cursor={st.cursor || 'default'}
       data-card={comp.card || 'solid'}
