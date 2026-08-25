@@ -33,6 +33,10 @@ export default function ProjectPageBuilder({
   const [busy, setBusy] = useState(false)
   const { t } = useDashLang()
   const [toast, setToast] = useState(false)
+  // One drawer at a time. The rail used to hold every panel at once, so it grew
+  // past the viewport and scrolled against the page behind it.
+  const [openDrawer, setOpenDrawer] = useState<string | null>('add')
+  const toggle = (id: string) => setOpenDrawer((cur) => (cur === id ? null : id))
 
   const setModules = (modules: EditModule[]) => setP((x) => ({ ...x, modules }))
 
@@ -132,78 +136,118 @@ export default function ProjectPageBuilder({
 
         {/* Sidebar: add elements + info */}
         <aside className="builder-side">
-          <div className="builder-side-title">{t('إضافة عنصر', 'Add element')}</div>
-          <div className="builder-add">
-            {MODULE_ADD_BUTTONS.map((b) => (
-              <button key={b.type} className="builder-add-btn" onClick={() => addElement(b.type)}>
-                <NavIcon id={b.icon} size={17} />
-                {t(b.label, b.labelEn)}
-              </button>
-            ))}
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={(e) => {
-                const fs = Array.from(e.target.files ?? [])
-                if (fs.length) onFilesPicked(fs)
-                e.target.value = ''
-              }}
-            />
-          </div>
+          <Drawer id="add" open={openDrawer} onToggle={toggle} icon="grid" title={t('إضافة عنصر', 'Add element')}>
+            <div className="builder-add">
+              {MODULE_ADD_BUTTONS.map((b) => (
+                <button key={b.type} className="builder-add-btn" onClick={() => addElement(b.type)}>
+                  <NavIcon id={b.icon} size={17} />
+                  {t(b.label, b.labelEn)}
+                </button>
+              ))}
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={(e) => {
+                  const fs = Array.from(e.target.files ?? [])
+                  if (fs.length) onFilesPicked(fs)
+                  e.target.value = ''
+                }}
+              />
+            </div>
+          </Drawer>
 
-          <div className="builder-side-title" style={{ marginTop: 18 }}>
-            {t('معلومات', 'Info')}
-          </div>
-          <label className="lbl">{t('صورة الغلاف', 'Cover image')}</label>
-          <MediaUploader
-            previewUrl={p.coverUrl}
-            onUploaded={(m) => setP({ ...p, coverId: m.id, coverUrl: m.thumbUrl })}
-          />
-          <p style={{ color: 'var(--sub)', fontSize: 12, marginTop: 6 }}>
-            {t('الغلاف هو اللي بيظهر في كارت المشروع بالقائمة.', 'The cover is what shows on the project card in the list.')}
-          </p>
-          <label className="lbl">{t('العنوان *', 'Title *')}</label>
-          <div className="grid-2">
-            <input
-              className="field"
-              placeholder={t('عربي', 'Arabic')}
-              value={p.title.ar}
-              onChange={(e) => setP({ ...p, title: { ...p.title, ar: e.target.value } })}
+          <Drawer id="cover" open={openDrawer} onToggle={toggle} icon="image" title={t('صورة الغلاف', 'Cover image')}>
+            <MediaUploader
+              previewUrl={p.coverUrl}
+              onUploaded={(m) => setP({ ...p, coverId: m.id, coverUrl: m.thumbUrl })}
             />
-            <input
+            <p style={{ color: 'var(--sub)', fontSize: 12, marginTop: 6 }}>
+              {t('الغلاف هو اللي بيظهر في كارت المشروع بالقائمة.', 'The cover is what shows on the project card in the list.')}
+            </p>
+          </Drawer>
+
+          <Drawer id="info" open={openDrawer} onToggle={toggle} icon="text" title={t('العنوان والتصنيف', 'Title & category')}>
+            <label className="lbl">{t('العنوان *', 'Title *')}</label>
+            <div className="grid-2">
+              <input
+                className="field"
+                placeholder={t('عربي', 'Arabic')}
+                value={p.title.ar}
+                onChange={(e) => setP({ ...p, title: { ...p.title, ar: e.target.value } })}
+              />
+              <input
+                className="field"
+                dir="ltr"
+                placeholder="English"
+                style={{ textAlign: 'start' }}
+                value={p.title.en}
+                onChange={(e) => setP({ ...p, title: { ...p.title, en: e.target.value } })}
+              />
+            </div>
+            <label className="lbl">{t('التصنيف', 'Category')}</label>
+            <select
               className="field"
-              dir="ltr"
-              placeholder="English"
-              style={{ textAlign: 'start' }}
-              value={p.title.en}
-              onChange={(e) => setP({ ...p, title: { ...p.title, en: e.target.value } })}
+              value={p.category ?? ''}
+              onChange={(e) => setP({ ...p, category: e.target.value })}
+            >
+              <option value="">{t('— بدون —', '— None —')}</option>
+              {categories.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </Drawer>
+
+          <Drawer id="desc" open={openDrawer} onToggle={toggle} icon="edit" title={t('الوصف', 'Description')}>
+            <BiText
+              label={t('الوصف', 'Description')}
+              value={p.description ?? emptyBi()}
+              onChange={(description) => setP({ ...p, description })}
+              minHeight={120}
             />
-          </div>
-          <label className="lbl">{t('التصنيف', 'Category')}</label>
-          <select
-            className="field"
-            value={p.category ?? ''}
-            onChange={(e) => setP({ ...p, category: e.target.value })}
-          >
-            <option value="">{t('— بدون —', '— None —')}</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-          <BiText
-            label={t('الوصف', 'Description')}
-            value={p.description ?? emptyBi()}
-            onChange={(description) => setP({ ...p, description })}
-            minHeight={120}
-          />
+          </Drawer>
         </aside>
       </div>
 
       {toast && <div className="toast">{t('تم الحفظ ✓', 'Saved ✓')}</div>}
     </div>
+  )
+}
+
+/**
+ * One section of the rail. Opening one closes whatever was open: with every
+ * panel expanded the rail ran past the bottom of the window and scrolled
+ * against the page behind it, which is the fight the drawers avoid.
+ */
+function Drawer({
+  id,
+  open,
+  onToggle,
+  title,
+  icon,
+  children,
+}: {
+  id: string
+  open: string | null
+  onToggle: (id: string) => void
+  title: string
+  icon: string
+  children: React.ReactNode
+}) {
+  const isOpen = open === id
+  return (
+    <section className={`drawer${isOpen ? ' open' : ''}`}>
+      <button type="button" className="drawer-head" onClick={() => onToggle(id)} aria-expanded={isOpen}>
+        <NavIcon id={icon} size={15} />
+        <span className="drawer-title">{title}</span>
+        <span className="drawer-chev" aria-hidden>
+          <NavIcon id="down" size={14} />
+        </span>
+      </button>
+      {isOpen && <div className="drawer-body">{children}</div>}
+    </section>
   )
 }

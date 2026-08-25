@@ -2167,6 +2167,38 @@ body {
   --font-display: 'Bebas Neue', var(--font-cairo), system-ui, sans-serif;
 }
 
+/* ═══ Optical centring ═══════════════════════════════════════════════════
+   A browser centres the LINE box, which reserves descender space whether or
+   not the text uses it. These faces carry deep descenders for Arabic
+   diacritics, so a label with no descenders — most buttons and pills — was
+   measurably sitting high: 4.55px above centre in a 44px hero button, 4.06px
+   in a year pill. `text-box-trim` cuts the box down to cap-height→baseline,
+   which is what the eye reads as the middle.
+
+   Buttons are flex containers, and bare text inside one lives in an anonymous
+   box no selector can reach — hence .btn-label around the words.
+
+   Ignored where unsupported: the text simply stays where it was. */
+@supports (text-box: trim-both cap alphabetic) {
+  .pf-root .btn-label,
+  .pf-root .period,
+  .pf-root .tool-name,
+  .pf-root .tool-idx,
+  .pf-root .filter-pill,
+  .pf-root .hero-eyebrow,
+  .pf-root .detail-cat {
+    text-box: trim-both cap alphabetic;
+  }
+  /* Trimming shortens the box, so the pills get the height back as padding —
+     they are the ones whose size came from the line box. */
+  .pf-root .period {
+    padding-block: 8px 9px;
+  }
+  .pf-root .filter-pill {
+    padding-block: 8px;
+  }
+}
+
 /* ═══ Motion — entrance animations (pure CSS, play on load) ═══════════════ */
 @keyframes pfUp {
   from {

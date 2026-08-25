@@ -84,14 +84,17 @@ export default function Hero({
         <h1 className="hero-name">{renderName(name)}</h1>
         {eyebrow && <p className="hero-eyebrow">{eyebrow}</p>}
         <div className="hero-btns">
+          {/* The label is wrapped so it can be cap-centred: a button is a flex
+              container, and bare text inside one lives in an anonymous box that
+              no rule can reach. */}
           {btn1 && (
             <a className="btn btn-primary" href="#projects">
-              {btn1}
+              <span className="btn-label">{btn1}</span>
             </a>
           )}
           {btn2 && (
             <a className="btn btn-outline" href="#contact">
-              {btn2}
+              <span className="btn-label">{btn2}</span>
             </a>
           )}
         </div>

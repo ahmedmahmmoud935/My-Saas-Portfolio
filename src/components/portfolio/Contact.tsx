@@ -138,7 +138,9 @@ export default function Contact({
               disabled={status === 'sending'}
               style={{ justifyContent: 'center' }}
             >
-              {status === 'sending' ? '…' : t('إرسال الرسالة', 'Send message')}
+              <span className="btn-label">
+                {status === 'sending' ? '…' : t('إرسال الرسالة', 'Send message')}
+              </span>
             </button>
             {status === 'ok' && (
               <p className="contact-note" style={{ color: '#22c55e' }}>
