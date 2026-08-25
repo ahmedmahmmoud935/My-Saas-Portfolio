@@ -2189,8 +2189,14 @@ body {
   .pf-root .detail-cat {
     text-box: trim-both cap alphabetic;
   }
-  /* Trimming shortens the box, so the pills get the height back as padding —
-     they are the ones whose size came from the line box. */
+  /* Trimming shortens the box, so anything whose size came from the line box
+     gets it back. Buttons take a min-height rather than more padding: it holds
+     the 44px they had whatever face the tenant picks, and the flex centring
+     then places the trimmed label in the middle of it. */
+  .pf-root .btn {
+    min-height: 44px;
+    justify-content: center;
+  }
   .pf-root .period {
     padding-block: 8px 9px;
   }
