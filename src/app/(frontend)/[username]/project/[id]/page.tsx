@@ -1,5 +1,6 @@
 import React from 'react'
 import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { mediaUrl } from '@/lib/portfolio'
@@ -80,6 +81,12 @@ function serializeModules(modules: unknown[]): Mod[] {
     }
   }
   return out
+}
+
+/** One address per project, so www and the bare domain don't count as two. */
+export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  const { username, id } = await params
+  return { alternates: { canonical: `/${username}/project/${id}` } }
 }
 
 export default async function ProjectDetailPage({ params, searchParams }: Params) {

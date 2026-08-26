@@ -51,6 +51,7 @@ export async function generateMetadata({ params, searchParams }: Params): Promis
   return {
     title: data.article.title,
     description: data.article.excerpt || undefined,
+    alternates: { canonical: `/${username}/articles/${slug}` },
     openGraph: {
       title: data.article.title,
       description: data.article.excerpt || undefined,

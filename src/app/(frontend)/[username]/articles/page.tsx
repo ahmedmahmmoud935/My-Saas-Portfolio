@@ -32,7 +32,7 @@ async function load(username: string, locale: 'ar' | 'en') {
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { username } = await params
-  return { title: `مقالات ${username}` }
+  return { title: `مقالات ${username}`, alternates: { canonical: `/${username}/articles` } }
 }
 
 export default async function ArticlesListPage({ params, searchParams }: Params) {

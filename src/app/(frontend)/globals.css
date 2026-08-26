@@ -1746,14 +1746,6 @@ body {
   border-radius: var(--radius-card);
   cursor: zoom-in;
 }
-/* The stacked layout shows one picture at a time, so it gets the same cap. */
-.stack img {
-  display: block;
-  width: auto;
-  max-width: 100%;
-  max-height: min(84vh, 900px);
-  margin-inline: auto;
-}
 .detail-grid img {
   aspect-ratio: 4 / 5;
   object-fit: cover;
@@ -1770,10 +1762,7 @@ body {
 
 /* ─── Modules (page builder) ────────────────────────────────────────────── */
 .mod-wrap {
-  /* The site's own content width. This column used to be 1000px while the
-     header above it ran the full 1200 — every project, not just a pasted page,
-     sat in a narrower column than the site around it. */
-  max-width: var(--container, 1200px);
+  max-width: 1000px;
   margin-inline: auto;
   padding-inline: 20px;
 }
@@ -1794,18 +1783,9 @@ body {
   margin: 0 0 16px;
 }
 .mod-img {
-  /* Capped by HEIGHT, not width — the same rule the carousel follows.
-     A design is usually taller than it is wide (4:5 or 9:16), so sizing it to
-     the column made one picture 1450px tall and you had to scroll through a
-     single image. Narrowing the column doesn't fix that: at 1000px a 4:5 design
-     is still 1250px tall, well past a laptop screen. Capping the height does,
-     and a landscape image still fills the column. */
-  display: block;
-  width: auto;
-  max-width: 100%;
-  max-height: min(84vh, 900px);
+  width: 100%;
   border-radius: var(--radius-card);
-  margin: 14px auto;
+  margin: 14px 0;
   cursor: zoom-in;
 }
 .mod-row {
@@ -2762,8 +2742,9 @@ html:has(.pf-root) {
   background: transparent;
   color: inherit;
   color-scheme: normal;
-  /* A pasted page decides its own margins, so it spans the column edge to edge
-     rather than sitting inside its 20px padding. */
+  /* Break out of the 1000px article column. A pasted page is a page: it should
+     get the width the site itself uses and decide its own margins, rather than
+     sitting in a column narrower than the header above it. */
   width: min(var(--container, 1200px), 100vw);
   max-width: min(var(--container, 1200px), 100vw);
   margin-inline: calc((100% - min(var(--container, 1200px), 100vw)) / 2);

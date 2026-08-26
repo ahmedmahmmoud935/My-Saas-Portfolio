@@ -71,6 +71,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     // only understands the apple-prefixed one.
     other: { 'apple-mobile-web-app-capable': 'yes' },
     alternates: {
+      // One address per page. Without this the same portfolio counted as two
+      // pages (www and bare) and its ranking was split between them.
+      canonical: `/${username}`,
       languages: { ar: `/${username}?lang=ar`, en: `/${username}?lang=en` },
     },
     openGraph: {
