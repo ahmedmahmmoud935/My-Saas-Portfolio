@@ -920,14 +920,25 @@ textarea.field {
 }
 /* Simple background-image controls (services cards). */
 .bg-ctrls {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+  /* Label beside its slider rather than above it: four settings took eight
+     rows and pushed everything else off the screen. */
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 12px;
+  align-items: center;
   margin: 8px 0 2px;
   padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--bg-3);
+}
+.bg-ctrls .lbl {
+  margin: 0;
+  white-space: nowrap;
+}
+.bg-ctrls input[type='range'] {
+  width: 100%;
+  min-width: 0;
 }
 .bg-ctrls input[type='range'] {
   width: 100%;
@@ -2604,6 +2615,23 @@ input[type='range']::-moz-range-thumb {
 }
 .share-link-row .btn {
   white-space: nowrap;
+}
+
+/* One service: the card on one side, everything that changes it on the other.
+   Stacked, a single service ran past a screen and a half. */
+.svc-row {
+  display: grid;
+  grid-template-columns: minmax(240px, 320px) 1fr;
+  gap: 16px;
+  align-items: start;
+}
+.svc-fields {
+  min-width: 0;
+}
+@media (max-width: 900px) {
+  .svc-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* A service drawn the way the site draws it, with its controls on the card. */

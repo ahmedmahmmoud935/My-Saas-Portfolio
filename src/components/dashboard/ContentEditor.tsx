@@ -288,13 +288,17 @@ export default function ContentEditor({ initial }: { initial: ContentForm }) {
                 {/* The card as the site will draw it, with its controls on top —
                     the fields underneath used to be the only view of it, so you
                     picked a picture and a dim level without seeing either. */}
-                <ServicePreview
-                  item={it}
-                  onIcon={(u) => setEx(i, { iconId: u.id, iconUrl: u.thumbUrl })}
-                  onImage={(u) => setEx(i, { imageId: u.id, imageUrl: u.thumbUrl })}
-                  onClearIcon={() => setEx(i, { iconId: null, iconUrl: null })}
-                  onClearImage={() => setEx(i, { imageId: null, imageUrl: null })}
-                />
+                {/* Card on one side, its settings on the other — stacked, one
+                    service filled a screen and a half. */}
+                <div className="svc-row">
+                  <ServicePreview
+                    item={it}
+                    onIcon={(u) => setEx(i, { iconId: u.id, iconUrl: u.thumbUrl })}
+                    onImage={(u) => setEx(i, { imageId: u.id, imageUrl: u.thumbUrl })}
+                    onClearIcon={() => setEx(i, { iconId: null, iconUrl: null })}
+                    onClearImage={() => setEx(i, { imageId: null, imageUrl: null })}
+                  />
+                  <div className="svc-fields">
                 <LocField label={t('العنوان', 'Title')} value={it.title} onChange={(v) => patch({ expertise: { ...f.expertise, items: f.expertise.items.map((x, j) => (j === i ? { ...x, title: v } : x)) } })} />
                 <LocField label={t('الوصف', 'Description')} multiline value={it.description} onChange={(v) => patch({ expertise: { ...f.expertise, items: f.expertise.items.map((x, j) => (j === i ? { ...x, description: v } : x)) } })} />
                 {it.imageUrl && (
@@ -309,6 +313,8 @@ export default function ContentEditor({ initial }: { initial: ContentForm }) {
                     <input type="range" min={0} max={100} value={it.bgPosY} onChange={(e) => setEx(i, { bgPosY: Number(e.target.value) })} />
                   </div>
                 )}
+                  </div>
+                </div>
               </ArrayCard>
             ))}
             <button className="btn btn-ghost" onClick={() => patch({ expertise: { ...f.expertise, items: [...f.expertise.items, { title: emptyLoc(), description: emptyLoc(), iconId: null, iconUrl: null, imageId: null, imageUrl: null, bgZoom: 100, bgOverlay: 45, bgPosX: 50, bgPosY: 50 }] } })}>+ {t('خدمة', 'Service')}</button>
