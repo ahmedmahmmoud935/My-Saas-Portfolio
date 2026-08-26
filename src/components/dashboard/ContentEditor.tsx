@@ -117,6 +117,78 @@ function TagsField({
   )
 }
 
+/**
+ * One service, drawn the way the public card is drawn, with its picture, icon
+ * and delete controls sitting on it.
+ *
+ * The icon and the background could only be replaced before, never removed:
+ * once a picture was attached the card was stuck with one.
+ */
+function ServicePreview({
+  item,
+  onIcon,
+  onImage,
+  onClearIcon,
+  onClearImage,
+}: {
+  item: ExpertiseItem
+  onIcon: (u: { id: number; thumbUrl: string | null }) => void
+  onImage: (u: { id: number; thumbUrl: string | null }) => void
+  onClearIcon: () => void
+  onClearImage: () => void
+}) {
+  const { t, lang } = useDashLang()
+  const pick = (v: { ar: string; en: string }) => v[lang] || v.ar || v.en
+
+  return (
+    <div className={`svc-preview${item.imageUrl ? ' has-bg' : ''}`}>
+      {item.imageUrl && (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            className="svc-bg"
+            src={item.imageUrl}
+            alt=""
+            style={{
+              transform: `scale(${(item.bgZoom ?? 100) / 100})`,
+              objectPosition: `${item.bgPosX ?? 50}% ${item.bgPosY ?? 50}%`,
+            }}
+          />
+          <span className="svc-dim" style={{ opacity: (item.bgOverlay ?? 45) / 100 }} />
+        </>
+      )}
+
+      <div className="svc-tools">
+        <MediaUploader compact label={item.imageUrl ? t('تغيير الصورة', 'Change image') : t('صورة خلفية', 'Background')} onUploaded={onImage} />
+        {item.imageUrl && (
+          <button type="button" className="svc-tool-btn del" onClick={onClearImage}>
+            {t('حذف الصورة', 'Remove image')}
+          </button>
+        )}
+        <MediaUploader compact label={item.iconUrl ? t('تغيير الأيقونة', 'Change icon') : t('أيقونة', 'Icon')} onUploaded={onIcon} />
+        {item.iconUrl && (
+          <button type="button" className="svc-tool-btn del" onClick={onClearIcon}>
+            {t('حذف الأيقونة', 'Remove icon')}
+          </button>
+        )}
+      </div>
+
+      <div className="svc-body">
+        <div className="ic">
+          {item.iconUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={item.iconUrl} alt="" width={22} height={22} />
+          ) : (
+            <span>◆</span>
+          )}
+        </div>
+        <h4>{pick(item.title) || t('بدون عنوان', 'Untitled')}</h4>
+        {pick(item.description) && <p>{pick(item.description)}</p>}
+      </div>
+    </div>
+  )
+}
+
 function ArrayCard({
   children,
   onRemove,
@@ -213,12 +285,18 @@ export default function ContentEditor({ initial }: { initial: ContentForm }) {
             <LocField label={t('عنوان القسم', 'Section title')} value={f.expertise.title} onChange={(v) => patch({ expertise: { ...f.expertise, title: v } })} />
             {f.expertise.items.map((it, i) => (
               <ArrayCard key={i} onRemove={() => patch({ expertise: { ...f.expertise, items: f.expertise.items.filter((_, j) => j !== i) } })}>
+                {/* The card as the site will draw it, with its controls on top —
+                    the fields underneath used to be the only view of it, so you
+                    picked a picture and a dim level without seeing either. */}
+                <ServicePreview
+                  item={it}
+                  onIcon={(u) => setEx(i, { iconId: u.id, iconUrl: u.thumbUrl })}
+                  onImage={(u) => setEx(i, { imageId: u.id, imageUrl: u.thumbUrl })}
+                  onClearIcon={() => setEx(i, { iconId: null, iconUrl: null })}
+                  onClearImage={() => setEx(i, { imageId: null, imageUrl: null })}
+                />
                 <LocField label={t('العنوان', 'Title')} value={it.title} onChange={(v) => patch({ expertise: { ...f.expertise, items: f.expertise.items.map((x, j) => (j === i ? { ...x, title: v } : x)) } })} />
                 <LocField label={t('الوصف', 'Description')} multiline value={it.description} onChange={(v) => patch({ expertise: { ...f.expertise, items: f.expertise.items.map((x, j) => (j === i ? { ...x, description: v } : x)) } })} />
-                <label className="lbl">{t('أيقونة', 'Icon')}</label>
-                <MediaUploader compact previewUrl={it.iconUrl} onUploaded={(u) => setEx(i, { iconId: u.id, iconUrl: u.thumbUrl })} />
-                <label className="lbl">{t('صورة الخلفية (لتخطيط الكروت)', 'Background image (card layout)')}</label>
-                <MediaUploader big previewUrl={it.imageUrl} onUploaded={(u) => setEx(i, { imageId: u.id, imageUrl: u.thumbUrl })} />
                 {it.imageUrl && (
                   <div className="bg-ctrls">
                     <label className="lbl">{t('الزوم', 'Zoom')} — {it.bgZoom}%</label>

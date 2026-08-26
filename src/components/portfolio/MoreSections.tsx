@@ -31,17 +31,38 @@ export function Expertise({
         ) : (
           <div className="card-grid">
             {items.map((it, i) => (
-              <div className="card" key={i}>
-                <div className="ic">
-                  {it.iconUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={it.iconUrl} alt="" width={22} height={22} />
-                  ) : (
-                    <span>◆</span>
-                  )}
+              // The background image, its zoom, position and dimming were only
+              // ever read by the stacked layout — set them here and nothing
+              // happened. Same picture, same controls, both layouts.
+              <div className={`card${it.imageUrl ? ' has-bg' : ''}`} key={i}>
+                {it.imageUrl && (
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      className="card-bg"
+                      src={it.imageUrl}
+                      alt=""
+                      loading="lazy"
+                      style={{
+                        transform: `scale(${(it.bgZoom ?? 100) / 100})`,
+                        objectPosition: `${it.bgPosX ?? 50}% ${it.bgPosY ?? 50}%`,
+                      }}
+                    />
+                    <span className="card-dim" style={{ opacity: (it.bgOverlay ?? 45) / 100 }} />
+                  </>
+                )}
+                <div className="card-body">
+                  <div className="ic">
+                    {it.iconUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={it.iconUrl} alt="" width={22} height={22} />
+                    ) : (
+                      <span>◆</span>
+                    )}
+                  </div>
+                  <h4>{it.title}</h4>
+                  {it.description && <p>{it.description}</p>}
                 </div>
-                <h4>{it.title}</h4>
-                {it.description && <p>{it.description}</p>}
               </div>
             ))}
           </div>

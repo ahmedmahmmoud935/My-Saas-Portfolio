@@ -1430,6 +1430,36 @@ body {
   line-height: 1.7;
   margin: 0;
 }
+/* A card carrying a background picture: the image sits behind, dimmed, and the
+   text rides on top — the same arrangement the stacked layout uses. */
+.card.has-bg {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.card-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -2;
+}
+.card-dim {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  z-index: -1;
+}
+.card.has-bg .card-body h4,
+.card.has-bg .card-body p {
+  color: #fff;
+}
+.card.has-bg .ic {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
 .card .ic {
   width: 42px;
   height: 42px;

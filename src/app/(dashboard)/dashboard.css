@@ -2569,6 +2569,93 @@ input[type='range']::-moz-range-thumb {
   min-height: 110px;
 }
 
+/* A service drawn the way the site draws it, with its controls on the card. */
+.svc-preview {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 190px;
+  margin-bottom: 12px;
+  padding: 18px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.svc-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -2;
+}
+.svc-dim {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  z-index: -1;
+}
+.svc-tools {
+  position: absolute;
+  top: 10px;
+  inset-inline-start: 10px;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.svc-tools .svc-tool-btn,
+.svc-tools label,
+.svc-tools button {
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.svc-tools .del {
+  border-color: rgba(255, 120, 120, 0.5);
+  color: #ffb4b4;
+}
+.svc-body .ic {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 10px;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--accent);
+}
+.svc-preview.has-bg .svc-body .ic {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+.svc-body h4 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 800;
+}
+.svc-body p {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: var(--sub);
+}
+.svc-preview.has-bg .svc-body h4,
+.svc-preview.has-bg .svc-body p {
+  color: #fff;
+}
+
 /* Images-per-row on a phone, per grid module. */
 .row-cols {
   display: flex;
