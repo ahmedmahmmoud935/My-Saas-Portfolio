@@ -19,11 +19,24 @@ type Item = {
   avatarUrl: string | null
 }
 
-export default function TestimonialsManager({ items }: { items: Item[] }) {
+export default function TestimonialsManager({ items, slug }: { items: Item[]; slug: string }) {
   const router = useRouter()
   const [edit, setEdit] = useState<Item | null>(null)
   const { t: tr } = useDashLang()
   const [busy, setBusy] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  // The page a client fills in. It was built and linked from the site's own
+  // testimonials section, but never surfaced here — so the one person who needs
+  // to send it had no way to find it.
+  const shareUrl =
+    typeof window === 'undefined' ? `/testimonial/${slug}` : `${window.location.origin}/testimonial/${slug}`
+
+  const copy = async () => {
+    await navigator.clipboard.writeText(shareUrl)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1800)
+  }
 
   async function save() {
     if (!edit) return
@@ -60,6 +73,27 @@ export default function TestimonialsManager({ items }: { items: Item[] }) {
         }
       />
 
+
+      <div className="share-link">
+        <div className="share-link-text">
+          <strong>{tr('لينك طلب رأي من عميل', 'Link for asking a client to review you')}</strong>
+          <span>
+            {tr(
+              'ابعته للعميل — يكتب رأيه ويضيف صورته، وميظهرش على الموقع غير لما توافق عليه.',
+              "Send it to a client — they write their review and add their photo, and nothing shows on your site until you approve it.",
+            )}
+          </span>
+        </div>
+        <div className="share-link-row">
+          <input className="field" readOnly value={shareUrl} onFocus={(e) => e.currentTarget.select()} />
+          <button className="btn btn-primary" onClick={copy}>
+            {copied ? tr('اتنسخ ✓', 'Copied ✓') : tr('نسخ', 'Copy')}
+          </button>
+          <a className="btn btn-ghost" href={shareUrl} target="_blank" rel="noreferrer">
+            {tr('فتح', 'Open')}
+          </a>
+        </div>
+      </div>
       {items.length === 0 ? (
         <div className="panel" style={{ textAlign: 'center', padding: 46, color: 'var(--sub)' }}>{tr('مفيش آراء لسه.', 'No reviews yet.')}</div>
       ) : (

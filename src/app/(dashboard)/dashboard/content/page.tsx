@@ -150,12 +150,17 @@ export default async function ContentPage() {
     avatarUrl: mediaUrl(tt.avatar, 'thumb'),
   }))
 
+  // The public review page is addressed by the tenant's slug, so the dashboard
+  // needs it to show the link the owner sends to clients.
+  const tenant = await ctx.payload.findByID({ collection: 'tenants', id: ctx.tenantId, depth: 0 })
+
   return (
     <ContentHub
       content={form}
       logos={logos}
       achievements={achievements}
       testimonials={testimonials}
+      slug={tenant.slug}
     />
   )
 }

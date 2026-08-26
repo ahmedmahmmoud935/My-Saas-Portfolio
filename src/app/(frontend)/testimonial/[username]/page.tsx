@@ -32,6 +32,9 @@ const COPY = {
     companyPh: 'الشركة (اختياري)',
     contentPh: 'اكتب رأيك هنا…',
     ratingLabel: 'تقييمك',
+    photoLabel: 'ضيف صورتك',
+    photoHint: 'اختياري — صورة الوجه بتخلي الرأي أقرب',
+    photoChange: 'غيّر الصورة',
     submit: 'إرسال',
     sending: 'جارٍ الإرسال…',
     success: 'تم استلام رأيك! هيظهر بعد المراجعة.',
@@ -46,6 +49,9 @@ const COPY = {
     companyPh: 'Company (optional)',
     contentPh: 'Write your review here…',
     ratingLabel: 'Your rating',
+    photoLabel: 'Add your photo',
+    photoHint: 'Optional — a face makes a review land',
+    photoChange: 'Change photo',
     submit: 'Submit',
     sending: 'Sending…',
     success: 'Thanks! Your review will appear after moderation.',
@@ -90,6 +96,18 @@ export default async function TestimonialPage({ params, searchParams }: Params) 
         .tf { display: flex; flex-direction: column; gap: 14px; }
         .tf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
         @media (max-width: 460px) { .tf-row { grid-template-columns: 1fr; } }
+        .tf-photo { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+        .tf-photo-btn {
+          width:62px; height:62px; flex:0 0 62px; border-radius:50%; overflow:hidden;
+          border:1px dashed color-mix(in srgb, var(--text) 30%, transparent);
+          background: var(--bg-2); color: var(--sub); display:grid; place-items:center;
+          cursor:pointer; padding:0;
+        }
+        .tf-photo-btn img { width:100%; height:100%; object-fit:cover; }
+        .tf-photo-plus { font-size:24px; line-height:1; }
+        .tf-photo-text { display:flex; flex-direction:column; gap:2px; }
+        .tf-photo-text strong { font-size:13.5px; }
+        .tf-photo-text span { font-size:12px; color: var(--sub); }
         .tf-in {
           width: 100%; background: var(--bg-2); border: 1px solid rgba(255,255,255,0.08);
           color: var(--text); border-radius: 12px; padding: 13px 15px; font: inherit; outline: none;

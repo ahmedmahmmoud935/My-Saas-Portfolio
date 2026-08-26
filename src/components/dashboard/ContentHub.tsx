@@ -27,11 +27,14 @@ export default function ContentHub({
   logos,
   achievements,
   testimonials,
+  slug,
 }: {
   content: ContentForm
   logos: React.ComponentProps<typeof LogosManager>['logos']
   achievements: React.ComponentProps<typeof AchievementsManager>['items']
   testimonials: React.ComponentProps<typeof TestimonialsManager>['items']
+  /** The tenant's slug — the public review page lives at /testimonial/<slug>. */
+  slug: string
 }) {
   const [tab, setTab] = useState<HubTab>('content')
   const { t } = useDashLang()
@@ -53,7 +56,7 @@ export default function ContentHub({
       {tab === 'content' && <ContentEditor initial={content} />}
       {tab === 'clients' && <LogosManager logos={logos} />}
       {tab === 'achievements' && <AchievementsManager items={achievements} />}
-      {tab === 'testimonials' && <TestimonialsManager items={testimonials} />}
+      {tab === 'testimonials' && <TestimonialsManager items={testimonials} slug={slug} />}
     </div>
   )
 }

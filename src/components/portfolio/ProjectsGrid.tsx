@@ -121,7 +121,9 @@ export default function ProjectsGrid({
         {cats.length > 0 && (
           <div className="filter-bar">
             <button className={`filter-pill ${cat === 'all' ? 'active' : ''}`} onClick={() => setCat('all')}>
-              All
+              {/* The tabs above this were translated; this one was left in
+                  English, so an Arabic page read "All" over Arabic tabs. */}
+              {lang === 'en' ? 'All' : 'الكل'}
             </button>
             {cats.map((c) => (
               <button key={c} className={`filter-pill ${cat === c ? 'active' : ''}`} onClick={() => setCat(c)}>

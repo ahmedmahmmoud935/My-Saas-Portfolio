@@ -2569,6 +2569,43 @@ input[type='range']::-moz-range-thumb {
   min-height: 110px;
 }
 
+/* The link an owner sends a client to ask for a review. */
+.share-link {
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border));
+  border-radius: 12px;
+  background: var(--accent-soft);
+}
+.share-link-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 10px;
+}
+.share-link-text strong {
+  font-size: 13.5px;
+}
+.share-link-text span {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--sub);
+}
+.share-link-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.share-link-row .field {
+  flex: 1 1 260px;
+  min-width: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+}
+.share-link-row .btn {
+  white-space: nowrap;
+}
+
 /* A service drawn the way the site draws it, with its controls on the card. */
 .svc-preview {
   position: relative;
