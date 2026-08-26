@@ -41,14 +41,21 @@ function serializeModules(modules: unknown[]): Mod[] {
             .filter((x): x is { src: string; ar: number } => !!x),
         })
         break
-      case 'carousel':
+      case 'carousel': {
+        const items = (m.items as { src: unknown }[]) || []
+        // The frame's shape comes from the stored dimensions, not from
+        // measuring the picture once it arrives in the browser: on a phone
+        // the slider was still drawing its 4:3 default around 4:5 artwork.
+        const firstSrc = items[0]?.src as { width?: number; height?: number } | undefined
+        const w = firstSrc?.width
+        const h = firstSrc?.height
         out.push({
           type: 'carousel',
-          items: ((m.items as { src: unknown }[]) || [])
-            .map((it) => mediaUrl(it.src as never))
-            .filter((u): u is string => !!u),
+          items: items.map((it) => mediaUrl(it.src as never)).filter((u): u is string => !!u),
+          ratio: w && h ? w / h : null,
         })
         break
+      }
       case 'video':
         out.push({
           type: 'video',

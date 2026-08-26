@@ -10,7 +10,7 @@ export type Mod =
   | { type: 'text'; textType: 'h1' | 'h2' | 'p'; value: string }
   | { type: 'image'; src: string | null }
   | { type: 'grid'; items: { src: string; ar: number }[] }
-  | { type: 'carousel'; items: string[] }
+  | { type: 'carousel'; items: string[]; ratio?: number | null }
   | { type: 'video'; embedUrl: string; poster?: string | null }
   | {
       type: 'beforeafter'
@@ -260,7 +260,7 @@ export default function ProjectView({ project }: { project: SerializedProject })
                   </div>
                 )
               case 'carousel':
-                return <Carousel key={i} images={m.items} onOpen={open} />
+                return <Carousel key={i} images={m.items} ratio={m.ratio} onOpen={open} />
               case 'video': {
                 const v = resolveVideoUrl(m.embedUrl)
                 if (!v) return null

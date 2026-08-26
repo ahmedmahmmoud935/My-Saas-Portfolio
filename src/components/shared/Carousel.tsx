@@ -9,13 +9,20 @@ import s from './Carousel.module.css'
  * let go. It's a native scroller with scroll-snap — no drag maths, so momentum
  * and accessibility come for free.
  */
+const clampRatio = (r: number) => Math.max(0.8, Math.min(1.91, r))
+
 export default function Carousel({
   images,
   onOpen,
   height,
+  ratio: given,
   className = '',
 }: {
   images: string[]
+  /** Shape of the frame, from the stored image dimensions. Measuring it in the
+   *  browser is the fallback — it depends on the picture having arrived, which
+   *  on a phone it often hasn't by the time this runs. */
+  ratio?: number | null
   /** Click a slide (e.g. to open the lightbox). Omit to make slides inert. */
   onOpen?: (src: string) => void
   /** Max height for the track — the dashboard preview runs shorter. */
@@ -28,7 +35,7 @@ export default function Carousel({
   // portrait shot as a stamp in the middle of a blurred field. The FIRST slide
   // sets the shape (as on Instagram) — taking the tallest would let one
   // outlier stretch the whole set.
-  const [ratio, setRatio] = useState<number | null>(null)
+  const [ratio, setRatio] = useState<number | null>(given ? clampRatio(given) : null)
   const n = images.length
   const first = images[0]
 
@@ -46,24 +53,22 @@ export default function Carousel({
   // handler, so the event never arrives and the frame keeps its 4:3 default —
   // which is exactly what a returning visitor saw.
   useEffect(() => {
-    if (!first) return
+    if (given || !first) return
     let alive = true
     // 4:5 is as tall as Instagram goes; 1.91:1 as wide.
     const apply = (w: number, h: number) => {
-      if (alive && w && h) setRatio(Math.max(0.8, Math.min(1.91, w / h)))
+      if (alive && w && h) setRatio(clampRatio(w / h))
     }
-    const shown = track.current?.querySelector('img')
-    if (shown?.complete && shown.naturalWidth) {
-      apply(shown.naturalWidth, shown.naturalHeight)
-      return
-    }
+    // Never `track.querySelector('img')`: the first picture in the track is
+    // the copy of the LAST slide, so the frame took its shape from the wrong
+    // one whenever that copy happened to be decoded first.
     const probe = new window.Image()
     probe.onload = () => apply(probe.naturalWidth, probe.naturalHeight)
     probe.src = first
     return () => {
       alive = false
     }
-  }, [first])
+  }, [given, first])
 
   // Which slide is showing = how far along the track we are. Works in RTL too,
   // where scrollLeft counts the other way (and is negative in some engines).
