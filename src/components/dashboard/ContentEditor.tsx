@@ -159,16 +159,16 @@ function ServicePreview({
       )}
 
       <div className="svc-tools">
-        <MediaUploader compact label={item.imageUrl ? t('تغيير الصورة', 'Change image') : t('صورة خلفية', 'Background')} onUploaded={onImage} />
+        <MediaUploader compact label={item.imageUrl ? t('صورة ↻', 'Image ↻') : t('صورة +', 'Image +')} onUploaded={onImage} />
         {item.imageUrl && (
           <button type="button" className="svc-tool-btn del" onClick={onClearImage}>
-            {t('حذف الصورة', 'Remove image')}
+            {t('صورة ✕', 'Image ✕')}
           </button>
         )}
-        <MediaUploader compact label={item.iconUrl ? t('تغيير الأيقونة', 'Change icon') : t('أيقونة', 'Icon')} onUploaded={onIcon} />
+        <MediaUploader compact label={item.iconUrl ? t('أيقونة ↻', 'Icon ↻') : t('أيقونة +', 'Icon +')} onUploaded={onIcon} />
         {item.iconUrl && (
           <button type="button" className="svc-tool-btn del" onClick={onClearIcon}>
-            {t('حذف الأيقونة', 'Remove icon')}
+            {t('أيقونة ✕', 'Icon ✕')}
           </button>
         )}
       </div>
@@ -291,28 +291,33 @@ export default function ContentEditor({ initial }: { initial: ContentForm }) {
                 {/* Card on one side, its settings on the other — stacked, one
                     service filled a screen and a half. */}
                 <div className="svc-row">
-                  <ServicePreview
-                    item={it}
-                    onIcon={(u) => setEx(i, { iconId: u.id, iconUrl: u.thumbUrl })}
-                    onImage={(u) => setEx(i, { imageId: u.id, imageUrl: u.thumbUrl })}
-                    onClearIcon={() => setEx(i, { iconId: null, iconUrl: null })}
-                    onClearImage={() => setEx(i, { imageId: null, imageUrl: null })}
-                  />
+                  {/* The picture's settings belong under the picture and at its
+                      width — across the wide column they were a row of sliders
+                      with nothing to do with the text beside them. */}
+                  <div className="svc-visual">
+                    <ServicePreview
+                      item={it}
+                      onIcon={(u) => setEx(i, { iconId: u.id, iconUrl: u.thumbUrl })}
+                      onImage={(u) => setEx(i, { imageId: u.id, imageUrl: u.thumbUrl })}
+                      onClearIcon={() => setEx(i, { iconId: null, iconUrl: null })}
+                      onClearImage={() => setEx(i, { imageId: null, imageUrl: null })}
+                    />
+                    {it.imageUrl && (
+                      <div className="bg-ctrls">
+                        <label className="lbl">{t('الزوم', 'Zoom')} — {it.bgZoom}%</label>
+                        <input type="range" min={100} max={220} value={it.bgZoom} onChange={(e) => setEx(i, { bgZoom: Number(e.target.value) })} />
+                        <label className="lbl">{t('التعتيم', 'Dim')} — {it.bgOverlay}%</label>
+                        <input type="range" min={0} max={90} value={it.bgOverlay} onChange={(e) => setEx(i, { bgOverlay: Number(e.target.value) })} />
+                        <label className="lbl">{t('الموضع ↔', 'Position ↔')} — {it.bgPosX}%</label>
+                        <input type="range" min={0} max={100} value={it.bgPosX} onChange={(e) => setEx(i, { bgPosX: Number(e.target.value) })} />
+                        <label className="lbl">{t('الموضع ↕', 'Position ↕')} — {it.bgPosY}%</label>
+                        <input type="range" min={0} max={100} value={it.bgPosY} onChange={(e) => setEx(i, { bgPosY: Number(e.target.value) })} />
+                      </div>
+                    )}
+                  </div>
                   <div className="svc-fields">
                 <LocField label={t('العنوان', 'Title')} value={it.title} onChange={(v) => patch({ expertise: { ...f.expertise, items: f.expertise.items.map((x, j) => (j === i ? { ...x, title: v } : x)) } })} />
                 <LocField label={t('الوصف', 'Description')} multiline value={it.description} onChange={(v) => patch({ expertise: { ...f.expertise, items: f.expertise.items.map((x, j) => (j === i ? { ...x, description: v } : x)) } })} />
-                {it.imageUrl && (
-                  <div className="bg-ctrls">
-                    <label className="lbl">{t('الزوم', 'Zoom')} — {it.bgZoom}%</label>
-                    <input type="range" min={100} max={220} value={it.bgZoom} onChange={(e) => setEx(i, { bgZoom: Number(e.target.value) })} />
-                    <label className="lbl">{t('التعتيم', 'Dim')} — {it.bgOverlay}%</label>
-                    <input type="range" min={0} max={90} value={it.bgOverlay} onChange={(e) => setEx(i, { bgOverlay: Number(e.target.value) })} />
-                    <label className="lbl">{t('الموضع ↔', 'Position ↔')} — {it.bgPosX}%</label>
-                    <input type="range" min={0} max={100} value={it.bgPosX} onChange={(e) => setEx(i, { bgPosX: Number(e.target.value) })} />
-                    <label className="lbl">{t('الموضع ↕', 'Position ↕')} — {it.bgPosY}%</label>
-                    <input type="range" min={0} max={100} value={it.bgPosY} onChange={(e) => setEx(i, { bgPosY: Number(e.target.value) })} />
-                  </div>
-                )}
                   </div>
                 </div>
               </ArrayCard>

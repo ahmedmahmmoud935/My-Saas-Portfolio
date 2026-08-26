@@ -924,9 +924,9 @@ textarea.field {
      rows and pushed everything else off the screen. */
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 8px 12px;
+  gap: 8px 10px;
   align-items: center;
-  margin: 8px 0 2px;
+  margin: 10px 0 0;
   padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -2628,6 +2628,10 @@ input[type='range']::-moz-range-thumb {
 .svc-fields {
   min-width: 0;
 }
+/* The card and everything that changes the picture, one under the other. */
+.svc-visual {
+  min-width: 0;
+}
 @media (max-width: 900px) {
   .svc-row {
     grid-template-columns: 1fr;
@@ -2665,17 +2669,23 @@ input[type='range']::-moz-range-thumb {
 }
 .svc-tools {
   position: absolute;
-  top: 10px;
-  inset-inline-start: 10px;
+  top: 8px;
+  inset-inline-start: 8px;
+  inset-inline-end: 8px;
   z-index: 2;
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
 }
 .svc-tools .svc-tool-btn,
 .svc-tools label,
 .svc-tools button {
-  padding: 5px 11px;
+  font-size: 11px;
+}
+.svc-tools .svc-tool-btn,
+.svc-tools label,
+.svc-tools button {
+  padding: 4px 9px;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.24);
   background: rgba(0, 0, 0, 0.62);
