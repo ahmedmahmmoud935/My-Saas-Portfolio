@@ -254,10 +254,19 @@ export async function sortProjectsNewestFirst() {
   })
   const docs = res.docs as { id: number; sortOrder?: number | null; createdAt?: string }[]
 
-  const ordered = [...docs].sort((a, b) => {
-    const byDate = Date.parse(b.createdAt ?? '') - Date.parse(a.createdAt ?? '')
-    return byDate || (a.sortOrder ?? 0) - (b.sortOrder ?? 0)
-  })
+  // `Date.parse` returns NaN for a missing or unreadable timestamp, and a
+  // comparator that returns NaN for some pairs isn't a consistent ordering —
+  // sort() then produces something arbitrary. That's why the first run put a
+  // project from 11 July below one from 10 July: not the wrong rule, an
+  // undefined one. Every branch here returns a real number, and the id breaks
+  // the last tie so the result is the same every time.
+  const at = (d: { createdAt?: string }) => {
+    const t = Date.parse(d.createdAt ?? '')
+    return Number.isFinite(t) ? t : 0
+  }
+  const ordered = [...docs].sort(
+    (a, b) => at(b) - at(a) || (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || b.id - a.id,
+  )
 
   for (let i = 0; i < ordered.length; i++) {
     if (ordered[i].sortOrder === i) continue
