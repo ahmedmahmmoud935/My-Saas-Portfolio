@@ -26,7 +26,8 @@ export const PASTE_GUIDE_AR = `اكتب صفحة HTML كاملة (مع <style> �
   var(--radius-card) و var(--radius-pill) لنصف قطر الزوايا
 
 ابدأ بـ:
-  body { background: var(--bg); color: var(--text); margin: 0; }
+  body { background: transparent; color: var(--text); margin: 0; }
+(شفافة — الصفحة بترسم خلفيتها بنفسها، ولو لوّنت الخلفية هنا هتغطّيها بمستطيل)
 
 للكروت:
   background: var(--bg-2);
@@ -39,7 +40,10 @@ export const PASTE_GUIDE_AR = `اكتب صفحة HTML كاملة (مع <style> �
 ممنوع:
 - <script> (مش هيشتغل).
 - position: fixed أو أقسام بارتفاع 100vh — الصفحة بتتعرض جوّه المشروع مش لوحدها.
-- عرض أكبر من 1100px؛ خلّي الحاوية max-width: 1100px; margin: 0 auto;
+
+العرض:
+- الصفحة بتاخد عرض الموقع كامل (1200px) — حدّد عرض الحاوية اللي يناسب تصميمك،
+  مثلاً max-width: 1200px; margin: 0 auto;
 
 مسموح:
 - أسماء الكلاسات زي ما تحب (بتتعزل تلقائيًا).
@@ -60,7 +64,9 @@ Don't hard-code background and text colours (#fff / #000 / rgb...). Use the site
   var(--radius-card) and var(--radius-pill) for corner radii
 
 Start with:
-  body { background: var(--bg); color: var(--text); margin: 0; }
+  body { background: transparent; color: var(--text); margin: 0; }
+(transparent — the site paints its own background behind you; filling it here
+covers that with a flat rectangle)
 
 For cards:
   background: var(--bg-2);
@@ -73,7 +79,10 @@ For a derived colour (lighter/darker/translucent) use:
 Not allowed:
 - <script> (it won't run).
 - position: fixed, or sections sized to 100vh — the page renders inside a project, not on its own.
-- Widths over 1100px; keep the container at max-width: 1100px; margin: 0 auto;
+
+Width:
+- The page is given the site's full content width (1200px) — set whatever
+  container suits your design, e.g. max-width: 1200px; margin: 0 auto;
 
 Fine to use:
 - Any class names you like (they're namespaced automatically).
