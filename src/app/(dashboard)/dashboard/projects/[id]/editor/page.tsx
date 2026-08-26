@@ -31,6 +31,7 @@ function serializeEditModules(modules: unknown): EditModule[] {
       case 'grid':
         out.push({
           type: 'grid',
+          mobileCols: Number(m.mobileCols) || 1,
           items: ((m.items as { src: unknown }[]) || [])
             .map((it) => ({ id: mid(it.src), url: mediaUrl(it.src as never, 'thumb') }))
             .filter((x): x is { id: number; url: string | null } => x.id != null),

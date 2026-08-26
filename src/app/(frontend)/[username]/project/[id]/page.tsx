@@ -31,6 +31,7 @@ function serializeModules(modules: unknown[]): Mod[] {
       case 'grid':
         out.push({
           type: 'grid',
+          mobileCols: Math.min(3, Math.max(1, Number(m.mobileCols) || 1)),
           items: ((m.items as { src: unknown }[]) || [])
             .map((it) => {
               const src = mediaUrl(it.src as never)

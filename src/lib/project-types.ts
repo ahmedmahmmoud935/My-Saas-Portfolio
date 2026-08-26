@@ -12,7 +12,7 @@ export const biEmpty = (html: string) => !html.replace(/<[^>]*>/g, '').trim()
 export type ModuleInput =
   | { type: 'text'; textType: 'h1' | 'h2' | 'p'; value: Bi }
   | { type: 'image'; srcId: number | null }
-  | { type: 'grid'; itemIds: number[] }
+  | { type: 'grid'; itemIds: number[]; mobileCols: number }
   | { type: 'carousel'; itemIds: number[] }
   | { type: 'video'; embedUrl: string; posterId: number | null }
   | {
@@ -44,7 +44,7 @@ export type ProjectInput = {
 export type EditModule =
   | { type: 'text'; textType: 'h1' | 'h2' | 'p'; value: Bi }
   | { type: 'image'; srcId: number | null; srcUrl: string | null }
-  | { type: 'grid'; items: { id: number; url: string | null }[] }
+  | { type: 'grid'; items: { id: number; url: string | null }[]; mobileCols: number }
   | { type: 'carousel'; items: { id: number; url: string | null }[] }
   | { type: 'video'; embedUrl: string; posterId: number | null; posterUrl: string | null }
   | {
@@ -66,7 +66,7 @@ export function editModuleToInput(m: EditModule): ModuleInput {
     case 'image':
       return { type: 'image', srcId: m.srcId }
     case 'grid':
-      return { type: 'grid', itemIds: m.items.map((i) => i.id) }
+      return { type: 'grid', itemIds: m.items.map((i) => i.id), mobileCols: m.mobileCols }
     case 'carousel':
       return { type: 'carousel', itemIds: m.items.map((i) => i.id) }
     case 'video':

@@ -56,7 +56,7 @@ export function blankModule(type: EditModule['type']): EditModule {
     case 'image':
       return { type: 'image', srcId: null, srcUrl: null }
     case 'grid':
-      return { type: 'grid', items: [] }
+      return { type: 'grid', items: [], mobileCols: 1 }
     case 'carousel':
       return { type: 'carousel', items: [] }
     case 'video':
@@ -161,6 +161,27 @@ export default function ModulesEditor({
 
           {(m.type === 'grid' || m.type === 'carousel') && (
             <>
+              {/* How many fit across on a phone. A wide screen keeps the
+                  proportional row either way. */}
+              {m.type === 'grid' && (
+                <div className="row-cols">
+                  <span className="lbl" style={{ margin: 0 }}>
+                    {t('على الموبايل: عدد الصور في الصف', 'On a phone: images per row')}
+                  </span>
+                  <div className="row-cols-opts">
+                    {[1, 2, 3].map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        className={`pill ${m.mobileCols === n ? 'active' : ''}`}
+                        onClick={() => update(i, { ...m, mobileCols: n })}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               {/* Show it the way the site will: a carousel slides, a grid is a
                   proportional row. Guessing from square crops was the reason
                   you had to publish to see what you'd made. */}

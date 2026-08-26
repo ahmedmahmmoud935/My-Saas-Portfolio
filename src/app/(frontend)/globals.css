@@ -1776,9 +1776,11 @@ body {
   align-items: flex-start;
 }
 .mod-row img {
-  /* Share the row width equally so the row fills the container (Behance-style)
-     instead of clumping to the start edge — which is the RIGHT in an RTL page. */
+  /* Widths proportional to aspect ratio → every image in the row shares one
+     height and the row fills the container (Behance-style) instead of clumping
+     to the start edge — which is the RIGHT in an RTL page. */
   flex: 1 1 0;
+  flex-grow: var(--ar, 1);
   min-width: 0;
   width: 100%;
   height: auto;
@@ -1786,8 +1788,13 @@ body {
   cursor: zoom-in;
 }
 @media (max-width: 640px) {
+  /* A phone gets as many across as the module asks for — one by default, which
+     is what the row always did here. */
   .mod-row {
-    flex-direction: column;
+    flex-wrap: wrap;
+  }
+  .mod-row img {
+    flex: 0 0 calc((100% - (var(--row-cols, 1) - 1) * 10px) / var(--row-cols, 1));
   }
 }
 

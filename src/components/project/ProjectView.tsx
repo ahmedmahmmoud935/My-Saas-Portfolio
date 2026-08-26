@@ -9,7 +9,7 @@ import { resolveVideoUrl } from '@/lib/video'
 export type Mod =
   | { type: 'text'; textType: 'h1' | 'h2' | 'p'; value: string }
   | { type: 'image'; src: string | null }
-  | { type: 'grid'; items: { src: string; ar: number }[] }
+  | { type: 'grid'; items: { src: string; ar: number }[]; mobileCols?: number }
   | { type: 'carousel'; items: string[]; ratio?: number | null }
   | { type: 'video'; embedUrl: string; poster?: string | null }
   | {
@@ -243,7 +243,14 @@ export default function ProjectView({ project }: { project: SerializedProject })
                 ) : null
               case 'grid':
                 return (
-                  <div className="mod-row" key={i}>
+                  <div
+                    className="mod-row"
+                    key={i}
+                    // How many fit across on a phone. The row was hard-wired to
+                    // one per line there, which turned a three-up set into three
+                    // full-width pictures.
+                    style={{ ['--row-cols']: m.mobileCols ?? 1 } as React.CSSProperties}
+                  >
                     {m.items.map((it, j) => (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -251,9 +258,9 @@ export default function ProjectView({ project }: { project: SerializedProject })
                         src={it.src}
                         alt=""
                         loading="lazy"
-                        // flex-grow ∝ aspect ratio → all images in the row share one
-                        // height, widths proportional, and the row fills the container.
-                        style={{ flexGrow: it.ar }}
+                        // Aspect ratio as a variable, not an inline flex-grow:
+                        // an inline value would outrank the phone rule below.
+                        style={{ ['--ar']: it.ar } as React.CSSProperties}
                         onClick={() => open(it.src)}
                       />
                     ))}

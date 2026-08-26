@@ -72,7 +72,9 @@ export default function ProjectPageBuilder({
       const mod: EditModule =
         type === 'image'
           ? { type: 'image', srcId: results[0].id, srcUrl: results[0].thumbUrl }
-          : { type, items: results.map((r) => ({ id: r.id, url: r.thumbUrl })) }
+          : type === 'grid'
+            ? { type, mobileCols: 1, items: results.map((r) => ({ id: r.id, url: r.thumbUrl })) }
+            : { type, items: results.map((r) => ({ id: r.id, url: r.thumbUrl })) }
       setModules([...p.modules, mod])
     } catch {
       alert(t('فشل الرفع', 'Upload failed'))

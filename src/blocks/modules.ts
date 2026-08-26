@@ -48,6 +48,17 @@ export const GridBlock: Block = {
   labels: { singular: 'Photo grid', plural: 'Photo grids' },
   fields: [
     {
+      name: 'mobileCols',
+      type: 'number',
+      defaultValue: 1,
+      min: 1,
+      max: 3,
+      admin: {
+        description:
+          'Images per row on a phone (1–3). The row stays proportional on wider screens.',
+      },
+    },
+    {
       name: 'items',
       type: 'array',
       minRows: 1,

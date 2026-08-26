@@ -40,7 +40,12 @@ function toBlocks(
       case 'image':
         return { ...id, blockType: 'image', src: m.srcId }
       case 'grid':
-        return { ...id, blockType: 'grid', items: m.itemIds.map((src) => ({ src })) }
+        return {
+          ...id,
+          blockType: 'grid',
+          mobileCols: m.mobileCols,
+          items: m.itemIds.map((src) => ({ src })),
+        }
       case 'carousel':
         return { ...id, blockType: 'carousel', items: m.itemIds.map((src) => ({ src })) }
       case 'video':
@@ -381,7 +386,7 @@ export async function importFromBehance(token: string) {
         if (id) ids.push(id)
       }
       if (ids.length) {
-        modules.push({ type: 'grid', itemIds: ids })
+        modules.push({ type: 'grid', mobileCols: 1, itemIds: ids })
         coverId ??= ids[0]
       }
     } else if (m.type === 'embed' && m.url) {

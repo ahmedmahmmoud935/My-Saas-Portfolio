@@ -2569,6 +2569,24 @@ input[type='range']::-moz-range-thumb {
   min-height: 110px;
 }
 
+/* Images-per-row on a phone, per grid module. */
+.row-cols {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.row-cols-opts {
+  display: flex;
+  gap: 6px;
+}
+.row-cols-opts .pill {
+  min-width: 38px;
+  justify-content: center;
+}
+
 /* Carousel module: the slider above is the preview, so these are just the
    ordering strip — but big enough to tell the shots apart. */
 /* Marks a gallery tile that holds a clip, so a dark first frame still reads as
