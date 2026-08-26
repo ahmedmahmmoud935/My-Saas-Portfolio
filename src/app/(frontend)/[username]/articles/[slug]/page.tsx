@@ -3,8 +3,9 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { mediaUrl, tenantCssVars } from '@/lib/portfolio'
+import { mediaUrl } from '@/lib/portfolio'
 import Navbar from '@/components/portfolio/Navbar'
+import PageShell from '@/components/portfolio/PageShell'
 import Footer from '@/components/portfolio/Footer'
 
 type Params = {
@@ -68,12 +69,6 @@ export default async function ArticlePage({ params, searchParams }: Params) {
   const { tenant, settings, article } = data
   const logo = tenant.name?.[0]?.toUpperCase() || 'V'
   const cover = mediaUrl(article.cover)
-  const st = ((settings as { style?: Record<string, string | undefined> } | null)?.style ?? {}) as Record<
-    string,
-    string | undefined
-  >
-  const dir: 'ltr' | 'rtl' =
-    st.direction === 'ltr' ? 'ltr' : st.direction === 'rtl' ? 'rtl' : locale === 'en' ? 'ltr' : 'rtl'
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -87,7 +82,7 @@ export default async function ArticlePage({ params, searchParams }: Params) {
   }
 
   return (
-    <div className="pf-root" style={tenantCssVars(settings) as React.CSSProperties} dir={dir} lang={locale}>
+    <PageShell settings={settings} locale={locale}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Navbar
         logo={logo}
@@ -116,6 +111,6 @@ export default async function ArticlePage({ params, searchParams }: Params) {
         </div>
       </article>
       <Footer logo={logo} name={tenant.name} />
-    </div>
+    </PageShell>
   )
 }

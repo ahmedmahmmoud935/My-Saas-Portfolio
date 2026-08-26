@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useId } from 'react'
-import { prefixHtmlClasses, scopeCss, splitHtmlDocument } from '@/lib/html-embed'
+import { extractImports, prefixHtmlClasses, scopeCss, splitHtmlDocument } from '@/lib/html-embed'
 
 /**
  * A whole HTML page pasted in as a case study, rendered with its own
@@ -35,11 +35,18 @@ export default function HtmlEmbed({
   // transparent}` cleared the canvas, so a case study drawn on white was
   // rendered on the site's black: its dark text vanished in dark mode and
   // reappeared in light mode.
+  // Web fonts leave as <link>s so the browser can start fetching them with the
+  // document instead of after this style block is parsed.
+  const { css: scoped, urls: fontLinks } = extractImports(scopeCss(css, `.${cls}`, cls))
+
   return (
     <div className={`mod-embed${themed ? ' themed' : ''} ${className}`.trim()}>
-      {css && (
+      {fontLinks.map((href) => (
+        <link key={href} rel="stylesheet" href={href} precedence="default" />
+      ))}
+      {scoped && (
         // eslint-disable-next-line react/no-danger
-        <style dangerouslySetInnerHTML={{ __html: scopeCss(css, `.${cls}`, cls) }} />
+        <style dangerouslySetInnerHTML={{ __html: scoped }} />
       )}
       {/* eslint-disable-next-line react/no-danger */}
       <div className={cls} dir={dir} dangerouslySetInnerHTML={{ __html: markup }} />

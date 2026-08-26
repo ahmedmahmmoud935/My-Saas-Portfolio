@@ -2,9 +2,10 @@ import React from 'react'
 import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { mediaUrl, tenantCssVars } from '@/lib/portfolio'
+import { mediaUrl } from '@/lib/portfolio'
 import ProjectView, { type Mod, type SerializedProject } from '@/components/project/ProjectView'
 import Navbar from '@/components/portfolio/Navbar'
+import PageShell from '@/components/portfolio/PageShell'
 
 type Params = {
   params: Promise<{ username: string; id: string }>
@@ -138,7 +139,6 @@ export default async function ProjectDetailPage({ params, searchParams }: Params
   }
 
   const settings = settingsRes.docs[0] ?? null
-  const cssVars = tenantCssVars(settings) as React.CSSProperties
 
   // The portfolio's own navbar, kept on the project page — leaving the visitor
   // with nothing but a Back button meant no way to reach any other section.
@@ -158,21 +158,9 @@ export default async function ProjectDetailPage({ params, searchParams }: Params
     },
   ]
 
-  // The tenant can pin a direction in the Design tab; otherwise it follows the
-  // language, exactly as the portfolio page does.
-  const st = ((settings as { style?: Record<string, string | undefined> } | null)?.style ?? {}) as Record<
-    string,
-    string | undefined
-  >
-  const dir: 'ltr' | 'rtl' =
-    st.direction === 'ltr' ? 'ltr' : st.direction === 'rtl' ? 'rtl' : locale === 'en' ? 'ltr' : 'rtl'
 
   return (
-    // `pf-root` is what carries the light palette: the tenant's colours are
-    // set inline here, and the light-mode rules override them through that
-    // class. Without it a project page stayed on the dark tokens — white
-    // heading on a white page.
-    <div className="pf-root" style={cssVars} dir={dir} lang={locale}>
+    <PageShell settings={settings} locale={locale}>
       <Navbar
         logo={tenant.name?.[0]?.toUpperCase() || 'V'}
         links={navLinks}
@@ -181,6 +169,6 @@ export default async function ProjectDetailPage({ params, searchParams }: Params
         langLabel={locale === 'en' ? 'ع' : 'EN'}
       />
       <ProjectView project={serialized} />
-    </div>
+    </PageShell>
   )
 }

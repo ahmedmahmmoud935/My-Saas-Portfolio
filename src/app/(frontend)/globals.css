@@ -918,6 +918,25 @@ html:has(.story-viewer) {
   font-size: 18px;
   cursor: pointer;
 }
+/* Shown only when the browser refused to start the clip with sound. */
+.reels-unmute {
+  position: absolute;
+  bottom: 74px;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .reels-nav {
   position: absolute;
   inset-inline-end: 20px;

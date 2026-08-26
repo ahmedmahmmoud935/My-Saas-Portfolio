@@ -270,6 +270,27 @@ function walkRules(css: string, scope: string, imports: string[], prefix: string
 }
 
 /**
+ * Pull the `@import` rules out of a finished stylesheet.
+ *
+ * An `@import` inside a `<style>` in the body is fetched only once that style
+ * block is parsed, and the browser holds the rest of the sheet until it lands —
+ * which is the second of unstyled text before a pasted page snaps into shape.
+ * As a `<link>` in the head it is discovered immediately and, in React 19,
+ * hoisted and de-duplicated for us.
+ */
+export function extractImports(css: string): { css: string; urls: string[] } {
+  const urls: string[] = []
+  const rest = css.replace(/@import\s+(?:url\(\s*)?["']?([^"')\s]+)["']?\s*\)?[^;]*;/gi, (m, url: string) => {
+    if (/^https?:\/\//i.test(url)) {
+      urls.push(url)
+      return ''
+    }
+    return m
+  })
+  return { css: rest.trim(), urls: [...new Set(urls)] }
+}
+
+/**
  * Confine a pasted stylesheet to one element.
  *
  * `:root`, `html` and `body` rules are re-pointed at the wrapper — otherwise

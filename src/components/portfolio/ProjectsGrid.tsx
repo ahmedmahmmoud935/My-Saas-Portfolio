@@ -159,7 +159,9 @@ export default function ProjectsGrid({
         </div>
       </div>
 
-      {player && <ReelsPlayer reels={player.reels} start={player.start} onClose={() => setPlayer(null)} />}
+      {player && (
+        <ReelsPlayer reels={player.reels} start={player.start} lang={lang} onClose={() => setPlayer(null)} />
+      )}
     </section>
   )
 }

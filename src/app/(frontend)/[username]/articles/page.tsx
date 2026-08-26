@@ -3,8 +3,9 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { mediaUrl, tenantCssVars } from '@/lib/portfolio'
+import { mediaUrl } from '@/lib/portfolio'
 import Navbar from '@/components/portfolio/Navbar'
+import PageShell from '@/components/portfolio/PageShell'
 import Footer from '@/components/portfolio/Footer'
 
 type Params = { params: Promise<{ username: string }>; searchParams?: Promise<{ lang?: string }> }
@@ -42,15 +43,8 @@ export default async function ArticlesListPage({ params, searchParams }: Params)
   if (!data) notFound()
   const { tenant, settings, articles } = data
   const logo = tenant.name?.[0]?.toUpperCase() || 'V'
-  const st = ((settings as { style?: Record<string, string | undefined> } | null)?.style ?? {}) as Record<
-    string,
-    string | undefined
-  >
-  const dir: 'ltr' | 'rtl' =
-    st.direction === 'ltr' ? 'ltr' : st.direction === 'rtl' ? 'rtl' : locale === 'en' ? 'ltr' : 'rtl'
-
   return (
-    <div className="pf-root" style={tenantCssVars(settings) as React.CSSProperties} dir={dir} lang={locale}>
+    <PageShell settings={settings} locale={locale}>
       <Navbar
         logo={logo}
         links={[{ label: locale === 'en' ? 'Home' : 'الرئيسية', href: `/${tenant.slug}?lang=${locale}` }]}
@@ -86,6 +80,6 @@ export default async function ArticlesListPage({ params, searchParams }: Params)
         </div>
       </section>
       <Footer logo={logo} name={tenant.name} />
-    </div>
+    </PageShell>
   )
 }
