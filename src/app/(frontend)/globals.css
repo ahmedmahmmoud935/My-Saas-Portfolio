@@ -1762,7 +1762,10 @@ body {
 
 /* ─── Modules (page builder) ────────────────────────────────────────────── */
 .mod-wrap {
-  max-width: 1000px;
+  /* The site's own content width. This column used to be 1000px while the
+     header above it ran the full 1200 — every project, not just a pasted page,
+     sat in a narrower column than the site around it. */
+  max-width: var(--container, 1200px);
   margin-inline: auto;
   padding-inline: 20px;
 }
@@ -2742,9 +2745,8 @@ html:has(.pf-root) {
   background: transparent;
   color: inherit;
   color-scheme: normal;
-  /* Break out of the 1000px article column. A pasted page is a page: it should
-     get the width the site itself uses and decide its own margins, rather than
-     sitting in a column narrower than the header above it. */
+  /* A pasted page decides its own margins, so it spans the column edge to edge
+     rather than sitting inside its 20px padding. */
   width: min(var(--container, 1200px), 100vw);
   max-width: min(var(--container, 1200px), 100vw);
   margin-inline: calc((100% - min(var(--container, 1200px), 100vw)) / 2);
