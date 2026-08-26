@@ -6,6 +6,13 @@
   position: relative;
   margin: 18px auto;
   width: 100%;
+  /* The whole slider runs left→right whatever the page direction: the slides
+     are a sequence of pictures, not text, and it keeps scrollLeft a plain
+     0→max on every engine. It has to be set here rather than on the track
+     alone — with only the track flipped, the dots and the counter kept the
+     page's direction and ran the opposite way to the slides, so slide 1 lit
+     the dot at the far end. */
+  direction: ltr;
   /* Cap the SLIDE by height, not width: a tall portrait set narrows the frame
      (the way Instagram does on desktop) instead of growing into a 1250px-tall
      wall. --mc-ar is a plain number so it works in both places. The cap is in
@@ -27,9 +34,6 @@
   overflow-x: auto;
   overflow-y: hidden;
   scroll-snap-type: x mandatory;
-  /* Slides run left→right whatever the page direction: they're a sequence of
-     pictures, not text, and it keeps scrollLeft a plain 0→max on every engine. */
-  direction: ltr;
   /* Keep a horizontal swipe inside the slider instead of triggering the
      browser's back gesture. */
   overscroll-behavior-x: contain;

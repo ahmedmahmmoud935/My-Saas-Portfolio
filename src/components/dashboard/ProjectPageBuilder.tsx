@@ -36,6 +36,9 @@ export default function ProjectPageBuilder({
   // One drawer at a time. The rail used to hold every panel at once, so it grew
   // past the viewport and scrolled against the page behind it.
   const [openDrawer, setOpenDrawer] = useState<string | null>('add')
+  // Publishing used to jump straight back to the list, so the only sign it had
+  // worked was the page changing under you.
+  const [published, setPublished] = useState(false)
   const toggle = (id: string) => setOpenDrawer((cur) => (cur === id ? null : id))
 
   const setModules = (modules: EditModule[]) => setP((x) => ({ ...x, modules }))
@@ -95,8 +98,7 @@ export default function ProjectPageBuilder({
         modules: p.modules.map(editModuleToInput),
       })
       if (exit) {
-        router.push('/dashboard/projects')
-        router.refresh()
+        setPublished(true)
       } else {
         setToast(true)
         setTimeout(() => setToast(false), 1800)
@@ -213,6 +215,32 @@ export default function ProjectPageBuilder({
       </div>
 
       {toast && <div className="toast">{t('تم الحفظ ✓', 'Saved ✓')}</div>}
+
+      {published && (
+        <div className="modal-overlay" onClick={() => setPublished(false)}>
+          <div className="modal done-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="done-icon">
+              <NavIcon id="publish" size={26} />
+            </div>
+            <h3>{t('تم النشر ✓', 'Published ✓')}</h3>
+            <p>{t('المشروع بقى ظاهر على موقعك.', 'The project is now live on your site.')}</p>
+            <div className="done-actions">
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  router.push('/dashboard/projects')
+                  router.refresh()
+                }}
+              >
+                {t('كل المشاريع', 'All projects')}
+              </button>
+              <button className="btn btn-ghost" onClick={() => setPublished(false)}>
+                {t('أكمل التعديل', 'Keep editing')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

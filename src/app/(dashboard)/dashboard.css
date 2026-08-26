@@ -798,6 +798,40 @@ button {
   border: 1px solid var(--border);
   border-radius: 16px;
 }
+/* Publish confirmation: centred, same shell as every other dashboard modal. */
+.done-modal {
+  max-width: 380px;
+  padding: 26px 24px 22px;
+  text-align: center;
+}
+.done-icon {
+  width: 54px;
+  height: 54px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.done-modal h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 800;
+}
+.done-modal p {
+  margin: 0 0 18px;
+  color: var(--sub);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.done-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
 .modal-head {
   display: flex;
   align-items: center;
