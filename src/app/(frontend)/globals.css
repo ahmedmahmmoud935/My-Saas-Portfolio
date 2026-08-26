@@ -1794,7 +1794,10 @@ body {
     flex-wrap: wrap;
   }
   .mod-row img {
-    flex: 0 0 calc((100% - (var(--row-cols, 1) - 1) * 10px) / var(--row-cols, 1));
+    /* The count is a basis, not a cap: a full line divides exactly, and one
+       image left over on the last line stretches across instead of sitting at
+       half width with a hole beside it. */
+    flex: 1 1 calc((100% - (var(--row-cols, 1) - 1) * 10px) / var(--row-cols, 1));
   }
 }
 
