@@ -1746,6 +1746,14 @@ body {
   border-radius: var(--radius-card);
   cursor: zoom-in;
 }
+/* The stacked layout shows one picture at a time, so it gets the same cap. */
+.stack img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  max-height: min(84vh, 900px);
+  margin-inline: auto;
+}
 .detail-grid img {
   aspect-ratio: 4 / 5;
   object-fit: cover;
@@ -1786,9 +1794,18 @@ body {
   margin: 0 0 16px;
 }
 .mod-img {
-  width: 100%;
+  /* Capped by HEIGHT, not width — the same rule the carousel follows.
+     A design is usually taller than it is wide (4:5 or 9:16), so sizing it to
+     the column made one picture 1450px tall and you had to scroll through a
+     single image. Narrowing the column doesn't fix that: at 1000px a 4:5 design
+     is still 1250px tall, well past a laptop screen. Capping the height does,
+     and a landscape image still fills the column. */
+  display: block;
+  width: auto;
+  max-width: 100%;
+  max-height: min(84vh, 900px);
   border-radius: var(--radius-card);
-  margin: 14px 0;
+  margin: 14px auto;
   cursor: zoom-in;
 }
 .mod-row {
