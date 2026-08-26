@@ -2742,12 +2742,6 @@ html:has(.pf-root) {
   background: transparent;
   color: inherit;
   color-scheme: normal;
-  /* Break out of the 1000px article column. A pasted page is a page: it should
-     get the width the site itself uses and decide its own margins, rather than
-     sitting in a column narrower than the header above it. */
-  width: min(var(--container, 1200px), 100vw);
-  max-width: min(var(--container, 1200px), 100vw);
-  margin-inline: calc((100% - min(var(--container, 1200px), 100vw)) / 2);
 }
 /* The page's own `body` rule lands here. Told to paint `var(--bg)`, it drew a
    flat rectangle over whatever gradient or image the site is actually showing —

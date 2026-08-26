@@ -42,8 +42,7 @@ export const PASTE_GUIDE_AR = `اكتب صفحة HTML كاملة (مع <style> �
 - position: fixed أو أقسام بارتفاع 100vh — الصفحة بتتعرض جوّه المشروع مش لوحدها.
 
 العرض:
-- الصفحة بتاخد عرض الموقع كامل (1200px) — حدّد عرض الحاوية اللي يناسب تصميمك،
-  مثلاً max-width: 1200px; margin: 0 auto;
+- الصفحة بتتعرض في عمود عرضه 1000px — خلّي الحاوية max-width: 1000px; margin: 0 auto;
 
 مسموح:
 - أسماء الكلاسات زي ما تحب (بتتعزل تلقائيًا).
@@ -81,8 +80,8 @@ Not allowed:
 - position: fixed, or sections sized to 100vh — the page renders inside a project, not on its own.
 
 Width:
-- The page is given the site's full content width (1200px) — set whatever
-  container suits your design, e.g. max-width: 1200px; margin: 0 auto;
+- The page renders in a 1000px column — keep the container at
+  max-width: 1000px; margin: 0 auto;
 
 Fine to use:
 - Any class names you like (they're namespaced automatically).
