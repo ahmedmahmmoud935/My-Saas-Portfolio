@@ -29,7 +29,7 @@ export default function About({
             <div className="about-tags">
               {tags.map((t) => (
                 <span className="chip" key={t}>
-                  {t}
+                  <span className="chip-label">{t}</span>
                 </span>
               ))}
             </div>

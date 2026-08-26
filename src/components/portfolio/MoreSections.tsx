@@ -196,7 +196,7 @@ export function Skills({
         <div className={`chips-center skills-${variant}`}>
           {items.map((s) => (
             <span className="chip" key={s}>
-              {s}
+              <span className="chip-label">{s}</span>
             </span>
           ))}
         </div>

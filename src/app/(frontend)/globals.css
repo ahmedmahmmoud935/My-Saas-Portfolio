@@ -2244,6 +2244,7 @@ body {
   .pf-root .tool-name,
   .pf-root .tool-idx,
   .pf-root .filter-pill,
+  .pf-root .chip-label,
   .pf-root .hero-eyebrow,
   .pf-root .detail-cat {
     text-box: trim-both cap alphabetic;
@@ -2261,6 +2262,11 @@ body {
   }
   .pf-root .filter-pill {
     padding-block: 8px;
+  }
+  /* Same as the buttons: a pill keeps its size through a min-height, and the
+     flex centring puts the trimmed label in the middle of it. */
+  .pf-root .chip {
+    min-height: 35px;
   }
 }
 
