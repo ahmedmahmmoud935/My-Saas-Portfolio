@@ -11,6 +11,19 @@ const nextConfig = {
       bodySizeLimit: '150mb',
     },
   },
+  /**
+   * A Link header on the homepage pointing at the one machine-readable
+   * description this site actually has. `describedby` is a registered relation
+   * (RFC 8288); llms.txt lists every portfolio on the install.
+   */
+  async headers() {
+    return [
+      {
+        source: '/',
+        headers: [{ key: 'Link', value: '</llms.txt>; rel="describedby"; type="text/plain"' }],
+      },
+    ]
+  },
   // Allow media served from R2 / the CDN in next/image.
   images: {
     remotePatterns: [
