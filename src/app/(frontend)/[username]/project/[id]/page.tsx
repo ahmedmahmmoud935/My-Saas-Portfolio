@@ -7,6 +7,7 @@ import { mediaUrl } from '@/lib/portfolio'
 import ProjectView, { type Mod, type SerializedProject } from '@/components/project/ProjectView'
 import Navbar from '@/components/portfolio/Navbar'
 import PageShell from '@/components/portfolio/PageShell'
+import TrackVisit from '@/components/portfolio/TrackVisit'
 
 type Params = {
   params: Promise<{ username: string; id: string }>
@@ -168,6 +169,9 @@ export default async function ProjectDetailPage({ params, searchParams }: Params
 
   return (
     <PageShell settings={settings} locale={locale}>
+      {/* Opening a project was never recorded, so "most viewed projects" had
+          nothing to count and sat empty however much traffic came through. */}
+      <TrackVisit tenant={tenant.id} page="project" project={project.id} />
       <Navbar
         logo={tenant.name?.[0]?.toUpperCase() || 'V'}
         links={navLinks}

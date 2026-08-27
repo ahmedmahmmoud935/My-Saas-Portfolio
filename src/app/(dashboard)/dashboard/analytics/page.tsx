@@ -44,10 +44,26 @@ export default async function AnalyticsPage({ searchParams }: Params) {
     v.project && typeof v.project === 'object' ? v.project.title : null,
   ).slice(0, 6)
   const countries = countByLabel((v) => v.country).slice(0, 6)
+  // Where visitors came FROM. A link from one of your own pages to another is
+  // not a source — counting it made the site its own biggest referrer, which
+  // says nothing about where the traffic is coming from.
+  const ownHosts = new Set(
+    [process.env.NEXT_PUBLIC_SERVER_URL]
+      .filter(Boolean)
+      .flatMap((u) => {
+        try {
+          const h = new URL(u as string).hostname
+          return h.startsWith('www.') ? [h, h.slice(4)] : [h, `www.${h}`]
+        } catch {
+          return []
+        }
+      }),
+  )
   const referrers = countByLabel((v) => {
     if (!v.referrer) return '__direct__' // translated in the view
     try {
-      return new URL(v.referrer).hostname
+      const host = new URL(v.referrer).hostname
+      return ownHosts.has(host) ? null : host
     } catch {
       return v.referrer
     }
