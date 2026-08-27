@@ -601,6 +601,8 @@ export interface SiteSetting {
         videoUrl?: string | null;
         fixed?: boolean | null;
         dim?: number | null;
+        posX?: number | null;
+        posY?: number | null;
         id?: string | null;
       }[]
     | null;
@@ -1347,6 +1349,8 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         videoUrl?: T;
         fixed?: T;
         dim?: T;
+        posX?: T;
+        posY?: T;
         id?: T;
       };
   style?:

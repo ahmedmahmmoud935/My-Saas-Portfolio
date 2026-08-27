@@ -218,6 +218,10 @@ export const SiteSettings: CollectionConfig = {
                 { name: 'videoUrl', type: 'text' },
                 { name: 'fixed', type: 'checkbox', label: 'Parallax (background stays put)' },
                 { name: 'dim', type: 'number', defaultValue: 45, min: 0, max: 100 },
+                // Which part of the picture stays in frame once it's cropped
+                // to the section — the hero cover has had this all along.
+                { name: 'posX', type: 'number', defaultValue: 50, min: 0, max: 100 },
+                { name: 'posY', type: 'number', defaultValue: 50, min: 0, max: 100 },
               ],
             },
             {

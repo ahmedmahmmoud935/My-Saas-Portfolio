@@ -152,6 +152,27 @@ export default function MediaUploader({
     }
   }
 
+  // Dropping a file works anywhere the uploader is drawn. `dragover` has to be
+  // cancelled or the browser just opens the file instead of letting us have it.
+  const [dropping, setDropping] = useState(false)
+  const dropProps = {
+    onDragOver: (e: React.DragEvent) => {
+      if (busy) return
+      e.preventDefault()
+      setDropping(true)
+    },
+    onDragLeave: () => setDropping(false),
+    onDrop: (e: React.DragEvent) => {
+      setDropping(false)
+      const files = Array.from(e.dataTransfer?.files ?? [])
+      // A thumbnail being dragged to reorder carries no files — leave it alone.
+      if (!files.length) return
+      e.preventDefault()
+      pickFiles(multiple ? files : files.slice(0, 1))
+    },
+  }
+  const dropClass = dropping ? ' is-dropping' : ''
+
   const input = (
     <input
       ref={ref}
@@ -252,7 +273,13 @@ export default function MediaUploader({
   // "+" tile — add more images to a gallery.
   if (plus) {
     return withNote(
-      <button type="button" className="uploader-plus" onClick={() => ref.current?.click()} title={lbl}>
+      <button
+        type="button"
+        className={`uploader-plus${dropClass}`}
+        onClick={() => ref.current?.click()}
+        title={lbl}
+        {...dropProps}
+      >
         {input}
         {busy ? '…' : '+'}
       </button>,
@@ -262,7 +289,7 @@ export default function MediaUploader({
   // Full-width preview with a replace badge — clicking re-opens the picker.
   if (big && preview) {
     return withNote(
-      <div className="uploader uploader-big" onClick={() => ref.current?.click()}>
+      <div className={`uploader uploader-big${dropClass}`} onClick={() => ref.current?.click()} {...dropProps}>
         {input}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={preview} alt="" draggable={false} />
@@ -296,9 +323,10 @@ export default function MediaUploader({
     const portrait = w && h ? w / h < 1 : false
     return withNote(
       <div
-        className="uploader uploader-aspect"
+        className={`uploader uploader-aspect${dropClass}`}
         onClick={() => ref.current?.click()}
         style={{ aspectRatio: aspect, maxWidth: portrait ? 190 : 340 }}
+        {...dropProps}
       >
         {input}
         {preview ? (
@@ -314,8 +342,9 @@ export default function MediaUploader({
 
   return withNote(
     <div
-      className="uploader"
+      className={`uploader${dropClass}`}
       onClick={() => ref.current?.click()}
+      {...dropProps}
       style={{
         border: '1px dashed var(--border)',
         borderRadius: 10,

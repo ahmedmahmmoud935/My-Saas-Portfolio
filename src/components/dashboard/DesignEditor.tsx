@@ -411,6 +411,10 @@ function ThemePanel({
             )}
 
             {r.mode === 'image' && (
+              // Picture on one side, every setting for it on the other, each
+              // starting on the same line as the last. The settings used to be
+              // scattered around the picture with the sliders stranded in a
+              // column of their own.
               <div className="bg-image-row">
                 <MediaUploader
                   big
@@ -420,17 +424,24 @@ function ThemePanel({
                   onUploaded={(m) => patchRow(i, { imageId: m.id, imageUrl: m.url ?? m.thumbUrl })}
                   onRemove={() => patchRow(i, { imageId: null, imageUrl: null })}
                 />
-                <div>
-                <Opt
-                  label={tr('السلوك عند التمرير', 'Scroll behaviour')}
-                  value={r.fixed ? 'fixed' : 'scroll'}
-                  options={[
-                    { value: 'fixed', label: tr('ثابتة (بارالاكس)', 'Fixed (parallax)') },
-                    { value: 'scroll', label: tr('تتحرك', 'Scrolls') },
-                  ]}
-                  onChange={(v) => patchRow(i, { fixed: v === 'fixed' })}
-                />
-                <Slider label={tr('التعتيم', 'Dim')} value={r.dim} min={0} max={100} suffix="%" onChange={(v) => patchRow(i, { dim: v })} />
+                <div className="bg-image-ctrls">
+                  <Opt
+                    label={tr('السلوك عند التمرير', 'Scroll behaviour')}
+                    value={r.fixed ? 'fixed' : 'scroll'}
+                    options={[
+                      { value: 'fixed', label: tr('ثابتة (بارالاكس)', 'Fixed (parallax)') },
+                      { value: 'scroll', label: tr('تتحرك', 'Scrolls') },
+                    ]}
+                    onChange={(v) => patchRow(i, { fixed: v === 'fixed' })}
+                  />
+                  <div className="bg-ctrls">
+                    <label className="lbl">{tr('التعتيم', 'Dim')} — {r.dim}%</label>
+                    <input type="range" min={0} max={100} value={r.dim} onChange={(e) => patchRow(i, { dim: Number(e.target.value) })} />
+                    <label className="lbl">{tr('الموضع ↔', 'Position ↔')} — {r.posX}%</label>
+                    <input type="range" min={0} max={100} value={r.posX} onChange={(e) => patchRow(i, { posX: Number(e.target.value) })} />
+                    <label className="lbl">{tr('الموضع ↕', 'Position ↕')} — {r.posY}%</label>
+                    <input type="range" min={0} max={100} value={r.posY} onChange={(e) => patchRow(i, { posY: Number(e.target.value) })} />
+                  </div>
                 </div>
               </div>
             )}

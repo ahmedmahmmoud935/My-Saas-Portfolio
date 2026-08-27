@@ -46,6 +46,8 @@ export async function saveDesign(form: DesignForm) {
           videoUrl: s.videoUrl,
           fixed: s.fixed,
           dim: s.dim,
+          posX: s.posX,
+          posY: s.posY,
         })),
       // `style.font` is a select whose options once drifted from the editor's
       // list; an unknown value made Payload reject the entire save. Only ever

@@ -42,6 +42,8 @@ export default async function DesignPage() {
       videoUrl: String(r.videoUrl ?? ''),
       fixed: Boolean(r.fixed),
       dim: (r.dim as number) ?? 45,
+      posX: (r.posX as number) ?? 50,
+      posY: (r.posY as number) ?? 50,
     })),
     style: merge(d.style, s.style),
     components: merge(d.components, (s.themeConfig as Record<string, unknown>)?.components),

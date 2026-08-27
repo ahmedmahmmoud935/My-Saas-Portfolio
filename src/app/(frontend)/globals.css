@@ -2577,6 +2577,20 @@ html[data-theme='light'] .pf-sec-layer.for-dark {
 html[data-theme='light'] .pf-sec-layer.for-light {
   display: block;
 }
+/* Held in place while the section scrolls past. `position: sticky` is carried
+   by the compositor; `background-attachment: fixed` had to be redrawn every
+   frame, which is what made it shimmer. The negative margin means the sticky
+   layer takes up no space of its own. */
+.pf-sec-layer.pinned {
+  overflow: hidden;
+}
+.pf-sec-layer.pinned .pf-sec-media {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  margin-bottom: -100vh;
+  will-change: transform;
+}
 .pf-sec-media {
   position: absolute;
   inset: 0;

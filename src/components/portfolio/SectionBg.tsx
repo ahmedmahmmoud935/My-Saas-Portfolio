@@ -7,6 +7,8 @@ export type SectionBgConfig = {
   videoUrl?: string | null
   fixed?: boolean | null
   dim?: number | null
+  posX?: number | null
+  posY?: number | null
 }
 
 const dimOf = (c?: SectionBgConfig | null) => Math.min(100, Math.max(0, c?.dim ?? 45)) / 100
@@ -15,13 +17,17 @@ const dimOf = (c?: SectionBgConfig | null) => Math.min(100, Math.max(0, c?.dim ?
 function Layer({ config, theme }: { config: SectionBgConfig; theme: 'dark' | 'light' }) {
   const mode = config.mode || 'color'
   if (mode === 'image' && config.imageUrl) {
+    // "Fixed" used to mean `background-attachment: fixed`, which forces the
+    // browser to repaint the picture on every scroll frame — the shimmer you
+    // could see. A sticky layer gives the same held-in-place look and is moved
+    // by the compositor instead, so nothing is repainted.
     return (
-      <span className={`pf-sec-layer for-${theme}`}>
+      <span className={`pf-sec-layer for-${theme}${config.fixed ? ' pinned' : ''}`}>
         <span
           className="pf-sec-media"
           style={{
             backgroundImage: `url(${JSON.stringify(config.imageUrl)})`,
-            backgroundAttachment: config.fixed ? 'fixed' : 'scroll',
+            backgroundPosition: `${config.posX ?? 50}% ${config.posY ?? 50}%`,
           }}
         />
         <span className="pf-sec-dim" style={{ opacity: dimOf(config) }} />
@@ -31,7 +37,16 @@ function Layer({ config, theme }: { config: SectionBgConfig; theme: 'dark' | 'li
   if (mode === 'video' && config.videoUrl) {
     return (
       <span className={`pf-sec-layer for-${theme}`}>
-        <video className="pf-sec-media" src={config.videoUrl} autoPlay muted loop playsInline preload="none" />
+        <video
+          className="pf-sec-media"
+          src={config.videoUrl}
+          style={{ objectPosition: `${config.posX ?? 50}% ${config.posY ?? 50}%` }}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="none"
+        />
         <span className="pf-sec-dim" style={{ opacity: dimOf(config) }} />
       </span>
     )

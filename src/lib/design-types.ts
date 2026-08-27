@@ -27,6 +27,9 @@ export type SectionBgForm = {
   videoUrl: string
   fixed: boolean
   dim: number
+  /** Which part of the picture to keep in frame, 0–100 on each axis. */
+  posX: number
+  posY: number
 }
 
 export const emptyBg = (): BgForm => ({
@@ -50,6 +53,8 @@ export const emptySectionBg = (theme = 'dark'): SectionBgForm => ({
   videoUrl: '',
   fixed: false,
   dim: 45,
+  posX: 50,
+  posY: 50,
 })
 
 /** Sections a backdrop can be attached to (matches SECTION_IDS server-side). */
