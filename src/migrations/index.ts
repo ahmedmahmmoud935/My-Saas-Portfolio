@@ -19,6 +19,7 @@ import * as migration_20260824_150000_add_video_poster from './20260824_150000_a
 import * as migration_20260825_020000_add_hero_overlay_light from './20260825_020000_add_hero_overlay_light';
 import * as migration_20260826_020000_split_font_choice from './20260826_020000_split_font_choice';
 import * as migration_20260826_040000_add_grid_mobile_cols from './20260826_040000_add_grid_mobile_cols';
+import * as migration_20260827_190000_bilingual_categories from './20260827_190000_bilingual_categories';
 
 export const migrations = [
   {
@@ -125,5 +126,10 @@ export const migrations = [
     up: migration_20260826_040000_add_grid_mobile_cols.up,
     down: migration_20260826_040000_add_grid_mobile_cols.down,
     name: '20260826_040000_add_grid_mobile_cols'
+  },
+  {
+    up: migration_20260827_190000_bilingual_categories.up,
+    down: migration_20260827_190000_bilingual_categories.down,
+    name: '20260827_190000_bilingual_categories'
   },
 ];

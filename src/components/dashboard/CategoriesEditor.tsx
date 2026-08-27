@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import PageHeader from './PageHeader'
 import { saveCategories } from '@/lib/dashboard-actions'
+import type { CategoryRow } from '@/lib/category-types'
 import { useDashLang } from './DashLang'
 
 function List({
@@ -13,19 +14,24 @@ function List({
 }: {
   title: string
   icon: string
-  items: string[]
-  setItems: (v: string[]) => void
+  items: CategoryRow[]
+  setItems: (v: CategoryRow[]) => void
 }) {
   const { t } = useDashLang()
   const [draft, setDraft] = useState('')
+  const patch = (i: number, p: Partial<CategoryRow>) =>
+    setItems(items.map((c, j) => (j === i ? { ...c, ...p } : c)))
+
   return (
     <div className="panel">
       <div className="panel-title">
         <span>{title}</span>
         <span>{icon}</span>
       </div>
+      {/* Two labels per category. The name a project was filed under stays the
+          key underneath, so renaming a label never unfiles anything. */}
       {items.map((it, i) => (
-        <div className="list-row" key={i}>
+        <div className="cat-row" key={i}>
           <button
             className="icon-btn del"
             onClick={() => setItems(items.filter((_, j) => j !== i))}
@@ -35,8 +41,17 @@ function List({
           </button>
           <input
             className="field"
-            value={it}
-            onChange={(e) => setItems(items.map((v, j) => (j === i ? e.target.value : v)))}
+            placeholder={t('بالعربي', 'Arabic')}
+            value={it.nameAr ?? ''}
+            onChange={(e) => patch(i, { nameAr: e.target.value })}
+          />
+          <input
+            className="field"
+            dir="ltr"
+            style={{ textAlign: 'start' }}
+            placeholder="English"
+            value={it.nameEn ?? it.name ?? ''}
+            onChange={(e) => patch(i, { nameEn: e.target.value })}
           />
         </div>
       ))}
@@ -45,7 +60,7 @@ function List({
           className="icon-btn add"
           onClick={() => {
             if (draft.trim()) {
-              setItems([...items, draft.trim()])
+              setItems([...items, { name: draft.trim(), nameEn: draft.trim() }])
               setDraft('')
             }
           }}
@@ -60,7 +75,7 @@ function List({
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && draft.trim()) {
-              setItems([...items, draft.trim()])
+              setItems([...items, { name: draft.trim(), nameEn: draft.trim() }])
               setDraft('')
             }
           }}
@@ -74,8 +89,8 @@ export default function CategoriesEditor({
   initialImage,
   initialVideo,
 }: {
-  initialImage: string[]
-  initialVideo: string[]
+  initialImage: CategoryRow[]
+  initialVideo: CategoryRow[]
 }) {
   const [image, setImage] = useState(initialImage)
   const [video, setVideo] = useState(initialVideo)

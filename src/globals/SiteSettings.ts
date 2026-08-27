@@ -438,7 +438,14 @@ export const SiteSettings: CollectionConfig = {
                 {
                   name: 'image',
                   type: 'array',
-                  fields: [{ name: 'name', type: 'text' }],
+                  // `name` is the KEY: it is what a project stores in its
+                  // `category` field, so it must never change with language.
+                  // The two labels are what visitors and the dashboard see.
+                  fields: [
+                    { name: 'name', type: 'text' },
+                    { name: 'nameAr', type: 'text' },
+                    { name: 'nameEn', type: 'text' },
+                  ],
                   defaultValue: [
                     'Social Media',
                     'Brand Identity',
@@ -452,7 +459,11 @@ export const SiteSettings: CollectionConfig = {
                 {
                   name: 'video',
                   type: 'array',
-                  fields: [{ name: 'name', type: 'text' }],
+                  fields: [
+                    { name: 'name', type: 'text' },
+                    { name: 'nameAr', type: 'text' },
+                    { name: 'nameEn', type: 'text' },
+                  ],
                   defaultValue: [
                     'Reels',
                     'Motion Graphics',

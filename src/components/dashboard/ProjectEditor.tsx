@@ -14,6 +14,7 @@ import {
 } from '@/lib/project-types'
 import BiText from './BiText'
 import { useDashLang } from './DashLang'
+import { catLabel, type CategoryRow } from '@/lib/category-types'
 import { useDragReorder } from './useDragReorder'
 
 /** Move one entry of a list to a new index, returning a new array. */
@@ -49,12 +50,12 @@ export default function ProjectEditor({
   onSaved,
 }: {
   initial: EditableProject
-  categories: string[]
+  categories: CategoryRow[]
   onClose: () => void
   onSaved: () => void
 }) {
   const [p, setP] = useState<EditableProject>(initial)
-  const { t } = useDashLang()
+  const { t, lang } = useDashLang()
   const [busy, setBusy] = useState(false)
   const [toast, setToast] = useState(false)
   const set = (patch: Partial<EditableProject>) => setP((prev) => ({ ...prev, ...patch }))
@@ -132,9 +133,11 @@ export default function ProjectEditor({
                 onChange={(e) => set({ category: e.target.value })}
               >
                 <option value="">{t('— بدون —', '— None —')}</option>
+                {/* Shown in the dashboard's language; the value saved is the
+                    key, so the site can show the other one. */}
                 {categories.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
+                  <option key={c.name} value={c.name}>
+                    {catLabel(c, lang)}
                   </option>
                 ))}
               </select>

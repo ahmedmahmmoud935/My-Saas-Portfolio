@@ -1,6 +1,7 @@
 import React from 'react'
 import { redirect } from 'next/navigation'
 import { getDashboardContext, getTenantSettings } from '@/lib/dashboard'
+import { toCategoryRows } from '@/lib/category-types'
 import { mediaUrl } from '@/lib/portfolio'
 import ProjectsManager, { type ProjectRow } from '@/components/dashboard/ProjectsManager'
 import type { Bi, EditModule } from '@/lib/project-types'
@@ -117,9 +118,14 @@ export default async function ProjectsPage() {
     published: p.published !== false,
   }))
 
-  const categoriesImage = (settings.categories?.image ?? []).map((c) => c.name || '').filter(Boolean)
-  const categoriesVideo = (settings.categories?.video ?? []).map((c) => c.name || '').filter(Boolean)
-  const categories = Array.from(new Set([...categoriesImage, ...categoriesVideo]))
+  // The key plus both labels — the dashboard shows whichever matches the
+  // language it is in, while a project keeps being filed under the key.
+  const categoriesImage = toCategoryRows(settings.categories?.image ?? [])
+  const categoriesVideo = toCategoryRows(settings.categories?.video ?? [])
+  const categories = toCategoryRows([
+    ...(settings.categories?.image ?? []),
+    ...(settings.categories?.video ?? []),
+  ])
 
   const gc = settings.gridCols ?? {}
   const gridCols = {

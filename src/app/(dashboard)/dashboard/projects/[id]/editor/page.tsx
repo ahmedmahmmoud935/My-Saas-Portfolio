@@ -1,6 +1,7 @@
 import React from 'react'
 import { redirect, notFound } from 'next/navigation'
 import { getDashboardContext, getTenantSettings } from '@/lib/dashboard'
+import { toCategoryRows } from '@/lib/category-types'
 import { mediaUrl } from '@/lib/portfolio'
 import ProjectPageBuilder, { type BuilderProject } from '@/components/dashboard/ProjectPageBuilder'
 import type { Bi, EditModule } from '@/lib/project-types'
@@ -87,12 +88,10 @@ export default async function ProjectEditorPage({ params }: { params: Promise<{ 
   if (!project || pt !== ctx.tenantId) notFound()
 
   const settings = await getTenantSettings(ctx)
-  const categories = Array.from(
-    new Set([
-      ...(settings.categories?.image ?? []).map((c) => c.name || ''),
-      ...(settings.categories?.video ?? []).map((c) => c.name || ''),
-    ]),
-  ).filter(Boolean)
+  const categories = toCategoryRows([
+    ...(settings.categories?.image ?? []),
+    ...(settings.categories?.video ?? []),
+  ])
 
   const initial: BuilderProject = {
     id: project.id,

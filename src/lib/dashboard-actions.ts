@@ -1,9 +1,10 @@
 'use server'
 
 import { getDashboardContext, getTenantSettings } from './dashboard'
+import type { CategoryRow } from './category-types'
 
 /** Save the tenant's design + reel categories. */
-export async function saveCategories(image: string[], video: string[]) {
+export async function saveCategories(image: CategoryRow[], video: CategoryRow[]) {
   const ctx = await getDashboardContext()
   if (!ctx) throw new Error('unauthorized')
   const settings = await getTenantSettings(ctx)
@@ -12,8 +13,12 @@ export async function saveCategories(image: string[], video: string[]) {
     id: settings.id,
     data: {
       categories: {
-        image: image.filter(Boolean).map((name) => ({ name })),
-        video: video.filter(Boolean).map((name) => ({ name })),
+        image: image
+          .filter((c) => c?.name)
+          .map((c) => ({ name: c.name, nameAr: c.nameAr || null, nameEn: c.nameEn || null })),
+        video: video
+          .filter((c) => c?.name)
+          .map((c) => ({ name: c.name, nameAr: c.nameAr || null, nameEn: c.nameEn || null })),
       },
     },
   })

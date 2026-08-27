@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { saveCategories } from '@/lib/dashboard-actions'
+import type { CategoryRow } from '@/lib/category-types'
 import { useDashLang } from './DashLang'
 import NavIcon from './icons'
 
@@ -11,24 +12,26 @@ function List({
   setItems,
 }: {
   title: string
-  items: string[]
-  setItems: (v: string[]) => void
+  items: CategoryRow[]
+  setItems: (v: CategoryRow[]) => void
 }) {
   const { t } = useDashLang()
   const [draft, setDraft] = useState('')
   const add = () => {
     if (draft.trim()) {
-      setItems([...items, draft.trim()])
+      setItems([...items, { name: draft.trim(), nameEn: draft.trim() }])
       setDraft('')
     }
   }
+  const patch = (i: number, p: Partial<CategoryRow>) =>
+    setItems(items.map((c, j) => (j === i ? { ...c, ...p } : c)))
   return (
     <div className="panel">
       <div className="panel-title">
         <span>{title}</span>
       </div>
       {items.map((it, i) => (
-        <div className="list-row" key={i}>
+        <div className="cat-row" key={i}>
           <button
             className="icon-btn del"
             onClick={() => setItems(items.filter((_, j) => j !== i))}
@@ -38,8 +41,17 @@ function List({
           </button>
           <input
             className="field"
-            value={it}
-            onChange={(e) => setItems(items.map((v, j) => (j === i ? e.target.value : v)))}
+            placeholder={t('بالعربي', 'Arabic')}
+            value={it.nameAr ?? ''}
+            onChange={(e) => patch(i, { nameAr: e.target.value })}
+          />
+          <input
+            className="field"
+            dir="ltr"
+            style={{ textAlign: 'start' }}
+            placeholder="English"
+            value={it.nameEn ?? it.name ?? ''}
+            onChange={(e) => patch(i, { nameEn: e.target.value })}
           />
         </div>
       ))}
@@ -66,8 +78,8 @@ export default function CategoriesModal({
   onClose,
   onSaved,
 }: {
-  initialImage: string[]
-  initialVideo: string[]
+  initialImage: CategoryRow[]
+  initialVideo: CategoryRow[]
   onClose: () => void
   onSaved: () => void
 }) {

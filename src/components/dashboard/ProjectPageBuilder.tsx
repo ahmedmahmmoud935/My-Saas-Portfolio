@@ -10,6 +10,7 @@ import { uploadFile } from '@/lib/upload-client'
 import { biEmpty, editModuleToInput, emptyBi, type Bi, type EditModule } from '@/lib/project-types'
 import BiText from './BiText'
 import { useDashLang } from './DashLang'
+import { catLabel, type CategoryRow } from '@/lib/category-types'
 
 export type BuilderProject = {
   id: number
@@ -26,12 +27,12 @@ export default function ProjectPageBuilder({
   categories,
 }: {
   initial: BuilderProject
-  categories: string[]
+  categories: CategoryRow[]
 }) {
   const router = useRouter()
   const [p, setP] = useState<BuilderProject>(initial)
   const [busy, setBusy] = useState(false)
-  const { t } = useDashLang()
+  const { t, lang } = useDashLang()
   const [toast, setToast] = useState(false)
   // One drawer at a time. The rail used to hold every panel at once, so it grew
   // past the viewport and scrolled against the page behind it.
@@ -198,8 +199,8 @@ export default function ProjectPageBuilder({
             >
               <option value="">{t('— بدون —', '— None —')}</option>
               {categories.map((c) => (
-                <option key={c} value={c}>
-                  {c}
+                <option key={c.name} value={c.name}>
+                  {catLabel(c, lang)}
                 </option>
               ))}
             </select>

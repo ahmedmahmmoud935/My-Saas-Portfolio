@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import PageHeader from './PageHeader'
 import NavIcon from './icons'
 import { useDashLang } from './DashLang'
+import { catLabel, type CategoryRow } from '@/lib/category-types'
 import ProjectEditor, { type EditableProject } from './ProjectEditor'
 import NewProjectWizard from './NewProjectWizard'
 import CategoriesModal from './CategoriesModal'
@@ -54,9 +55,9 @@ export default function ProjectsManager({
   gridCols,
 }: {
   projects: ProjectRow[]
-  categories: string[]
-  categoriesImage: string[]
-  categoriesVideo: string[]
+  categories: CategoryRow[]
+  categoriesImage: CategoryRow[]
+  categoriesVideo: CategoryRow[]
   gridCols: GridCols
 }) {
   const router = useRouter()
@@ -302,8 +303,12 @@ export default function ProjectsManager({
           {tr('الكل', 'All')}
         </button>
         {categories.map((c) => (
-          <button key={c} className={`pill ${cat === c ? 'active' : ''}`} onClick={() => setCat(c)}>
-            {c}
+          <button
+            key={c.name}
+            className={`pill ${cat === c.name ? 'active' : ''}`}
+            onClick={() => setCat(c.name)}
+          >
+            {catLabel(c, lang)}
           </button>
         ))}
       </div>

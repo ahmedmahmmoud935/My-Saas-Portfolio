@@ -297,6 +297,10 @@ export interface Project {
             blockType: 'image';
           }
         | {
+            /**
+             * Images per row on a phone (1–3). The row stays proportional on wider screens.
+             */
+            mobileCols?: number | null;
             items?:
               | {
                   src: number | Media;
@@ -670,12 +674,16 @@ export interface SiteSetting {
     image?:
       | {
           name?: string | null;
+          nameAr?: string | null;
+          nameEn?: string | null;
           id?: string | null;
         }[]
       | null;
     video?:
       | {
           name?: string | null;
+          nameAr?: string | null;
+          nameEn?: string | null;
           id?: string | null;
         }[]
       | null;
@@ -1103,6 +1111,7 @@ export interface ProjectsSelect<T extends boolean = true> {
         grid?:
           | T
           | {
+              mobileCols?: T;
               items?:
                 | T
                 | {
@@ -1398,12 +1407,16 @@ export interface SiteSettingsSelect<T extends boolean = true> {
           | T
           | {
               name?: T;
+              nameAr?: T;
+              nameEn?: T;
               id?: T;
             };
         video?:
           | T
           | {
               name?: T;
+              nameAr?: T;
+              nameEn?: T;
               id?: T;
             };
       };

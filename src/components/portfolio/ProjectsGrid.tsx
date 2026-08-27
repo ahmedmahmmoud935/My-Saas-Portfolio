@@ -33,8 +33,10 @@ export default function ProjectsGrid({
 }: {
   title: string
   subtitle?: string
-  imageCategories: string[]
-  videoCategories: string[]
+  /** Key + labels. Projects are filed under the key; the label follows the
+   *  language the site is being read in. */
+  imageCategories: { name: string; nameAr?: string; nameEn?: string }[]
+  videoCategories: { name: string; nameAr?: string; nameEn?: string }[]
   projects: ProjectCard[]
   username: string
   /** Carried into the project link so opening one doesn't switch language. */
@@ -63,8 +65,10 @@ export default function ProjectsGrid({
   // Only show category filters that actually have a project in the active tab.
   const usedCats = new Set(groups[activeTab].map((p) => p.category).filter(Boolean))
   const cats = (activeTab === 'designs' ? imageCategories : videoCategories).filter((c) =>
-    usedCats.has(c),
+    usedCats.has(c.name),
   )
+  const label = (c: { name: string; nameAr?: string; nameEn?: string }) =>
+    (lang === 'en' ? c.nameEn : c.nameAr) || c.name
   const list = useMemo(
     () => groups[activeTab].filter((p) => cat === 'all' || p.category === cat),
     [activeTab, cat, projects],
@@ -126,8 +130,12 @@ export default function ProjectsGrid({
               {lang === 'en' ? 'All' : 'الكل'}
             </button>
             {cats.map((c) => (
-              <button key={c} className={`filter-pill ${cat === c ? 'active' : ''}`} onClick={() => setCat(c)}>
-                {c}
+              <button
+                key={c.name}
+                className={`filter-pill ${cat === c.name ? 'active' : ''}`}
+                onClick={() => setCat(c.name)}
+              >
+                {label(c)}
               </button>
             ))}
           </div>

@@ -18,6 +18,7 @@ import InstallApp from '@/components/portfolio/InstallApp'
 import SectionBg from '@/components/portfolio/SectionBg'
 import { pageBackground, dimOpacity } from '@/lib/background'
 import { LEGACY_FONT_PAIRS } from '@/lib/design-types'
+import { toCategoryRows } from '@/lib/category-types'
 import {
   Expertise,
   Experience,
@@ -141,8 +142,8 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
       <ProjectsGrid
         title={content.projects?.title || 'Selected Work'}
         subtitle={content.projects?.subtitle || undefined}
-        imageCategories={(settings?.categories?.image ?? []).map((c) => c.name || '').filter(Boolean)}
-        videoCategories={(settings?.categories?.video ?? []).map((c) => c.name || '').filter(Boolean)}
+        imageCategories={toCategoryRows(settings?.categories?.image ?? [])}
+        videoCategories={toCategoryRows(settings?.categories?.video ?? [])}
         username={tenant.slug}
         lang={locale}
         tabLabels={{
