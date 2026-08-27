@@ -71,25 +71,59 @@ export default function ReelsPlayer({
     v.play().catch(() => {})
   }
 
-  // Swipe up for the next reel, down for the previous — the gesture everyone
-  // already uses for this. A tap or a drag along the seek bar is not a swipe:
-  // it has to travel, and travel further vertically than horizontally.
-  const touch = useRef<{ x: number; y: number; at: number } | null>(null)
-  const onTouchStart = (e: React.TouchEvent) => {
-    const t = e.touches[0]
-    touch.current = { x: t.clientX, y: t.clientY, at: Date.now() }
-  }
-  const onTouchEnd = (e: React.TouchEvent) => {
-    const s = touch.current
-    touch.current = null
-    if (!s) return
-    const t = e.changedTouches[0]
-    const dy = t.clientY - s.y
-    const dx = t.clientX - s.x
-    if (Date.now() - s.at > 800) return
-    if (Math.abs(dy) < 60 || Math.abs(dy) < Math.abs(dx)) return
-    go(dy < 0 ? 1 : -1)
-  }
+  // Swipe up for the next reel, down for the previous.
+  //
+  // Bound natively in the CAPTURE phase rather than through React's props: the
+  // clip fills the screen and carries native controls, and those swallow the
+  // touch before it ever reaches an ancestor's handler — which is why swiping
+  // did nothing on a phone. Capturing means we see the gesture first, whatever
+  // it lands on.
+  const overlay = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = overlay.current
+    if (!el) return
+    let start: { x: number; y: number; at: number } | null = null
+    const onStart = (e: TouchEvent) => {
+      const t = e.touches[0]
+      start = { x: t.clientX, y: t.clientY, at: Date.now() }
+    }
+    const onEnd = (e: TouchEvent) => {
+      const s = start
+      start = null
+      if (!s) return
+      const t = e.changedTouches[0]
+      const dy = t.clientY - s.y
+      const dx = t.clientX - s.x
+      // A tap or a drag along the seek bar is not a swipe: it has to travel,
+      // and travel further vertically than horizontally.
+      if (Date.now() - s.at > 800) return
+      if (Math.abs(dy) < 55 || Math.abs(dy) < Math.abs(dx)) return
+      go(dy < 0 ? 1 : -1)
+    }
+    el.addEventListener('touchstart', onStart, { capture: true, passive: true })
+    el.addEventListener('touchend', onEnd, { capture: true, passive: true })
+    return () => {
+      el.removeEventListener('touchstart', onStart, { capture: true })
+      el.removeEventListener('touchend', onEnd, { capture: true })
+    }
+  }, [reels.length])
+
+  // The same reason sound stayed off: a tap on the clip is consumed by its own
+  // controls, so the handler meant to turn sound on never ran. A capture-phase
+  // pointerdown sees it first, and being a real gesture the browser allows it.
+  useEffect(() => {
+    const el = overlay.current
+    if (!el) return
+    const onDown = () => {
+      const v = video.current
+      if (!v || !v.muted) return
+      v.muted = false
+      setSilenced(false)
+      v.play().catch(() => {})
+    }
+    el.addEventListener('pointerdown', onDown, { capture: true })
+    return () => el.removeEventListener('pointerdown', onDown, { capture: true })
+  }, [i])
 
   if (!cur || !mounted) return null
 
@@ -98,7 +132,7 @@ export default function ReelsPlayer({
   // fixed` children — so in place this overlay covered only its own section
   // instead of the screen.
   return createPortal(
-    <div className="reels" onClick={onClose} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+    <div className="reels" ref={overlay} onClick={onClose}>
       <button className="reels-close" onClick={onClose}>
         ✕
       </button>

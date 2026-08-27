@@ -2580,6 +2580,25 @@ input[type='range']::-moz-range-thumb {
   min-height: 110px;
 }
 
+/* The site logo and a word about what it's for. */
+.logo-row {
+  display: grid;
+  grid-template-columns: minmax(160px, 240px) 1fr;
+  gap: 14px;
+  align-items: start;
+}
+.logo-note p {
+  margin: 0 0 10px;
+  color: var(--sub);
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+@media (max-width: 700px) {
+  .logo-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* A category and its two labels on one line. */
 .cat-row {
   display: grid;

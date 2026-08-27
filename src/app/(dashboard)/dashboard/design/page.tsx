@@ -51,6 +51,11 @@ export default async function DesignPage() {
         ? (s.brand.heroCover as { id: number }).id
         : (s.brand?.heroCover as number)) ?? null,
     heroCoverUrl: mediaUrl((s.brand?.heroCover as never) ?? null, 'thumb'),
+    brandLogoId:
+      (s.brand?.brandLogo && typeof s.brand.brandLogo === 'object'
+        ? (s.brand.brandLogo as { id: number }).id
+        : (s.brand?.brandLogo as number)) ?? null,
+    brandLogoUrl: mediaUrl((s.brand?.brandLogo as never) ?? null, 'thumb'),
   }
 
   return <DesignEditor initial={form} />

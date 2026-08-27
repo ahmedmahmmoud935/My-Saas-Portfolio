@@ -68,7 +68,7 @@ export async function saveDesign(form: DesignForm) {
       brand: {
         photo: brandRel(currentBrand.photo) as number | null,
         avatar: brandRel(currentBrand.avatar) as number | null,
-        brandLogo: brandRel(currentBrand.brandLogo) as number | null,
+        brandLogo: form.brandLogoId,
         favicon: brandRel(currentBrand.favicon) as number | null,
         brandLogoScale: (currentBrand.brandLogoScale as number) ?? 1,
         brandLogoOffsetX: (currentBrand.brandLogoOffsetX as number) ?? 0,

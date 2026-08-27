@@ -396,6 +396,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
       />
       <Navbar
         logo={logoText}
+        logoUrl={mediaUrl(brand.brandLogo, 'thumb')}
         links={navLinks}
         langHref={`/${tenant.slug}?lang=${locale === 'en' ? 'ar' : 'en'}`}
         langLabel={locale === 'en' ? 'ع' : 'EN'}

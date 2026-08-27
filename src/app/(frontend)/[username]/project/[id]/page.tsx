@@ -174,6 +174,8 @@ export default async function ProjectDetailPage({ params, searchParams }: Params
       <TrackVisit tenant={tenant.id} page="project" project={project.id} />
       <Navbar
         logo={tenant.name?.[0]?.toUpperCase() || 'V'}
+        logoUrl={mediaUrl((settings as { brand?: { brandLogo?: unknown } } | null)?.brand?.brandLogo as never, 'thumb')}
+        homeHref={`/${tenant.slug}${qs}`}
         links={navLinks}
         // The toggle stays on this project instead of being a dead control.
         langHref={`?lang=${locale === 'en' ? 'ar' : 'en'}`}

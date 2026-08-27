@@ -18,11 +18,18 @@ const MoonIcon = (
 
 export default function Navbar({
   logo,
+  logoUrl,
+  homeHref,
   links,
   langHref,
   langLabel = 'EN',
 }: {
+  /** Fallback mark: the first letter of the name. */
   logo: string
+  /** The uploaded logo, when the owner has set one. */
+  logoUrl?: string | null
+  /** Where "home" is. Omitted on the portfolio itself, where it scrolls up. */
+  homeHref?: string
   links: NavLink[]
   langHref?: string
   langLabel?: string
@@ -47,7 +54,32 @@ export default function Navbar({
 
   return (
     <nav className="nav">
-      <div className="nav-logo display">{logo}</div>
+      {/* The logo doubles as the way home: on the portfolio it returns you to
+          the top, elsewhere it goes back to the portfolio. */}
+      {homeHref ? (
+        <a className="nav-logo display" href={homeHref} aria-label="home">
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logoUrl} alt="" />
+          ) : (
+            logo
+          )}
+        </a>
+      ) : (
+        <button
+          type="button"
+          className="nav-logo display"
+          aria-label="back to top"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        >
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logoUrl} alt="" />
+          ) : (
+            logo
+          )}
+        </button>
+      )}
       <ul className="nav-links">
         {links.map((l) => (
           <li key={l.href}>

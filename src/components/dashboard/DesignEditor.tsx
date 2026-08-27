@@ -554,6 +554,37 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
 
             {sub === 'general' && (
               <>
+                <Group title={tr('شعار الموقع', 'Site logo')}>
+                  {/* The mark in the navbar. There was no way to set it at all
+                      before — the site showed the first letter of the name and
+                      that was that. */}
+                  <div className="logo-row">
+                    <MediaUploader
+                      big
+                      previewUrl={f.brandLogoUrl}
+                      label={tr('ارفع الشعار', 'Upload logo')}
+                      onUploaded={(u) => set({ brandLogoId: u.id, brandLogoUrl: u.thumbUrl })}
+                    />
+                    <div className="logo-note">
+                      <p>
+                        {tr(
+                          'بيظهر في الشريط العلوي. من غيره بيظهر أول حرف من اسمك.',
+                          'Shown in the navbar. Without one, the first letter of your name is used.',
+                        )}
+                      </p>
+                      {f.brandLogoUrl && (
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm"
+                          onClick={() => set({ brandLogoId: null, brandLogoUrl: null })}
+                        >
+                          {tr('حذف الشعار', 'Remove logo')}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </Group>
+
                 <Group title={tr('المكوّنات', 'Components')}>
                   <div className="de-grid">
                     <Opt label={tr('شكل الكروت', 'Card style')} value={f.components.card} options={COMPONENT_OPTIONS.card} onChange={(v) => setComp({ card: v })} />
