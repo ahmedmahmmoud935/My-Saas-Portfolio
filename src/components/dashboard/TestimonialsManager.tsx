@@ -38,6 +38,29 @@ export default function TestimonialsManager({ items, slug }: { items: Item[]; sl
     setTimeout(() => setCopied(false), 1800)
   }
 
+  /**
+   * Publish or hide a review from the card it's on.
+   *
+   * It was only reachable by opening the review for editing and finding a
+   * checkbox in there — so a client's review sat marked "pending approval" with
+   * nothing on the card offering to approve it.
+   */
+  async function setApproved(t: Item, approved: boolean) {
+    if (busy) return
+    setBusy(true)
+    await saveDoc('testimonials', t.id, {
+      name: t.name,
+      role: t.role,
+      company: t.company,
+      content: t.content,
+      rating: t.rating,
+      approved,
+      avatar: t.avatarId,
+    })
+    setBusy(false)
+    router.refresh()
+  }
+
   async function save() {
     if (!edit) return
     setBusy(true)
@@ -105,7 +128,16 @@ export default function TestimonialsManager({ items, slug }: { items: Item[]; sl
                 <p style={{ fontSize: 13, color: 'var(--text)', margin: '6px 0' }}>{t.content.slice(0, 90)}</p>
                 <strong>{t.name}</strong>
                 <span>{[t.role, t.company].filter(Boolean).join(' · ')}</span>
-                {!t.approved && <span style={{ color: '#f59e0b' }}>{tr('بانتظار الموافقة', 'Pending approval')}</span>}
+                <span className={`tm-status ${t.approved ? 'live' : 'pending'}`}>
+                  {t.approved ? tr('ظاهر على الموقع', 'Live on your site') : tr('بانتظار موافقتك', 'Waiting for you')}
+                </span>
+                <button
+                  className={`btn ${t.approved ? 'btn-ghost' : 'btn-primary'} tm-approve`}
+                  disabled={busy}
+                  onClick={() => setApproved(t, !t.approved)}
+                >
+                  {t.approved ? tr('إخفاء من الموقع', 'Hide from site') : tr('اعتماد ونشر', 'Approve & publish')}
+                </button>
               </div>
               <div className="pm-actions">
                 <button className="icon-btn" onClick={() => setEdit(t)}>✏️</button>
