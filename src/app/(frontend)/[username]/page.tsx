@@ -278,6 +278,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
         }))}
         submitHref={`/testimonial/${tenant.slug}${locale === 'en' ? '?lang=en' : ''}`}
         submitLabel={locale === 'en' ? '+ Add your review' : '+ أضف رأيك'}
+        lang={locale}
       />
     ),
     contact: (
