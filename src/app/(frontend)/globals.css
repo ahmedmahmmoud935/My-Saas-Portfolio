@@ -2540,7 +2540,12 @@ html[data-theme='light'] .pf-bg-layer.for-light {
    (that's what keeps the rhythm even between plain sections), so a coloured
    band would otherwise end flush against its last line. Plain sections are
    untouched. */
-.pf-sec-bg > .section {
+/* A section carrying a media background is wrapped one level deeper, so a
+   `>` selector missed it and it lost its bottom padding entirely: the picture
+   ended flush against the last row of projects, and the content overflowed the
+   background it was supposed to sit on. */
+.pf-sec-bg > .section,
+.pf-sec-bg > .pf-sec-inner > .section {
   padding-bottom: var(--section-pad);
 }
 /* …and it shouldn't butt straight up against whatever precedes it. The hero is
