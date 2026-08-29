@@ -222,8 +222,12 @@ function ThemePanel({
   // Only this theme's rows — light and dark keep entirely separate lists, so
   // one theme's image or video can't leak into the other.
   const all = f.sectionBg
-  const rows = all.filter((r) => (r.theme || 'dark') === mode)
-  const idxOf = (i: number) => all.indexOf(rows[i])
+  // One list, shared by both themes. Keeping a separate set per theme meant
+  // setting the same picture twice and remembering to change both; the only
+  // thing that actually differed was the colour of the veil over it, and CSS
+  // already flips that.
+  const rows = all
+  const idxOf = (i: number) => i
   const patchRow = (i: number, p: Partial<SectionBgForm>) => {
     const target = idxOf(i)
     setSectionBg(all.map((r, j) => (j === target ? { ...r, ...p } : r)))
@@ -367,8 +371,8 @@ function ThemePanel({
       <Group title={tr('خلفيات الأقسام', 'Section backgrounds')}>
         <p style={{ color: 'var(--sub)', fontSize: 13, margin: '0 0 12px' }}>
           {tr(
-            `أي قسم مش مضاف هنا بياخد خلفية الصفحة. دي خلفيات ${dark ? 'الثيم الداكن' : 'الثيم الفاتح'} وحده — مستقلة تمامًا عن الثيم التاني.`,
-            `Sections not listed here use the page background. These belong to the ${dark ? 'dark' : 'light'} theme only — completely separate from the other one.`,
+            'أي قسم مش مضاف هنا بياخد خلفية الصفحة. الخلفية دي بتشتغل في الثيمين — اللي بيتغيّر هو لون التعتيم بس (أسود على الداكن، أبيض على الفاتح).',
+            'Sections not listed here use the page background. A background applies to both themes — only the veil colour changes (black on dark, white on light).',
           )}
         </p>
         {rows.map((r, i) => (

@@ -337,17 +337,18 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
   const dimLight = dimOpacity(settings?.backgroundLight)
   const isImage = (b: RawBg) => b?.type === 'image' && Boolean(b?.image)
 
-  // Per-section background overrides — one map per theme, since a row now
-  // belongs to exactly one of them.
+  // Per-section background overrides. One entry per section, used in both
+  // themes — only the veil over it changes colour, and CSS does that. Tenants
+  // configured before this could have two rows for the same section; the first
+  // wins so nothing changes shape on them.
   const bgRows = (settings?.sectionBg ?? []).filter((s) => s.section)
-  const mapFor = (theme: string) =>
-    new Map(
-      bgRows
-        .filter((s) => (s.theme || 'dark') === theme)
-        .map((s) => [String(s.section), { ...s, imageUrl: mediaUrl(s.image, 'card') }]),
-    )
-  const sectionBgDark = mapFor('dark')
-  const sectionBgLight = mapFor('light')
+  const sectionBgMap = new Map<string, (typeof bgRows)[number] & { imageUrl: string | null }>()
+  for (const row of bgRows) {
+    const key = String(row.section)
+    if (!sectionBgMap.has(key)) {
+      sectionBgMap.set(key, { ...row, imageUrl: mediaUrl(row.image, 'card') })
+    }
+  }
 
   return (
     <div
@@ -402,7 +403,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
         langLabel={locale === 'en' ? 'ع' : 'EN'}
       />
       {ordered.map((id) => (
-        <SectionBg key={id} dark={sectionBgDark.get(id)} light={sectionBgLight.get(id)}>
+        <SectionBg key={id} config={sectionBgMap.get(id)}>
           {sectionEls[id]}
         </SectionBg>
       ))}

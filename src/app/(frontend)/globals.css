@@ -2573,6 +2573,9 @@ html[data-theme='light'] .pf-sec-bg {
   z-index: -1;
   display: block;
 }
+/* One layer serves both themes now, so there is nothing to show or hide here;
+   the veil colour below is the only thing that changes. Rules kept for pages
+   still cached with the old per-theme markup. */
 .pf-sec-layer.for-light {
   display: none;
 }

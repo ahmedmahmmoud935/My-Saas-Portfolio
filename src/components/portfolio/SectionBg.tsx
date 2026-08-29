@@ -13,8 +13,9 @@ export type SectionBgConfig = {
 
 const dimOf = (c?: SectionBgConfig | null) => Math.min(100, Math.max(0, c?.dim ?? 45)) / 100
 
-/** One theme's backdrop layer. Both are rendered; CSS reveals the active one. */
-function Layer({ config, theme }: { config: SectionBgConfig; theme: 'dark' | 'light' }) {
+/** The section's backdrop. One layer for both themes — only the veil over it
+ *  changes colour, and CSS does that. */
+function Layer({ config }: { config: SectionBgConfig }) {
   const mode = config.mode || 'color'
   if (mode === 'image' && config.imageUrl) {
     // "Fixed" used to mean `background-attachment: fixed`, which forces the
@@ -22,7 +23,7 @@ function Layer({ config, theme }: { config: SectionBgConfig; theme: 'dark' | 'li
     // could see. A sticky layer gives the same held-in-place look and is moved
     // by the compositor instead, so nothing is repainted.
     return (
-      <span className={`pf-sec-layer for-${theme}${config.fixed ? ' pinned' : ''}`}>
+      <span className={`pf-sec-layer${config.fixed ? ' pinned' : ''}`}>
         <span
           className="pf-sec-media"
           style={{
@@ -36,7 +37,7 @@ function Layer({ config, theme }: { config: SectionBgConfig; theme: 'dark' | 'li
   }
   if (mode === 'video' && config.videoUrl) {
     return (
-      <span className={`pf-sec-layer for-${theme}`}>
+      <span className="pf-sec-layer">
         <video
           className="pf-sec-media"
           src={config.videoUrl}
@@ -62,35 +63,24 @@ function Layer({ config, theme }: { config: SectionBgConfig; theme: 'dark' | 'li
  * the theme switch happens in the browser after this markup is already sent.
  */
 export default function SectionBg({
-  dark,
-  light,
+  config,
   children,
 }: {
-  dark?: SectionBgConfig | null
-  light?: SectionBgConfig | null
+  config?: SectionBgConfig | null
   children: React.ReactNode
 }) {
-  if (!dark && !light) return <>{children}</>
+  if (!config) return <>{children}</>
 
-  const colourOf = (c?: SectionBgConfig | null) =>
-    c && (c.mode || 'color') === 'color' ? c.color || null : null
-  const darkColour = colourOf(dark)
-  const lightColour = colourOf(light)
-  const hasMedia =
-    (dark && dark.mode !== 'color') || (light && light.mode !== 'color') ? true : false
+  const isColour = (config.mode || 'color') === 'color'
+  const colour = isColour ? config.color || null : null
+  const hasMedia = !isColour
 
   return (
     <div
       className={`pf-sec-bg${hasMedia ? ' media' : ''}`}
-      style={
-        {
-          ...(darkColour ? { '--sec-bg': darkColour } : {}),
-          ...(lightColour ? { '--sec-bg-light': lightColour } : {}),
-        } as React.CSSProperties
-      }
+      style={(colour ? { '--sec-bg': colour } : {}) as React.CSSProperties}
     >
-      {dark && <Layer config={dark} theme="dark" />}
-      {light && <Layer config={light} theme="light" />}
+      <Layer config={config} />
       {hasMedia ? <div className="pf-sec-inner">{children}</div> : children}
     </div>
   )
