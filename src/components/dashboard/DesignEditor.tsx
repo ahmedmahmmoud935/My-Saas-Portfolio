@@ -5,6 +5,8 @@ import PageHeader from './PageHeader'
 import MediaUploader from './MediaUploader'
 import LayoutPicker from './LayoutPicker'
 import NavIcon from './icons'
+import SectionBgRows from './SectionBgRows'
+import { ColorInput, Group, Opt, Slider } from './controls'
 import { saveDesign } from '@/lib/design-actions'
 import { useDashLang } from './DashLang'
 import {
@@ -21,7 +23,6 @@ import {
   GRADIENT_SUGGESTIONS,
   ANIMATED_SUGGESTIONS,
   SOLID_SUGGESTIONS,
-  emptySectionBg,
   type BgForm,
   type SectionBgForm,
   type DesignForm,
@@ -110,84 +111,6 @@ const SECTION_STYLE_KEY: Record<Exclude<TopTab, 'theme'>, keyof DesignForm['styl
 }
 
 /* A row of option buttons (radio group). */
-function Opt({
-  label,
-  value,
-  options,
-  onChange,
-}: {
-  label: string
-  value: string
-  options: readonly string[] | { value: string; label: string }[]
-  onChange: (v: string) => void
-}) {
-  const opts = options.map((o) => (typeof o === 'string' ? { value: o, label: o } : o))
-  return (
-    <div className="opt-field">
-      <div className="opt-field-label">{label}</div>
-      <div className="opt-opts">
-        {opts.map((o) => (
-          <button
-            key={o.value}
-            className={`pill ${value === o.value ? 'active' : ''}`}
-            onClick={() => onChange(o.value)}
-          >
-            {o.label}
-          </button>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-/* A titled group of related controls. */
-function Group({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="de-group">
-      <div className="de-group-title">{title}</div>
-      {children}
-    </div>
-  )
-}
-
-function ColorInput({
-  label,
-  value,
-  onChange,
-}: {
-  label: string
-  value: string
-  onChange: (v: string) => void
-}) {
-  // Label above, swatch and hex fused into one control — side-by-side they
-  // drifted to opposite ends of the grid column and read as unrelated.
-  return (
-    <label className="color-input">
-      <span className="ci-label">{label}</span>
-      <span className="ci-control">
-        <input type="color" value={value || '#000000'} onChange={(e) => onChange(e.target.value)} />
-        <input
-          className="ci-hex"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          dir="ltr"
-          placeholder="#000000"
-          spellCheck={false}
-        />
-      </span>
-    </label>
-  )
-}
-
-function Slider({ label, value, min, max, onChange, suffix }: { label: string; value: number; min: number; max: number; onChange: (v: number) => void; suffix?: string }) {
-  return (
-    <div style={{ marginBottom: 12 }}>
-      <div className="lbl" style={{ marginBottom: 4 }}>{label}: {value}{suffix}</div>
-      <input type="range" min={min} max={max} value={value} onChange={(e) => onChange(Number(e.target.value))} style={{ width: '100%' }} />
-    </div>
-  )
-}
-
 /**
  * Everything that belongs to one theme: its palette, the page background, and
  * any per-section backdrops. Rendered twice — once for light, once for dark —
@@ -219,23 +142,11 @@ function ThemePanel({
     : { accent: 'accentLight', bg: 'bgLight', bg2: 'bg2Light', text: 'textLight', sub: 'subtextLight' }
   const cv = (k: string) => (f.colors as unknown as Record<string, string>)[k] || ''
 
-  // Only this theme's rows — light and dark keep entirely separate lists, so
-  // one theme's image or video can't leak into the other.
-  const all = f.sectionBg
   // One list, shared by both themes. Keeping a separate set per theme meant
   // setting the same picture twice and remembering to change both; the only
   // thing that actually differed was the colour of the veil over it, and CSS
   // already flips that.
-  const rows = all
-  const idxOf = (i: number) => i
-  const patchRow = (i: number, p: Partial<SectionBgForm>) => {
-    const target = idxOf(i)
-    setSectionBg(all.map((r, j) => (j === target ? { ...r, ...p } : r)))
-  }
-  const removeRow = (i: number) => {
-    const target = idxOf(i)
-    setSectionBg(all.filter((_, j) => j !== target))
-  }
+  const rows = f.sectionBg
 
   const suggestions =
     bg.type === 'animated' ? ANIMATED_SUGGESTIONS : bg.type === 'gradient' ? GRADIENT_SUGGESTIONS : []
@@ -369,99 +280,7 @@ function ThemePanel({
       </Group>
 
       <Group title={tr('خلفيات الأقسام', 'Section backgrounds')}>
-        <p style={{ color: 'var(--sub)', fontSize: 13, margin: '0 0 12px' }}>
-          {tr(
-            'أي قسم مش مضاف هنا بياخد خلفية الصفحة. الخلفية دي بتشتغل في الثيمين — اللي بيتغيّر هو لون التعتيم بس (أسود على الداكن، أبيض على الفاتح).',
-            'Sections not listed here use the page background. A background applies to both themes — only the veil colour changes (black on dark, white on light).',
-          )}
-        </p>
-        {rows.map((r, i) => (
-          <div className="de-group" key={i} style={{ marginBottom: 12 }}>
-            <div className="mod-card-head">
-              <button className="icon-btn del" style={{ width: 30, height: 30 }} onClick={() => removeRow(i)}>
-                <NavIcon id="trash" size={14} />
-              </button>
-              <span style={{ color: 'var(--sub)', fontSize: 12 }}>
-                {BG_SECTIONS.find((s) => s.id === r.section)?.[tr('ar', 'en') as 'ar' | 'en'] || r.section}
-              </span>
-            </div>
-            <div className="de-grid">
-              <div>
-                <label className="lbl">{tr('القسم', 'Section')}</label>
-                <select className="field" value={r.section} onChange={(e) => patchRow(i, { section: e.target.value })}>
-                  {BG_SECTIONS.map((s) => (
-                    <option key={s.id} value={s.id}>{tr(s.ar, s.en)}</option>
-                  ))}
-                </select>
-              </div>
-              <Opt
-                label={tr('النوع', 'Type')}
-                value={r.mode}
-                options={[
-                  { value: 'color', label: tr('لون', 'Colour') },
-                  { value: 'image', label: tr('صورة', 'Image') },
-                  { value: 'video', label: tr('فيديو', 'Video') },
-                ]}
-                onChange={(v) => patchRow(i, { mode: v })}
-              />
-            </div>
-
-            {r.mode === 'color' && (
-              <ColorInput
-                label={tr('اللون', 'Colour')}
-                value={r.color}
-                onChange={(v) => patchRow(i, { color: v })}
-              />
-            )}
-
-            {r.mode === 'image' && (
-              // Picture on one side, every setting for it on the other, each
-              // starting on the same line as the last. The settings used to be
-              // scattered around the picture with the sliders stranded in a
-              // column of their own.
-              <div className="bg-image-row">
-                <MediaUploader
-                  big
-                  dim={r.dim}
-                  previewUrl={r.imageUrl}
-                  label={tr('صورة', 'Image')}
-                  onUploaded={(m) => patchRow(i, { imageId: m.id, imageUrl: m.url ?? m.thumbUrl })}
-                  onRemove={() => patchRow(i, { imageId: null, imageUrl: null })}
-                />
-                <div className="bg-image-ctrls">
-                  <Opt
-                    label={tr('السلوك عند التمرير', 'Scroll behaviour')}
-                    value={r.fixed ? 'fixed' : 'scroll'}
-                    options={[
-                      { value: 'fixed', label: tr('ثابتة (بارالاكس)', 'Fixed (parallax)') },
-                      { value: 'scroll', label: tr('تتحرك', 'Scrolls') },
-                    ]}
-                    onChange={(v) => patchRow(i, { fixed: v === 'fixed' })}
-                  />
-                  <div className="bg-ctrls">
-                    <label className="lbl">{tr('التعتيم', 'Dim')} — {r.dim}%</label>
-                    <input type="range" min={0} max={100} value={r.dim} onChange={(e) => patchRow(i, { dim: Number(e.target.value) })} />
-                    <label className="lbl">{tr('الموضع ↔', 'Position ↔')} — {r.posX}%</label>
-                    <input type="range" min={0} max={100} value={r.posX} onChange={(e) => patchRow(i, { posX: Number(e.target.value) })} />
-                    <label className="lbl">{tr('الموضع ↕', 'Position ↕')} — {r.posY}%</label>
-                    <input type="range" min={0} max={100} value={r.posY} onChange={(e) => patchRow(i, { posY: Number(e.target.value) })} />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {r.mode === 'video' && (
-              <>
-                <label className="lbl">{tr('رابط الفيديو (mp4 مباشر)', 'Video URL (direct mp4)')}</label>
-                <input className="field" dir="ltr" value={r.videoUrl} onChange={(e) => patchRow(i, { videoUrl: e.target.value })} style={{ textAlign: 'start' }} />
-                <Slider label={tr('التعتيم', 'Dim')} value={r.dim} min={0} max={100} suffix="%" onChange={(v) => patchRow(i, { dim: v })} />
-              </>
-            )}
-          </div>
-        ))}
-        <button className="btn btn-ghost" onClick={() => setSectionBg([...all, emptySectionBg(mode)])}>
-          + {tr('خلفية قسم', 'Section background')}
-        </button>
+        <SectionBgRows rows={rows} sections={BG_SECTIONS} tr={tr} onChange={setSectionBg} />
       </Group>
     </>
   )

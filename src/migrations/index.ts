@@ -21,6 +21,7 @@ import * as migration_20260826_020000_split_font_choice from './20260826_020000_
 import * as migration_20260826_040000_add_grid_mobile_cols from './20260826_040000_add_grid_mobile_cols';
 import * as migration_20260827_190000_bilingual_categories from './20260827_190000_bilingual_categories';
 import * as migration_20260827_200000_section_bg_position from './20260827_200000_section_bg_position';
+import * as migration_20260831_010000_landing_design from './20260831_010000_landing_design';
 
 export const migrations = [
   {
@@ -137,5 +138,10 @@ export const migrations = [
     up: migration_20260827_200000_section_bg_position.up,
     down: migration_20260827_200000_section_bg_position.down,
     name: '20260827_200000_section_bg_position'
+  },
+  {
+    up: migration_20260831_010000_landing_design.up,
+    down: migration_20260831_010000_landing_design.down,
+    name: '20260831_010000_landing_design'
   },
 ];

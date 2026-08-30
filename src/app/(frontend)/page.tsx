@@ -4,6 +4,8 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { LANDING_COPY } from '@/lib/landing-copy'
 import { mediaUrl } from '@/lib/portfolio'
+import SectionBg, { type SectionBgConfig } from '@/components/portfolio/SectionBg'
+import LandingThemeToggle from '@/components/portfolio/LandingThemeToggle'
 
 // Owner-edited landing copy merged over the defaults (per locale).
 type LandingLook = {
@@ -12,6 +14,11 @@ type LandingLook = {
   bg2: string
   text: string
   subtext: string
+  accentLight: string
+  bgLight: string
+  bg2Light: string
+  textLight: string
+  subtextLight: string
   logoUrl: string | null
   heroUrl: string | null
   heroDim: number
@@ -24,6 +31,13 @@ const DEFAULT_LOOK: LandingLook = {
   bg2: '#111111',
   text: '#FFFFFF',
   subtext: '#9AA0AA',
+  // The light half. A site that has only ever set dark colours gets these
+  // rather than five copies of its dark palette.
+  accentLight: '#F97316',
+  bgLight: '#FFFFFF',
+  bg2Light: '#F3F5F8',
+  textLight: '#0C0F16',
+  subtextLight: '#495265',
   logoUrl: null,
   heroUrl: null,
   heroDim: 40,
@@ -68,11 +82,30 @@ async function getLanding(locale: 'ar' | 'en') {
       content?: Record<string, unknown>
       theme?: Partial<LandingLook>
       images?: Record<string, unknown>
+      sectionBg?: Record<string, unknown>[]
     }
     const saved = g?.content
     const im = g?.images ?? {}
+    // Keyed by section: the page asks for one by id while it renders, and only
+    // the last row for a section can win anyway.
+    const sections: Record<string, SectionBgConfig> = {}
+    for (const r of g?.sectionBg ?? []) {
+      const id = r.section as string
+      if (!id) continue
+      sections[id] = {
+        mode: (r.mode as string) || 'color',
+        color: (r.color as string) || null,
+        imageUrl: mediaUrl((r.image as never) ?? null, 'card'),
+        videoUrl: (r.videoUrl as string) || null,
+        fixed: Boolean(r.fixed),
+        dim: (r.dim as number) ?? 45,
+        posX: (r.posX as number) ?? 50,
+        posY: (r.posY as number) ?? 50,
+      }
+    }
     return {
       copy: saved && typeof saved === 'object' ? { ...base, ...saved } : base,
+      sections,
       look: {
         ...DEFAULT_LOOK,
         ...setOnly<LandingLook>(g?.theme),
@@ -83,7 +116,7 @@ async function getLanding(locale: 'ar' | 'en') {
       } as LandingLook,
     }
   } catch {
-    return { copy: base, look: DEFAULT_LOOK }
+    return { copy: base, sections: {} as Record<string, SectionBgConfig>, look: DEFAULT_LOOK }
   }
 }
 
@@ -131,7 +164,7 @@ async function getShowcase(): Promise<{ name: string; slug: string }[]> {
 export default async function HomePage({ searchParams }: Params) {
   const { lang } = (await searchParams) ?? {}
   const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
-  const { copy, look } = await getLanding(locale)
+  const { copy, look, sections } = await getLanding(locale)
   const c = copy as (typeof LANDING_COPY)['ar']
   const q = locale === 'en' ? '?lang=en' : ''
   const showcase = await getShowcase()
@@ -173,128 +206,143 @@ export default async function HomePage({ searchParams }: Params) {
           <a className="lp-lang" href={locale === 'en' ? '/?lang=ar' : '/'}>
             {locale === 'en' ? 'ع' : 'EN'}
           </a>
+          <LandingThemeToggle />
           <a className="lp-btn lp-btn-ghost" href="/login">
             {c.login}
           </a>
         </div>
       </header>
 
-      <section className={`lp-hero${look.heroUrl ? ' has-image' : ''}`}>
-        {look.heroUrl ? (
-          <>
-            <span className="lp-hero-img" style={{ backgroundImage: `url(${JSON.stringify(look.heroUrl)})` }} />
-            <span className="lp-hero-dim" style={{ opacity: look.heroDim / 100 }} />
-          </>
-        ) : (
-          <div className="lp-hero-glow" />
-        )}
-        <span className="lp-eyebrow">{c.heroEyebrow}</span>
-        <h1 className="lp-h1">
-          {c.heroTitle} <span className="lp-accent">{c.heroTitleAccent}</span>
-        </h1>
-        <p className="lp-lead">{c.heroSub}</p>
-        <div className="lp-hero-btns">
-          <a className="lp-btn lp-btn-primary" href="/login">
-            {c.heroBtn1}
-          </a>
-          {showcase[0] && (
-            <a className="lp-btn lp-btn-ghost" href={`/${showcase[0].slug}${q}`}>
-              {c.heroBtn2}
-            </a>
+      <SectionBg config={sections.hero}>
+        <section className={`lp-hero${look.heroUrl ? ' has-image' : ''}`}>
+          {look.heroUrl ? (
+            <>
+              <span className="lp-hero-img" style={{ backgroundImage: `url(${JSON.stringify(look.heroUrl)})` }} />
+              <span className="lp-hero-dim" style={{ opacity: look.heroDim / 100 }} />
+            </>
+          ) : (
+            <div className="lp-hero-glow" />
           )}
-        </div>
-      </section>
-
-      <section className="lp-sec" id="features">
-        <h2 className="lp-h2">{c.featuresTitle}</h2>
-        <div className="lp-grid lp-grid-3">
-          {c.features.map((f) => (
-            <div className="lp-card" key={f.t}>
-              <div className="lp-card-icon">{f.icon}</div>
-              <h3>{f.t}</h3>
-              <p>{f.d}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="lp-sec" id="how">
-        <h2 className="lp-h2">{c.howTitle}</h2>
-        <div className="lp-grid lp-grid-3">
-          {c.how.map((s) => (
-            <div className="lp-step" key={s.n}>
-              <div className="lp-step-n">{s.n}</div>
-              <h3>{s.t}</h3>
-              <p>{s.d}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="lp-sec" id="showcase">
-        <h2 className="lp-h2">{c.showcaseTitle}</h2>
-        {showcase.length === 0 ? (
-          <p className="lp-empty">{c.showcaseEmpty}</p>
-        ) : (
-          <div className="lp-grid lp-grid-3">
-            {showcase.map((s) => (
-              <a className="lp-tenant" href={`/${s.slug}${q}`} key={s.slug}>
-                <div className="lp-tenant-badge">{s.name?.[0]?.toUpperCase() || 'V'}</div>
-                <div className="lp-tenant-body">
-                  <strong>{s.name}</strong>
-                  <span>/{s.slug}</span>
-                </div>
-                <span className="lp-tenant-go">{c.visit} →</span>
+          <span className="lp-eyebrow">{c.heroEyebrow}</span>
+          <h1 className="lp-h1">
+            {c.heroTitle} <span className="lp-accent">{c.heroTitleAccent}</span>
+          </h1>
+          <p className="lp-lead">{c.heroSub}</p>
+          <div className="lp-hero-btns">
+            <a className="lp-btn lp-btn-primary" href="/login">
+              {c.heroBtn1}
+            </a>
+            {showcase[0] && (
+              <a className="lp-btn lp-btn-ghost" href={`/${showcase[0].slug}${q}`}>
+                {c.heroBtn2}
               </a>
+            )}
+          </div>
+        </section>
+      </SectionBg>
+
+      <SectionBg config={sections.features}>
+        <section className="lp-sec" id="features">
+          <h2 className="lp-h2">{c.featuresTitle}</h2>
+          <div className="lp-grid lp-grid-3">
+            {c.features.map((f) => (
+              <div className="lp-card" key={f.t}>
+                <div className="lp-card-icon">{f.icon}</div>
+                <h3>{f.t}</h3>
+                <p>{f.d}</p>
+              </div>
             ))}
           </div>
-        )}
-      </section>
+        </section>
+      </SectionBg>
 
-      <section className="lp-sec" id="pricing">
-        <h2 className="lp-h2">{c.pricingTitle}</h2>
-        <div className="lp-grid lp-grid-2 lp-pricing">
-          {c.plans.map((p) => (
-            <div className={`lp-plan${p.hi ? ' lp-plan-hi' : ''}`} key={p.name}>
-              <div className="lp-plan-name">{p.name}</div>
-              <div className="lp-plan-price">
-                <span>{p.price}</span>
-                <small>{p.per}</small>
+      <SectionBg config={sections.how}>
+        <section className="lp-sec" id="how">
+          <h2 className="lp-h2">{c.howTitle}</h2>
+          <div className="lp-grid lp-grid-3">
+            {c.how.map((s) => (
+              <div className="lp-step" key={s.n}>
+                <div className="lp-step-n">{s.n}</div>
+                <h3>{s.t}</h3>
+                <p>{s.d}</p>
               </div>
-              <ul>
-                {p.feats.map((f) => (
-                  <li key={f}>✓ {f}</li>
-                ))}
-              </ul>
-              <a className={`lp-btn ${p.hi ? 'lp-btn-primary' : 'lp-btn-ghost'}`} href="/login">
-                {p.cta}
-              </a>
+            ))}
+          </div>
+        </section>
+      </SectionBg>
+
+      <SectionBg config={sections.showcase}>
+        <section className="lp-sec" id="showcase">
+          <h2 className="lp-h2">{c.showcaseTitle}</h2>
+          {showcase.length === 0 ? (
+            <p className="lp-empty">{c.showcaseEmpty}</p>
+          ) : (
+            <div className="lp-grid lp-grid-3">
+              {showcase.map((s) => (
+                <a className="lp-tenant" href={`/${s.slug}${q}`} key={s.slug}>
+                  <div className="lp-tenant-badge">{s.name?.[0]?.toUpperCase() || 'V'}</div>
+                  <div className="lp-tenant-body">
+                    <strong>{s.name}</strong>
+                    <span>/{s.slug}</span>
+                  </div>
+                  <span className="lp-tenant-go">{c.visit} →</span>
+                </a>
+              ))}
             </div>
-          ))}
-        </div>
-      </section>
+          )}
+        </section>
+      </SectionBg>
 
-      <section className="lp-sec" id="faq">
-        <h2 className="lp-h2">{c.faqTitle}</h2>
-        <div className="lp-faq">
-          {c.faqs.map((f) => (
-            <details className="lp-faq-item" key={f.q}>
-              <summary>{f.q}</summary>
-              <p>{f.a}</p>
-            </details>
-          ))}
-        </div>
-      </section>
+      <SectionBg config={sections.pricing}>
+        <section className="lp-sec" id="pricing">
+          <h2 className="lp-h2">{c.pricingTitle}</h2>
+          <div className="lp-grid lp-grid-2 lp-pricing">
+            {c.plans.map((p) => (
+              <div className={`lp-plan${p.hi ? ' lp-plan-hi' : ''}`} key={p.name}>
+                <div className="lp-plan-name">{p.name}</div>
+                <div className="lp-plan-price">
+                  <span>{p.price}</span>
+                  <small>{p.per}</small>
+                </div>
+                <ul>
+                  {p.feats.map((f) => (
+                    <li key={f}>✓ {f}</li>
+                  ))}
+                </ul>
+                <a className={`lp-btn ${p.hi ? 'lp-btn-primary' : 'lp-btn-ghost'}`} href="/login">
+                  {p.cta}
+                </a>
+              </div>
+            ))}
+          </div>
+        </section>
+      </SectionBg>
 
-      <section className="lp-cta">
-        <div className="lp-cta-inner">
-          <h2 className="lp-h2">{c.ctaTitle}</h2>
-          <p>{c.ctaSub}</p>
-          <a className="lp-btn lp-btn-primary lp-btn-lg" href="/login">
-            {c.ctaBtn}
-          </a>
-        </div>
-      </section>
+      <SectionBg config={sections.faq}>
+        <section className="lp-sec" id="faq">
+          <h2 className="lp-h2">{c.faqTitle}</h2>
+          <div className="lp-faq">
+            {c.faqs.map((f) => (
+              <details className="lp-faq-item" key={f.q}>
+                <summary>{f.q}</summary>
+                <p>{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+      </SectionBg>
+
+      <SectionBg config={sections.cta}>
+        <section className="lp-cta">
+          <div className="lp-cta-inner">
+            <h2 className="lp-h2">{c.ctaTitle}</h2>
+            <p>{c.ctaSub}</p>
+            <a className="lp-btn lp-btn-primary lp-btn-lg" href="/login">
+              {c.ctaBtn}
+            </a>
+          </div>
+        </section>
+      </SectionBg>
 
       <footer className="lp-footer">
         <a href={`/${q}`} className="lp-logo">
@@ -323,7 +371,23 @@ export default async function HomePage({ searchParams }: Params) {
           --lp-line-2: color-mix(in srgb, var(--lp-text) 20%, transparent);
           background: var(--lp-bg); color: var(--lp-text); overflow-x: hidden;
           font-family: var(--font-cairo), system-ui, sans-serif; }
+
+        /* The light half of the palette. Only the tokens are redefined — every
+           rule below is written against them, so nothing else is repeated.
+           The attribute is set by the frontend layout before first paint, from
+           the same saved preference the portfolios use. */
+        html[data-theme='light'] .lp {
+          --o: ${look.accentLight}; --lp-on-o: ${onAccent(look.accentLight)};
+          --lp-bg: ${look.bgLight}; --lp-bg2: ${look.bg2Light};
+          --lp-text: ${look.textLight}; --lp-sub: ${look.subtextLight}; }
+
         .lp a { text-decoration: none; color: inherit; }
+        /* An icon, not a word like the language button it borrows its shape from. */
+        .lp-theme { display: inline-flex; align-items: center; justify-content: center;
+          padding: 7px 9px; background: none; }
+        /* The shared section wrapper spaces tenant sections apart; the landing's
+           own sections already carry their padding. */
+        .lp .pf-sec-bg { margin-top: 0; }
         .lp-nav { position: sticky; top: 0; z-index: 20; display: flex; align-items: center;
           justify-content: space-between; gap: 16px; padding: 16px 24px;
           background: color-mix(in srgb, var(--lp-bg) 78%, transparent); backdrop-filter: blur(12px);
@@ -337,6 +401,7 @@ export default async function HomePage({ searchParams }: Params) {
         .lp-hero-img { position: absolute; inset: 0; z-index: -2; background-size: cover;
           background-position: center; }
         .lp-hero-dim { position: absolute; inset: 0; z-index: -1; background: #000; }
+        html[data-theme='light'] .lp-hero-dim { background: #fff; }
         .lp-nav-links { display: flex; gap: 22px; font-size: 15px; }
         .lp-nav-links a { color: var(--lp-sub); }
         .lp-nav-links a:hover { color: var(--lp-text); }

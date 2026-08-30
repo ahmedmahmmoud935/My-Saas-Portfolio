@@ -3,6 +3,7 @@
 import { getDashboardContext } from './dashboard'
 import { LANDING_COPY } from './landing-copy'
 import { mediaUrl } from './portfolio'
+import type { SectionBgForm } from './design-types'
 
 type Copy = (typeof LANDING_COPY)['ar']
 
@@ -13,6 +14,11 @@ export type LandingTheme = {
   bg2: string
   text: string
   subtext: string
+  accentLight: string
+  bgLight: string
+  bg2Light: string
+  textLight: string
+  subtextLight: string
 }
 export type LandingImages = {
   logoId: number | null
@@ -32,6 +38,11 @@ const DEFAULT_LANDING_THEME: LandingTheme = {
   bg2: '#111111',
   text: '#FFFFFF',
   subtext: '#9AA0AA',
+  accentLight: '#F97316',
+  bgLight: '#FFFFFF',
+  bg2Light: '#F3F5F8',
+  textLight: '#0C0F16',
+  subtextLight: '#495265',
 }
 
 
@@ -55,12 +66,14 @@ export async function getLandingForm(): Promise<{
   en: Copy
   theme: LandingTheme
   images: LandingImages
+  sectionBg: SectionBgForm[]
 }> {
   const ctx = await ownerCtx()
   const g = (await ctx.payload.findGlobal({ slug: 'landing', locale: 'all', depth: 1 })) as {
     content?: { ar?: Partial<Copy>; en?: Partial<Copy> }
     theme?: Partial<LandingTheme>
     images?: Record<string, unknown>
+    sectionBg?: Record<string, unknown>[]
   }
   const im = g.images ?? {}
   const rel = (v: unknown) =>
@@ -79,6 +92,21 @@ export async function getLandingForm(): Promise<{
       ogId: rel(im.ogImage),
       ogUrl: mediaUrl((im.ogImage as never) ?? null, 'card'),
     },
+    sectionBg: (g.sectionBg ?? []).map((r) => ({
+      // `theme` is carried by the shared row shape but unused on both sides:
+      // one backdrop serves light and dark, and only the veil over it changes.
+      theme: 'dark',
+      section: (r.section as string) || 'hero',
+      mode: (r.mode as string) || 'color',
+      color: (r.color as string) || '',
+      imageId: rel(r.image),
+      imageUrl: mediaUrl((r.image as never) ?? null, 'card'),
+      videoUrl: (r.videoUrl as string) || '',
+      fixed: Boolean(r.fixed),
+      dim: (r.dim as number) ?? 45,
+      posX: (r.posX as number) ?? 50,
+      posY: (r.posY as number) ?? 50,
+    })),
   }
 }
 
@@ -88,16 +116,32 @@ export async function saveLanding(
   en: Copy,
   theme?: LandingTheme,
   images?: LandingImages,
+  sectionBg?: SectionBgForm[],
 ) {
   const ctx = await ownerCtx()
   // Locale-specific copy first, then the shared look in one non-localized pass.
   await ctx.payload.updateGlobal({ slug: 'landing', data: { content: ar } as never, locale: 'ar' })
   await ctx.payload.updateGlobal({ slug: 'landing', data: { content: en } as never, locale: 'en' })
-  if (theme || images) {
+  if (theme || images || sectionBg) {
     await ctx.payload.updateGlobal({
       slug: 'landing',
       data: {
         ...(theme ? { theme } : {}),
+        ...(sectionBg
+          ? {
+              sectionBg: sectionBg.map((r) => ({
+                section: r.section,
+                mode: r.mode,
+                color: r.color || null,
+                image: r.imageId ?? null,
+                videoUrl: r.videoUrl || null,
+                fixed: r.fixed,
+                dim: r.dim,
+                posX: r.posX,
+                posY: r.posY,
+              })),
+            }
+          : {}),
         ...(images
           ? {
               images: {

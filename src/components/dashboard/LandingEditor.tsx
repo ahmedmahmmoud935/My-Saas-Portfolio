@@ -4,11 +4,25 @@ import React, { useState } from 'react'
 import PageHeader from './PageHeader'
 import { useDashLang } from './DashLang'
 import MediaUploader from './MediaUploader'
+import SectionBgRows from './SectionBgRows'
+import { ColorInput } from './controls'
 import { saveLanding, type LandingImages, type LandingTheme } from '@/lib/landing-actions'
 import { LANDING_COPY } from '@/lib/landing-copy'
+import {
+  DARK_PALETTES,
+  LIGHT_PALETTES,
+  LANDING_BG_SECTIONS,
+  type SectionBgForm,
+} from '@/lib/design-types'
 
 type Copy = (typeof LANDING_COPY)['ar']
-type Form = { ar: Copy; en: Copy; theme: LandingTheme; images: LandingImages }
+type Form = {
+  ar: Copy
+  en: Copy
+  theme: LandingTheme
+  images: LandingImages
+  sectionBg: SectionBgForm[]
+}
 
 const SECTIONS = [
   { id: 'header', ar: 'الهيدر', en: 'Header' },
@@ -19,6 +33,7 @@ const SECTIONS = [
   { id: 'cta', ar: 'دعوة الفعل', en: 'Call to action' },
   { id: 'footer', ar: 'الفوتر', en: 'Footer' },
   { id: 'style', ar: 'الألوان', en: 'Colours' },
+  { id: 'backgrounds', ar: 'خلفيات الأقسام', en: 'Section backgrounds' },
   { id: 'images', ar: 'الصور', en: 'Images' },
 ] as const
 
@@ -51,29 +66,23 @@ function Field({
   )
 }
 
-/* Same colour control as the Design tab: caption above a fused swatch + hex. */
-function ColorInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
-  return (
-    <label className="color-input">
-      <span className="ci-label">{label}</span>
-      <span className="ci-control">
-        <input type="color" value={value || '#000000'} onChange={(e) => onChange(e.target.value)} />
-        <input className="ci-hex" value={value} onChange={(e) => onChange(e.target.value)} dir="ltr" spellCheck={false} />
-      </span>
-    </label>
-  )
-}
-
 export default function LandingEditor({ initial }: { initial: Form }) {
   const [f, setF] = useState<Form>(initial)
   const [sec, setSec] = useState<(typeof SECTIONS)[number]['id']>('hero')
   const [busy, setBusy] = useState(false)
+  const [light, setLight] = useState(false)
   const [toast, setToast] = useState(false)
   const { t } = useDashLang()
 
   // Deep-ish setters over the two locale copies.
   const setTheme = (p: Partial<LandingTheme>) => setF((f0) => ({ ...f0, theme: { ...f0.theme, ...p } }))
   const setImages = (p: Partial<LandingImages>) => setF((f0) => ({ ...f0, images: { ...f0.images, ...p } }))
+  const setSectionBg = (rows: SectionBgForm[]) => setF((f0) => ({ ...f0, sectionBg: rows }))
+  // Which half of the palette the Colours tab is editing.
+  const k = light
+    ? { accent: 'accentLight', bg: 'bgLight', bg2: 'bg2Light', text: 'textLight', sub: 'subtextLight' }
+    : { accent: 'accent', bg: 'bg', bg2: 'bg2', text: 'text', sub: 'subtext' }
+  const tv = (key: string) => (f.theme as unknown as Record<string, string>)[key] || ''
   const setKey = (key: keyof Copy, v: string, loc: 'ar' | 'en') =>
     setF((p) => ({ ...p, [loc]: { ...p[loc], [key]: v } }))
   const setNav = (key: keyof Copy['nav'], v: string, loc: 'ar' | 'en') =>
@@ -100,7 +109,7 @@ export default function LandingEditor({ initial }: { initial: Form }) {
 
   async function save() {
     setBusy(true)
-    await saveLanding(f.ar, f.en, f.theme, f.images)
+    await saveLanding(f.ar, f.en, f.theme, f.images, f.sectionBg)
     setBusy(false)
     setToast(true)
     setTimeout(() => setToast(false), 1800)
@@ -194,13 +203,60 @@ export default function LandingEditor({ initial }: { initial: Form }) {
         {sec === 'footer' && <>{scalar('rights', t('حقوق النشر', 'Copyright text'))}</>}
 
         {sec === 'style' && (
-          <div className="de-colors">
-            <ColorInput label={t('المميّز', 'Accent')} value={f.theme.accent} onChange={(v) => setTheme({ accent: v })} />
-            <ColorInput label={t('الخلفية', 'Background')} value={f.theme.bg} onChange={(v) => setTheme({ bg: v })} />
-            <ColorInput label={t('خلفية الكروت', 'Cards')} value={f.theme.bg2} onChange={(v) => setTheme({ bg2: v })} />
-            <ColorInput label={t('النص', 'Text')} value={f.theme.text} onChange={(v) => setTheme({ text: v })} />
-            <ColorInput label={t('النص الخافت', 'Muted')} value={f.theme.subtext} onChange={(v) => setTheme({ subtext: v })} />
-          </div>
+          <>
+            <div className="design-subtabs">
+              <button className={`dst ${!light ? 'active' : ''}`} onClick={() => setLight(false)}>
+                🌙 {t('داكن', 'Dark')}
+              </button>
+              <button className={`dst ${light ? 'active' : ''}`} onClick={() => setLight(true)}>
+                ☀️ {t('فاتح', 'Light')}
+              </button>
+            </div>
+
+            <div className="palette-row">
+              {(light ? LIGHT_PALETTES : DARK_PALETTES).map((p) => (
+                <button
+                  key={p.name}
+                  className="palette-chip"
+                  onClick={() =>
+                    setTheme({
+                      [k.accent]: p.accent,
+                      [k.bg]: p.bg,
+                      [k.bg2]: p.bg2,
+                      [k.text]: p.text,
+                      [k.sub]: p.subtext,
+                    } as Partial<LandingTheme>)
+                  }
+                >
+                  <span className="palette-swatch">
+                    <i style={{ background: p.accent }} />
+                    <i style={{ background: p.bg }} />
+                    <i style={{ background: p.bg2 }} />
+                  </span>
+                  {p.name}
+                </button>
+              ))}
+            </div>
+
+            <div className="de-colors" style={{ marginTop: 14 }}>
+              <ColorInput label={t('المميّز', 'Accent')} value={tv(k.accent)} onChange={(v) => setTheme({ [k.accent]: v } as Partial<LandingTheme>)} />
+              <ColorInput label={t('الخلفية', 'Background')} value={tv(k.bg)} onChange={(v) => setTheme({ [k.bg]: v } as Partial<LandingTheme>)} />
+              <ColorInput label={t('خلفية الكروت', 'Cards')} value={tv(k.bg2)} onChange={(v) => setTheme({ [k.bg2]: v } as Partial<LandingTheme>)} />
+              <ColorInput label={t('النص', 'Text')} value={tv(k.text)} onChange={(v) => setTheme({ [k.text]: v } as Partial<LandingTheme>)} />
+              <ColorInput label={t('النص الخافت', 'Muted')} value={tv(k.sub)} onChange={(v) => setTheme({ [k.sub]: v } as Partial<LandingTheme>)} />
+            </div>
+
+            <p style={{ color: 'var(--sub)', fontSize: 13, marginTop: 14 }}>
+              {t(
+                'الزائر بيقلّب بين الوضعين من زر الشمس/القمر في شريط الصفحة، واختياره بيتحفظ عنده.',
+                'Visitors switch with the sun/moon button in the page nav, and their choice is remembered.',
+              )}
+            </p>
+          </>
+        )}
+
+        {sec === 'backgrounds' && (
+          <SectionBgRows rows={f.sectionBg} sections={LANDING_BG_SECTIONS} tr={t} onChange={setSectionBg} />
         )}
 
         {sec === 'images' && (

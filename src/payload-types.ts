@@ -1666,7 +1666,29 @@ export interface Landing {
     bg2?: string | null;
     text?: string | null;
     subtext?: string | null;
+    accentLight?: string | null;
+    bgLight?: string | null;
+    bg2Light?: string | null;
+    textLight?: string | null;
+    subtextLight?: string | null;
   };
+  /**
+   * Give one section its own backdrop — a colour, a picture or a looping video. Sections not listed here keep the page background. A row serves both themes; only the veil over it changes colour.
+   */
+  sectionBg?:
+    | {
+        section?: ('hero' | 'features' | 'how' | 'showcase' | 'pricing' | 'faq' | 'cta') | null;
+        mode?: ('color' | 'image' | 'video') | null;
+        color?: string | null;
+        image?: (number | null) | Media;
+        videoUrl?: string | null;
+        fixed?: boolean | null;
+        dim?: number | null;
+        posX?: number | null;
+        posY?: number | null;
+        id?: string | null;
+      }[]
+    | null;
   images?: {
     logo?: (number | null) | Media;
     hero?: (number | null) | Media;
@@ -1690,6 +1712,25 @@ export interface LandingSelect<T extends boolean = true> {
         bg2?: T;
         text?: T;
         subtext?: T;
+        accentLight?: T;
+        bgLight?: T;
+        bg2Light?: T;
+        textLight?: T;
+        subtextLight?: T;
+      };
+  sectionBg?:
+    | T
+    | {
+        section?: T;
+        mode?: T;
+        color?: T;
+        image?: T;
+        videoUrl?: T;
+        fixed?: T;
+        dim?: T;
+        posX?: T;
+        posY?: T;
+        id?: T;
       };
   images?:
     | T
