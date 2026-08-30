@@ -31,6 +31,26 @@ const DEFAULT_LOOK: LandingLook = {
 }
 
 
+/**
+ * Black or white on top of the owner's accent, whichever stays readable.
+ *
+ * The accent is a free colour picker, so the label on an accent-filled button
+ * can't be a fixed white: a yellow or mint accent leaves it barely visible.
+ * Perceived luminance decides, with the threshold where the two contrast
+ * ratios cross.
+ */
+function onAccent(hex: string): string {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim())
+  if (!m) return '#FFFFFF'
+  const n = parseInt(m[1], 16)
+  const lin = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => {
+    const c = v / 255
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+  })
+  const L = 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2]
+  return L > 0.36 ? '#0A0A0A' : '#FFFFFF'
+}
+
 /** Saved colours, minus the blanks — a null column must not beat the default. */
 function setOnly<T extends object>(o: unknown): Partial<T> {
   if (!o || typeof o !== 'object') return {}
@@ -293,14 +313,21 @@ export default async function HomePage({ searchParams }: Params) {
       </footer>
 
       <style>{`
-        .lp { --o: ${look.accent}; --lp-bg2: ${look.bg2}; --lp-sub: ${look.subtext};
-          background: ${look.bg}; color: ${look.text}; overflow-x: hidden;
+        .lp { --o: ${look.accent}; --lp-on-o: ${onAccent(look.accent)};
+          --lp-bg: ${look.bg}; --lp-bg2: ${look.bg2};
+          --lp-text: ${look.text}; --lp-sub: ${look.subtext};
+          /* Hairlines and tints are derived, never fixed: a chosen background
+             can be dark or light, and a fixed white hairline vanishes on one
+             of them. */
+          --lp-line: color-mix(in srgb, var(--lp-text) 9%, transparent);
+          --lp-line-2: color-mix(in srgb, var(--lp-text) 20%, transparent);
+          background: var(--lp-bg); color: var(--lp-text); overflow-x: hidden;
           font-family: var(--font-cairo), system-ui, sans-serif; }
         .lp a { text-decoration: none; color: inherit; }
         .lp-nav { position: sticky; top: 0; z-index: 20; display: flex; align-items: center;
           justify-content: space-between; gap: 16px; padding: 16px 24px;
-          background: rgba(10,10,10,0.72); backdrop-filter: blur(12px);
-          border-bottom: 1px solid rgba(255,255,255,0.06); }
+          background: color-mix(in srgb, var(--lp-bg) 78%, transparent); backdrop-filter: blur(12px);
+          border-bottom: 1px solid var(--lp-line); }
         .lp-logo { font-family: var(--font-montserrat), sans-serif; font-weight: 900; font-size: 22px; letter-spacing: -.5px; }
         .lp-logo span { color: var(--o); }
         .lp-logo-img { height: 34px; width: auto; display: block; }
@@ -311,31 +338,32 @@ export default async function HomePage({ searchParams }: Params) {
           background-position: center; }
         .lp-hero-dim { position: absolute; inset: 0; z-index: -1; background: #000; }
         .lp-nav-links { display: flex; gap: 22px; font-size: 15px; }
-        .lp-nav-links a { color: #bdbdbd; }
-        .lp-nav-links a:hover { color: #fff; }
+        .lp-nav-links a { color: var(--lp-sub); }
+        .lp-nav-links a:hover { color: var(--lp-text); }
         .lp-nav-actions { display: flex; align-items: center; gap: 10px; }
-        .lp-lang { font-size: 13px; color: #bdbdbd; border: 1px solid rgba(255,255,255,0.14);
+        .lp-lang { font-size: 13px; color: var(--lp-sub); border: 1px solid var(--lp-line-2);
           border-radius: 8px; padding: 6px 10px; }
-        .lp-lang:hover { color: #fff; border-color: var(--o); }
+        .lp-lang:hover { color: var(--lp-text); border-color: var(--o); }
         .lp-btn { display: inline-block; border-radius: 12px; padding: 11px 20px; font-weight: 700;
           font-size: 15px; cursor: pointer; transition: transform .12s, filter .12s, background .2s; }
         .lp-btn:hover { transform: translateY(-1px); }
-        .lp-btn-primary { background: var(--o); color: #fff; }
+        .lp-btn-primary { background: var(--o); color: var(--lp-on-o); }
         .lp-btn-primary:hover { filter: brightness(1.08); }
-        .lp-btn-ghost { border: 1px solid rgba(255,255,255,0.18); color: #fff; }
+        .lp-btn-ghost { border: 1px solid var(--lp-line-2); color: var(--lp-text); }
         .lp-btn-ghost:hover { border-color: var(--o); color: var(--o); }
         .lp-btn-lg { padding: 15px 34px; font-size: 17px; }
 
         .lp-hero { position: relative; text-align: center; padding: 100px 24px 90px; max-width: 860px; margin: 0 auto; }
         .lp-hero-glow { position: absolute; inset: -10% 20% auto; height: 340px; z-index: 0;
-          background: radial-gradient(closest-side, rgba(249,115,22,0.28), transparent 70%); filter: blur(10px); }
+          background: radial-gradient(closest-side, color-mix(in srgb, var(--o) 28%, transparent), transparent 70%); filter: blur(10px); }
         .lp-eyebrow, .lp-h1, .lp-lead, .lp-hero-btns { position: relative; z-index: 1; }
         .lp-eyebrow { display: inline-block; font-size: 13px; letter-spacing: 1px; color: var(--o);
-          background: rgba(249,115,22,0.1); border: 1px solid rgba(249,115,22,0.3); padding: 6px 14px; border-radius: 999px; }
+          background: color-mix(in srgb, var(--o) 11%, transparent);
+          border: 1px solid color-mix(in srgb, var(--o) 32%, transparent); padding: 6px 14px; border-radius: 999px; }
         .lp-h1 { font-size: clamp(38px, 8vw, 68px); line-height: 1.08; margin: 22px 0 0; font-weight: 900;
           font-family: var(--font-montserrat), var(--font-cairo), sans-serif; }
         .lp-accent { color: var(--o); }
-        .lp-lead { font-size: clamp(16px, 2.6vw, 20px); color: #b8b8b8; max-width: 620px; margin: 20px auto 0; line-height: 1.7; }
+        .lp-lead { font-size: clamp(16px, 2.6vw, 20px); color: var(--lp-sub); max-width: 620px; margin: 20px auto 0; line-height: 1.7; }
         .lp-hero-btns { display: flex; gap: 12px; justify-content: center; margin-top: 34px; flex-wrap: wrap; }
 
         .lp-sec { max-width: 1080px; margin: 0 auto; padding: 64px 24px; }
@@ -347,59 +375,60 @@ export default async function HomePage({ searchParams }: Params) {
         @media (max-width: 820px) { .lp-grid-3 { grid-template-columns: 1fr 1fr; } }
         @media (max-width: 560px) { .lp-grid-3, .lp-grid-2 { grid-template-columns: 1fr; } }
 
-        .lp-card { background: #121212; border: 1px solid rgba(255,255,255,0.06); border-radius: 18px; padding: 26px; transition: border-color .2s, transform .2s; }
-        .lp-card:hover { border-color: rgba(249,115,22,0.4); transform: translateY(-3px); }
+        .lp-card { background: var(--lp-bg2); border: 1px solid var(--lp-line); border-radius: 18px; padding: 26px; transition: border-color .2s, transform .2s; }
+        .lp-card:hover { border-color: color-mix(in srgb, var(--o) 45%, transparent); transform: translateY(-3px); }
         .lp-card-icon { font-size: 30px; }
         .lp-card h3 { margin: 14px 0 8px; font-size: 19px; }
-        .lp-card p, .lp-step p { color: #a5a5a5; line-height: 1.7; margin: 0; font-size: 15px; }
+        .lp-card p, .lp-step p { color: var(--lp-sub); line-height: 1.7; margin: 0; font-size: 15px; }
 
         .lp-step { text-align: center; padding: 10px; }
         .lp-step-n { width: 52px; height: 52px; margin: 0 auto 14px; border-radius: 50%;
           display: grid; place-items: center; font-weight: 900; font-size: 22px; color: var(--o);
-          background: rgba(249,115,22,0.12); border: 1px solid rgba(249,115,22,0.35); }
+          background: color-mix(in srgb, var(--o) 13%, transparent);
+          border: 1px solid color-mix(in srgb, var(--o) 36%, transparent); }
         .lp-step h3 { margin: 0 0 8px; font-size: 19px; }
 
-        .lp-empty { text-align: center; color: #888; }
-        .lp-tenant { display: flex; align-items: center; gap: 14px; background: #121212;
-          border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 18px; transition: border-color .2s, transform .2s; }
-        .lp-tenant:hover { border-color: rgba(249,115,22,0.4); transform: translateY(-3px); }
+        .lp-empty { text-align: center; color: var(--lp-sub); }
+        .lp-tenant { display: flex; align-items: center; gap: 14px; background: var(--lp-bg2);
+          border: 1px solid var(--lp-line); border-radius: 16px; padding: 18px; transition: border-color .2s, transform .2s; }
+        .lp-tenant:hover { border-color: color-mix(in srgb, var(--o) 45%, transparent); transform: translateY(-3px); }
         .lp-tenant-badge { width: 46px; height: 46px; border-radius: 12px; flex: 0 0 auto;
-          display: grid; place-items: center; font-weight: 900; font-size: 20px; color: #fff;
-          background: linear-gradient(135deg, var(--o), #b45309); }
+          display: grid; place-items: center; font-weight: 900; font-size: 20px; color: var(--lp-on-o);
+          background: linear-gradient(135deg, var(--o), color-mix(in srgb, var(--o) 55%, #000)); }
         .lp-tenant-body { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; }
         .lp-tenant-body strong { font-size: 16px; }
-        .lp-tenant-body span { color: #888; font-size: 13px; }
+        .lp-tenant-body span { color: var(--lp-sub); font-size: 13px; }
         .lp-tenant-go { color: var(--o); font-size: 13px; font-weight: 700; white-space: nowrap; }
 
         .lp-pricing { max-width: 760px; margin: 0 auto; }
-        .lp-plan { background: #121212; border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 30px; }
-        .lp-plan-hi { border-color: var(--o); box-shadow: 0 0 0 1px var(--o), 0 20px 60px -30px rgba(249,115,22,0.6); }
+        .lp-plan { background: var(--lp-bg2); border: 1px solid var(--lp-line); border-radius: 20px; padding: 30px; }
+        .lp-plan-hi { border-color: var(--o); box-shadow: 0 0 0 1px var(--o), 0 20px 60px -30px color-mix(in srgb, var(--o) 60%, transparent); }
         .lp-plan-name { font-weight: 800; color: var(--o); letter-spacing: .5px; }
         .lp-plan-price { display: flex; align-items: baseline; gap: 8px; margin: 12px 0 20px; }
         .lp-plan-price span { font-size: 48px; font-weight: 900; }
-        .lp-plan-price small { color: #888; font-size: 15px; }
+        .lp-plan-price small { color: var(--lp-sub); font-size: 15px; }
         .lp-plan ul { list-style: none; padding: 0; margin: 0 0 24px; display: flex; flex-direction: column; gap: 12px; }
-        .lp-plan li { color: #cfcfcf; font-size: 15px; }
+        .lp-plan li { color: color-mix(in srgb, var(--lp-text) 72%, var(--lp-sub)); font-size: 15px; }
         .lp-plan .lp-btn { width: 100%; text-align: center; }
 
         .lp-faq { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
-        .lp-faq-item { background: #121212; border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 4px 20px; }
+        .lp-faq-item { background: var(--lp-bg2); border: 1px solid var(--lp-line); border-radius: 14px; padding: 4px 20px; }
         .lp-faq-item summary { cursor: pointer; padding: 16px 0; font-weight: 700; font-size: 16px; list-style: none; }
         .lp-faq-item summary::-webkit-details-marker { display: none; }
         .lp-faq-item summary::after { content: '+'; float: inline-end; color: var(--o); font-size: 22px; }
         .lp-faq-item[open] summary::after { content: '–'; }
-        .lp-faq-item p { color: #a5a5a5; line-height: 1.75; margin: 0 0 16px; }
+        .lp-faq-item p { color: var(--lp-sub); line-height: 1.75; margin: 0 0 16px; }
 
         .lp-cta { padding: 24px; }
         .lp-cta-inner { max-width: 900px; margin: 0 auto; text-align: center; border-radius: 28px; padding: 64px 24px;
-          background: radial-gradient(120% 120% at 50% 0%, rgba(249,115,22,0.18), transparent 60%), #121212;
-          border: 1px solid rgba(249,115,22,0.25); }
-        .lp-cta-inner p { color: #b8b8b8; margin: 0 0 26px; font-size: 17px; }
+          background: radial-gradient(120% 120% at 50% 0%, color-mix(in srgb, var(--o) 19%, transparent), transparent 60%), var(--lp-bg2);
+          border: 1px solid color-mix(in srgb, var(--o) 26%, transparent); }
+        .lp-cta-inner p { color: var(--lp-sub); margin: 0 0 26px; font-size: 17px; }
         .lp-cta-inner .lp-h2 { margin-bottom: 14px; }
 
         .lp-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
-          max-width: 1080px; margin: 0 auto; padding: 30px 24px 50px; color: #888; font-size: 14px;
-          border-top: 1px solid rgba(255,255,255,0.06); }
+          max-width: 1080px; margin: 0 auto; padding: 30px 24px 50px; color: var(--lp-sub); font-size: 14px;
+          border-top: 1px solid var(--lp-line); }
 
         @media (max-width: 720px) { .lp-nav-links { display: none; } }
       `}</style>
