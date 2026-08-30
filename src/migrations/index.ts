@@ -22,6 +22,7 @@ import * as migration_20260826_040000_add_grid_mobile_cols from './20260826_0400
 import * as migration_20260827_190000_bilingual_categories from './20260827_190000_bilingual_categories';
 import * as migration_20260827_200000_section_bg_position from './20260827_200000_section_bg_position';
 import * as migration_20260831_010000_landing_design from './20260831_010000_landing_design';
+import * as migration_20260831_030000_landing_card_styles from './20260831_030000_landing_card_styles';
 
 export const migrations = [
   {
@@ -143,5 +144,10 @@ export const migrations = [
     up: migration_20260831_010000_landing_design.up,
     down: migration_20260831_010000_landing_design.down,
     name: '20260831_010000_landing_design'
+  },
+  {
+    up: migration_20260831_030000_landing_card_styles.up,
+    down: migration_20260831_030000_landing_card_styles.down,
+    name: '20260831_030000_landing_card_styles'
   },
 ];

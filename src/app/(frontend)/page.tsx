@@ -23,6 +23,8 @@ type LandingLook = {
   heroUrl: string | null
   heroDim: number
   ogUrl: string | null
+  showcaseStyle: string
+  cardStyle: string
 }
 
 const DEFAULT_LOOK: LandingLook = {
@@ -42,6 +44,8 @@ const DEFAULT_LOOK: LandingLook = {
   heroUrl: null,
   heroDim: 40,
   ogUrl: null,
+  showcaseStyle: 'portrait',
+  cardStyle: 'solid',
 }
 
 
@@ -83,6 +87,7 @@ async function getLanding(locale: 'ar' | 'en') {
       theme?: Partial<LandingLook>
       images?: Record<string, unknown>
       sectionBg?: Record<string, unknown>[]
+      style?: { showcase?: string | null; card?: string | null }
     }
     const saved = g?.content
     const im = g?.images ?? {}
@@ -113,6 +118,8 @@ async function getLanding(locale: 'ar' | 'en') {
         heroUrl: mediaUrl((im.hero as never) ?? null, 'card'),
         heroDim: (im.heroDim as number) ?? DEFAULT_LOOK.heroDim,
         ogUrl: mediaUrl((im.ogImage as never) ?? null, 'card'),
+        showcaseStyle: g?.style?.showcase || DEFAULT_LOOK.showcaseStyle,
+        cardStyle: g?.style?.card || DEFAULT_LOOK.cardStyle,
       } as LandingLook,
     }
   } catch {
@@ -151,11 +158,61 @@ export async function generateMetadata({ searchParams }: Params): Promise<Metada
 }
 
 
-async function getShowcase(): Promise<{ name: string; slug: string }[]> {
+type ShowcaseItem = {
+  name: string
+  slug: string
+  title: string | null
+  avatarUrl: string | null
+  coverUrl: string | null
+}
+
+/**
+ * The portfolios shown on the landing page, with the face and the one-line
+ * title each of them already publishes.
+ *
+ * The card used to have nothing but a name and the first letter of it in a
+ * coloured square — six identical squares said nothing about the work behind
+ * them. Their settings are fetched in one query, not one per tenant.
+ */
+async function getShowcase(): Promise<ShowcaseItem[]> {
   try {
     const payload = await getPayload({ config })
     const res = await payload.find({ collection: 'tenants', limit: 6, depth: 0, sort: '-createdAt' })
-    return res.docs.map((t) => ({ name: t.name, slug: t.slug }))
+    const tenants = res.docs
+    if (!tenants.length) return []
+
+    const settings = await payload.find({
+      collection: 'site-settings',
+      where: { tenant: { in: tenants.map((t) => t.id) } },
+      limit: tenants.length,
+      depth: 1,
+    })
+    const byTenant = new Map<number, (typeof settings.docs)[number]>()
+    for (const doc of settings.docs) {
+      const owner = doc.tenant
+      const id = typeof owner === 'object' ? owner?.id : owner
+      if (typeof id === 'number') byTenant.set(id, doc)
+    }
+
+    return tenants.map((t) => {
+      const st = byTenant.get(t.id)
+      const brand = (st?.brand ?? {}) as Record<string, unknown>
+      const hero = ((st?.content as Record<string, unknown>)?.hero ?? {}) as Record<string, unknown>
+      return {
+        name: t.name,
+        slug: t.slug,
+        title: (hero.title as string) || null,
+        // Whichever picture of themselves they have set, in the order a person
+        // would expect to be recognised by.
+        avatarUrl:
+          mediaUrl((brand.avatar as never) ?? null, 'thumb') ||
+          mediaUrl((brand.photo as never) ?? null, 'thumb') ||
+          mediaUrl((brand.brandLogo as never) ?? null, 'thumb'),
+        coverUrl:
+          mediaUrl((brand.heroCover as never) ?? null, 'card') ||
+          mediaUrl((brand.photo as never) ?? null, 'card'),
+      }
+    })
   } catch {
     return []
   }
@@ -168,6 +225,8 @@ export default async function HomePage({ searchParams }: Params) {
   const c = copy as (typeof LANDING_COPY)['ar']
   const q = locale === 'en' ? '?lang=en' : ''
   const showcase = await getShowcase()
+  const showcaseStyle = look.showcaseStyle
+  const cardStyle = look.cardStyle
 
   const faqJsonLd = {
     '@context': 'https://schema.org',
@@ -180,7 +239,7 @@ export default async function HomePage({ searchParams }: Params) {
   }
 
   return (
-    <div className="lp" dir={locale === 'en' ? 'ltr' : 'rtl'} lang={locale}>
+    <div className="lp" data-card={cardStyle} dir={locale === 'en' ? 'ltr' : 'rtl'} lang={locale}>
       {/* eslint-disable-next-line react/no-danger */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
 
@@ -277,14 +336,25 @@ export default async function HomePage({ searchParams }: Params) {
           {showcase.length === 0 ? (
             <p className="lp-empty">{c.showcaseEmpty}</p>
           ) : (
-            <div className="lp-grid lp-grid-3">
+            <div className={`lp-grid lp-grid-3 lp-showcase sc-${showcaseStyle}`}>
               {showcase.map((s) => (
                 <a className="lp-tenant" href={`/${s.slug}${q}`} key={s.slug}>
-                  <div className="lp-tenant-badge">{s.name?.[0]?.toUpperCase() || 'V'}</div>
-                  <div className="lp-tenant-body">
+                  <span className="lp-tenant-badge">
+                    {(showcaseStyle === 'cover' ? s.coverUrl : s.avatarUrl) ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={(showcaseStyle === 'cover' ? s.coverUrl : s.avatarUrl) as string}
+                        alt={s.name}
+                      />
+                    ) : (
+                      // No picture set — the initial, as before.
+                      s.name?.[0]?.toUpperCase() || 'V'
+                    )}
+                  </span>
+                  <span className="lp-tenant-body">
                     <strong>{s.name}</strong>
-                    <span>/{s.slug}</span>
-                  </div>
+                    <span>{s.title || `/${s.slug}`}</span>
+                  </span>
                   <span className="lp-tenant-go">{c.visit} →</span>
                 </a>
               ))}
@@ -454,16 +524,89 @@ export default async function HomePage({ searchParams }: Params) {
         .lp-step h3 { margin: 0 0 8px; font-size: 19px; }
 
         .lp-empty { text-align: center; color: var(--lp-sub); }
+        /* ── Showcase cards ────────────────────────────────────────────────
+           Four layouts over one piece of markup. Each portfolio already
+           publishes a face and a one-line title, so the card shows those; the
+           initial in a coloured tile is the fallback, not the design. */
         .lp-tenant { display: flex; align-items: center; gap: 14px; background: var(--lp-bg2);
-          border: 1px solid var(--lp-line); border-radius: 16px; padding: 18px; transition: border-color .2s, transform .2s; }
+          border: 1px solid var(--lp-line); border-radius: 16px; padding: 18px;
+          transition: border-color .2s, transform .2s; }
         .lp-tenant:hover { border-color: color-mix(in srgb, var(--o) 45%, transparent); transform: translateY(-3px); }
         .lp-tenant-badge { width: 46px; height: 46px; border-radius: 12px; flex: 0 0 auto;
-          display: grid; place-items: center; font-weight: 900; font-size: 20px; color: var(--lp-on-o);
+          display: grid; place-items: center; overflow: hidden; font-weight: 900; font-size: 20px;
+          color: var(--lp-on-o);
           background: linear-gradient(135deg, var(--o), color-mix(in srgb, var(--o) 55%, #000)); }
+        .lp-tenant-badge img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .lp-tenant-body { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; }
         .lp-tenant-body strong { font-size: 16px; }
         .lp-tenant-body span { color: var(--lp-sub); font-size: 13px; }
         .lp-tenant-go { color: var(--o); font-size: 13px; font-weight: 700; white-space: nowrap; }
+
+        /* PORTRAIT — a round photo above the name, the way people are listed. */
+        .sc-portrait .lp-tenant { flex-direction: column; text-align: center; padding: 28px 20px 22px; gap: 0; }
+        .sc-portrait .lp-tenant-badge { width: 92px; height: 92px; border-radius: 50%; margin-bottom: 14px;
+          box-shadow: 0 0 0 3px var(--lp-bg2), 0 0 0 4px color-mix(in srgb, var(--o) 55%, transparent); }
+        .sc-portrait .lp-tenant-body { align-items: center; }
+        .sc-portrait .lp-tenant-body strong { font-size: 17px; }
+        .sc-portrait .lp-tenant-body span { margin-top: 4px; }
+        .sc-portrait .lp-tenant-go { margin-top: 12px; }
+
+        /* PLATE — the photo breaks out of the top of a plate carrying the text. */
+        /* The photo hangs 44px above its card, so the grid needs that much room
+           at the top AND between rows — otherwise the second row's photos land
+           on top of the first row's cards. */
+        .sc-plate { padding-top: 46px; row-gap: 64px; }
+        .sc-plate .lp-tenant { flex-direction: column; text-align: center; gap: 0;
+          padding: 56px 18px 20px; margin-top: 0; position: relative; overflow: visible; }
+        .sc-plate .lp-tenant-badge { width: 88px; height: 88px; border-radius: 50%;
+          position: absolute; top: -44px; inset-inline-start: 50%; transform: translateX(-50%);
+          box-shadow: 0 0 0 4px var(--lp-bg); }
+        /* translateX flips with the writing direction, so the RTL half needs
+           the mirrored shift or the photo lands off to one side. */
+        .lp[dir='rtl'] .sc-plate .lp-tenant-badge { transform: translateX(50%); }
+        .sc-plate .lp-tenant-body { align-items: center; }
+        .sc-plate .lp-tenant-body strong { font-size: 17px; }
+        .sc-plate .lp-tenant-body span { margin-top: 4px; }
+        .sc-plate .lp-tenant-go { margin-top: 12px; }
+
+        /* COVER — the work first: a wide picture with the name written on it. */
+        .sc-cover .lp-tenant { position: relative; flex-direction: column; align-items: stretch;
+          padding: 0; overflow: hidden; min-height: 200px; justify-content: flex-end; gap: 0; }
+        .sc-cover .lp-tenant-badge { position: absolute; inset: 0; width: auto; height: auto;
+          border-radius: 0; font-size: 46px; }
+        .sc-cover .lp-tenant-badge::after { content: ''; position: absolute; inset: 0;
+          background: linear-gradient(to top, rgba(0,0,0,.82), rgba(0,0,0,.15) 60%, transparent); }
+        .sc-cover .lp-tenant-body, .sc-cover .lp-tenant-go { position: relative; z-index: 1; }
+        .sc-cover .lp-tenant-body { padding: 16px 18px 0; }
+        .sc-cover .lp-tenant-body strong, .sc-cover .lp-tenant-body span { color: #fff; }
+        .sc-cover .lp-tenant-body span { opacity: .82; }
+        .sc-cover .lp-tenant-go { padding: 6px 18px 16px; }
+
+        /* ── Card finish, shared by every card on the page ──────────────────── */
+        .lp[data-card='outline'] .lp-card,
+        .lp[data-card='outline'] .lp-tenant,
+        .lp[data-card='outline'] .lp-plan,
+        .lp[data-card='outline'] .lp-faq-item { background: transparent;
+          border-color: color-mix(in srgb, var(--lp-text) 16%, transparent); }
+
+        .lp[data-card='glass'] .lp-card,
+        .lp[data-card='glass'] .lp-tenant,
+        .lp[data-card='glass'] .lp-plan,
+        .lp[data-card='glass'] .lp-faq-item {
+          background: color-mix(in srgb, var(--lp-bg2) 55%, transparent);
+          backdrop-filter: blur(14px);
+          border-color: color-mix(in srgb, var(--lp-text) 14%, transparent); }
+
+        .lp[data-card='elevated'] .lp-card,
+        .lp[data-card='elevated'] .lp-tenant,
+        .lp[data-card='elevated'] .lp-plan,
+        .lp[data-card='elevated'] .lp-faq-item { border-color: transparent;
+          box-shadow: 0 18px 40px -24px rgba(0,0,0,.65), 0 2px 6px rgba(0,0,0,.18); }
+        html[data-theme='light'] .lp[data-card='elevated'] .lp-card,
+        html[data-theme='light'] .lp[data-card='elevated'] .lp-tenant,
+        html[data-theme='light'] .lp[data-card='elevated'] .lp-plan,
+        html[data-theme='light'] .lp[data-card='elevated'] .lp-faq-item {
+          box-shadow: 0 16px 34px -22px rgba(16,24,40,.28), 0 2px 5px rgba(16,24,40,.07); }
 
         .lp-pricing { max-width: 760px; margin: 0 auto; }
         .lp-plan { background: var(--lp-bg2); border: 1px solid var(--lp-line); border-radius: 20px; padding: 30px; }

@@ -5,8 +5,8 @@ import PageHeader from './PageHeader'
 import { useDashLang } from './DashLang'
 import MediaUploader from './MediaUploader'
 import SectionBgRows from './SectionBgRows'
-import { ColorInput } from './controls'
-import { saveLanding, type LandingImages, type LandingTheme } from '@/lib/landing-actions'
+import { ColorInput, Opt } from './controls'
+import { saveLanding, type LandingImages, type LandingStyle, type LandingTheme } from '@/lib/landing-actions'
 import { LANDING_COPY } from '@/lib/landing-copy'
 import {
   DARK_PALETTES,
@@ -21,6 +21,7 @@ type Form = {
   en: Copy
   theme: LandingTheme
   images: LandingImages
+  style: LandingStyle
   sectionBg: SectionBgForm[]
 }
 
@@ -29,13 +30,62 @@ const SECTIONS = [
   { id: 'hero', ar: 'القسم الرئيسي', en: 'Hero' },
   { id: 'titles', ar: 'عناوين الأقسام', en: 'Section titles' },
   { id: 'features', ar: 'المميزات', en: 'Features' },
+  { id: 'how', ar: 'الخطوات', en: 'Steps' },
   { id: 'faq', ar: 'الأسئلة', en: 'FAQ' },
   { id: 'cta', ar: 'دعوة الفعل', en: 'Call to action' },
   { id: 'footer', ar: 'الفوتر', en: 'Footer' },
   { id: 'style', ar: 'الألوان', en: 'Colours' },
+  { id: 'cards', ar: 'شكل الكروت', en: 'Card style' },
   { id: 'backgrounds', ar: 'خلفيات الأقسام', en: 'Section backgrounds' },
   { id: 'images', ar: 'الصور', en: 'Images' },
 ] as const
+
+/* A starting point, not a limit — the field takes any emoji or short text. */
+const ICON_SUGGESTIONS = [
+  '🎨', '🖼️', '✍️', '🌐', '⚡', '📩', '🚀', '📱', '💼', '🔒',
+  '📊', '⭐', '🎬', '🛠️', '💡', '🏆', '🔗', '📈', '✅', '🎯',
+]
+
+/**
+ * One icon. Shared by both languages on purpose: an emoji doesn't get
+ * translated, and keeping a copy per locale means setting it twice and
+ * watching the Arabic and English pages drift apart.
+ */
+function IconInput({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: string
+  onChange: (v: string) => void
+}) {
+  return (
+    <div style={{ marginBottom: 12 }}>
+      <label className="lbl" style={{ display: 'block' }}>{label}</label>
+      <div className="icon-picker">
+        <input
+          className="field icon-field"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          maxLength={8}
+        />
+        <div className="icon-chips">
+          {ICON_SUGGESTIONS.map((e) => (
+            <button
+              key={e}
+              type="button"
+              className={`icon-chip ${value === e ? 'active' : ''}`}
+              onClick={() => onChange(e)}
+            >
+              {e}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 /* Bilingual text field (AR + EN side by side). */
 function Field({
@@ -78,6 +128,7 @@ export default function LandingEditor({ initial }: { initial: Form }) {
   const setTheme = (p: Partial<LandingTheme>) => setF((f0) => ({ ...f0, theme: { ...f0.theme, ...p } }))
   const setImages = (p: Partial<LandingImages>) => setF((f0) => ({ ...f0, images: { ...f0.images, ...p } }))
   const setSectionBg = (rows: SectionBgForm[]) => setF((f0) => ({ ...f0, sectionBg: rows }))
+  const setStyle = (p: Partial<LandingStyle>) => setF((f0) => ({ ...f0, style: { ...f0.style, ...p } }))
   // Which half of the palette the Colours tab is editing.
   const k = light
     ? { accent: 'accentLight', bg: 'bgLight', bg2: 'bg2Light', text: 'textLight', sub: 'subtextLight' }
@@ -87,7 +138,7 @@ export default function LandingEditor({ initial }: { initial: Form }) {
     setF((p) => ({ ...p, [loc]: { ...p[loc], [key]: v } }))
   const setNav = (key: keyof Copy['nav'], v: string, loc: 'ar' | 'en') =>
     setF((p) => ({ ...p, [loc]: { ...p[loc], nav: { ...p[loc].nav, [key]: v } } }))
-  const setArr = <K extends 'features' | 'faqs'>(arr: K, i: number, field: string, v: string, loc: 'ar' | 'en') =>
+  const setArr = <K extends 'features' | 'faqs' | 'how'>(arr: K, i: number, field: string, v: string, loc: 'ar' | 'en') =>
     setF((p) => ({
       ...p,
       [loc]: {
@@ -95,6 +146,14 @@ export default function LandingEditor({ initial }: { initial: Form }) {
         [arr]: (p[loc][arr] as Record<string, string>[]).map((x, j) => (j === i ? { ...x, [field]: v } : x)),
       },
     }))
+
+  // Icons and step markers aren't translated, so one edit lands in both copies.
+  const setArrBoth = <K extends 'features' | 'how'>(arr: K, i: number, field: string, v: string) =>
+    setF((p) => {
+      const patch = (loc: 'ar' | 'en') =>
+        (p[loc][arr] as Record<string, string>[]).map((x, j) => (j === i ? { ...x, [field]: v } : x))
+      return { ...p, ar: { ...p.ar, [arr]: patch('ar') }, en: { ...p.en, [arr]: patch('en') } }
+    })
 
   const scalar = (key: keyof Copy, label: string, multiline?: boolean) => (
     <Field
@@ -109,7 +168,7 @@ export default function LandingEditor({ initial }: { initial: Form }) {
 
   async function save() {
     setBusy(true)
-    await saveLanding(f.ar, f.en, f.theme, f.images, f.sectionBg)
+    await saveLanding(f.ar, f.en, f.theme, f.images, f.sectionBg, f.style)
     setBusy(false)
     setToast(true)
     setTimeout(() => setToast(false), 1800)
@@ -173,8 +232,22 @@ export default function LandingEditor({ initial }: { initial: Form }) {
             {f.ar.features.map((_, i) => (
               <div className="mod-card" key={i}>
                 <div className="mod-card-head"><span /><strong style={{ color: 'var(--sub)' }}>#{i + 1}</strong></div>
+                <IconInput label={t('الأيقونة', 'Icon')} value={f.ar.features[i].icon} onChange={(v) => setArrBoth('features', i, 'icon', v)} />
                 <Field label={t('العنوان', 'Title')} ar={f.ar.features[i].t} en={f.en.features[i].t} onAr={(v) => setArr('features', i, 't', v, 'ar')} onEn={(v) => setArr('features', i, 't', v, 'en')} />
                 <Field label={t('الوصف', 'Description')} ar={f.ar.features[i].d} en={f.en.features[i].d} onAr={(v) => setArr('features', i, 'd', v, 'ar')} onEn={(v) => setArr('features', i, 'd', v, 'en')} multiline />
+              </div>
+            ))}
+          </>
+        )}
+
+        {sec === 'how' && (
+          <>
+            {f.ar.how.map((_, i) => (
+              <div className="mod-card" key={i}>
+                <div className="mod-card-head"><span /><strong style={{ color: 'var(--sub)' }}>#{i + 1}</strong></div>
+                <IconInput label={t('العلامة (رقم أو أيقونة)', 'Marker (number or icon)')} value={f.ar.how[i].n} onChange={(v) => setArrBoth('how', i, 'n', v)} />
+                <Field label={t('العنوان', 'Title')} ar={f.ar.how[i].t} en={f.en.how[i].t} onAr={(v) => setArr('how', i, 't', v, 'ar')} onEn={(v) => setArr('how', i, 't', v, 'en')} />
+                <Field label={t('الوصف', 'Description')} ar={f.ar.how[i].d} en={f.en.how[i].d} onAr={(v) => setArr('how', i, 'd', v, 'ar')} onEn={(v) => setArr('how', i, 'd', v, 'en')} multiline />
               </div>
             ))}
           </>
@@ -250,6 +323,46 @@ export default function LandingEditor({ initial }: { initial: Form }) {
               {t(
                 'الزائر بيقلّب بين الوضعين من زر الشمس/القمر في شريط الصفحة، واختياره بيتحفظ عنده.',
                 'Visitors switch with the sun/moon button in the page nav, and their choice is remembered.',
+              )}
+            </p>
+          </>
+        )}
+
+        {sec === 'cards' && (
+          <>
+            <Opt
+              label={t('كروت البورتفوليوهات', 'Showcase cards')}
+              value={f.style.showcase}
+              options={[
+                { value: 'portrait', label: t('صورة دائرية', 'Portrait') },
+                { value: 'plate', label: t('صورة بارزة', 'Plate') },
+                { value: 'cover', label: t('غلاف عريض', 'Cover') },
+                { value: 'row', label: t('صف مضغوط', 'Compact row') },
+              ]}
+              onChange={(v) => setStyle({ showcase: v })}
+            />
+            <p style={{ color: 'var(--sub)', fontSize: 13, margin: '0 0 20px' }}>
+              {t(
+                'الكارت بيعرض صورة صاحب البورتفوليو وعنوانه من إعداداته — «غلاف عريض» بيستخدم صورة الغلاف. اللي مرفعش صورة بيظهر أول حرف من اسمه زي الأول.',
+                "The card shows each owner's photo and their own one-line title — Cover uses their cover image instead. Anyone without a picture keeps the initial.",
+              )}
+            </p>
+
+            <Opt
+              label={t('شكل كل الكروت', 'Card finish')}
+              value={f.style.card}
+              options={[
+                { value: 'solid', label: t('مصمت', 'Solid') },
+                { value: 'outline', label: t('حدود فقط', 'Outline') },
+                { value: 'glass', label: t('زجاجي', 'Glass') },
+                { value: 'elevated', label: t('ظل مرتفع', 'Elevated') },
+              ]}
+              onChange={(v) => setStyle({ card: v })}
+            />
+            <p style={{ color: 'var(--sub)', fontSize: 13, margin: 0 }}>
+              {t(
+                'بيتطبّق على كروت المميزات والبورتفوليوهات والأسعار والأسئلة مع بعض.',
+                'Applies to the feature, showcase, pricing and FAQ cards together.',
               )}
             </p>
           </>

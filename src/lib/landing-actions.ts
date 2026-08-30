@@ -20,6 +20,13 @@ export type LandingTheme = {
   textLight: string
   subtextLight: string
 }
+/** How the page draws its cards. */
+export type LandingStyle = {
+  /** portrait | plate | row | cover */
+  showcase: string
+  /** solid | outline | glass | elevated */
+  card: string
+}
 export type LandingImages = {
   logoId: number | null
   logoUrl: string | null
@@ -54,6 +61,8 @@ function setOnly<T extends object>(o: unknown): Partial<T> {
   ) as Partial<T>
 }
 
+const DEFAULT_LANDING_STYLE: LandingStyle = { showcase: 'portrait', card: 'solid' }
+
 async function ownerCtx() {
   const ctx = await getDashboardContext()
   if (!ctx || !ctx.user.isOwner) throw new Error('forbidden')
@@ -66,6 +75,7 @@ export async function getLandingForm(): Promise<{
   en: Copy
   theme: LandingTheme
   images: LandingImages
+  style: LandingStyle
   sectionBg: SectionBgForm[]
 }> {
   const ctx = await ownerCtx()
@@ -73,6 +83,7 @@ export async function getLandingForm(): Promise<{
     content?: { ar?: Partial<Copy>; en?: Partial<Copy> }
     theme?: Partial<LandingTheme>
     images?: Record<string, unknown>
+    style?: Partial<LandingStyle>
     sectionBg?: Record<string, unknown>[]
   }
   const im = g.images ?? {}
@@ -92,6 +103,7 @@ export async function getLandingForm(): Promise<{
       ogId: rel(im.ogImage),
       ogUrl: mediaUrl((im.ogImage as never) ?? null, 'card'),
     },
+    style: { ...DEFAULT_LANDING_STYLE, ...setOnly<LandingStyle>(g.style) },
     sectionBg: (g.sectionBg ?? []).map((r) => ({
       // `theme` is carried by the shared row shape but unused on both sides:
       // one backdrop serves light and dark, and only the veil over it changes.
@@ -117,16 +129,18 @@ export async function saveLanding(
   theme?: LandingTheme,
   images?: LandingImages,
   sectionBg?: SectionBgForm[],
+  style?: LandingStyle,
 ) {
   const ctx = await ownerCtx()
   // Locale-specific copy first, then the shared look in one non-localized pass.
   await ctx.payload.updateGlobal({ slug: 'landing', data: { content: ar } as never, locale: 'ar' })
   await ctx.payload.updateGlobal({ slug: 'landing', data: { content: en } as never, locale: 'en' })
-  if (theme || images || sectionBg) {
+  if (theme || images || sectionBg || style) {
     await ctx.payload.updateGlobal({
       slug: 'landing',
       data: {
         ...(theme ? { theme } : {}),
+        ...(style ? { style } : {}),
         ...(sectionBg
           ? {
               sectionBg: sectionBg.map((r) => ({

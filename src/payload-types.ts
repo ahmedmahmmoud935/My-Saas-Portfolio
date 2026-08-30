@@ -1672,6 +1672,16 @@ export interface Landing {
     textLight?: string | null;
     subtextLight?: string | null;
   };
+  style?: {
+    /**
+     * portrait | plate | row | cover
+     */
+    showcase?: string | null;
+    /**
+     * solid | outline | glass | elevated
+     */
+    card?: string | null;
+  };
   /**
    * Give one section its own backdrop — a colour, a picture or a looping video. Sections not listed here keep the page background. A row serves both themes; only the veil over it changes colour.
    */
@@ -1717,6 +1727,12 @@ export interface LandingSelect<T extends boolean = true> {
         bg2Light?: T;
         textLight?: T;
         subtextLight?: T;
+      };
+  style?:
+    | T
+    | {
+        showcase?: T;
+        card?: T;
       };
   sectionBg?:
     | T

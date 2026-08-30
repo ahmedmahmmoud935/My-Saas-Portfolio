@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-import { DASHBOARD_NAV } from '@/lib/dashboard-nav'
+import { DASHBOARD_NAV_GROUPS } from '@/lib/dashboard-nav'
 import { useDashLang } from './DashLang'
 import NavIcon from './icons'
 
@@ -51,7 +51,7 @@ export default function Sidebar({
   // Running ViralPX (landing page, clients) lives in its own area at /owner —
   // so this dashboard edits one portfolio, the owner's included, and looks the
   // same for everyone.
-  const items = DASHBOARD_NAV
+  const groups = DASHBOARD_NAV_GROUPS
 
   async function logout() {
     await fetch('/api/users/logout', { method: 'POST' })
@@ -80,18 +80,23 @@ export default function Sidebar({
       </div>
 
       <nav>
-        {items.map((item) => {
-          const href = `/dashboard/${item.id}`
-          const active = pathname === href || (item.id === 'projects' && pathname === '/dashboard')
-          return (
-            <a key={item.id} href={href} className={`nav-item ${active ? 'active' : ''}`}>
-              <span>{t(item.labelAr, item.labelEn)}</span>
-              <span className="ic">
-                <NavIcon id={item.id} />
-              </span>
-            </a>
-          )
-        })}
+        {groups.map((group) => (
+          <div className="nav-group" key={group.en}>
+            <div className="nav-group-title">{t(group.ar, group.en)}</div>
+            {group.items.map((item) => {
+              const href = `/dashboard/${item.id}`
+              const active = pathname === href || (item.id === 'projects' && pathname === '/dashboard')
+              return (
+                <a key={item.id} href={href} className={`nav-item ${active ? 'active' : ''}`}>
+                  <span>{t(item.labelAr, item.labelEn)}</span>
+                  <span className="ic">
+                    <NavIcon id={item.id} />
+                  </span>
+                </a>
+              )
+            })}
+          </div>
+        ))}
       </nav>
 
       <div className="sidebar-foot">

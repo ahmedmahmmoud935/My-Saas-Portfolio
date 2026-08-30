@@ -2905,3 +2905,67 @@ input[type='range']::-moz-range-thumb {
   font-weight: 600;
   line-height: 1.6;
 }
+
+/* ── Icon picker (landing page) ─────────────────────────────────────────────
+   A free text field beside a row of suggestions. The field takes anything —
+   the suggestions exist so the common case is one click, not a trip to an
+   emoji keyboard. */
+.icon-picker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.icon-field {
+  width: 78px;
+  flex: 0 0 auto;
+  font-size: 24px;
+  line-height: 1;
+  text-align: center;
+  padding: 8px 6px;
+}
+.icon-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1 1 260px;
+}
+.icon-chip {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 9px;
+  background: var(--bg-3, var(--bg-2));
+  border: 1px solid var(--border);
+  transition: border-color 0.15s, transform 0.12s;
+}
+.icon-chip:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+}
+.icon-chip.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+/* ── Grouped sidebar ────────────────────────────────────────────────────────
+   A quiet heading over each group. It has to stay quiet: the point is to let
+   the eye skip three short lists instead of reading one long one, and a loud
+   heading would compete with the item you're actually looking for. */
+.nav-group + .nav-group {
+  margin-top: 16px;
+}
+.nav-group-title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--sub);
+  opacity: 0.62;
+  padding: 0 12px 6px;
+  text-align: end;
+}

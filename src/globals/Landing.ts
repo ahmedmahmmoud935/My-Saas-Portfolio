@@ -47,6 +47,28 @@ export const Landing: GlobalConfig = {
       ],
     },
     {
+      name: 'style',
+      type: 'group',
+      label: 'Card styles',
+      fields: [
+        // Plain text, not a select: these are rendered by the landing page and
+        // picked from its own editor, so adding a variant should be a code
+        // change, not a migration that widens an enum.
+        {
+          name: 'showcase',
+          type: 'text',
+          defaultValue: 'portrait',
+          admin: { description: 'portrait | plate | row | cover' },
+        },
+        {
+          name: 'card',
+          type: 'text',
+          defaultValue: 'solid',
+          admin: { description: 'solid | outline | glass | elevated' },
+        },
+      ],
+    },
+    {
       name: 'sectionBg',
       type: 'array',
       label: 'Per-section backgrounds',
