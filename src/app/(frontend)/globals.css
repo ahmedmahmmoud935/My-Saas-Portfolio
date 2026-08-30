@@ -272,7 +272,7 @@ img {
   position: relative;
   display: flex;
   align-items: center;
-  min-height: 82vh;
+  min-height: var(--hero-h, 82vh);
   overflow: hidden;
 }
 .hero-bg {
@@ -489,9 +489,11 @@ html[data-theme='light'] .hero-split .hero-bg {
     rgba(var(--hero-veil-rgb, 0, 0, 0), var(--hero-overlay, 0.1));
 }
 
-/* minimal — shorter section, restrained type, no heavy overlay */
+/* minimal — restrained type and no heavy overlay. Its height used to be
+   forced to 60vh with `!important`, which overrode the height set in the
+   dashboard; 60vh is only the fallback now. */
 .hero-minimal {
-  min-height: 60vh !important;
+  min-height: var(--hero-h, 60vh);
 }
 .hero-minimal .hero-name {
   font-size: clamp(36px, 5.5vw, 68px);
@@ -2715,8 +2717,9 @@ html[data-theme='light'] .pf-sec-dim {
    (the framed/split & massive variants broke on phones). */
 @media (max-width: 768px) {
   .pf-root .hero {
-    /* 80vh made the cover feel endless on tall phones. */
-    min-height: 66vh !important;
+    /* 80vh made the cover feel endless on tall phones, so a phone keeps a
+       ceiling — but a shorter hero than that is still honoured. */
+    min-height: min(var(--hero-h, 66vh), 78vh) !important;
     max-height: 78vh !important;
     align-items: center !important;
   }

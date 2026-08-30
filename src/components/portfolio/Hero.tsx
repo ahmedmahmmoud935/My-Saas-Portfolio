@@ -49,7 +49,11 @@ export default function Hero({
       id="hero"
       style={
         {
-          minHeight: `${heightVh}vh`,
+          // Published as a variable, not a plain min-height: one layout set its
+          // own height with `!important`, which an inline style cannot beat —
+          // so the height control did nothing on that layout. Every layout
+          // reads this now.
+          ['--hero-h' as string]: `${heightVh}vh`,
           // Both strengths travel to CSS; the theme decides which one is used
           // and whether the veil is black or white.
           ['--hero-veil-dark' as string]: overlay / 100,
