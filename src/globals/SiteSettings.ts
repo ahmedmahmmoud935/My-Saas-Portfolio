@@ -236,7 +236,7 @@ export const SiteSettings: CollectionConfig = {
                       name: 'hero',
                       type: 'select',
                       defaultValue: 'centered',
-                      options: ['centered', 'split', 'massive', 'cover-full', 'minimal'].map((v) => ({
+                      options: ['centered', 'split', 'panel', 'massive', 'cover-full', 'minimal'].map((v) => ({
                         label: v,
                         value: v,
                       })),
@@ -595,6 +595,10 @@ export const SiteSettings: CollectionConfig = {
                   fields: [
                     { name: 'name', type: 'text', localized: true },
                     { name: 'title', type: 'text', localized: true },
+                    // A sentence or two under the name. The hero had a name, a
+                    // one-line specialty and two buttons and nowhere to say
+                    // what you actually do.
+                    { name: 'desc', type: 'textarea', localized: true },
                     { name: 'btn1', type: 'text', localized: true },
                     { name: 'btn2', type: 'text', localized: true },
                   ],

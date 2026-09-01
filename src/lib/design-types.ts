@@ -172,7 +172,7 @@ export type DesignForm = {
 }
 
 export const LAYOUT_OPTIONS = {
-  hero: ['centered', 'split', 'massive', 'cover-full', 'minimal'],
+  hero: ['centered', 'split', 'panel', 'massive', 'cover-full', 'minimal'],
   about: ['classic', 'visual', 'simple'],
   projects: ['grid', 'masonry', 'list'],
   expertise: ['grid', 'stack'],

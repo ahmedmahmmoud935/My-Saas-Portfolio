@@ -116,6 +116,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
       <Hero
         eyebrow={content.hero?.title || undefined}
         name={content.hero?.name || tenant.name}
+        desc={content.hero?.desc || undefined}
         btn1={content.hero?.btn1 || undefined}
         btn2={content.hero?.btn2 || undefined}
         coverUrl={mediaUrl(brand.heroCover)}

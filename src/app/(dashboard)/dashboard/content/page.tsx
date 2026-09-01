@@ -37,6 +37,7 @@ export default async function ContentPage() {
     hero: {
       name: L(c.hero?.name),
       title: L(c.hero?.title),
+      desc: L(c.hero?.desc),
       btn1: L(c.hero?.btn1),
       btn2: L(c.hero?.btn2),
     },

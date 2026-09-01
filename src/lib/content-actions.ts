@@ -18,6 +18,7 @@ function buildContent(form: ContentForm, loc: 'ar' | 'en', ids?: IdMap) {
     hero: {
       name: g(form.hero.name),
       title: g(form.hero.title),
+      desc: g(form.hero.desc),
       btn1: g(form.hero.btn1),
       btn2: g(form.hero.btn2),
     },

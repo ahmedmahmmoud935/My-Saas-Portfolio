@@ -20,7 +20,7 @@ export type EducationItem = { title: Loc; org: Loc; period: string; description:
 export type ToolItem = { name: string; iconId: number | null; iconUrl: string | null }
 
 export type ContentForm = {
-  hero: { name: Loc; title: Loc; btn1: Loc; btn2: Loc }
+  hero: { name: Loc; title: Loc; desc: Loc; btn1: Loc; btn2: Loc }
   about: { title: Loc; text: Loc; tags: Loc }
   expertise: { title: Loc; items: ExpertiseItem[] }
   experience: { title: Loc; items: ExperienceItem[] }

@@ -32,6 +32,17 @@ export const WIREFRAMES: Record<string, React.ReactNode> = {
       <rect x="62" y="46" width="20" height="6" rx="3" fill={A} />
     </Frame>
   ),
+  'hero-panel': (
+    <Frame>
+      <rect x="6" y="8" width="108" height="58" rx="4" fill="#1d2b30" />
+      <rect x="14" y="20" width="44" height="7" rx="2" fill={A} />
+      <rect x="14" y="31" width="36" height="7" rx="2" fill="#e8e8e8" />
+      <rect x="14" y="43" width="40" height="3" rx="1.5" fill={L} />
+      <rect x="14" y="49" width="30" height="3" rx="1.5" fill={L} />
+      <rect x="14" y="56" width="22" height="6" rx="3" fill={A} />
+      <rect x="70" y="18" width="38" height="48" rx="3" fill={G} />
+    </Frame>
+  ),
   'hero-massive': (
     <Frame>
       <rect x="8" y="24" width="104" height="14" rx="2" fill={A} />

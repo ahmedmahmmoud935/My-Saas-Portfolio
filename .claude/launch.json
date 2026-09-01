@@ -4,8 +4,27 @@
     {
       "name": "viralpx-dev",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["exec", "next", "dev", "-p", "3006"],
+      "runtimeArgs": [
+        "exec",
+        "next",
+        "dev",
+        "-p",
+        "3006"
+      ],
       "port": 3006,
+      "autoPort": false
+    },
+    {
+      "name": "viralpx-prod",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "exec",
+        "next",
+        "start",
+        "-p",
+        "3007"
+      ],
+      "port": 3007,
       "autoPort": false
     }
   ]

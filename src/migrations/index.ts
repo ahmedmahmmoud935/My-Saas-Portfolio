@@ -23,6 +23,7 @@ import * as migration_20260827_190000_bilingual_categories from './20260827_1900
 import * as migration_20260827_200000_section_bg_position from './20260827_200000_section_bg_position';
 import * as migration_20260831_010000_landing_design from './20260831_010000_landing_design';
 import * as migration_20260831_030000_landing_card_styles from './20260831_030000_landing_card_styles';
+import * as migration_20260901_010000_hero_description from './20260901_010000_hero_description';
 
 export const migrations = [
   {
@@ -149,5 +150,10 @@ export const migrations = [
     up: migration_20260831_030000_landing_card_styles.up,
     down: migration_20260831_030000_landing_card_styles.down,
     name: '20260831_030000_landing_card_styles'
+  },
+  {
+    up: migration_20260901_010000_hero_description.up,
+    down: migration_20260901_010000_hero_description.down,
+    name: '20260901_010000_hero_description'
   },
 ];

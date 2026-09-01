@@ -1,20 +1,39 @@
 import React from 'react'
 
-// Accent the last word of a multi-word name (e.g. "Ahmed Mahmoud").
+/**
+ * The heading, with the last word accented — and broken exactly where it was
+ * typed.
+ *
+ * A newline in the field used to collapse to a space, so a two-line heading
+ * could only be had by making the window narrow enough to wrap on its own. The
+ * lines are split here rather than left to `white-space: pre-line` because the
+ * accent has to land on the last word of the LAST line, which needs the lines
+ * to be known.
+ */
 function renderName(name: string): React.ReactNode {
-  const parts = name.trim().split(/\s+/)
-  if (parts.length < 2) return name
-  const last = parts.pop()
-  return (
-    <>
-      {parts.join(' ')} <span className="accent">{last}</span>
-    </>
-  )
+  const lines = name.split(/\r?\n/).map((l) => l.trim()).filter(Boolean)
+  if (lines.length === 0) return name
+
+  return lines.map((line, i) => {
+    const last = i === lines.length - 1
+    const parts = line.split(/\s+/)
+    // Only the final line's final word is accented; a one-word heading keeps
+    // its colour rather than turning entirely into the accent.
+    const accentWord = last && (parts.length > 1 || lines.length > 1) ? parts.pop() : null
+    return (
+      <React.Fragment key={i}>
+        {i > 0 && <br />}
+        {parts.join(' ')}
+        {accentWord && <>{parts.length ? ' ' : ''}<span className="accent">{accentWord}</span></>}
+      </React.Fragment>
+    )
+  })
 }
 
 export default function Hero({
   eyebrow,
   name,
+  desc,
   btn1,
   btn2,
   coverUrl,
@@ -29,6 +48,7 @@ export default function Hero({
 }: {
   eyebrow?: string
   name: string
+  desc?: string
   btn1?: string
   btn2?: string
   coverUrl?: string | null
@@ -87,6 +107,7 @@ export default function Hero({
       <div className="container hero-inner">
         <h1 className="hero-name">{renderName(name)}</h1>
         {eyebrow && <p className="hero-eyebrow">{eyebrow}</p>}
+        {desc && <p className="hero-desc">{desc}</p>}
         <div className="hero-btns">
           {/* The label is wrapped so it can be cap-centred: a button is a flex
               container, and bare text inside one lives in an anonymous box that

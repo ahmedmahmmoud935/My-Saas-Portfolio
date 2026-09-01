@@ -330,6 +330,16 @@ html[data-theme='light'] .pf-root .hero-overlay {
 .hero-name .accent {
   color: var(--accent);
 }
+/* A sentence or two under the name — deliberately much smaller than the
+   heading and narrower than the column, so it reads as a paragraph and not as
+   a second headline. */
+.hero-desc {
+  font-size: clamp(15px, 1.5vw, 18px);
+  line-height: 1.7;
+  color: var(--sub);
+  max-width: 46ch;
+  margin: 0 0 28px;
+}
 .hero-btns {
   display: flex;
   gap: 14px;
@@ -377,9 +387,10 @@ html[data-theme='light'] .pf-root .hero-overlay {
   height: auto;
   border-radius: 22px;
 }
-/* Any non-split hero variant fills the whole screen (full-bleed cover). */
-.hero:not(.hero-split) .hero-bg,
-.hero:not(.hero-split) .hero-overlay {
+/* Any full-bleed hero variant fills the whole screen. "split" frames its
+   picture and "panel" gives it a column of its own, so both are excluded. */
+.hero:not(.hero-split):not(.hero-panel) .hero-bg,
+.hero:not(.hero-split):not(.hero-panel) .hero-overlay {
   inset: 0;
   margin: 0;
   width: 100%;
@@ -390,7 +401,7 @@ html[data-theme='light'] .pf-root .hero-overlay {
   box-shadow: none;
 }
 /* Full-bleed heroes always fill (crop) — never letterbox with black bars. */
-.hero:not(.hero-split) .hero-bg {
+.hero:not(.hero-split):not(.hero-panel) .hero-bg {
   object-fit: cover !important;
 }
 .hero-split .hero-bg {
@@ -438,6 +449,108 @@ html[data-theme='light'] .hero-split .hero-bg {
 @media (prefers-reduced-motion: reduce) {
   .hero-split .hero-bg,
   .hero-split .hero-inner {
+    animation: none;
+  }
+}
+
+/* panel — a two-column band: the words on the leading side, the picture on the
+   trailing side, whole and uncropped.
+
+   The grid is on the hero itself, because the picture is a SIBLING of the text
+   container, not a child of it — putting the grid on the inner container would
+   leave the image behind everything as an absolutely positioned backdrop,
+   which is the one thing this layout is not.
+
+   And unlike every other variant the picture here is content: it is not
+   stretched across the hero and dimmed, it sits in its own column at its own
+   aspect ratio, which is what lets an illustration or a cut-out subject read
+   properly instead of being cropped to a band. */
+.hero-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+  align-items: center;
+  gap: clamp(20px, 4vw, 56px);
+  padding-inline: clamp(16px, 3vw, 48px);
+}
+.hero-panel .hero-inner {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: none;
+}
+/* Smaller than the full-bleed heroes on purpose: this heading shares its row
+   with a picture, so it has about half the width to work in. If it is sized
+   for the full page, a line the author deliberately broke gets wrapped again
+   by the browser and their break points stop meaning anything. */
+.hero-panel .hero-name {
+  font-size: clamp(30px, 4vw, 54px);
+  letter-spacing: -1.2px;
+  line-height: 1.12;
+  text-wrap: balance;
+}
+/* In this layout the eyebrow reads as a label above the heading. */
+.hero-panel .hero-eyebrow {
+  order: -1;
+  margin: 0 0 14px;
+}
+/* The picture takes the second column and is never cropped. */
+.hero-panel .hero-bg {
+  position: relative;
+  grid-column: 2;
+  grid-row: 1;
+  inset: auto;
+  margin: 0;
+  width: 100%;
+  height: auto;
+  max-height: 80%;
+  aspect-ratio: auto;
+  object-fit: contain;
+  border: none;
+  border-radius: 18px;
+  box-shadow: none;
+  justify-self: center;
+  animation: heroImgIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+/* No veil — there is nothing written over this picture to protect. */
+.hero-panel .hero-overlay {
+  display: none;
+}
+/* A chosen gradient becomes the band behind both columns, not a layer over the
+   picture, so it has to go back to filling the hero. */
+.hero-panel .hero-grad {
+  position: absolute;
+  inset: 0;
+  grid-area: 1 / 1 / -1 / -1;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  border-radius: 0;
+}
+@media (max-width: 820px) {
+  .hero-panel {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+    padding-block: 32px;
+  }
+  .hero-panel .hero-inner,
+  .hero-panel .hero-bg {
+    grid-column: 1;
+  }
+  .hero-panel .hero-inner {
+    grid-row: 2;
+  }
+  .hero-panel .hero-bg {
+    grid-row: 1;
+    max-height: 38vh;
+  }
+  .hero-panel .hero-desc {
+    max-width: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-panel .hero-bg {
     animation: none;
   }
 }
@@ -2771,6 +2884,12 @@ html[data-theme='light'] .pf-sec-dim {
   .pf-root .hero .hero-eyebrow {
     order: 0 !important;
     margin: 8px 0 20px !important;
+  }
+  /* …except on the panel layout, where the eyebrow is a label introducing the
+     heading. Below it, it reads as a stray line between heading and blurb. */
+  .pf-root .hero-panel .hero-eyebrow {
+    order: -1 !important;
+    margin: 0 0 10px !important;
   }
   .pf-root .hero .hero-btns {
     flex-wrap: wrap !important;

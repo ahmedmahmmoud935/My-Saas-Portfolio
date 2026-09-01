@@ -261,8 +261,16 @@ export default function ContentEditor({ initial }: { initial: ContentForm }) {
       <div className="panel">
         {sec === 'hero' && (
           <>
-            <LocField label={t('الاسم', 'Name')} value={f.hero.name} onChange={(v) => patch({ hero: { ...f.hero, name: v } })} />
+            {/* Multiline: a line break here is kept as a line break in the
+                heading, which is the only way to control where it splits. */}
+            <LocField
+              label={t('الاسم (اضغط Enter لسطر جديد)', 'Name (press Enter for a new line)')}
+              value={f.hero.name}
+              onChange={(v) => patch({ hero: { ...f.hero, name: v } })}
+              multiline
+            />
             <LocField label={t('التخصص / العنوان', 'Specialty / title')} value={f.hero.title} onChange={(v) => patch({ hero: { ...f.hero, title: v } })} />
+            <LocField label={t('الوصف', 'Description')} value={f.hero.desc} onChange={(v) => patch({ hero: { ...f.hero, desc: v } })} multiline />
             <LocField label={t('زر 1', 'Button 1')} value={f.hero.btn1} onChange={(v) => patch({ hero: { ...f.hero, btn1: v } })} />
             <LocField label={t('زر 2', 'Button 2')} value={f.hero.btn2} onChange={(v) => patch({ hero: { ...f.hero, btn2: v } })} />
           </>

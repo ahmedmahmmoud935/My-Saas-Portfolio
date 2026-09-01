@@ -607,7 +607,7 @@ export interface SiteSetting {
       }[]
     | null;
   style?: {
-    hero?: ('centered' | 'split' | 'massive' | 'cover-full' | 'minimal') | null;
+    hero?: ('centered' | 'split' | 'panel' | 'massive' | 'cover-full' | 'minimal') | null;
     about?: ('classic' | 'visual' | 'simple') | null;
     projects?: ('grid' | 'masonry' | 'list' | 'freegrid') | null;
     expertise?: ('grid' | 'stack') | null;
@@ -776,6 +776,7 @@ export interface SiteSetting {
     hero?: {
       name?: string | null;
       title?: string | null;
+      desc?: string | null;
       btn1?: string | null;
       btn2?: string | null;
     };
@@ -1503,6 +1504,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
           | {
               name?: T;
               title?: T;
+              desc?: T;
               btn1?: T;
               btn2?: T;
             };
