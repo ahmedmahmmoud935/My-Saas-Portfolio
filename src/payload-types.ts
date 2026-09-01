@@ -538,6 +538,7 @@ export interface SiteSetting {
      * vh
      */
     height?: number | null;
+    titleScale?: number | null;
     /**
      * Cover gradient preset id (used when there's no image).
      */
@@ -1301,6 +1302,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         overlay?: T;
         overlayLight?: T;
         height?: T;
+        titleScale?: T;
         gradient?: T;
       };
   colors?:

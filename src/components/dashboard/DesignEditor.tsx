@@ -500,6 +500,9 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
             <Slider label={tr('شدّة الطبقة فوق الثيم الداكن (سوداء)', 'Veil over the dark theme (black)')} value={f.heroCover.overlay} min={0} max={100} suffix="%" onChange={(v) => setCover({ overlay: v })} />
             <Slider label={tr('شدّة الطبقة فوق الثيم الفاتح (بيضاء)', 'Veil over the light theme (white)')} value={f.heroCover.overlayLight} min={0} max={100} suffix="%" onChange={(v) => setCover({ overlayLight: v })} />
             <Slider label={tr('ارتفاع القسم', 'Section height')} value={f.heroCover.height} min={40} max={100} suffix="vh" onChange={(v) => setCover({ height: v })} />
+            {/* A proportion, not a size in pixels: each layout sizes its own
+                heading, and this scales whichever one is selected. */}
+            <Slider label={tr('حجم العنوان', 'Heading size')} value={f.heroCover.titleScale} min={50} max={160} suffix="%" onChange={(v) => setCover({ titleScale: v })} />
           </div>
         </div>
       )}

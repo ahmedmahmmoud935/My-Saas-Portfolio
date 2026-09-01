@@ -161,6 +161,8 @@ export type DesignForm = {
     /** …and in the light theme, where the veil is white, not black. */
     overlayLight: number
     height: number
+    /** Percentage of the layout's own heading size. */
+    titleScale: number
     gradient: string
   }
   heroCoverId: number | null
@@ -320,7 +322,7 @@ export const emptyDesign = (): DesignForm => ({
     anim: 'fade-up',
   },
   components: { card: 'solid', navbar: 'blur', button: 'rounded' },
-  heroCover: { size: 'cover', posX: 50, posY: 50, overlay: 45, overlayLight: 25, height: 82, gradient: 'none' },
+  heroCover: { size: 'cover', posX: 50, posY: 50, overlay: 45, overlayLight: 25, height: 82, titleScale: 100, gradient: 'none' },
   heroCoverId: null,
   brandLogoId: null,
   brandLogoUrl: null,

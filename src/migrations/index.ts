@@ -24,6 +24,7 @@ import * as migration_20260827_200000_section_bg_position from './20260827_20000
 import * as migration_20260831_010000_landing_design from './20260831_010000_landing_design';
 import * as migration_20260831_030000_landing_card_styles from './20260831_030000_landing_card_styles';
 import * as migration_20260901_010000_hero_description from './20260901_010000_hero_description';
+import * as migration_20260901_030000_hero_title_scale from './20260901_030000_hero_title_scale';
 
 export const migrations = [
   {
@@ -155,5 +156,10 @@ export const migrations = [
     up: migration_20260901_010000_hero_description.up,
     down: migration_20260901_010000_hero_description.down,
     name: '20260901_010000_hero_description'
+  },
+  {
+    up: migration_20260901_030000_hero_title_scale.up,
+    down: migration_20260901_030000_hero_title_scale.down,
+    name: '20260901_030000_hero_title_scale'
   },
 ];

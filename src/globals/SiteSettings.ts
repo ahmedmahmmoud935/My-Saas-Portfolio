@@ -142,6 +142,9 @@ export const SiteSettings: CollectionConfig = {
                     { name: 'overlay', type: 'number', defaultValue: 0, min: 0, max: 100 },
                     { name: 'overlayLight', type: 'number', defaultValue: 25, min: 0, max: 100 },
                     { name: 'height', type: 'number', defaultValue: 85, admin: { description: 'vh' } },
+                    // Percentage of the layout's own heading size, so a long
+                    // name and a short one can each be sized to fit.
+                    { name: 'titleScale', type: 'number', defaultValue: 100, min: 50, max: 160 },
                   ],
                 },
                 {

@@ -65,6 +65,7 @@ export async function saveDesign(form: DesignForm) {
         overlay: form.heroCover.overlay,
         overlayLight: form.heroCover.overlayLight,
         height: form.heroCover.height,
+        titleScale: form.heroCover.titleScale,
         gradient: form.heroCover.gradient,
       },
       brand: {

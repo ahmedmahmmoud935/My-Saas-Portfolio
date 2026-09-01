@@ -123,6 +123,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
         overlay={settings?.heroCover?.overlay ?? 45}
         overlayLight={settings?.heroCover?.overlayLight ?? 25}
         heightVh={settings?.heroCover?.height ?? 82}
+        titleScale={settings?.heroCover?.titleScale ?? 100}
         variant={settings?.style?.hero || 'split'}
         coverSize={settings?.heroCover?.size || 'cover'}
         gradient={settings?.heroCover?.gradient || 'none'}

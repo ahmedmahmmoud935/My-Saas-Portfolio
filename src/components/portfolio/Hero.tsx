@@ -40,6 +40,7 @@ export default function Hero({
   overlay = 45,
   overlayLight = 25,
   heightVh = 82,
+  titleScale = 100,
   variant = 'split',
   coverSize = 'cover',
   gradient = 'none',
@@ -55,6 +56,7 @@ export default function Hero({
   overlay?: number
   overlayLight?: number
   heightVh?: number
+  titleScale?: number
   variant?: string
   coverSize?: string
   gradient?: string
@@ -74,6 +76,9 @@ export default function Hero({
           // so the height control did nothing on that layout. Every layout
           // reads this now.
           ['--hero-h' as string]: `${heightVh}vh`,
+          // Every layout's heading size is multiplied by this, so each keeps
+          // its own proportions and 100 leaves it exactly as it ships.
+          ['--hero-title-scale' as string]: titleScale / 100,
           // Both strengths travel to CSS; the theme decides which one is used
           // and whether the veil is black or white.
           ['--hero-veil-dark' as string]: overlay / 100,
