@@ -288,6 +288,11 @@ img {
   --hero-title-size: clamp(42px, 6vw, 78px);
   /* …times the Design-tab control, so the block scales as a whole. */
   --hero-title: calc(var(--hero-title-size) * var(--hero-title-scale, 1));
+  /* Latin caps sit inside their line box; Arabic does not — it hangs
+     descenders below the baseline and stacks marks above it, so 1.04 makes
+     consecutive lines collide. Declared here so the layouts and the phone can
+     each set their own without every one of them needing a script rule. */
+  --hero-lh: 1.04;
 }
 .hero-bg {
   position: absolute;
@@ -329,18 +334,24 @@ html[data-theme='light'] .pf-root .hero-overlay {
   font-family: var(--font-display);
   text-transform: uppercase;
   letter-spacing: 6px;
-  /* A fifth of the heading, held between sizes that stay legible tracked-out. */
-  font-size: clamp(12px, calc(var(--hero-title) * 0.2), 17px);
+  /* Over a quarter of the heading and set bold: this line is usually a name,
+     and at a fifth in book weight it read as a caption for the heading rather
+     than as the person's own line. */
+  font-size: clamp(14px, calc(var(--hero-title) * 0.28), 26px);
+  font-weight: 800;
   color: var(--sub);
-  margin: 0 0 26px;
+  margin: 0 0 11px;
 }
 .hero-name {
   font-family: var(--font-display);
   font-size: var(--hero-title);
   font-weight: 900;
-  line-height: 1.04;
+  line-height: var(--hero-lh);
   letter-spacing: -2px;
-  margin: 0 0 8px;
+  /* Twice the gap below the line under it: heading, then the name, then the
+     job — read as one block with the name belonging to the job, not floating
+     between the two. */
+  margin: 0 0 22px;
 }
 .hero-name .accent {
   color: var(--accent);
@@ -438,7 +449,11 @@ html[data-theme='light'] .hero-split .hero-bg {
   pointer-events: none;
 }
 .hero-split .hero-inner {
-  max-width: 50%;
+  /* The picture is capped at 500px, so on a wide screen a flat 50% left a
+     stripe of empty space between the words and the picture and forced the
+     heading to wrap earlier than it had to. Take everything the picture and a
+     gap are not using, up to a limit that keeps the line length readable. */
+  max-width: min(62%, calc(100% - clamp(300px, 34vw, 500px) - 90px));
   margin-inline: 0;
   animation: heroTextIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -484,6 +499,7 @@ html[data-theme='light'] .hero-split .hero-bg {
    aspect ratio, which is what lets an illustration or a cut-out subject read
    properly instead of being cropped to a band. */
 .hero-panel {
+  --hero-lh: 1.12;
   display: grid;
   /* The words get the larger share. The reference sets its heading in a light
      weight; this one is a 900-weight display face, so the same words need
@@ -511,7 +527,6 @@ html[data-theme='light'] .hero-split .hero-bg {
 }
 .hero-panel .hero-name {
   letter-spacing: -1.2px;
-  line-height: 1.12;
   /* No `text-wrap: balance` here. Balancing evens out the lines by moving
      words between them, which is the opposite of what is wanted once the
      author has chosen where the heading breaks — it split their second line
@@ -2909,9 +2924,9 @@ html[data-theme='light'] .pf-sec-dim {
      with it. */
   .pf-root .hero {
     --hero-title-size: clamp(28px, 8.4vw, 44px);
+    --hero-lh: 1.12;
   }
   .pf-root .hero .hero-name {
-    line-height: 1.12 !important;
     letter-spacing: -0.5px !important;
     white-space: normal !important;
     overflow-wrap: break-word !important;
@@ -2932,6 +2947,17 @@ html[data-theme='light'] .pf-sec-dim {
     flex-wrap: wrap !important;
     justify-content: center !important;
   }
+}
+
+/* Arabic headings need a taller line. The heading line-height is tuned for
+   Latin capitals, which sit neatly inside their box; Arabic hangs below the
+   baseline (ق ج ي) and stacks hamzas and shadda above it, so at 1.04 the
+   descenders of one line land on the marks of the next. Set on the hero rather
+   than the heading so it beats every layout AND the phone rule, both of which
+   set the variable at a lower specificity. */
+.pf-root[lang='ar'] .hero,
+.pf-root[dir='rtl'] .hero {
+  --hero-lh: 1.32;
 }
 
 /* Arabic is cursive: letter-spacing prises the joins apart and the word reads
