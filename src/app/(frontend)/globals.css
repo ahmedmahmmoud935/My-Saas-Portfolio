@@ -218,21 +218,29 @@ img {
   color: var(--accent);
 }
 .nav-lang {
+  /* The same circle as the theme button beside it — the two are a pair and
+     read as one control group. A fixed 38px box also settles the label
+     problem: "EN" in one language and "ع" in the other used to resize the
+     button and nudge both of them sideways on every switch, which moved the
+     control out from under the thumb pressing it. */
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
   background: transparent;
   color: var(--text);
   border: 1px solid var(--border);
-  /* A fixed width. The label is "EN" in one language and "ع" in the other, and
-     letting the button resize to its text nudged it and the theme button
-     sideways on every switch — the two controls you press to switch languages
-     moving as you press them. */
-  min-width: 52px;
-  text-align: center;
-  padding: 6px 14px;
-  border-radius: var(--radius-pill);
+  border-radius: 50%;
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 13px;
   cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.nav-lang:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 .nav-theme {
   display: grid;
