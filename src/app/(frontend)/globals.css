@@ -231,9 +231,65 @@ img {
   color: var(--accent);
   transform: rotate(-15deg);
 }
+/* The burger and the panel it opens exist only where the inline list doesn't.
+   Hidden above 820px rather than never rendered, so the markup is identical on
+   the server and in the browser. */
+.nav-burger {
+  display: none;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  margin-inline-end: 10px;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.nav-burger:hover,
+.nav-burger[aria-expanded='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+/* Drops out of the bar itself, full width, under the blur. */
+.nav-menu {
+  display: none;
+  position: absolute;
+  inset-inline: 0;
+  top: 100%;
+  flex-direction: column;
+  padding: 6px 20px 14px;
+  /* Opaque, unlike the bar above it. The bar is translucent on purpose — you
+     want to see the page moving under it — but a menu you are reading has to
+     hide what is behind it, and at 94% the hero heading still showed through
+     the links. */
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 18px 30px -18px rgba(0, 0, 0, 0.55);
+}
+.nav-menu a {
+  padding: 13px 4px;
+  font-size: 16px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+}
+.nav-menu a:last-child {
+  border-bottom: 0;
+}
+.nav-menu a:active {
+  color: var(--accent);
+}
+
 @media (max-width: 820px) {
   .nav-links {
     display: none;
+  }
+  .nav-burger {
+    display: grid;
+  }
+  .nav-menu.open {
+    display: flex;
   }
 }
 
@@ -468,12 +524,27 @@ html[data-theme='light'] .hero-split .hero-bg {
     border-radius: 0;
     box-shadow: none;
   }
+  /* On a phone this hero stops being a picture beside the words and becomes a
+     picture behind them, so it needs a veil the words can be read against.
+
+     The old one ran at 90deg — left to right — which is the wrong axis for a
+     portrait screen and the wrong side entirely in Arabic: it put the solid
+     end on the left while the text sits on the right. And it leaned on the
+     owner's overlay setting, which is set for the desktop layout where nothing
+     is written over the picture at all; at 0% there was no veil left.
+
+     This one runs down the screen and carries its own floor, so the text stays
+     readable whatever the cover setting is. The colour still follows the
+     theme — black on dark, white on light. */
+  /* Geometry only. The veil itself is set once for every variant in the phone
+     block near the end of this file — that rule carries !important and this
+     one never won, which is why editing the colour here changed nothing. */
   .hero-split .hero-overlay {
     inset: 0;
     width: 100%;
+    height: auto;
+    aspect-ratio: auto;
     border-radius: 0;
-    background: linear-gradient(90deg, var(--bg) 8%, transparent 75%),
-      rgba(var(--hero-veil-rgb, 0, 0, 0), var(--hero-overlay, 0.45));
   }
   .hero-split .hero-inner {
     max-width: none;
@@ -2897,17 +2968,38 @@ html[data-theme='light'] .pf-sec-dim {
     animation: none !important;
     transform: none !important;
   }
+  /* The veil the hero text is read against once the picture is behind the
+     words rather than beside them.
+
+     The old gradient was thinnest at 0.4 across the middle of the screen —
+     which is exactly where the heading, the name and the job sit. Over a
+     brightly lit photo they were barely legible. It now never drops below
+     0.74, and is heaviest at the bottom where the buttons are.
+
+     The owner's cover overlay is layered on top instead of being ignored, so
+     the control still darkens the hero further; it just can no longer take the
+     veil below the floor the text needs. */
   .pf-root .hero .hero-overlay {
     inset: 0 !important;
     margin: 0 !important;
     width: 100% !important;
+    /* The desktop "split" veil is a square panel (aspect-ratio: 1/1, height
+       auto). An aspect ratio with a definite width wins over `bottom`, so
+       `inset: 0` alone left the veil exactly one screen-width tall: the top of
+       the hero was covered and the bottom — the name, the job, the buttons —
+       had no veil at all. Both have to be cleared for the veil to reach the
+       bottom of the hero. */
+    aspect-ratio: auto !important;
+    height: auto !important;
     border-radius: 0 !important;
-    background: linear-gradient(
-      0deg,
-      rgba(var(--hero-veil-rgb, 0, 0, 0), 0.7),
-      rgba(var(--hero-veil-rgb, 0, 0, 0), 0.4) 50%,
-      rgba(var(--hero-veil-rgb, 0, 0, 0), 0.6)
-    ) !important;
+    background:
+      linear-gradient(
+        to bottom,
+        rgba(var(--hero-veil-rgb, 0, 0, 0), 0.8),
+        rgba(var(--hero-veil-rgb, 0, 0, 0), 0.74) 45%,
+        rgba(var(--hero-veil-rgb, 0, 0, 0), 0.9)
+      ),
+      rgba(var(--hero-veil-rgb, 0, 0, 0), var(--hero-overlay, 0)) !important;
   }
   .pf-root .hero .hero-inner {
     max-width: none !important;
