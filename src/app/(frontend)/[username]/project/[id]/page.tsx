@@ -129,7 +129,11 @@ export default async function ProjectDetailPage({ params, searchParams }: Params
     collection: 'site-settings',
     where: { tenant: { equals: tenant.id } },
     limit: 1,
-    depth: 0,
+    // depth 1, not 0: the navbar's logo is an upload relation, and at depth 0
+    // it arrives as a bare id — mediaUrl returns null and the bar silently
+    // falls back to the first letter of the name. That is why the navbar
+    // looked different here from the one on the portfolio itself.
+    depth: 1,
     locale,
     fallbackLocale: locale === 'ar' ? 'en' : 'ar',
   })

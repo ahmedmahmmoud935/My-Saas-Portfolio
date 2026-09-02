@@ -154,7 +154,15 @@ img {
   z-index: 50;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  /* The logo takes the leading edge via an auto margin and everything else
+     collects at the trailing one, so the controls stay a single group. */
+  justify-content: flex-end;
+  /* The bar itself does not mirror with the language. A flex row follows the
+     writing direction, which swapped the logo and the controls from side to
+     side every time the language was switched — the two buttons you press to
+     switch it moved out from under your thumb as you pressed them. The labels
+     inside still read in their own direction; only the frame is pinned. */
+  direction: ltr;
   padding: 16px 28px;
   background: color-mix(in srgb, var(--bg) 72%, transparent);
   backdrop-filter: blur(14px);
@@ -170,7 +178,7 @@ img {
   align-items: center;
   gap: 8px;
   order: -1;
-  margin-inline-end: 22px;
+  margin-right: auto;
   padding: 0;
   background: none;
   border: 0;
@@ -186,18 +194,25 @@ img {
   object-fit: contain;
   display: block;
 }
+/* Centred on the bar itself, not on whatever space the logo and the controls
+   happen to leave — those two differ in width, and centring between them puts
+   the links off-centre by half that difference. */
 .nav-links {
-  margin-inline-end: auto;
-}
-.nav-links {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   gap: 30px;
   list-style: none;
   margin: 0;
-  margin-inline-end: 26px;
   padding: 0;
   font-size: 14px;
   font-weight: 600;
+}
+/* The frame is pinned to ltr; the labels are not. */
+.pf-root[dir='rtl'] .nav-links,
+.pf-root[dir='rtl'] .nav-menu {
+  direction: rtl;
 }
 .nav-links a:hover {
   color: var(--accent);
@@ -206,6 +221,12 @@ img {
   background: transparent;
   color: var(--text);
   border: 1px solid var(--border);
+  /* A fixed width. The label is "EN" in one language and "ع" in the other, and
+     letting the button resize to its text nudged it and the theme button
+     sideways on every switch — the two controls you press to switch languages
+     moving as you press them. */
+  min-width: 52px;
+  text-align: center;
   padding: 6px 14px;
   border-radius: var(--radius-pill);
   font-family: var(--font-display);
@@ -237,19 +258,24 @@ img {
 .nav-burger {
   display: none;
   place-items: center;
-  width: 38px;
-  height: 38px;
-  margin-inline-end: 10px;
-  background: transparent;
+  /* Last in the row, so it sits at the very edge of the bar rather than
+     between the two round controls. */
+  order: 1;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  margin-inline-start: 6px;
+  /* No ring: the icon is the control. It keeps a 40px box so it stays a
+     comfortable tap target without drawing one. */
+  background: none;
   color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 50%;
+  border: 0;
+  padding: 0;
   cursor: pointer;
-  transition: border-color 0.2s, color 0.2s;
+  transition: color 0.2s;
 }
 .nav-burger:hover,
 .nav-burger[aria-expanded='true'] {
-  border-color: var(--accent);
   color: var(--accent);
 }
 /* Drops out of the bar itself, full width, under the blur. */
