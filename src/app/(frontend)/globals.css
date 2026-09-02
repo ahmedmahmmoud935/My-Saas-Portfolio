@@ -438,6 +438,62 @@ html[data-theme='light'] .pf-root .hero-overlay {
 .hero-name .accent {
   color: var(--accent);
 }
+
+/* ── Where the hero text sits ──────────────────────────────────────────────
+   Only present when the owner has picked something; without the attribute
+   each layout keeps its own placement. The attribute selectors also outrank
+   the layout classes, which is what lets the choice win over, say,
+   `.hero-cover-full`'s bottom alignment. */
+/* `align-items` needs a flex context to mean anything, and only the panel
+   layout's inner is one. Applied only when an alignment was chosen, so no
+   existing layout changes shape. */
+.hero[data-ha] .hero-inner {
+  display: flex;
+  flex-direction: column;
+}
+.hero[data-ha='start'] .hero-inner {
+  text-align: start;
+  align-items: flex-start;
+}
+.hero[data-ha='center'] .hero-inner {
+  text-align: center;
+  align-items: center;
+}
+.hero[data-ha='end'] .hero-inner {
+  text-align: end;
+  align-items: flex-end;
+}
+/* The description carries a max-width, so centring the text is not enough —
+   the box itself has to move. */
+.hero[data-ha='center'] .hero-desc {
+  margin-inline: auto;
+}
+.hero[data-ha='end'] .hero-desc {
+  margin-inline-start: auto;
+  margin-inline-end: 0;
+}
+.hero[data-ha='start'] .hero-btns {
+  justify-content: flex-start;
+}
+.hero[data-ha='center'] .hero-btns {
+  justify-content: center;
+}
+.hero[data-ha='end'] .hero-btns {
+  justify-content: flex-end;
+}
+/* Vertical. The padding keeps the text off the navbar at the top and off the
+   edge of the section at the bottom. */
+.hero[data-va='top'] {
+  align-items: flex-start;
+  padding-block-start: clamp(28px, 7vh, 80px);
+}
+.hero[data-va='center'] {
+  align-items: center;
+}
+.hero[data-va='bottom'] {
+  align-items: flex-end;
+  padding-block-end: clamp(28px, 7vh, 80px);
+}
 /* A sentence or two under the name — deliberately much smaller than the
    heading and narrower than the column, so it reads as a paragraph and not as
    a second headline. */
@@ -445,7 +501,7 @@ html[data-theme='light'] .pf-root .hero-overlay {
   /* Between a third and a quarter of the heading — the proportion the
      reference uses. Fixed at 18px it read as a caption under a big heading and
      as a second headline under a small one. */
-  font-size: clamp(15px, calc(var(--hero-title) * 0.29), 24px);
+  font-size: calc(clamp(15px, calc(var(--hero-title) * 0.29), 24px) * var(--hero-desc-scale, 1));
   line-height: 1.7;
   color: var(--sub);
   max-width: 46ch;

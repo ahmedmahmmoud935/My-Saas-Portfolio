@@ -145,6 +145,29 @@ export const SiteSettings: CollectionConfig = {
                     // Percentage of the layout's own heading size, so a long
                     // name and a short one can each be sized to fit.
                     { name: 'titleScale', type: 'number', defaultValue: 100, min: 50, max: 160 },
+                    // The description's own size, on top of the proportion it
+                    // takes from the heading — so the block can keep its scale
+                    // and still be tuned for a long line or a short one.
+                    { name: 'descScale', type: 'number', defaultValue: 100, min: 50, max: 200 },
+                  ],
+                },
+                {
+                  type: 'row',
+                  fields: [
+                    // Where the text block sits. 'auto' means "whatever this
+                    // layout does", which is what every existing site has.
+                    {
+                      name: 'align',
+                      type: 'text',
+                      defaultValue: 'auto',
+                      admin: { description: "auto | start | center | end" },
+                    },
+                    {
+                      name: 'valign',
+                      type: 'text',
+                      defaultValue: 'auto',
+                      admin: { description: "auto | top | center | bottom" },
+                    },
                   ],
                 },
                 {

@@ -503,6 +503,31 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
             {/* A proportion, not a size in pixels: each layout sizes its own
                 heading, and this scales whichever one is selected. */}
             <Slider label={tr('حجم العنوان', 'Heading size')} value={f.heroCover.titleScale} min={50} max={160} suffix="%" onChange={(v) => setCover({ titleScale: v })} />
+            {/* The description already takes its size from the heading; this
+                nudges it on top of that, so the block keeps its proportions. */}
+            <Slider label={tr('حجم الوصف', 'Description size')} value={f.heroCover.descScale} min={50} max={200} suffix="%" onChange={(v) => setCover({ descScale: v })} />
+            <Opt
+              label={tr('مكان النص أفقيًا', 'Text position ↔')}
+              value={f.heroCover.align}
+              options={[
+                { value: 'auto', label: tr('حسب التخطيط', 'Layout default') },
+                { value: 'start', label: tr('البداية', 'Start') },
+                { value: 'center', label: tr('المنتصف', 'Centre') },
+                { value: 'end', label: tr('النهاية', 'End') },
+              ]}
+              onChange={(v) => setCover({ align: v })}
+            />
+            <Opt
+              label={tr('مكان النص رأسيًا', 'Text position ↕')}
+              value={f.heroCover.valign}
+              options={[
+                { value: 'auto', label: tr('حسب التخطيط', 'Layout default') },
+                { value: 'top', label: tr('أعلى', 'Top') },
+                { value: 'center', label: tr('المنتصف', 'Middle') },
+                { value: 'bottom', label: tr('أسفل', 'Bottom') },
+              ]}
+              onChange={(v) => setCover({ valign: v })}
+            />
           </div>
         </div>
       )}

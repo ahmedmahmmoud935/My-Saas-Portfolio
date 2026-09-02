@@ -41,6 +41,9 @@ export default function Hero({
   overlayLight = 25,
   heightVh = 82,
   titleScale = 100,
+  descScale = 100,
+  align = 'auto',
+  valign = 'auto',
   variant = 'split',
   coverSize = 'cover',
   gradient = 'none',
@@ -57,6 +60,9 @@ export default function Hero({
   overlayLight?: number
   heightVh?: number
   titleScale?: number
+  descScale?: number
+  align?: string
+  valign?: string
   variant?: string
   coverSize?: string
   gradient?: string
@@ -69,6 +75,11 @@ export default function Hero({
     <header
       className={`hero hero-${variant}`}
       id="hero"
+      // Only set when the owner has chosen one. Left off, each layout keeps
+      // the placement it was designed with — which is what every site that
+      // has never touched these controls is already doing.
+      data-ha={align !== 'auto' ? align : undefined}
+      data-va={valign !== 'auto' ? valign : undefined}
       style={
         {
           // Published as a variable, not a plain min-height: one layout set its
@@ -79,6 +90,8 @@ export default function Hero({
           // Every layout's heading size is multiplied by this, so each keeps
           // its own proportions and 100 leaves it exactly as it ships.
           ['--hero-title-scale' as string]: titleScale / 100,
+          // On top of the proportion the description takes from the heading.
+          ['--hero-desc-scale' as string]: descScale / 100,
           // Both strengths travel to CSS; the theme decides which one is used
           // and whether the veil is black or white.
           ['--hero-veil-dark' as string]: overlay / 100,

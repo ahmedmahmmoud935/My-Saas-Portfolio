@@ -539,6 +539,15 @@ export interface SiteSetting {
      */
     height?: number | null;
     titleScale?: number | null;
+    descScale?: number | null;
+    /**
+     * auto | start | center | end
+     */
+    align?: string | null;
+    /**
+     * auto | top | center | bottom
+     */
+    valign?: string | null;
     /**
      * Cover gradient preset id (used when there's no image).
      */
@@ -1303,6 +1312,9 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         overlayLight?: T;
         height?: T;
         titleScale?: T;
+        descScale?: T;
+        align?: T;
+        valign?: T;
         gradient?: T;
       };
   colors?:

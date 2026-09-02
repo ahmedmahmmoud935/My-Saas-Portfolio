@@ -163,6 +163,12 @@ export type DesignForm = {
     height: number
     /** Percentage of the layout's own heading size. */
     titleScale: number
+    /** Percentage of the description's own derived size. */
+    descScale: number
+    /** auto | start | center | end */
+    align: string
+    /** auto | top | center | bottom */
+    valign: string
     gradient: string
   }
   heroCoverId: number | null
@@ -322,7 +328,7 @@ export const emptyDesign = (): DesignForm => ({
     anim: 'fade-up',
   },
   components: { card: 'solid', navbar: 'blur', button: 'rounded' },
-  heroCover: { size: 'cover', posX: 50, posY: 50, overlay: 45, overlayLight: 25, height: 82, titleScale: 100, gradient: 'none' },
+  heroCover: { size: 'cover', posX: 50, posY: 50, overlay: 45, overlayLight: 25, height: 82, titleScale: 100, descScale: 100, align: 'auto', valign: 'auto', gradient: 'none' },
   heroCoverId: null,
   brandLogoId: null,
   brandLogoUrl: null,
