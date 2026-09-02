@@ -445,89 +445,109 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
 
       {/* ═══ HERO SECTION TAB ═══ */}
       {tab === 'hero' && (
-        <div className="panel cover-tab">
-          <div className="cover-preview-col">
-            <div className="lbl" style={{ marginBottom: 8 }}>{tr('معاينة حيّة', 'Live preview')}</div>
-            <CoverPreview f={f} />
-            <p className="cover-hint">{tr('شكل القسم الرئيسي بعد الحفظ.', 'How the hero looks after saving.')}</p>
-          </div>
-          <div className="cover-ctrl-col">
-            {sectionLayout('hero', tr('تخطيط القسم الرئيسي', 'Hero layout'))}
-
-            <div className="lbl" style={{ marginTop: 16 }}>{tr('مصدر الغلاف', 'Cover source')}</div>
-            <div className="seg2">
-              <button type="button" className={!usingGradient ? 'active' : ''} onClick={() => setCover({ gradient: 'none' })}>
-                {tr('صورة', 'Image')}
-              </button>
-              <button type="button" className={usingGradient ? 'active' : ''} onClick={() => setCover({ gradient: f.heroCover.gradient !== 'none' ? f.heroCover.gradient : 'aurora' })}>
-                {tr('تدرّج لوني', 'Gradient')}
-              </button>
+        <div className="cover-tab">
+          {/* The preview leads, at the width the hero actually has. Beside a
+              column of controls it was a thumbnail of a full-width section —
+              too small to judge the thing every control below it changes. */}
+          <div className="panel cover-stage">
+            <div className="cover-stage-head">
+              <span className="lbl">{tr('معاينة حيّة', 'Live preview')}</span>
+              <span className="cover-hint">{tr('شكل القسم الرئيسي بعد الحفظ.', 'How the hero looks after saving.')}</span>
             </div>
+            <CoverPreview f={f} />
+          </div>
 
-            {usingGradient ? (
-              <div className="hgp" style={{ marginTop: 12 }}>
-                {HERO_GRADIENTS.filter((g) => g.id !== 'none').map((g) => (
-                  <button key={g.id} type="button" className={`hgp-swatch ${f.heroCover.gradient === g.id ? 'active' : ''}`} style={{ background: g.css }} onClick={() => setCover({ gradient: g.id })} title={g.label} />
-                ))}
+          {/* Grouped by the question each answers, rather than one long column
+              in the order the fields happened to be added. */}
+          <div className="cover-groups">
+            <Group title={tr('التخطيط', 'Layout')}>
+              {sectionLayout('hero', tr('تخطيط القسم الرئيسي', 'Hero layout'))}
+            </Group>
+
+            <Group title={tr('الغلاف', 'Cover')}>
+              <div className="lbl">{tr('المصدر', 'Source')}</div>
+              <div className="seg2">
+                <button type="button" className={!usingGradient ? 'active' : ''} onClick={() => setCover({ gradient: 'none' })}>
+                  {tr('صورة', 'Image')}
+                </button>
+                <button type="button" className={usingGradient ? 'active' : ''} onClick={() => setCover({ gradient: f.heroCover.gradient !== 'none' ? f.heroCover.gradient : 'aurora' })}>
+                  {tr('تدرّج لوني', 'Gradient')}
+                </button>
               </div>
-            ) : (
-              <>
-                <div style={{ marginTop: 12 }} />
-                <MediaUploader previewUrl={f.heroCoverUrl} onUploaded={(m) => set({ heroCoverId: m.id, heroCoverUrl: m.thumbUrl })} />
-                {f.heroCoverUrl && (
-                  <button type="button" className="btn btn-danger" style={{ marginTop: 8 }} onClick={() => set({ heroCoverId: null, heroCoverUrl: null })}>
-                    {tr('حذف الصورة', 'Remove image')}
-                  </button>
-                )}
-                <Opt label={tr('ملء الإطار', 'Fit')} value={f.heroCover.size} options={['cover', 'contain']} onChange={(v) => setCover({ size: v })} />
-                <div className="lbl">{tr('موضع الصورة', 'Image position')}</div>
-                <div className="pos-pad">
-                  <button type="button" onClick={() => setCover({ posY: clampPct(f.heroCover.posY - 5) })} aria-label="up">↑</button>
-                  <div className="pos-pad-row">
-                    <button type="button" onClick={() => setCover({ posX: clampPct(f.heroCover.posX - 5) })} aria-label="left">←</button>
-                    <button type="button" className="pos-center" onClick={() => setCover({ posX: 50, posY: 50 })}>
-                      {f.heroCover.posX}% · {f.heroCover.posY}%
-                    </button>
-                    <button type="button" onClick={() => setCover({ posX: clampPct(f.heroCover.posX + 5) })} aria-label="right">→</button>
-                  </div>
-                  <button type="button" onClick={() => setCover({ posY: clampPct(f.heroCover.posY + 5) })} aria-label="down">↓</button>
-                </div>
-              </>
-            )}
 
-            {/* One strength for both themes painted black over a light page,
-                which reads as a stain rather than as help for the headline. */}
-            <Slider label={tr('شدّة الطبقة فوق الثيم الداكن (سوداء)', 'Veil over the dark theme (black)')} value={f.heroCover.overlay} min={0} max={100} suffix="%" onChange={(v) => setCover({ overlay: v })} />
-            <Slider label={tr('شدّة الطبقة فوق الثيم الفاتح (بيضاء)', 'Veil over the light theme (white)')} value={f.heroCover.overlayLight} min={0} max={100} suffix="%" onChange={(v) => setCover({ overlayLight: v })} />
-            <Slider label={tr('ارتفاع القسم', 'Section height')} value={f.heroCover.height} min={40} max={100} suffix="vh" onChange={(v) => setCover({ height: v })} />
-            {/* A proportion, not a size in pixels: each layout sizes its own
-                heading, and this scales whichever one is selected. */}
-            <Slider label={tr('حجم العنوان', 'Heading size')} value={f.heroCover.titleScale} min={50} max={160} suffix="%" onChange={(v) => setCover({ titleScale: v })} />
-            {/* The description already takes its size from the heading; this
-                nudges it on top of that, so the block keeps its proportions. */}
-            <Slider label={tr('حجم الوصف', 'Description size')} value={f.heroCover.descScale} min={50} max={200} suffix="%" onChange={(v) => setCover({ descScale: v })} />
-            <Opt
-              label={tr('مكان النص أفقيًا', 'Text position ↔')}
-              value={f.heroCover.align}
-              options={[
-                { value: 'auto', label: tr('حسب التخطيط', 'Layout default') },
-                { value: 'start', label: tr('البداية', 'Start') },
-                { value: 'center', label: tr('المنتصف', 'Centre') },
-                { value: 'end', label: tr('النهاية', 'End') },
-              ]}
-              onChange={(v) => setCover({ align: v })}
-            />
-            <Opt
-              label={tr('مكان النص رأسيًا', 'Text position ↕')}
-              value={f.heroCover.valign}
-              options={[
-                { value: 'auto', label: tr('حسب التخطيط', 'Layout default') },
-                { value: 'top', label: tr('أعلى', 'Top') },
-                { value: 'center', label: tr('المنتصف', 'Middle') },
-                { value: 'bottom', label: tr('أسفل', 'Bottom') },
-              ]}
-              onChange={(v) => setCover({ valign: v })}
-            />
+              {usingGradient ? (
+                <div className="hgp" style={{ marginTop: 12 }}>
+                  {HERO_GRADIENTS.filter((g) => g.id !== 'none').map((g) => (
+                    <button key={g.id} type="button" className={`hgp-swatch ${f.heroCover.gradient === g.id ? 'active' : ''}`} style={{ background: g.css }} onClick={() => setCover({ gradient: g.id })} title={g.label} />
+                  ))}
+                </div>
+              ) : (
+                <div className="cover-image-row">
+                  <div>
+                    <MediaUploader previewUrl={f.heroCoverUrl} onUploaded={(m) => set({ heroCoverId: m.id, heroCoverUrl: m.thumbUrl })} />
+                    {f.heroCoverUrl && (
+                      <button type="button" className="btn btn-danger btn-sm" style={{ marginTop: 8 }} onClick={() => set({ heroCoverId: null, heroCoverUrl: null })}>
+                        {tr('حذف الصورة', 'Remove image')}
+                      </button>
+                    )}
+                  </div>
+                  <div>
+                    <Opt label={tr('ملء الإطار', 'Fit')} value={f.heroCover.size} options={['cover', 'contain']} onChange={(v) => setCover({ size: v })} />
+                    <div className="lbl">{tr('موضع الصورة', 'Image position')}</div>
+                    <div className="pos-pad">
+                      <button type="button" onClick={() => setCover({ posY: clampPct(f.heroCover.posY - 5) })} aria-label="up">↑</button>
+                      <div className="pos-pad-row">
+                        <button type="button" onClick={() => setCover({ posX: clampPct(f.heroCover.posX - 5) })} aria-label="left">←</button>
+                        <button type="button" className="pos-center" onClick={() => setCover({ posX: 50, posY: 50 })}>
+                          {f.heroCover.posX}% · {f.heroCover.posY}%
+                        </button>
+                        <button type="button" onClick={() => setCover({ posX: clampPct(f.heroCover.posX + 5) })} aria-label="right">→</button>
+                      </div>
+                      <button type="button" onClick={() => setCover({ posY: clampPct(f.heroCover.posY + 5) })} aria-label="down">↓</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </Group>
+
+            <Group title={tr('الطبقة فوق الغلاف', 'Veil over the cover')}>
+              {/* One strength for both themes painted black over a light page,
+                  which reads as a stain rather than as help for the headline. */}
+              <Slider label={tr('على الثيم الداكن (سوداء)', 'On the dark theme (black)')} value={f.heroCover.overlay} min={0} max={100} suffix="%" onChange={(v) => setCover({ overlay: v })} />
+              <Slider label={tr('على الثيم الفاتح (بيضاء)', 'On the light theme (white)')} value={f.heroCover.overlayLight} min={0} max={100} suffix="%" onChange={(v) => setCover({ overlayLight: v })} />
+            </Group>
+
+            <Group title={tr('النص والمساحة', 'Text & size')}>
+              <Slider label={tr('ارتفاع القسم', 'Section height')} value={f.heroCover.height} min={40} max={100} suffix="vh" onChange={(v) => setCover({ height: v })} />
+              {/* A proportion, not a size in pixels: each layout sizes its own
+                  heading, and this scales whichever one is selected. */}
+              <Slider label={tr('حجم العنوان', 'Heading size')} value={f.heroCover.titleScale} min={50} max={160} suffix="%" onChange={(v) => setCover({ titleScale: v })} />
+              {/* The description already takes its size from the heading; this
+                  nudges it on top of that, so the block keeps its proportions. */}
+              <Slider label={tr('حجم الوصف', 'Description size')} value={f.heroCover.descScale} min={50} max={200} suffix="%" onChange={(v) => setCover({ descScale: v })} />
+              <Opt
+                label={tr('مكان النص أفقيًا', 'Text position ↔')}
+                value={f.heroCover.align}
+                options={[
+                  { value: 'auto', label: tr('حسب التخطيط', 'Layout default') },
+                  { value: 'start', label: tr('البداية', 'Start') },
+                  { value: 'center', label: tr('المنتصف', 'Centre') },
+                  { value: 'end', label: tr('النهاية', 'End') },
+                ]}
+                onChange={(v) => setCover({ align: v })}
+              />
+              <Opt
+                label={tr('مكان النص رأسيًا', 'Text position ↕')}
+                value={f.heroCover.valign}
+                options={[
+                  { value: 'auto', label: tr('حسب التخطيط', 'Layout default') },
+                  { value: 'top', label: tr('أعلى', 'Top') },
+                  { value: 'center', label: tr('المنتصف', 'Middle') },
+                  { value: 'bottom', label: tr('أسفل', 'Bottom') },
+                ]}
+                onChange={(v) => setCover({ valign: v })}
+              />
+            </Group>
           </div>
         </div>
       )}

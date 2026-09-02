@@ -1783,17 +1783,58 @@ textarea.field {
 }
 
 /* ── Cover tab: live preview + arrow controls ── */
+/* Preview first, at the width the hero actually has, then the settings under
+   it. Side by side, the preview was a thumbnail of a full-width section — too
+   small to judge the thing every control beside it changes. */
 .cover-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.cover-stage {
+  /* Stays in view while you work through the settings under it, so a slider
+     and its effect are on screen together. */
+  position: sticky;
+  top: 8px;
+  z-index: 2;
+}
+/* Full width at 16:10 is over 600px tall and pushes every setting off the
+   screen. Height is capped here and the ratio gives way — the preview's
+   contents are absolutely positioned and adapt. */
+.cover-stage .cvp {
+  aspect-ratio: auto;
+  height: min(42vh, 380px);
+}
+.cover-stage-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.cover-hint {
+  color: var(--sub);
+  font-size: 12px;
+}
+/* Two columns of groups where there is room, one where there isn't. */
+.cover-groups {
   display: grid;
-  grid-template-columns: 1.05fr 1fr;
-  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
   align-items: start;
 }
-@media (max-width: 860px) {
-  .cover-tab { grid-template-columns: 1fr; }
+/* The uploader beside its settings, not stacked above them. */
+.cover-image-row {
+  display: grid;
+  grid-template-columns: minmax(0, 200px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  margin-top: 12px;
 }
-.cover-preview-col { position: sticky; top: 8px; }
-.cover-hint { color: var(--sub); font-size: 12px; margin-top: 8px; }
+@media (max-width: 560px) {
+  .cover-image-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 
 /* Scaled hero preview */
 .cvp {

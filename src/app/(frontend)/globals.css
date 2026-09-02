@@ -575,9 +575,12 @@ html[data-theme='light'] .pf-root .hero-overlay {
   border-radius: 0;
   box-shadow: none;
 }
-/* Full-bleed heroes always fill (crop) — never letterbox with black bars. */
+/* Full-bleed heroes fill (crop) by default rather than letterboxing. Not
+   !important any more: it beat the inline value the Fit control writes, so
+   choosing "contain" on any of these layouts silently did nothing. This is the
+   default; the control overrides it. */
 .hero:not(.hero-split):not(.hero-panel) .hero-bg {
-  object-fit: cover !important;
+  object-fit: cover;
 }
 .hero-split .hero-bg {
   object-fit: cover;

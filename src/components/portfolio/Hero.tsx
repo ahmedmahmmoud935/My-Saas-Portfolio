@@ -113,9 +113,10 @@ export default function Hero({
             src={coverUrl}
             alt=""
             style={{
-              // The framed "split" image always fills its frame (cover), set in CSS;
-              // other variants honour the contain/cover size control.
-              ...(variant === 'split' ? {} : { objectFit: coverSize as React.CSSProperties['objectFit'] }),
+              // Every layout honours the Fit control. "split" used to be skipped
+              // here and the four full-bleed variants had it overridden by an
+              // !important rule, so the control did nothing on five of the six.
+              objectFit: coverSize as React.CSSProperties['objectFit'],
               objectPosition: `${posX}% ${posY}%`,
             }}
           />
