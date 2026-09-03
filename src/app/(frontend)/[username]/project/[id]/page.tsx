@@ -29,9 +29,11 @@ function serializeModules(modules: unknown[]): Mod[] {
           value: String(m.value ?? ''),
         })
         break
-      case 'image':
-        out.push({ type: 'image', src: mediaUrl(m.src as never) })
+      case 'image': {
+        const src = m.src as { width?: number | null; height?: number | null } | null
+        out.push({ type: 'image', src: mediaUrl(m.src as never), w: src?.width ?? null, h: src?.height ?? null })
         break
+      }
       case 'grid':
         out.push({
           type: 'grid',
@@ -41,9 +43,11 @@ function serializeModules(modules: unknown[]): Mod[] {
               const src = mediaUrl(it.src as never)
               const s = it.src as { width?: number | null; height?: number | null } | null
               const ar = s && s.width && s.height ? s.width / s.height : 1
-              return src ? { src, ar } : null
+              return src ? { src, ar, w: s?.width ?? null, h: s?.height ?? null } : null
             })
-            .filter((x): x is { src: string; ar: number } => !!x),
+            .filter(
+              (x): x is { src: string; ar: number; w: number | null; h: number | null } => !!x,
+            ),
         })
         break
       case 'carousel': {

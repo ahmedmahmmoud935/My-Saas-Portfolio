@@ -8,8 +8,8 @@ import { resolveVideoUrl } from '@/lib/video'
 
 export type Mod =
   | { type: 'text'; textType: 'h1' | 'h2' | 'p'; value: string }
-  | { type: 'image'; src: string | null }
-  | { type: 'grid'; items: { src: string; ar: number }[]; mobileCols?: number }
+  | { type: 'image'; src: string | null; w?: number | null; h?: number | null }
+  | { type: 'grid'; items: { src: string; ar: number; w?: number | null; h?: number | null }[]; mobileCols?: number }
   | { type: 'carousel'; items: string[]; ratio?: number | null }
   | { type: 'video'; embedUrl: string; poster?: string | null }
   | {
@@ -264,7 +264,16 @@ export default function ProjectView({ project }: { project: SerializedProject })
               case 'image':
                 return m.src ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img className="mod-img" key={i} src={m.src} alt={project.title} loading="lazy" onClick={() => open(m.src!)} />
+                  <img
+                    className="mod-img"
+                    key={i}
+                    src={m.src}
+                    alt={project.title}
+                    width={m.w ?? undefined}
+                    height={m.h ?? undefined}
+                    loading="lazy"
+                    onClick={() => open(m.src!)}
+                  />
                 ) : null
               case 'grid':
                 return (
@@ -282,6 +291,8 @@ export default function ProjectView({ project }: { project: SerializedProject })
                         key={j}
                         src={it.src}
                         alt={`${project.title} — ${j + 1}`}
+                        width={it.w ?? undefined}
+                        height={it.h ?? undefined}
                         loading="lazy"
                         // Aspect ratio as a variable, not an inline flex-grow:
                         // an inline value would outrank the phone rule below.
