@@ -51,8 +51,9 @@ export async function generateViewport({ params }: Params): Promise<Viewport> {
   }
 }
 
-export async function generateMetadata({ params }: Params): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Params): Promise<Metadata> {
   const { username } = await params
+  const { lang } = (await searchParams) ?? {}
   const data = await getPortfolio(username)
   if (!data) return { title: 'Not found' }
   const name = data.settings?.content?.hero?.name || data.tenant.name
@@ -76,7 +77,10 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     // pages (www and bare) and its ranking was split between them. On a client's
     // own domain the canonical is that domain, so the address they pay for is
     // the one that ranks.
-    alternates: await alternatesFor(`/${username}`, { tenantSlug: username }),
+    alternates: await alternatesFor(`/${username}`, {
+      tenantSlug: username,
+      locale: lang === 'ar' ? 'ar' : 'en',
+    }),
     openGraph: {
       title: full,
       description,

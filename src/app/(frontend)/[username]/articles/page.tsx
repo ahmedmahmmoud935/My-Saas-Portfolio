@@ -39,7 +39,7 @@ export async function generateMetadata({ params, searchParams }: Params): Promis
   const { username } = await params
   const { lang } = (await searchParams) ?? {}
   const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
-  const alternates = await alternatesFor(`/${username}/articles`, { tenantSlug: username })
+  const alternates = await alternatesFor(`/${username}/articles`, { tenantSlug: username, locale })
   const data = await load(username, locale)
   const name = data?.tenant.name ?? username
   const title = locale === 'en' ? `Articles — ${name}` : `مقالات — ${name}`

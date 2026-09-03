@@ -27,7 +27,7 @@ export async function siteOrigin(): Promise<string> {
  */
 export async function alternatesFor(
   path: string,
-  opts?: { tenantSlug?: string },
+  opts?: { tenantSlug?: string; locale?: 'ar' | 'en' },
 ): Promise<{ canonical: string; languages: Record<string, string> }> {
   const origin = await siteOrigin()
   const onCustomDomain = origin !== APP_ORIGIN
@@ -36,11 +36,23 @@ export async function alternatesFor(
     onCustomDomain && slug ? path.replace(new RegExp(`^/${slug}`), '') || '/' : path
   const url = `${origin}${localPath === '/' ? '' : localPath}`
   const sep = localPath.includes('?') ? '&' : '?'
+  const ar = `${url}${sep}lang=ar`
+  const en = `${url}${sep}lang=en`
+
+  // Each language is its own page and says so.
+  //
+  // Pointing both languages at the bare URL looked tidy and quietly disabled
+  // the hreflang set: an hreflang annotation is only honoured on a page whose
+  // canonical is itself, and here the Arabic page's canonical named a
+  // different address. So the two versions were declared duplicates of one
+  // page and the alternates were dropped.
+  const canonical = opts?.locale === 'ar' ? ar : opts?.locale === 'en' ? en : url || origin
+
   return {
-    canonical: url || origin,
+    canonical,
     languages: {
-      ar: `${url}${sep}lang=ar`,
-      en: `${url}${sep}lang=en`,
+      ar,
+      en,
       // Which one a search engine should show when it has no better idea.
       'x-default': url || origin,
     },

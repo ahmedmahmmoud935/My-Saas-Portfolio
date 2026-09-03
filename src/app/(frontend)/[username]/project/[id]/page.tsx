@@ -108,9 +108,13 @@ function plainText(v: unknown, max = 160): string | undefined {
  * to the app's own title and description — the same two lines on every project
  * on the platform, and no image when one was shared.
  */
-export async function generateMetadata({ params }: Params): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Params): Promise<Metadata> {
   const { username, id } = await params
-  const alternates = await alternatesFor(`/${username}/project/${id}`, { tenantSlug: username })
+  const { lang } = (await searchParams) ?? {}
+  const alternates = await alternatesFor(`/${username}/project/${id}`, {
+    tenantSlug: username,
+    locale: lang === 'ar' ? 'ar' : 'en',
+  })
 
   try {
     const payload = await getPayload({ config })

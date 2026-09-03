@@ -52,7 +52,10 @@ export async function generateMetadata({ params, searchParams }: Params): Promis
   return {
     title: data.article.title,
     description: data.article.excerpt || undefined,
-    alternates: await alternatesFor(`/${username}/articles/${slug}`, { tenantSlug: username }),
+    alternates: await alternatesFor(`/${username}/articles/${slug}`, {
+      tenantSlug: username,
+      locale: lang === 'ar' ? 'ar' : 'en',
+    }),
     openGraph: {
       title: data.article.title,
       description: data.article.excerpt || undefined,
