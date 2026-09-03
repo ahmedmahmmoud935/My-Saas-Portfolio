@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { mediaUrl } from '@/lib/portfolio'
+import { alternatesFor } from '@/lib/seo'
 import Navbar from '@/components/portfolio/Navbar'
 import PageShell from '@/components/portfolio/PageShell'
 import Footer from '@/components/portfolio/Footer'
@@ -30,9 +31,30 @@ async function load(username: string, locale: 'ar' | 'en') {
   return { tenant, settings: settingsRes.docs[0] ?? null, articles: articlesRes.docs }
 }
 
-export async function generateMetadata({ params }: Params): Promise<Metadata> {
+/**
+ * The index carried a title built from the slug and nothing else, so it fell
+ * back to the app's own description and shared with no image.
+ */
+export async function generateMetadata({ params, searchParams }: Params): Promise<Metadata> {
   const { username } = await params
-  return { title: `مقالات ${username}`, alternates: { canonical: `/${username}/articles` } }
+  const { lang } = (await searchParams) ?? {}
+  const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
+  const alternates = await alternatesFor(`/${username}/articles`, { tenantSlug: username })
+  const data = await load(username, locale)
+  const name = data?.tenant.name ?? username
+  const title = locale === 'en' ? `Articles — ${name}` : `مقالات — ${name}`
+  const description =
+    locale === 'en'
+      ? `Articles and writing by ${name}.`
+      : `مقالات وكتابات ${name}.`
+  const cover = data?.articles.map((a) => mediaUrl(a.cover, 'card')).find(Boolean) ?? null
+  return {
+    title,
+    description,
+    alternates,
+    openGraph: { title, description, images: cover ? [cover] : undefined, type: 'website' },
+    twitter: { card: 'summary_large_image', title, description, images: cover ? [cover] : undefined },
+  }
 }
 
 export default async function ArticlesListPage({ params, searchParams }: Params) {
@@ -54,7 +76,7 @@ export default async function ArticlesListPage({ params, searchParams }: Params)
       <section className="section">
         <div className="container">
           <div className="section-head">
-            <h2 className="section-title">{locale === 'en' ? 'Articles' : 'المقالات'}</h2>
+            <h1 className="section-title">{locale === 'en' ? 'Articles' : 'المقالات'}</h1>
           </div>
           {articles.length === 0 ? (
             <p style={{ textAlign: 'center', color: 'var(--sub)' }}>لا توجد مقالات بعد.</p>

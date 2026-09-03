@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { mediaUrl } from '@/lib/portfolio'
+import { alternatesFor } from '@/lib/seo'
 import Navbar from '@/components/portfolio/Navbar'
 import PageShell from '@/components/portfolio/PageShell'
 import Footer from '@/components/portfolio/Footer'
@@ -51,12 +52,18 @@ export async function generateMetadata({ params, searchParams }: Params): Promis
   return {
     title: data.article.title,
     description: data.article.excerpt || undefined,
-    alternates: { canonical: `/${username}/articles/${slug}` },
+    alternates: await alternatesFor(`/${username}/articles/${slug}`, { tenantSlug: username }),
     openGraph: {
       title: data.article.title,
       description: data.article.excerpt || undefined,
       images: cover ? [cover] : undefined,
       type: 'article',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: data.article.title,
+      description: data.article.excerpt || undefined,
+      images: cover ? [cover] : undefined,
     },
   }
 }

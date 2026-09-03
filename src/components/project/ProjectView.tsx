@@ -21,13 +21,16 @@ export type Mod =
     }
   | { type: 'separator'; spacing: 'compact' | 'normal' | 'large' }
 
+/** A picture plus the size it was stored at, so the browser can reserve room. */
+export type Pic = { src: string; w?: number | null; h?: number | null }
+
 export type SerializedProject = {
   title: string
   category?: string | null
   description?: string | null
   projectType: 'grid' | 'free' | 'stacked'
   cover?: string | null
-  images: string[]
+  images: Pic[]
   modules: Mod[]
 }
 
@@ -127,7 +130,7 @@ export default function ProjectView({ project }: { project: SerializedProject })
 
   // Build the lightbox gallery from images + image/grid modules.
   gallery.current = [
-    ...project.images,
+    ...project.images.map((p) => p.src),
     ...project.modules.flatMap((m) =>
       m.type === 'image' && m.src
         ? [m.src]
@@ -192,12 +195,26 @@ export default function ProjectView({ project }: { project: SerializedProject })
       {project.projectType === 'grid' && (
         <div className="mod-wrap">
           <div className="detail-grid">
-            {(project.images.length ? project.images : project.cover ? [project.cover] : []).map(
-              (src, i) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img key={i} src={src} alt="" loading="lazy" onClick={() => open(src)} />
-              ),
-            )}
+            {(project.images.length
+              ? project.images
+              : project.cover
+                ? [{ src: project.cover } as Pic]
+                : []
+            ).map((p, i) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={i}
+                src={p.src}
+                alt={`${project.title} — ${i + 1}`}
+                // The size it was stored at. Without it the browser cannot
+                // reserve the space and the page jumps as each picture lands —
+                // the shift search engines measure as CLS.
+                width={p.w ?? undefined}
+                height={p.h ?? undefined}
+                loading="lazy"
+                onClick={() => open(p.src)}
+              />
+            ))}
           </div>
         </div>
       )}
@@ -205,9 +222,17 @@ export default function ProjectView({ project }: { project: SerializedProject })
       {/* STACKED layout — full-width images */}
       {project.projectType === 'stacked' && (
         <div className="mod-wrap stack">
-          {project.images.map((src, i) => (
+          {project.images.map((p, i) => (
             // eslint-disable-next-line @next/next/no-img-element
-            <img key={i} src={src} alt="" loading="lazy" onClick={() => open(src)} />
+            <img
+              key={i}
+              src={p.src}
+              alt={`${project.title} — ${i + 1}`}
+              width={p.w ?? undefined}
+              height={p.h ?? undefined}
+              loading="lazy"
+              onClick={() => open(p.src)}
+            />
           ))}
         </div>
       )}
@@ -239,7 +264,7 @@ export default function ProjectView({ project }: { project: SerializedProject })
               case 'image':
                 return m.src ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img className="mod-img" key={i} src={m.src} alt="" loading="lazy" onClick={() => open(m.src!)} />
+                  <img className="mod-img" key={i} src={m.src} alt={project.title} loading="lazy" onClick={() => open(m.src!)} />
                 ) : null
               case 'grid':
                 return (
@@ -256,7 +281,7 @@ export default function ProjectView({ project }: { project: SerializedProject })
                       <img
                         key={j}
                         src={it.src}
-                        alt=""
+                        alt={`${project.title} — ${j + 1}`}
                         loading="lazy"
                         // Aspect ratio as a variable, not an inline flex-grow:
                         // an inline value would outrank the phone rule below.
@@ -359,7 +384,7 @@ export default function ProjectView({ project }: { project: SerializedProject })
             </>
           )}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={gallery.current[lb]} alt="" onClick={(e) => e.stopPropagation()} />
+          <img src={gallery.current[lb]} alt={project.title} onClick={(e) => e.stopPropagation()} />
         </div>
       )}
     </div>

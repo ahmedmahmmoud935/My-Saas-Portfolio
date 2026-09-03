@@ -137,7 +137,10 @@ const SITE = process.env.NEXT_PUBLIC_SERVER_URL || ''
 export async function generateMetadata({ searchParams }: Params): Promise<Metadata> {
   const { lang } = (await searchParams) ?? {}
   const en = lang !== 'ar'
-  const og = (await getLanding(en ? 'en' : 'ar')).look.ogUrl
+  const look = (await getLanding(en ? 'en' : 'ar')).look
+  // Falls back to the hero picture when no share image has been set, so a
+  // shared link is never a bare grey card.
+  const og = look.ogUrl || look.heroUrl
   const title = 'ViralPX — بورتفوليو احترافي في دقائق'
   const description = en
     ? 'ViralPX is a multi-tenant portfolio builder: launch a hosted portfolio with projects, reels, articles and a contact form — on your own domain.'
@@ -145,7 +148,13 @@ export async function generateMetadata({ searchParams }: Params): Promise<Metada
   return {
     title,
     description,
-    alternates: { canonical: SITE || undefined },
+    alternates: {
+      canonical: SITE || undefined,
+      // The landing is the one page that never carried these.
+      languages: SITE
+        ? { ar: `${SITE}/?lang=ar`, en: `${SITE}/?lang=en`, 'x-default': SITE }
+        : undefined,
+    },
     openGraph: {
       title,
       description,

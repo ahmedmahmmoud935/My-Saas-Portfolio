@@ -180,10 +180,25 @@ export function prefixSelectorNames(sel: string, prefix: string): string {
 }
 
 /** The markup half of the rename: class, id, and same-page anchor targets. */
+/**
+ * Headings in a pasted page start one level down.
+ *
+ * The page around the embed already has an `<h1>` — the project's own title —
+ * and a pasted case study brings its own, so the page ended up with two. Two
+ * top-level headings is a page with no single subject as far as a search engine
+ * is concerned. Every level shifts down one; h6 has nowhere to go and stays.
+ *
+ * The matching CSS is demoted with it (see `demoteHeadingSelectors`), so a
+ * pasted stylesheet that targets `h1` keeps styling the same text.
+ */
+function demoteHeadingTags(html: string): string {
+  return html.replace(/<(\/?)h([1-5])\b/gi, (_m, slash: string, level: string) => `<${slash}h${Number(level) + 1}`)
+}
+
 export function prefixHtmlClasses(html: string, prefix: string): string {
-  if (!prefix) return html
+  if (!prefix) return demoteHeadingTags(html)
   const attr = /(\s(?:class|id|href)\s*=\s*)(?:"([^"]*)"|'([^']*)')/gi
-  return html.replace(attr, (m, lead: string, dq?: string, sq?: string) => {
+  return demoteHeadingTags(html).replace(attr, (m, lead: string, dq?: string, sq?: string) => {
     const value = (dq ?? sq ?? '').trim()
     const name = lead.trim().slice(0, -1).trim().toLowerCase()
     if (name === 'class') {
@@ -196,12 +211,17 @@ export function prefixHtmlClasses(html: string, prefix: string): string {
   })
 }
 
+/** The CSS counterpart of `demoteHeadingTags`: h1 → h2 in a type selector. */
+function demoteHeadingSelectors(sel: string): string {
+  return sel.replace(/(^|[\s>+~(,])h([1-5])\b/gi, (_m, lead: string, level: string) => `${lead}h${Number(level) + 1}`)
+}
+
 /** Point every selector in a list at the wrapper. */
 function scopeSelectorList(list: string, scope: string, prefix: string): string {
   return list
     .split(',')
     .map((raw) => {
-      const sel = prefixSelectorNames(raw.trim(), prefix)
+      const sel = demoteHeadingSelectors(prefixSelectorNames(raw.trim(), prefix))
       if (!sel) return ''
       // The author's page-level selectors describe the wrapper now — without
       // this the custom properties they set on :root would never apply.

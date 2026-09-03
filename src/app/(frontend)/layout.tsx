@@ -1,4 +1,5 @@
 import React from 'react'
+import { headers } from 'next/headers'
 import {
   Tajawal,
   Montserrat,
@@ -68,9 +69,13 @@ export const metadata = {
 // Apply the saved light/dark preference before paint (no flash).
 const themeBoot = `(function(){try{var t=localStorage.getItem('pf-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();`
 
-export default function FrontendLayout({ children }: { children: React.ReactNode }) {
+export default async function FrontendLayout({ children }: { children: React.ReactNode }) {
+  // Set by middleware from ?lang, or from the portfolio's own pinned direction.
+  // It was hard-coded to English, which declared every Arabic portfolio on the
+  // platform to be an English page.
+  const lang = (await headers()).get('x-pf-lang') === 'ar' ? 'ar' : 'en'
   return (
-    <html lang="en" dir="ltr" className={fontVars}>
+    <html lang={lang} dir={lang === 'ar' ? 'rtl' : 'ltr'} className={fontVars}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeBoot }} />
       </head>

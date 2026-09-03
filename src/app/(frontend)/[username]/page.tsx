@@ -2,6 +2,7 @@ import React from 'react'
 import { notFound } from 'next/navigation'
 import type { Metadata, Viewport } from 'next'
 import { getPortfolio, isVideoSrc, mediaUrl, tenantCssVars } from '@/lib/portfolio'
+import { alternatesFor, absoluteUrl, personJsonLd } from '@/lib/seo'
 import Navbar from '@/components/portfolio/Navbar'
 import MotionFx from '@/components/portfolio/MotionFx'
 import Hero from '@/components/portfolio/Hero'
@@ -71,12 +72,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     // Next emits the modern `mobile-web-app-capable`; older iOS Safari still
     // only understands the apple-prefixed one.
     other: { 'apple-mobile-web-app-capable': 'yes' },
-    alternates: {
-      // One address per page. Without this the same portfolio counted as two
-      // pages (www and bare) and its ranking was split between them.
-      canonical: `/${username}`,
-      languages: { ar: `/${username}?lang=ar`, en: `/${username}?lang=en` },
-    },
+    // One address per page. Without this the same portfolio counted as two
+    // pages (www and bare) and its ranking was split between them. On a client's
+    // own domain the canonical is that domain, so the address they pay for is
+    // the one that ranks.
+    alternates: await alternatesFor(`/${username}`, { tenantSlug: username }),
     openGraph: {
       title: full,
       description,
@@ -399,6 +399,33 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
             ? `Add ${content.hero?.name || tenant.name} to your home screen`
             : `ثبّت ${content.hero?.name || tenant.name} على شاشتك`
         }
+      />
+      {/* The portfolio as a person: the name, the job title, the photo and the
+          accounts are all on the page already — this is what ties them
+          together for a search engine. Articles have declared themselves as
+          BlogPosting all along; the portfolio itself declared nothing.
+          eslint-disable-next-line react/no-danger */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            personJsonLd({
+              name: content.hero?.name || tenant.name,
+              jobTitle: content.hero?.title || null,
+              description: content.hero?.desc || content.about?.text || null,
+              image: mediaUrl(brand.avatar, 'card') || mediaUrl(brand.photo, 'card'),
+              url: await absoluteUrl(`/${tenant.slug}`),
+              email: content.contact?.email || null,
+              sameAs: [
+                settings?.social?.behance,
+                settings?.social?.instagram,
+                settings?.social?.linkedin,
+                settings?.social?.facebook,
+                settings?.social?.vimeo,
+              ].filter((u): u is string => typeof u === 'string' && /^https?:\/\//.test(u)),
+            }),
+          ),
+        }}
       />
       <Navbar
         logo={logoText}

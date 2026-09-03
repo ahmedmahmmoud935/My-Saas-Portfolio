@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { mediaUrl } from '@/lib/portfolio'
+import { alternatesFor, absoluteUrl, creativeWorkJsonLd } from '@/lib/seo'
 import ProjectView, { type Mod, type SerializedProject } from '@/components/project/ProjectView'
 import Navbar from '@/components/portfolio/Navbar'
 import PageShell from '@/components/portfolio/PageShell'
@@ -85,9 +86,64 @@ function serializeModules(modules: unknown[]): Mod[] {
 }
 
 /** One address per project, so www and the bare domain don't count as two. */
+/** Plain text from a rich-text or plain description, for a meta description. */
+function plainText(v: unknown, max = 160): string | undefined {
+  if (typeof v !== 'string' || !v.trim()) return undefined
+  const text = v
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/\s+/g, ' ')
+    .trim()
+  if (!text) return undefined
+  return text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text
+}
+
+/**
+ * Every project page used to carry only a canonical, so all of them fell back
+ * to the app's own title and description — the same two lines on every project
+ * on the platform, and no image when one was shared.
+ */
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { username, id } = await params
-  return { alternates: { canonical: `/${username}/project/${id}` } }
+  const alternates = await alternatesFor(`/${username}/project/${id}`, { tenantSlug: username })
+
+  try {
+    const payload = await getPayload({ config })
+    const tenants = await payload.find({
+      collection: 'tenants',
+      where: { slug: { equals: username } },
+      limit: 1,
+      depth: 0,
+    })
+    const tenant = tenants.docs[0]
+    if (!tenant) return { alternates }
+
+    const project = await payload.findByID({ collection: 'projects', id, depth: 1 })
+    if (!project || (project.tenant as { id?: number } | number) === undefined) return { alternates }
+    const ownerId =
+      typeof project.tenant === 'object' ? (project.tenant as { id?: number })?.id : project.tenant
+    if (ownerId !== tenant.id) return { alternates }
+
+    const title = `${project.title} — ${tenant.name}`
+    const description = plainText(project.description)
+    const cover = mediaUrl(project.cover as never, 'card')
+
+    return {
+      title,
+      description,
+      alternates,
+      openGraph: {
+        title,
+        description,
+        images: cover ? [cover] : undefined,
+        type: 'article',
+      },
+      twitter: { card: 'summary_large_image', title, description, images: cover ? [cover] : undefined },
+    }
+  } catch {
+    return { alternates }
+  }
 }
 
 export default async function ProjectDetailPage({ params, searchParams }: Params) {
@@ -145,8 +201,12 @@ export default async function ProjectDetailPage({ params, searchParams }: Params
     projectType: (project.projectType as SerializedProject['projectType']) || 'grid',
     cover: mediaUrl(project.cover),
     images: (project.images || [])
-      .map((im) => mediaUrl(im.image))
-      .filter((u): u is string => !!u),
+      .map((im) => {
+        const src = mediaUrl(im.image)
+        const m = im.image as { width?: number | null; height?: number | null } | null
+        return src ? { src, w: m?.width ?? null, h: m?.height ?? null } : null
+      })
+      .filter((p): p is { src: string; w: number | null; h: number | null } => !!p),
     modules: serializeModules(project.modules as unknown[]),
   }
 
@@ -184,6 +244,24 @@ export default async function ProjectDetailPage({ params, searchParams }: Params
         // The toggle stays on this project instead of being a dead control.
         langHref={`?lang=${locale === 'en' ? 'ar' : 'en'}`}
         langLabel={locale === 'en' ? 'ع' : 'EN'}
+      />
+      {/* eslint-disable-next-line react/no-danger */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            creativeWorkJsonLd({
+              name: String(project.title ?? ''),
+              description: plainText(project.description, 400),
+              image: mediaUrl(project.cover as never, 'card'),
+              url: await absoluteUrl(`/${tenant.slug}/project/${id}`),
+              authorName: tenant.name,
+              authorUrl: await absoluteUrl(`/${tenant.slug}`),
+              datePublished: (project as { createdAt?: string }).createdAt ?? null,
+              genre: (project as { category?: string | null }).category ?? null,
+            }),
+          ),
+        }}
       />
       <ProjectView project={serialized} />
     </PageShell>
