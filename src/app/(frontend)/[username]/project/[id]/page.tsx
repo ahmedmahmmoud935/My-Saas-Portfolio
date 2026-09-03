@@ -127,20 +127,30 @@ export async function generateMetadata({ params, searchParams }: Params): Promis
     const tenant = tenants.docs[0]
     if (!tenant) return { alternates }
 
-    const project = await payload.findByID({ collection: 'projects', id, depth: 1 })
+    const project = await payload.findByID({
+      collection: 'projects',
+      id,
+      depth: 1,
+      locale: lang === 'ar' ? 'ar' : 'en',
+      fallbackLocale: lang === 'ar' ? 'en' : 'ar',
+    })
     if (!project || (project.tenant as { id?: number } | number) === undefined) return { alternates }
     const ownerId =
       typeof project.tenant === 'object' ? (project.tenant as { id?: number })?.id : project.tenant
     if (ownerId !== tenant.id) return { alternates }
 
-    const title = `${project.title} — ${tenant.name}`
-    const description = plainText(project.description)
+    const seo = (project as {
+      seo?: { title?: string | null; description?: string | null; noindex?: boolean | null; nofollow?: boolean | null }
+    }).seo
+    const title = seo?.title || `${project.title} — ${tenant.name}`
+    const description = seo?.description || plainText(project.description)
     const cover = mediaUrl(project.cover as never, 'card')
 
     return {
       title,
       description,
       alternates,
+      robots: { index: !seo?.noindex, follow: !seo?.nofollow },
       openGraph: {
         title,
         description,

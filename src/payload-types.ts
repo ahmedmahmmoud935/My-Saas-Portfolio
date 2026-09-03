@@ -270,6 +270,15 @@ export interface Project {
   videoKind?: ('reel' | 'video') | null;
   aspectRatio?: string | null;
   /**
+   * What a search engine shows, when it should differ from the project itself.
+   */
+  seo?: {
+    title?: string | null;
+    description?: string | null;
+    noindex?: boolean | null;
+    nofollow?: boolean | null;
+  };
+  /**
    * Gallery images (separate from the page-builder).
    */
   images?:
@@ -372,7 +381,7 @@ export interface Article {
   tenant?: (number | null) | Tenant;
   title: string;
   /**
-   * Auto from title; unique per tenant.
+   * Auto from title; unique per tenant, per language.
    */
   slug: string;
   excerpt?: string | null;
@@ -401,6 +410,15 @@ export interface Article {
       }[]
     | null;
   published?: boolean | null;
+  /**
+   * What a search engine shows, when it should differ from the article itself.
+   */
+  seo?: {
+    title?: string | null;
+    description?: string | null;
+    noindex?: boolean | null;
+    nofollow?: boolean | null;
+  };
   /**
    * Estimated read time (minutes).
    */
@@ -1097,6 +1115,14 @@ export interface ProjectsSelect<T extends boolean = true> {
   videoUrl?: T;
   videoKind?: T;
   aspectRatio?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        noindex?: T;
+        nofollow?: T;
+      };
   images?:
     | T
     | {
@@ -1197,6 +1223,14 @@ export interface ArticlesSelect<T extends boolean = true> {
         id?: T;
       };
   published?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        noindex?: T;
+        nofollow?: T;
+      };
   readMin?: T;
   updatedAt?: T;
   createdAt?: T;

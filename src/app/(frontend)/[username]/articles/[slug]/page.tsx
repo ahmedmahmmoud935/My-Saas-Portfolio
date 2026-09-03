@@ -27,18 +27,28 @@ async function load(username: string, slugRaw: string, locale: 'ar' | 'en') {
   const t = await payload.find({ collection: 'tenants', where: { slug: { equals: username } }, limit: 1, depth: 0 })
   const tenant = t.docs[0]
   if (!tenant) return null
-  const [settingsRes, articleRes] = await Promise.all([
-    payload.find({ collection: 'site-settings', where: { tenant: { equals: tenant.id } }, limit: 1, depth: 0, locale, fallbackLocale: locale === 'ar' ? 'en' : 'ar' }),
+  const other = locale === 'ar' ? 'en' : 'ar'
+  const bySlug = (l: 'ar' | 'en') =>
     payload.find({
       collection: 'articles',
       where: { and: [{ tenant: { equals: tenant.id } }, { slug: { equals: slug } }] },
       limit: 1,
       depth: 1,
-      locale,
-      fallbackLocale: locale === 'ar' ? 'en' : 'ar',
-    }),
+      locale: l,
+      fallbackLocale: l === 'ar' ? 'en' : 'ar',
+    })
+
+  const [settingsRes, articleRes] = await Promise.all([
+    payload.find({ collection: 'site-settings', where: { tenant: { equals: tenant.id } }, limit: 1, depth: 0, locale, fallbackLocale: other }),
+    bySlug(locale),
   ])
-  const article = articleRes.docs[0]
+
+  // Slugs are per-language now, so an address written in one language will not
+  // match a lookup in the other. Try the other language before giving up,
+  // rather than 404ing a link that is perfectly valid.
+  let article = articleRes.docs[0]
+  if (!article) article = (await bySlug(other)).docs[0]
+
   if (!article || article.published !== true) return null
   return { tenant, settings: settingsRes.docs[0] ?? null, article }
 }
@@ -49,23 +59,29 @@ export async function generateMetadata({ params, searchParams }: Params): Promis
   const data = await load(username, slug, lang === 'ar' ? 'ar' : 'en')
   if (!data) return { title: 'غير موجود' }
   const cover = mediaUrl(data.article.cover, 'card')
+  const seo = (data.article as { seo?: { title?: string | null; description?: string | null; noindex?: boolean | null; nofollow?: boolean | null } }).seo
+  // What a results page shows, when it should read differently from the
+  // headline on the article itself.
+  const title = seo?.title || data.article.title
+  const description = seo?.description || data.article.excerpt || undefined
   return {
-    title: data.article.title,
-    description: data.article.excerpt || undefined,
+    title,
+    description,
+    robots: { index: !seo?.noindex, follow: !seo?.nofollow },
     alternates: await alternatesFor(`/${username}/articles/${slug}`, {
       tenantSlug: username,
       locale: lang === 'ar' ? 'ar' : 'en',
     }),
     openGraph: {
-      title: data.article.title,
-      description: data.article.excerpt || undefined,
+      title,
+      description,
       images: cover ? [cover] : undefined,
       type: 'article',
     },
     twitter: {
       card: 'summary_large_image',
-      title: data.article.title,
-      description: data.article.excerpt || undefined,
+      title,
+      description,
       images: cover ? [cover] : undefined,
     },
   }

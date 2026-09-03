@@ -3010,3 +3010,47 @@ input[type='range']::-moz-range-thumb {
   padding: 0 12px 6px;
   text-align: end;
 }
+
+/* ── Search-result preview ──────────────────────────────────────────────────
+   What the page will actually look like in results, shown while you write it.
+   Deliberately close to Google's own type sizes and colours: the point is to
+   see the line get cut off, not to look like the rest of the dashboard. */
+.serp {
+  margin-top: 14px;
+  padding: 14px 16px;
+  background: var(--bg-3, var(--bg-2));
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.serp-url {
+  font-size: 12px;
+  color: var(--sub);
+  margin-bottom: 4px;
+}
+.serp-title {
+  color: #8ab4f8;
+  font-size: 18px;
+  line-height: 1.3;
+  /* Results are cut off, not wrapped for ever — seeing where is the point. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.serp-desc {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--sub);
+  margin-top: 4px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.seo-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}

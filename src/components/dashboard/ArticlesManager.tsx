@@ -18,6 +18,11 @@ type Item = {
   readMin: number
   coverId: number | null
   coverUrl: string | null
+  /** What a results page shows, when it should differ from the article. */
+  seoTitle: string
+  seoDescription: string
+  noindex: boolean
+  nofollow: boolean
 }
 
 const slugify = (s: string) =>
@@ -42,6 +47,12 @@ export default function ArticlesManager({ items }: { items: Item[] }) {
       tags: edit.tags.split(',').map((x) => x.trim()).filter(Boolean).map((tag) => ({ tag })),
       published: edit.published,
       readMin: edit.readMin,
+      seo: {
+        title: edit.seoTitle,
+        description: edit.seoDescription,
+        noindex: edit.noindex,
+        nofollow: edit.nofollow,
+      },
     })
     setBusy(false)
     setEdit(null)
@@ -53,7 +64,7 @@ export default function ArticlesManager({ items }: { items: Item[] }) {
     router.refresh()
   }
 
-  const blank: Item = { title: '', slug: '', excerpt: '', contentHtml: '', tags: '', published: false, readMin: 3, coverId: null, coverUrl: null }
+  const blank: Item = { title: '', slug: '', excerpt: '', contentHtml: '', tags: '', published: false, readMin: 3, coverId: null, coverUrl: null, seoTitle: '', seoDescription: '', noindex: false, nofollow: false }
 
   return (
     <div>
@@ -101,6 +112,12 @@ export default function ArticlesManager({ items }: { items: Item[] }) {
               <input className="field" value={edit.title} onChange={(e) => setEdit({ ...edit, title: e.target.value, slug: edit.slug || slugify(e.target.value) })} />
               <label className="lbl">{t('الـ slug', 'Slug')}</label>
               <input className="field" dir="ltr" value={edit.slug} onChange={(e) => setEdit({ ...edit, slug: e.target.value })} style={{ textAlign: 'start' }} />
+              <p className="lbl" style={{ opacity: 0.7, marginTop: 4 }}>
+                {t(
+                  'الرابط والنشر لكل لغة على حدة — بدّل لغة اللوحة عشان تظبط النسخة التانية.',
+                  'The address and the publish switch belong to this language — switch the dashboard language to set the other.',
+                )}
+              </p>
               <label className="lbl">{t('المقتطف', 'Excerpt')}</label>
               <textarea className="field" rows={2} value={edit.excerpt} onChange={(e) => setEdit({ ...edit, excerpt: e.target.value })} />
               <label className="lbl">{t('الغلاف', 'Cover')}</label>
@@ -120,6 +137,69 @@ export default function ArticlesManager({ items }: { items: Item[] }) {
                     <span style={{ fontSize: 13 }}>{edit.published ? t('منشور', 'Published') : t('مسودّة', 'Draft')}</span>
                     <div className={`toggle ${edit.published ? 'on' : ''}`} role="switch" aria-checked={edit.published} onClick={() => setEdit({ ...edit, published: !edit.published })} />
                   </div>
+                </div>
+              </div>
+
+              {/* ── SEO ────────────────────────────────────────────────────
+                  The headline you write for a reader and the line Google
+                  shows are rarely the same sentence, and there was nowhere
+                  to say so. Empty falls back to the article's own title and
+                  excerpt, which is what happened before these existed. */}
+              <div className="de-group" style={{ marginTop: 18 }}>
+                <div className="de-group-title">{t('محركات البحث', 'Search engines')}</div>
+
+                <label className="lbl">{t('عنوان جوجل', 'Meta title')}</label>
+                <input
+                  className="field"
+                  value={edit.seoTitle}
+                  placeholder={edit.title || t('نفس عنوان المقال', 'Same as the article title')}
+                  onChange={(e) => setEdit({ ...edit, seoTitle: e.target.value })}
+                />
+                <div className="lbl" style={{ opacity: 0.7 }}>
+                  {(edit.seoTitle || edit.title).length} {t('حرف — الأفضل تحت ٦٠', 'characters — under 60 reads best')}
+                </div>
+
+                <label className="lbl" style={{ marginTop: 10, display: 'block' }}>
+                  {t('وصف جوجل', 'Meta description')}
+                </label>
+                <textarea
+                  className="field"
+                  rows={2}
+                  value={edit.seoDescription}
+                  placeholder={edit.excerpt || t('نفس مقتطف المقال', 'Same as the excerpt')}
+                  onChange={(e) => setEdit({ ...edit, seoDescription: e.target.value })}
+                />
+                <div className="lbl" style={{ opacity: 0.7 }}>
+                  {(edit.seoDescription || edit.excerpt).length}{' '}
+                  {t('حرف — الأفضل بين ١٢٠ و١٦٠', 'characters — 120 to 160 reads best')}
+                </div>
+
+                {/* What the result actually looks like, before publishing. */}
+                <div className="serp" dir="auto">
+                  <div className="serp-url">viralpx.com › {edit.slug || slugify(edit.title) || '…'}</div>
+                  <div className="serp-title">{edit.seoTitle || edit.title || t('عنوان المقال', 'Article title')}</div>
+                  <div className="serp-desc">
+                    {edit.seoDescription || edit.excerpt || t('وصف المقال يظهر هنا.', 'The description appears here.')}
+                  </div>
+                </div>
+
+                <div className="grid-2" style={{ marginTop: 12 }}>
+                  <label className="seo-check">
+                    <input
+                      type="checkbox"
+                      checked={edit.noindex}
+                      onChange={(e) => setEdit({ ...edit, noindex: e.target.checked })}
+                    />
+                    <span>{t('امنع الفهرسة (noindex)', 'Hide from search (noindex)')}</span>
+                  </label>
+                  <label className="seo-check">
+                    <input
+                      type="checkbox"
+                      checked={edit.nofollow}
+                      onChange={(e) => setEdit({ ...edit, nofollow: e.target.checked })}
+                    />
+                    <span>{t('لا تتبع الروابط (nofollow)', "Don't follow links (nofollow)")}</span>
+                  </label>
                 </div>
               </div>
             </div>

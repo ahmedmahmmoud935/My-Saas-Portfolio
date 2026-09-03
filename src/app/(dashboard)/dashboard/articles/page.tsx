@@ -26,6 +26,10 @@ export default async function ArticlesPage() {
     readMin: a.readMin ?? 0,
     coverId: (a.cover && typeof a.cover === 'object' ? a.cover.id : (a.cover as number)) ?? null,
     coverUrl: mediaUrl(a.cover, 'thumb'),
+    seoTitle: a.seo?.title ?? '',
+    seoDescription: a.seo?.description ?? '',
+    noindex: a.seo?.noindex === true,
+    nofollow: a.seo?.nofollow === true,
   }))
   return <ArticlesManager items={items} />
 }

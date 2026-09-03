@@ -96,6 +96,23 @@ export const Projects: CollectionConfig = {
     },
     // Gallery images (old project_images) — used by grid/stacked layouts.
     {
+      name: 'seo',
+      type: 'group',
+      label: 'SEO',
+      admin: { description: 'What a search engine shows, when it should differ from the project itself.' },
+      fields: [
+        { name: 'title', type: 'text', localized: true },
+        { name: 'description', type: 'textarea', localized: true },
+        {
+          type: 'row',
+          fields: [
+            { name: 'noindex', type: 'checkbox', defaultValue: false },
+            { name: 'nofollow', type: 'checkbox', defaultValue: false },
+          ],
+        },
+      ],
+    },
+    {
       name: 'images',
       type: 'array',
       admin: { description: 'Gallery images (separate from the page-builder).' },
