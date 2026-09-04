@@ -72,6 +72,7 @@ export interface Config {
     media: Media;
     projects: Project;
     articles: Article;
+    posts: Post;
     redirects: Redirect;
     logos: Logo;
     testimonials: Testimonial;
@@ -91,6 +92,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     articles: ArticlesSelect<false> | ArticlesSelect<true>;
+    posts: PostsSelect<false> | PostsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     logos: LogosSelect<false> | LogosSelect<true>;
     testimonials: TestimonialsSelect<false> | TestimonialsSelect<true>;
@@ -426,6 +428,29 @@ export interface Article {
    * Estimated read time (minutes).
    */
   readMin?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts".
+ */
+export interface Post {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt?: string | null;
+  cover?: (number | null) | Media;
+  contentHtml?: string | null;
+  published?: boolean | null;
+  readMin?: number | null;
+  seo?: {
+    keyphrase?: string | null;
+    title?: string | null;
+    description?: string | null;
+    noindex?: boolean | null;
+    nofollow?: boolean | null;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -982,6 +1007,10 @@ export interface PayloadLockedDocument {
         value: number | Article;
       } | null)
     | ({
+        relationTo: 'posts';
+        value: number | Post;
+      } | null)
+    | ({
         relationTo: 'redirects';
         value: number | Redirect;
       } | null)
@@ -1275,6 +1304,30 @@ export interface ArticlesSelect<T extends boolean = true> {
         nofollow?: T;
       };
   readMin?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts_select".
+ */
+export interface PostsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  excerpt?: T;
+  cover?: T;
+  contentHtml?: T;
+  published?: T;
+  readMin?: T;
+  seo?:
+    | T
+    | {
+        keyphrase?: T;
+        title?: T;
+        description?: T;
+        noindex?: T;
+        nofollow?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

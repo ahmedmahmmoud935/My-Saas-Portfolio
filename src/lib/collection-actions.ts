@@ -3,15 +3,29 @@
 import { getDashboardContext } from './dashboard'
 
 // Generic tenant-scoped CRUD for the simple per-tenant collections.
-type Coll = 'logos' | 'achievements' | 'testimonials' | 'articles' | 'redirects'
-const ALLOWED: Coll[] = ['logos', 'achievements', 'testimonials', 'articles', 'redirects']
+type Coll = 'logos' | 'achievements' | 'testimonials' | 'articles' | 'redirects' | 'posts'
+const ALLOWED: Coll[] = ['logos', 'achievements', 'testimonials', 'articles', 'redirects', 'posts']
+
+/**
+ * Collections that belong to the platform rather than to a tenant.
+ *
+ * The blog on the marketing site is the platform's own writing, so there is no
+ * tenant to check it against — the check is that you are the owner instead.
+ */
+const PLATFORM = new Set<Coll>(['posts'])
 
 async function assertOwns(
   ctx: NonNullable<Awaited<ReturnType<typeof getDashboardContext>>>,
   collection: Coll,
   id: number,
 ) {
-  const doc = await ctx.payload.findByID({ collection, id, depth: 0 })
+  if (PLATFORM.has(collection)) {
+    if (!ctx.user.isOwner) throw new Error('forbidden')
+    return
+  }
+  const doc = (await ctx.payload.findByID({ collection, id, depth: 0 })) as {
+    tenant?: { id?: number } | number | null
+  }
   const t = typeof doc.tenant === 'object' ? doc.tenant?.id : doc.tenant
   if (t !== ctx.tenantId) throw new Error('forbidden')
 }
@@ -30,6 +44,9 @@ export async function saveDoc(
   void _t
   void _i
 
+  const platform = PLATFORM.has(collection)
+  if (platform && !ctx.user.isOwner) throw new Error('forbidden')
+
   if (id) {
     await assertOwns(ctx, collection, id)
     await ctx.payload.update({ collection, id, data: clean as never, locale: 'ar' })
@@ -37,7 +54,8 @@ export async function saveDoc(
   }
   const created = await ctx.payload.create({
     collection,
-    data: { ...clean, tenant: ctx.tenantId } as never,
+    // A platform collection has no tenant to stamp.
+    data: (platform ? clean : { ...clean, tenant: ctx.tenantId }) as never,
     locale: 'ar',
   })
   return { ok: true, id: created.id }

@@ -8,11 +8,13 @@ import type { NavItem } from './dashboard-nav'
  */
 export const OWNER_NAV: NavItem[] = [
   { id: 'landing', labelAr: 'الصفحة الرئيسية', labelEn: 'Landing page', icon: '' },
+  { id: 'blog', labelAr: 'المدوّنة', labelEn: 'Blog', icon: '' },
   { id: 'users', labelAr: 'العملاء', labelEn: 'Clients', icon: '' },
 ]
 
 /** Icon ids (see components/dashboard/icons.tsx) for the owner nav. */
 export const OWNER_NAV_ICONS: Record<string, string> = {
   landing: 'landing',
+  blog: 'articles',
   users: 'users',
 }

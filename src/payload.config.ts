@@ -14,6 +14,7 @@ import { Media } from './collections/Media'
 import { Projects } from './collections/Projects'
 import { Articles } from './collections/Articles'
 import { Redirects } from './collections/Redirects'
+import { Posts } from './collections/Posts'
 import { Logos } from './collections/Logos'
 import { Testimonials } from './collections/Testimonials'
 import { Achievements } from './collections/Achievements'
@@ -51,6 +52,7 @@ export default buildConfig({
     Media,
     Projects,
     Articles,
+    Posts,
     Redirects,
     Logos,
     Testimonials,

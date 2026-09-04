@@ -32,6 +32,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   try {
     const payload = await getPayload({ config })
+
+    // The platform's own writing.
+    const index = `${base}/blog`
+    urls.push({ url: index, changeFrequency: 'weekly', priority: 0.7, alternates: langs(index) })
+    const posts = await payload.find({
+      collection: 'posts',
+      where: { published: { equals: true } },
+      limit: 500,
+      depth: 0,
+    })
+    for (const p of posts.docs) {
+      const url = `${base}/blog/${p.slug}`
+      urls.push({
+        url,
+        changeFrequency: 'monthly',
+        priority: 0.7,
+        lastModified: when(p.updatedAt),
+        alternates: langs(url),
+      })
+    }
+
     const tenants = await payload.find({ collection: 'tenants', limit: 1000, depth: 0 })
 
     for (const t of tenants.docs) {

@@ -30,7 +30,18 @@ type Item = {
 const slugify = (s: string) =>
   s.trim().toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '')
 
-export default function ArticlesManager({ items }: { items: Item[] }) {
+export default function ArticlesManager({
+  items,
+  collection = 'articles',
+  title,
+  subtitle,
+}: {
+  items: Item[]
+  /** 'articles' for a client's blog, 'posts' for the platform's own. */
+  collection?: 'articles' | 'posts'
+  title?: string
+  subtitle?: string
+}) {
   const router = useRouter()
   const [edit, setEdit] = useState<Item | null>(null)
   const { t } = useDashLang()
@@ -39,7 +50,7 @@ export default function ArticlesManager({ items }: { items: Item[] }) {
   async function save() {
     if (!edit) return
     setBusy(true)
-    await saveDoc('articles', edit.id, {
+    await saveDoc(collection, edit.id, {
       title: edit.title,
       slug: edit.slug || slugify(edit.title),
       excerpt: edit.excerpt,
@@ -63,7 +74,7 @@ export default function ArticlesManager({ items }: { items: Item[] }) {
   }
   async function remove(id: number) {
     if (!confirm(t('حذف المقال؟', 'Delete this article?'))) return
-    await deleteDoc('articles', id)
+    await deleteDoc(collection, id)
     router.refresh()
   }
 
@@ -73,8 +84,8 @@ export default function ArticlesManager({ items }: { items: Item[] }) {
     <div>
       <PageHeader
         icon="📖"
-        title={t('المقالات', 'Articles')}
-        subtitle={t('مدوّنتك — كل مقال صفحة تساعد على SEO', 'Your blog — each article is an SEO-friendly page')}
+        title={title ?? t('المقالات', 'Articles')}
+        subtitle={subtitle ?? t('مدوّنتك — كل مقال صفحة تساعد على SEO', 'Your blog — each article is an SEO-friendly page')}
         actions={<button className="btn btn-primary" onClick={() => setEdit(blank)}>+ {t('مقال جديد', 'New article')}</button>}
       />
 
