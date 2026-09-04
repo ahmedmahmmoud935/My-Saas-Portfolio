@@ -284,7 +284,7 @@ export default async function HomePage({ searchParams }: Params) {
           <a href="#faq">{c.nav.faq}</a>
           {/* The blog is the only part of this site that can rank for anything
               other than the product's own name. */}
-          <a href={`/blog${q}`}>{locale === 'en' ? 'Blog' : 'المدوّنة'}</a>
+          <a href={`/blog?lang=${locale}`}>{locale === 'en' ? 'Blog' : 'المدوّنة'}</a>
         </nav>
         <div className="lp-nav-actions">
           <a className="lp-lang" href={locale === 'en' ? '/?lang=ar' : '/'}>
@@ -451,7 +451,7 @@ export default async function HomePage({ searchParams }: Params) {
           )}
         </a>
         <span>
-          <a href={`/blog${q}`} style={{ marginInlineEnd: 14 }}>
+          <a href={`/blog?lang=${locale}`} style={{ marginInlineEnd: 14 }}>
             {locale === 'en' ? 'Blog' : 'المدوّنة'}
           </a>
           © {new Date().getFullYear()} ViralPX — {c.rights}

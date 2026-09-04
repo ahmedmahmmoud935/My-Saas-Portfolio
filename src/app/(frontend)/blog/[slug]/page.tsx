@@ -98,7 +98,6 @@ export default async function BlogPost({ params, searchParams }: Params) {
   }
 
   const cover = mediaUrl(post.cover, 'card')
-  const q = locale === 'en' ? '?lang=en' : ''
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -119,11 +118,11 @@ export default async function BlogPost({ params, searchParams }: Params) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <header className="lp-nav">
-        <a href={`/${q}`} className="lp-logo">
+        <a href={`/?lang=${locale}`} className="lp-logo">
           Viral<span>PX</span>
         </a>
         <nav className="lp-nav-links">
-          <a href={`/blog${q}`}>{locale === 'en' ? 'Blog' : 'المدوّنة'}</a>
+          <a href={`/blog?lang=${locale}`}>{locale === 'en' ? 'Blog' : 'المدوّنة'}</a>
         </nav>
         <div className="lp-nav-actions">
           <a className="lp-lang" href={locale === 'en' ? `/blog/${slug}?lang=ar` : `/blog/${slug}?lang=en`}>

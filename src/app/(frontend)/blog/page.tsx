@@ -50,17 +50,16 @@ export default async function BlogIndex({ searchParams }: Params) {
   const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
   const posts = await load(locale)
   const c = LANDING_COPY[locale]
-  const q = locale === 'en' ? '?lang=en' : ''
 
   return (
     <div className="lp blog" dir={locale === 'en' ? 'ltr' : 'rtl'} lang={locale}>
       <header className="lp-nav">
-        <a href={`/${q}`} className="lp-logo">
+        <a href={`/?lang=${locale}`} className="lp-logo">
           Viral<span>PX</span>
         </a>
         <nav className="lp-nav-links">
-          <a href={`/${q}#features`}>{c.nav.features}</a>
-          <a href={`/${q}#pricing`}>{c.nav.pricing}</a>
+          <a href={`/?lang=${locale}#features`}>{c.nav.features}</a>
+          <a href={`/?lang=${locale}#pricing`}>{c.nav.pricing}</a>
         </nav>
         <div className="lp-nav-actions">
           <a className="lp-lang" href={locale === 'en' ? '/blog?lang=ar' : '/blog?lang=en'}>
@@ -87,7 +86,7 @@ export default async function BlogIndex({ searchParams }: Params) {
         ) : (
           <div className="lp-grid lp-grid-3">
             {posts.map((p) => (
-              <a className="lp-card blog-card" key={p.id} href={`/blog/${p.slug}${q}`}>
+              <a className="lp-card blog-card" key={p.id} href={`/blog/${p.slug}?lang=${locale}`}>
                 {mediaUrl(p.cover, 'card') && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={mediaUrl(p.cover, 'card')!} alt={p.title} loading="lazy" />
