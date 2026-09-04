@@ -5,6 +5,8 @@ import config from '@payload-config'
 import { mediaUrl } from '@/lib/portfolio'
 import { alternatesFor } from '@/lib/seo'
 import { LANDING_COPY } from '@/lib/landing-copy'
+import { getLandingLook, landingTokensCss } from '@/lib/landing-look'
+import '../landing.css'
 
 export const dynamic = 'force-dynamic'
 
@@ -50,6 +52,10 @@ export default async function BlogIndex({ searchParams }: Params) {
   const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
   const posts = await load(locale)
   const c = LANDING_COPY[locale]
+  // The same palette the landing page is wearing — the blog is the same site,
+  // so a hard-coded dark theme here would break the moment the owner picks
+  // their own colours or the reader switches to light.
+  const look = await getLandingLook()
 
   return (
     <div className="lp blog" dir={locale === 'en' ? 'ltr' : 'rtl'} lang={locale}>
@@ -99,19 +105,7 @@ export default async function BlogIndex({ searchParams }: Params) {
         )}
       </section>
 
-      <style>{`
-        .blog { background: var(--lp-bg, #0A0A0A); color: var(--lp-text, #fff);
-          --o: #F97316; --lp-bg: #0A0A0A; --lp-bg2: #111; --lp-text: #fff; --lp-sub: #9AA0AA;
-          --lp-line: color-mix(in srgb, var(--lp-text) 9%, transparent);
-          --lp-line-2: color-mix(in srgb, var(--lp-text) 20%, transparent);
-          --lp-on-o: #0A0A0A;
-          min-height: 100vh; font-family: var(--font-cairo), system-ui, sans-serif; }
-        .blog a { text-decoration: none; color: inherit; }
-        .blog-card { display: block; padding: 0; overflow: hidden; }
-        .blog-card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; }
-        .blog-card h3 { margin: 16px 18px 8px; font-size: 18px; }
-        .blog-card p { margin: 0 18px 18px; }
-      `}</style>
+      <style>{landingTokensCss(look)}</style>
     </div>
   )
 }

@@ -5,7 +5,8 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { mediaUrl } from '@/lib/portfolio'
 import { alternatesFor, absoluteUrl } from '@/lib/seo'
-import HtmlEmbed from '@/components/shared/HtmlEmbed'
+import { getLandingLook, landingTokensCss } from '@/lib/landing-look'
+import '../../landing.css'
 
 export const dynamic = 'force-dynamic'
 
@@ -98,6 +99,7 @@ export default async function BlogPost({ params, searchParams }: Params) {
   }
 
   const cover = mediaUrl(post.cover, 'card')
+  const look = await getLandingLook()
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -140,23 +142,15 @@ export default async function BlogPost({ params, searchParams }: Params) {
           // eslint-disable-next-line @next/next/no-img-element
           <img className="blog-cover" src={cover} alt={post.title} />
         )}
-        <HtmlEmbed value={post.contentHtml ?? ''} />
+        {/* Prose written in the dashboard, not a pasted standalone page:
+            HtmlEmbed's white canvas is for the latter, and it put the whole
+            article on a white slab in a dark theme. Rendered plainly, the way
+            tenant articles already are. */}
+        {/* eslint-disable-next-line react/no-danger */}
+        <div className="blog-body" dangerouslySetInnerHTML={{ __html: post.contentHtml ?? '' }} />
       </article>
 
-      <style>{`
-        .blog { background: #0A0A0A; color: #fff;
-          --o: #F97316; --lp-bg: #0A0A0A; --lp-bg2: #111; --lp-text: #fff; --lp-sub: #9AA0AA;
-          --lp-line: color-mix(in srgb, #fff 9%, transparent);
-          --lp-line-2: color-mix(in srgb, #fff 20%, transparent);
-          --lp-on-o: #0A0A0A;
-          min-height: 100vh; font-family: var(--font-cairo), system-ui, sans-serif; }
-        .blog a { text-decoration: none; color: inherit; }
-        .blog-post { max-width: 760px; }
-        .blog-cover { width: 100%; border-radius: 16px; margin-bottom: 28px; display: block; }
-        .blog-post :where(h2, h3, h4) { margin: 32px 0 12px; line-height: 1.35; }
-        .blog-post p { line-height: 1.9; color: #cfcfcf; }
-        .blog-post img { max-width: 100%; height: auto; border-radius: 12px; }
-      `}</style>
+      <style>{landingTokensCss(look)}</style>
     </div>
   )
 }
