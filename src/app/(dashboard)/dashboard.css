@@ -2337,6 +2337,17 @@ input[type='range']::-moz-range-thumb {
   padding: 8px;
   background: var(--bg-2);
   border-bottom: 1px solid var(--border);
+  /* Stays with you down a long article. Editing anything past the first screen
+     meant scrolling back up to the toolbar and then finding your place again. */
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+/* The images an article now carries, kept inside the column while editing. */
+.rt-box img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
 }
 .rt-group {
   display: flex;

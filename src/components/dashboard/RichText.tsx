@@ -5,6 +5,7 @@ import { useDashLang } from './DashLang'
 import HtmlEmbed from '@/components/shared/HtmlEmbed'
 import { isEmbeddablePage, looksLikeDocument, looksLikeHtml } from '@/lib/html-embed'
 import { PASTE_GUIDE_AR, PASTE_GUIDE_EN } from '@/lib/paste-guide'
+import { uploadFile } from '@/lib/upload-client'
 
 /**
  * A small WYSIWYG field: formatting toolbar over a contentEditable, with a
@@ -35,6 +36,12 @@ export default function RichText({
   const isPage = isEmbeddablePage(value)
   const [guide, setGuide] = useState(false)
   const [copied, setCopied] = useState(false)
+  const file = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState(false)
+  // Where the caret was before the file picker stole focus. Without it the
+  // picture lands wherever the browser last had a selection, which is usually
+  // the top of the document.
+  const saved = useRef<Range | null>(null)
 
   // Only write into the box when the value came from outside; doing it on every
   // keystroke would reset the caret to the start.
@@ -71,6 +78,48 @@ export default function RichText({
     if (box.current) onChange(box.current.innerHTML)
   }
 
+  const rememberCaret = () => {
+    const sel = window.getSelection()
+    if (sel && sel.rangeCount && box.current?.contains(sel.anchorNode)) {
+      saved.current = sel.getRangeAt(0).cloneRange()
+    }
+  }
+
+  /**
+   * A picture inside the article, described.
+   *
+   * There was no way to put one in at all — the only images an article could
+   * have were its cover. The alt text is asked for rather than left blank
+   * because an undescribed picture is invisible to image search and to anyone
+   * using a screen reader, and this editor is where the person who knows what
+   * the picture shows is sitting.
+   */
+  async function insertImage(f: File) {
+    setUploading(true)
+    try {
+      const media = await uploadFile(f)
+      const src = media.url || media.thumbUrl
+      if (!src) return
+      const alt = window.prompt(
+        t('اكتب وصفًا مختصرًا للصورة (مهم لجوجل وقارئ الشاشة):', 'Describe the picture (for image search and screen readers):'),
+        '',
+      )
+      box.current?.focus()
+      // Put the caret back where it was before the picker opened.
+      const sel = window.getSelection()
+      if (saved.current && sel) {
+        sel.removeAllRanges()
+        sel.addRange(saved.current)
+      }
+      const escaped = (alt || '').replace(/"/g, '&quot;')
+      document.execCommand('insertHTML', false, `<img src="${src}" alt="${escaped}" loading="lazy" />`)
+      if (box.current) onChange(box.current.innerHTML)
+    } finally {
+      setUploading(false)
+      if (file.current) file.current.value = ''
+    }
+  }
+
   const Btn = ({
     cmd,
     arg,
@@ -104,7 +153,9 @@ export default function RichText({
           <Btn cmd="formatBlock" arg="p" title={t('عادي', 'Normal')} wide>
             {t('عادي', 'Normal')}
           </Btn>
-          {(['h1', 'h2', 'h3'] as const).map((h) => (
+          {/* All six levels. Three of them were missing, so a long article had
+              no way to nest a sub-section below the second level. */}
+          {(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] as const).map((h) => (
             <Btn key={h} cmd="formatBlock" arg={h} title={h.toUpperCase()}>
               {h.toUpperCase()}
             </Btn>
@@ -112,6 +163,33 @@ export default function RichText({
           <Btn cmd="formatBlock" arg="blockquote" title={t('اقتباس', 'Quote')}>
             ❝
           </Btn>
+        </span>
+
+        <span className="rt-group">
+          <span className="rt-label">{t('صورة', 'Image')}</span>
+          <button
+            type="button"
+            className="rt-btn wide"
+            title={t('أدرج صورة', 'Insert an image')}
+            disabled={uploading}
+            onMouseDown={(e) => {
+              e.preventDefault()
+              rememberCaret()
+            }}
+            onClick={() => file.current?.click()}
+          >
+            {uploading ? '…' : t('＋ صورة', '＋ Image')}
+          </button>
+          <input
+            ref={file}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={(e) => {
+              const f = e.target.files?.[0]
+              if (f) void insertImage(f)
+            }}
+          />
         </span>
 
         <span className="rt-group">
@@ -247,6 +325,10 @@ export default function RichText({
           suppressContentEditableWarning
           data-placeholder={placeholder || ''}
           onPaste={onPaste}
+          // Remember where the caret is, so an inserted picture lands there
+          // rather than wherever the browser last had a selection.
+          onKeyUp={rememberCaret}
+          onMouseUp={rememberCaret}
           onInput={(e) => onChange((e.target as HTMLDivElement).innerHTML)}
           onBlur={(e) => onChange((e.target as HTMLDivElement).innerHTML)}
         />
