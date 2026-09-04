@@ -92,6 +92,9 @@ export const Articles: CollectionConfig = {
       label: 'SEO',
       admin: { description: 'What a search engine shows, when it should differ from the article itself.' },
       fields: [
+        // What this piece should be found for. Drives the analysis panel; it
+        // is never rendered on the page.
+        { name: 'keyphrase', type: 'text', localized: true },
         // A headline written for a reader and a title written for a results
         // page are rarely the same sentence; there was nowhere to say so.
         { name: 'title', type: 'text', localized: true },

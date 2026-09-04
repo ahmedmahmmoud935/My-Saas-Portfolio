@@ -6,6 +6,7 @@ import PageHeader from './PageHeader'
 import MediaUploader from './MediaUploader'
 import { saveDoc, deleteDoc } from '@/lib/collection-actions'
 import { useDashLang } from './DashLang'
+import SeoPanel from './SeoPanel'
 
 type Item = {
   id?: number
@@ -21,6 +22,7 @@ type Item = {
   /** What a results page shows, when it should differ from the article. */
   seoTitle: string
   seoDescription: string
+  keyphrase: string
   noindex: boolean
   nofollow: boolean
 }
@@ -48,6 +50,7 @@ export default function ArticlesManager({ items }: { items: Item[] }) {
       published: edit.published,
       readMin: edit.readMin,
       seo: {
+        keyphrase: edit.keyphrase,
         title: edit.seoTitle,
         description: edit.seoDescription,
         noindex: edit.noindex,
@@ -64,7 +67,7 @@ export default function ArticlesManager({ items }: { items: Item[] }) {
     router.refresh()
   }
 
-  const blank: Item = { title: '', slug: '', excerpt: '', contentHtml: '', tags: '', published: false, readMin: 3, coverId: null, coverUrl: null, seoTitle: '', seoDescription: '', noindex: false, nofollow: false }
+  const blank: Item = { title: '', slug: '', excerpt: '', contentHtml: '', tags: '', published: false, readMin: 3, coverId: null, coverUrl: null, seoTitle: '', seoDescription: '', keyphrase: '', noindex: false, nofollow: false }
 
   return (
     <div>
@@ -202,6 +205,17 @@ export default function ArticlesManager({ items }: { items: Item[] }) {
                   </label>
                 </div>
               </div>
+
+              <SeoPanel
+                html={edit.contentHtml}
+                title={edit.title}
+                metaTitle={edit.seoTitle}
+                metaDescription={edit.seoDescription}
+                excerpt={edit.excerpt}
+                slug={edit.slug || slugify(edit.title)}
+                keyphrase={edit.keyphrase}
+                onKeyphrase={(v) => setEdit({ ...edit, keyphrase: v })}
+              />
             </div>
             <div className="modal-foot">
               <button className="btn btn-ghost" onClick={() => setEdit(null)}>{t('إلغاء', 'Cancel')}</button>

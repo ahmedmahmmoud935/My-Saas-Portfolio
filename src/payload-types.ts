@@ -414,6 +414,7 @@ export interface Article {
    * What a search engine shows, when it should differ from the article itself.
    */
   seo?: {
+    keyphrase?: string | null;
     title?: string | null;
     description?: string | null;
     noindex?: boolean | null;
@@ -1226,6 +1227,7 @@ export interface ArticlesSelect<T extends boolean = true> {
   seo?:
     | T
     | {
+        keyphrase?: T;
         title?: T;
         description?: T;
         noindex?: T;
