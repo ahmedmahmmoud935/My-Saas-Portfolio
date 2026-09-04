@@ -4,6 +4,7 @@ import { getDashboardContext } from '@/lib/dashboard'
 import { mediaUrl } from '@/lib/portfolio'
 import { auditSite, type PageInput } from '@/lib/seo-audit'
 import SeoAudit from '@/components/dashboard/SeoAudit'
+import SeoTools from '@/components/dashboard/SeoTools'
 
 export const dynamic = 'force-dynamic'
 
@@ -66,5 +67,11 @@ export default async function SeoPage() {
     })),
   ]
 
-  return <SeoAudit result={auditSite(pages)} siteHref={`/${slug}`} />
+  const tools = (settings?.seoTools ?? {}) as { searchConsole?: string | null; analyticsId?: string | null }
+
+  return (
+    <SeoAudit result={auditSite(pages)} siteHref={`/${slug}`}>
+      <SeoTools searchConsole={tools.searchConsole ?? ''} analyticsId={tools.analyticsId ?? ''} />
+    </SeoAudit>
+  )
 }

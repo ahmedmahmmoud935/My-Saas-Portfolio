@@ -549,6 +549,19 @@ export interface SiteSetting {
    * Internal label for this settings record.
    */
   siteName?: string | null;
+  /**
+   * Google’s own tools. Both are pasted from Google; neither changes how the site looks.
+   */
+  seoTools?: {
+    /**
+     * google-site-verification token
+     */
+    searchConsole?: string | null;
+    /**
+     * GA4 measurement id, e.g. G-XXXXXXX
+     */
+    analyticsId?: string | null;
+  };
   social?: {
     whatsapp?: string | null;
     behance?: string | null;
@@ -1355,6 +1368,12 @@ export interface ImportsSelect<T extends boolean = true> {
 export interface SiteSettingsSelect<T extends boolean = true> {
   tenant?: T;
   siteName?: T;
+  seoTools?:
+    | T
+    | {
+        searchConsole?: T;
+        analyticsId?: T;
+      };
   social?:
     | T
     | {
@@ -1791,6 +1810,10 @@ export interface Landing {
         id?: string | null;
       }[]
     | null;
+  seoTools?: {
+    searchConsole?: string | null;
+    analyticsId?: string | null;
+  };
   images?: {
     logo?: (number | null) | Media;
     hero?: (number | null) | Media;
@@ -1839,6 +1862,12 @@ export interface LandingSelect<T extends boolean = true> {
         posX?: T;
         posY?: T;
         id?: T;
+      };
+  seoTools?:
+    | T
+    | {
+        searchConsole?: T;
+        analyticsId?: T;
       };
   images?:
     | T

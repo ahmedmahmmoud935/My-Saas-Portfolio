@@ -12,7 +12,16 @@ import type { AuditResult, Severity } from '@/lib/seo-audit'
  * to see the four that break something first, and a long list of suggestions
  * underneath is noise until those are done.
  */
-export default function SeoAudit({ result, siteHref }: { result: AuditResult; siteHref: string }) {
+export default function SeoAudit({
+  result,
+  siteHref,
+  children,
+}: {
+  result: AuditResult
+  siteHref: string
+  /** The Google-tools panel, rendered above the findings. */
+  children?: React.ReactNode
+}) {
   const { t } = useDashLang()
   const [only, setOnly] = useState<Severity | 'all'>('all')
 
@@ -41,6 +50,8 @@ export default function SeoAudit({ result, siteHref }: { result: AuditResult; si
           </a>
         }
       />
+
+      {children}
 
       <div className="panel">
         <div className="audit-tabs">

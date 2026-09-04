@@ -3210,3 +3210,38 @@ input[type='range']::-moz-range-thumb {
   color: var(--sub);
   margin-top: 3px;
 }
+
+/* ── Google tools panel ─────────────────────────────────────────────────── */
+.tools-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 12px;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.tools-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sub);
+}
+.tools-chev {
+  font-size: 17px;
+  color: var(--accent);
+  line-height: 1;
+}
+.tools-body {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}

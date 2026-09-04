@@ -6,7 +6,7 @@ import { useDashLang } from './DashLang'
 import MediaUploader from './MediaUploader'
 import SectionBgRows from './SectionBgRows'
 import { ColorInput, Opt } from './controls'
-import { saveLanding, type LandingImages, type LandingStyle, type LandingTheme } from '@/lib/landing-actions'
+import { saveLanding, type LandingImages, type LandingStyle, type LandingTheme, type LandingTools } from '@/lib/landing-actions'
 import { LANDING_COPY } from '@/lib/landing-copy'
 import {
   DARK_PALETTES,
@@ -22,6 +22,7 @@ type Form = {
   theme: LandingTheme
   images: LandingImages
   style: LandingStyle
+  tools: LandingTools
   sectionBg: SectionBgForm[]
 }
 
@@ -38,6 +39,7 @@ const SECTIONS = [
   { id: 'cards', ar: 'شكل الكروت', en: 'Card style' },
   { id: 'backgrounds', ar: 'خلفيات الأقسام', en: 'Section backgrounds' },
   { id: 'images', ar: 'الصور', en: 'Images' },
+  { id: 'tools', ar: 'أدوات جوجل', en: 'Google tools' },
 ] as const
 
 /* A starting point, not a limit — the field takes any emoji or short text. */
@@ -129,6 +131,7 @@ export default function LandingEditor({ initial }: { initial: Form }) {
   const setImages = (p: Partial<LandingImages>) => setF((f0) => ({ ...f0, images: { ...f0.images, ...p } }))
   const setSectionBg = (rows: SectionBgForm[]) => setF((f0) => ({ ...f0, sectionBg: rows }))
   const setStyle = (p: Partial<LandingStyle>) => setF((f0) => ({ ...f0, style: { ...f0.style, ...p } }))
+  const setTools = (p: Partial<LandingTools>) => setF((f0) => ({ ...f0, tools: { ...f0.tools, ...p } }))
   // Which half of the palette the Colours tab is editing.
   const k = light
     ? { accent: 'accentLight', bg: 'bgLight', bg2: 'bg2Light', text: 'textLight', sub: 'subtextLight' }
@@ -168,7 +171,7 @@ export default function LandingEditor({ initial }: { initial: Form }) {
 
   async function save() {
     setBusy(true)
-    await saveLanding(f.ar, f.en, f.theme, f.images, f.sectionBg, f.style)
+    await saveLanding(f.ar, f.en, f.theme, f.images, f.sectionBg, f.style, f.tools)
     setBusy(false)
     setToast(true)
     setTimeout(() => setToast(false), 1800)
@@ -363,6 +366,30 @@ export default function LandingEditor({ initial }: { initial: Form }) {
               {t(
                 'بيتطبّق على كروت المميزات والبورتفوليوهات والأسعار والأسئلة مع بعض.',
                 'Applies to the feature, showcase, pricing and FAQ cards together.',
+              )}
+            </p>
+          </>
+        )}
+
+        {sec === 'tools' && (
+          <>
+            <label className="lbl">{t('كود التحقق من Search Console', 'Search Console verification token')}</label>
+            <input className="field" dir="ltr" value={f.tools.searchConsole} placeholder="abc123..." onChange={(e) => setTools({ searchConsole: e.target.value })} style={{ textAlign: 'start' }} />
+            <p className="lbl" style={{ opacity: 0.7, marginTop: 4 }}>
+              {t(
+                'من Search Console → طريقة «HTML tag»، وانسخ قيمة content بس.',
+                'In Search Console, pick the “HTML tag” method and copy only the content value.',
+              )}
+            </p>
+
+            <label className="lbl" style={{ marginTop: 16, display: 'block' }}>
+              {t('معرّف Google Analytics', 'Google Analytics measurement id')}
+            </label>
+            <input className="field" dir="ltr" value={f.tools.analyticsId} placeholder="G-XXXXXXXXXX" onChange={(e) => setTools({ analyticsId: e.target.value })} style={{ textAlign: 'start' }} />
+            <p className="lbl" style={{ opacity: 0.7, marginTop: 4 }}>
+              {t(
+                'دي للموقع الأساسي بس — كل عميل بيربط حساباته من لوحته هو.',
+                'These are for the platform site only — each client connects their own from their dashboard.',
               )}
             </p>
           </>

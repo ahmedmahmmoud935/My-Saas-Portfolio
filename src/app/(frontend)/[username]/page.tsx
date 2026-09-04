@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata, Viewport } from 'next'
 import { getPortfolio, isVideoSrc, mediaUrl, tenantCssVars } from '@/lib/portfolio'
 import { alternatesFor, absoluteUrl, personJsonLd } from '@/lib/seo'
+import Analytics from '@/components/portfolio/Analytics'
 import Navbar from '@/components/portfolio/Navbar'
 import MotionFx from '@/components/portfolio/MotionFx'
 import Hero from '@/components/portfolio/Hero'
@@ -77,6 +78,11 @@ export async function generateMetadata({ params, searchParams }: Params): Promis
     // pages (www and bare) and its ranking was split between them. On a client's
     // own domain the canonical is that domain, so the address they pay for is
     // the one that ranks.
+    // The token Search Console hands you. Next renders it as the meta tag
+    // Google looks for.
+    verification: data.settings?.seoTools?.searchConsole
+      ? { google: data.settings.seoTools.searchConsole }
+      : undefined,
     alternates: await alternatesFor(`/${username}`, {
       tenantSlug: username,
       locale: lang === 'ar' ? 'ar' : 'en',
@@ -395,6 +401,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
           )}
         </div>
       )}
+      <Analytics id={settings?.seoTools?.analyticsId} />
       <MotionFx anim={st.anim || 'fade-up'} cursor={st.cursor || 'default'} />
       <TrackVisit tenant={tenant.id} page="home" />
       <InstallApp

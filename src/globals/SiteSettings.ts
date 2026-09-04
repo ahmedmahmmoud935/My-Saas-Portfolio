@@ -73,6 +73,35 @@ export const SiteSettings: CollectionConfig = {
     {
       type: 'tabs',
       tabs: [
+        // ─── Search tools ────────────────────────────────────────────────
+        {
+          label: 'Search tools',
+          fields: [
+            {
+              name: 'seoTools',
+              type: 'group',
+              admin: {
+                description:
+                  'Google’s own tools. Both are pasted from Google; neither changes how the site looks.',
+              },
+              fields: [
+                {
+                  // The token from Search Console's "HTML tag" method. Without a
+                  // verified property there is no way to see what a site is
+                  // indexed for, or to submit its sitemap.
+                  name: 'searchConsole',
+                  type: 'text',
+                  admin: { description: 'google-site-verification token' },
+                },
+                {
+                  name: 'analyticsId',
+                  type: 'text',
+                  admin: { description: 'GA4 measurement id, e.g. G-XXXXXXX' },
+                },
+              ],
+            },
+          ],
+        },
         // ─── Social & links ──────────────────────────────────────────────
         {
           label: 'Social',

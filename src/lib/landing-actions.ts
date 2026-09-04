@@ -27,6 +27,9 @@ export type LandingStyle = {
   /** solid | outline | glass | elevated */
   card: string
 }
+/** The two ids Google gives you for the platform's own site. */
+export type LandingTools = { searchConsole: string; analyticsId: string }
+
 export type LandingImages = {
   logoId: number | null
   logoUrl: string | null
@@ -76,6 +79,7 @@ export async function getLandingForm(): Promise<{
   theme: LandingTheme
   images: LandingImages
   style: LandingStyle
+  tools: LandingTools
   sectionBg: SectionBgForm[]
 }> {
   const ctx = await ownerCtx()
@@ -84,6 +88,7 @@ export async function getLandingForm(): Promise<{
     theme?: Partial<LandingTheme>
     images?: Record<string, unknown>
     style?: Partial<LandingStyle>
+    seoTools?: Partial<LandingTools>
     sectionBg?: Record<string, unknown>[]
   }
   const im = g.images ?? {}
@@ -104,6 +109,10 @@ export async function getLandingForm(): Promise<{
       ogUrl: mediaUrl((im.ogImage as never) ?? null, 'card'),
     },
     style: { ...DEFAULT_LANDING_STYLE, ...setOnly<LandingStyle>(g.style) },
+    tools: {
+      searchConsole: g.seoTools?.searchConsole ?? '',
+      analyticsId: g.seoTools?.analyticsId ?? '',
+    },
     sectionBg: (g.sectionBg ?? []).map((r) => ({
       // `theme` is carried by the shared row shape but unused on both sides:
       // one backdrop serves light and dark, and only the veil over it changes.
@@ -130,17 +139,26 @@ export async function saveLanding(
   images?: LandingImages,
   sectionBg?: SectionBgForm[],
   style?: LandingStyle,
+  tools?: LandingTools,
 ) {
   const ctx = await ownerCtx()
   // Locale-specific copy first, then the shared look in one non-localized pass.
   await ctx.payload.updateGlobal({ slug: 'landing', data: { content: ar } as never, locale: 'ar' })
   await ctx.payload.updateGlobal({ slug: 'landing', data: { content: en } as never, locale: 'en' })
-  if (theme || images || sectionBg || style) {
+  if (theme || images || sectionBg || style || tools) {
     await ctx.payload.updateGlobal({
       slug: 'landing',
       data: {
         ...(theme ? { theme } : {}),
         ...(style ? { style } : {}),
+        ...(tools
+          ? {
+              seoTools: {
+                searchConsole: tools.searchConsole.trim() || null,
+                analyticsId: tools.analyticsId.trim() || null,
+              },
+            }
+          : {}),
         ...(sectionBg
           ? {
               sectionBg: sectionBg.map((r) => ({

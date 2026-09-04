@@ -103,6 +103,16 @@ export const Landing: GlobalConfig = {
       ],
     },
     {
+      // The platform's own property. The landing page needs verifying and
+      // measuring exactly as much as a client's portfolio does.
+      name: 'seoTools',
+      type: 'group',
+      fields: [
+        { name: 'searchConsole', type: 'text' },
+        { name: 'analyticsId', type: 'text' },
+      ],
+    },
+    {
       name: 'images',
       type: 'group',
       fields: [

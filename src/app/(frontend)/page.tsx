@@ -6,6 +6,7 @@ import { LANDING_COPY } from '@/lib/landing-copy'
 import { mediaUrl } from '@/lib/portfolio'
 import SectionBg, { type SectionBgConfig } from '@/components/portfolio/SectionBg'
 import LandingThemeToggle from '@/components/portfolio/LandingThemeToggle'
+import Analytics from '@/components/portfolio/Analytics'
 
 // Owner-edited landing copy merged over the defaults (per locale).
 type LandingLook = {
@@ -88,6 +89,7 @@ async function getLanding(locale: 'ar' | 'en') {
       images?: Record<string, unknown>
       sectionBg?: Record<string, unknown>[]
       style?: { showcase?: string | null; card?: string | null }
+      seoTools?: { searchConsole?: string | null; analyticsId?: string | null }
     }
     const saved = g?.content
     const im = g?.images ?? {}
@@ -110,6 +112,7 @@ async function getLanding(locale: 'ar' | 'en') {
     }
     return {
       copy: saved && typeof saved === 'object' ? { ...base, ...saved } : base,
+      tools: g?.seoTools ?? {},
       sections,
       look: {
         ...DEFAULT_LOOK,
@@ -123,7 +126,12 @@ async function getLanding(locale: 'ar' | 'en') {
       } as LandingLook,
     }
   } catch {
-    return { copy: base, sections: {} as Record<string, SectionBgConfig>, look: DEFAULT_LOOK }
+    return {
+      copy: base,
+      tools: {} as { searchConsole?: string | null; analyticsId?: string | null },
+      sections: {} as Record<string, SectionBgConfig>,
+      look: DEFAULT_LOOK,
+    }
   }
 }
 
@@ -137,7 +145,8 @@ const SITE = process.env.NEXT_PUBLIC_SERVER_URL || ''
 export async function generateMetadata({ searchParams }: Params): Promise<Metadata> {
   const { lang } = (await searchParams) ?? {}
   const en = lang !== 'ar'
-  const look = (await getLanding(en ? 'en' : 'ar')).look
+  const landing = await getLanding(en ? 'en' : 'ar')
+  const look = landing.look
   // Falls back to the hero picture when no share image has been set, so a
   // shared link is never a bare grey card.
   const og = look.ogUrl || look.heroUrl
@@ -148,6 +157,9 @@ export async function generateMetadata({ searchParams }: Params): Promise<Metada
   return {
     title,
     description,
+    verification: landing.tools?.searchConsole
+      ? { google: landing.tools.searchConsole }
+      : undefined,
     alternates: {
       canonical: SITE || undefined,
       // The landing is the one page that never carried these.
@@ -230,7 +242,7 @@ async function getShowcase(): Promise<ShowcaseItem[]> {
 export default async function HomePage({ searchParams }: Params) {
   const { lang } = (await searchParams) ?? {}
   const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
-  const { copy, look, sections } = await getLanding(locale)
+  const { copy, look, sections, tools } = await getLanding(locale)
   const c = copy as (typeof LANDING_COPY)['ar']
   const q = locale === 'en' ? '?lang=en' : ''
   const showcase = await getShowcase()
@@ -252,6 +264,7 @@ export default async function HomePage({ searchParams }: Params) {
       {/* eslint-disable-next-line react/no-danger */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
 
+      <Analytics id={tools?.analyticsId} />
       <header className="lp-nav">
         <a href={`/${q}`} className="lp-logo">
           {look.logoUrl ? (
