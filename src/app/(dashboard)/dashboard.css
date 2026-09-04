@@ -3177,3 +3177,36 @@ input[type='range']::-moz-range-thumb {
   flex: 0 0 auto;
 }
 .rd-tag.auto { color: var(--accent); border-color: var(--accent); }
+
+/* ── Site check ─────────────────────────────────────────────────────────── */
+.audit-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.audit-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 13px 4px;
+  border-bottom: 1px solid var(--border);
+}
+.audit-row:last-child { border-bottom: 0; }
+/* The dot carries the verdict, so the list is scannable without reading it. */
+.audit-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  margin-top: 6px;
+}
+.audit-row.bad  .audit-dot { background: #ef4444; }
+.audit-row.warn .audit-dot { background: #f59e0b; }
+.audit-row.info .audit-dot { background: #6b8afd; }
+.audit-body { flex: 1 1 auto; min-width: 0; }
+.audit-msg { font-size: 13.5px; line-height: 1.6; }
+.audit-page {
+  font-size: 12px;
+  color: var(--sub);
+  margin-top: 3px;
+}
