@@ -3,8 +3,8 @@
 import { getDashboardContext } from './dashboard'
 
 // Generic tenant-scoped CRUD for the simple per-tenant collections.
-type Coll = 'logos' | 'achievements' | 'testimonials' | 'articles'
-const ALLOWED: Coll[] = ['logos', 'achievements', 'testimonials', 'articles']
+type Coll = 'logos' | 'achievements' | 'testimonials' | 'articles' | 'redirects'
+const ALLOWED: Coll[] = ['logos', 'achievements', 'testimonials', 'articles', 'redirects']
 
 async function assertOwns(
   ctx: NonNullable<Awaited<ReturnType<typeof getDashboardContext>>>,

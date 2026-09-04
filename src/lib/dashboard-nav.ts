@@ -39,6 +39,7 @@ export const DASHBOARD_NAV_GROUPS: NavGroup[] = [
     en: 'Site',
     items: [
       { id: 'social', labelAr: 'التواصل', labelEn: 'Social', icon: '🔗' },
+      { id: 'redirects', labelAr: 'تحويل الروابط', labelEn: 'Redirects', icon: '🔀' },
       { id: 'analytics', labelAr: 'الإحصائيات', labelEn: 'Analytics', icon: '📊' },
     ],
   },

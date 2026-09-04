@@ -1,5 +1,5 @@
 import React from 'react'
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
@@ -87,12 +87,45 @@ export async function generateMetadata({ params, searchParams }: Params): Promis
   }
 }
 
+/**
+ * An address this article used to live at, if it has one.
+ *
+ * Checked only when the page is about to 404, so the ordinary path costs
+ * nothing.
+ */
+async function movedTo(path: string): Promise<string | null> {
+  try {
+    const payload = await getPayload({ config })
+    const res = await payload.find({
+      collection: 'redirects',
+      where: { from: { equals: path } },
+      limit: 1,
+      depth: 0,
+    })
+    return res.docs[0]?.to ?? null
+  } catch {
+    return null
+  }
+}
+
 export default async function ArticlePage({ params, searchParams }: Params) {
   const { username, slug } = await params
   const { lang } = (await searchParams) ?? {}
   const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
   const data = await load(username, slug, locale)
-  if (!data) notFound()
+  if (!data) {
+    let decoded = slug
+    try {
+      decoded = decodeURIComponent(slug)
+    } catch {
+      /* keep raw */
+    }
+    const to = await movedTo(`/${username}/articles/${decoded}`)
+    // A permanent redirect, so a search engine moves the ranking across rather
+    // than treating the new address as an unrelated page.
+    if (to) permanentRedirect(lang ? `${to}?lang=${locale}` : to)
+    notFound()
+  }
   const { tenant, settings, article } = data
   const logo = tenant.name?.[0]?.toUpperCase() || 'V'
   const cover = mediaUrl(article.cover)

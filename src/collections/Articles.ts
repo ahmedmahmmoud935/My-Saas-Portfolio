@@ -14,6 +14,77 @@ export const Articles: CollectionConfig = {
   access: {
     read: () => true, // public blog (frontend filters unpublished)
   },
+  hooks: {
+    afterChange: [
+      /**
+       * Keep the old address working when a slug is rewritten.
+       *
+       * The first slug an article gets is generated from its opening sentence,
+       * so the ones most likely to be rewritten are the ones already published
+       * and linked to. Without this the old URL simply 404s and takes its
+       * ranking and every link pointing at it along.
+       *
+       * Only for articles that were already published under the old slug —
+       * nothing was ever linked to a draft, and recording redirects for slugs
+       * nobody has seen would fill the table with noise.
+       */
+      async ({ req, doc, previousDoc, operation }) => {
+        if (operation !== 'update') return doc
+        const before = previousDoc?.slug as string | undefined
+        const after = doc?.slug as string | undefined
+        if (!before || !after || before === after) return doc
+        if (previousDoc?.published !== true) return doc
+
+        const tenantId =
+          typeof doc.tenant === 'object' ? (doc.tenant as { id?: number })?.id : doc.tenant
+        if (typeof tenantId !== 'number') return doc
+
+        try {
+          const tenant = await req.payload.findByID({
+            collection: 'tenants',
+            id: tenantId,
+            depth: 0,
+          })
+          if (!tenant?.slug) return doc
+
+          const from = `/${tenant.slug}/articles/${before}`
+          const to = `/${tenant.slug}/articles/${after}`
+
+          // Renaming twice must not leave a chain: anything that already
+          // pointed at the old address is re-pointed at the new one.
+          const stale = await req.payload.find({
+            collection: 'redirects',
+            where: { to: { equals: from } },
+            limit: 100,
+            depth: 0,
+          })
+          for (const r of stale.docs) {
+            await req.payload.update({ collection: 'redirects', id: r.id, data: { to } })
+          }
+
+          const existing = await req.payload.find({
+            collection: 'redirects',
+            where: { from: { equals: from } },
+            limit: 1,
+            depth: 0,
+          })
+          if (existing.docs[0]) {
+            await req.payload.update({ collection: 'redirects', id: existing.docs[0].id, data: { to } })
+          } else {
+            await req.payload.create({
+              collection: 'redirects',
+              data: { from, to, auto: true, tenant: tenantId } as never,
+            })
+          }
+        } catch (err) {
+          // A redirect is a courtesy; never fail the save over one — but say so,
+          // otherwise a broken one is invisible.
+          req.payload.logger.error({ err }, 'could not record redirect for renamed slug')
+        }
+        return doc
+      },
+    ],
+  },
   fields: [
     {
       name: 'title',

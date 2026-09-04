@@ -72,6 +72,7 @@ export interface Config {
     media: Media;
     projects: Project;
     articles: Article;
+    redirects: Redirect;
     logos: Logo;
     testimonials: Testimonial;
     achievements: Achievement;
@@ -90,6 +91,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     articles: ArticlesSelect<false> | ArticlesSelect<true>;
+    redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     logos: LogosSelect<false> | LogosSelect<true>;
     testimonials: TestimonialsSelect<false> | TestimonialsSelect<true>;
     achievements: AchievementsSelect<false> | AchievementsSelect<true>;
@@ -424,6 +426,28 @@ export interface Article {
    * Estimated read time (minutes).
    */
   readMin?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "redirects".
+ */
+export interface Redirect {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  /**
+   * The old path, e.g. /ahmed/articles/old-slug
+   */
+  from: string;
+  /**
+   * Where it should go now.
+   */
+  to: string;
+  /**
+   * Recorded automatically when a slug changed.
+   */
+  auto?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -945,6 +969,10 @@ export interface PayloadLockedDocument {
         value: number | Article;
       } | null)
     | ({
+        relationTo: 'redirects';
+        value: number | Redirect;
+      } | null)
+    | ({
         relationTo: 'logos';
         value: number | Logo;
       } | null)
@@ -1234,6 +1262,18 @@ export interface ArticlesSelect<T extends boolean = true> {
         nofollow?: T;
       };
   readMin?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "redirects_select".
+ */
+export interface RedirectsSelect<T extends boolean = true> {
+  tenant?: T;
+  from?: T;
+  to?: T;
+  auto?: T;
   updatedAt?: T;
   createdAt?: T;
 }

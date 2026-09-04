@@ -28,6 +28,7 @@ import * as migration_20260901_030000_hero_title_scale from './20260901_030000_h
 import * as migration_20260902_010000_hero_text_controls from './20260902_010000_hero_text_controls';
 import * as migration_20260903_010000_seo_fields from './20260903_010000_seo_fields';
 import * as migration_20260903_030000_seo_keyphrase from './20260903_030000_seo_keyphrase';
+import * as migration_20260904_010000_redirects from './20260904_010000_redirects';
 
 export const migrations = [
   {
@@ -179,5 +180,10 @@ export const migrations = [
     up: migration_20260903_030000_seo_keyphrase.up,
     down: migration_20260903_030000_seo_keyphrase.down,
     name: '20260903_030000_seo_keyphrase'
+  },
+  {
+    up: migration_20260904_010000_redirects.up,
+    down: migration_20260904_010000_redirects.down,
+    name: '20260904_010000_redirects'
   },
 ];
