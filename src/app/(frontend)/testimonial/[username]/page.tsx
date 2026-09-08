@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getPortfolio, tenantCssVars } from '@/lib/portfolio'
 import TestimonialForm from '@/components/portfolio/TestimonialForm'
+import { pageLocale } from '@/lib/seo'
 
 export const dynamic = 'force-dynamic'
 
@@ -62,7 +63,7 @@ const COPY = {
 export default async function TestimonialPage({ params, searchParams }: Params) {
   const { username } = await params
   const { lang } = (await searchParams) ?? {}
-  const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
+  const locale = await pageLocale(lang)
   const data = await getPortfolio(username, locale)
   if (!data) notFound()
 

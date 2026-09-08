@@ -20,6 +20,24 @@ export async function siteOrigin(): Promise<string> {
 }
 
 /**
+ * The language this page should be read in.
+ *
+ * `?lang` wins when it is there — those are the addresses hreflang points at.
+ * Without it the answer is the portfolio's own language, which the middleware
+ * has already worked out and put in `x-pf-lang`; the root layout renders
+ * `<html lang dir>` from that same header.
+ *
+ * Pages used to default to English on their own instead of asking. The bare
+ * address of an Arabic portfolio — the one in the sitemap, the one people
+ * share — therefore served an English interface inside `<html lang="ar">`, and
+ * linked on to the English half of the site.
+ */
+export async function pageLocale(asked?: string | null): Promise<'ar' | 'en'> {
+  if (asked === 'ar' || asked === 'en') return asked
+  return (await headers()).get('x-pf-lang') === 'ar' ? 'ar' : 'en'
+}
+
+/**
  * Canonical + hreflang for one page.
  *
  * `path` is the path on the platform (/ahmed/project/3). On a custom domain the

@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { mediaUrl } from '@/lib/portfolio'
-import { alternatesFor } from '@/lib/seo'
+import { alternatesFor, pageLocale } from '@/lib/seo'
 import Navbar from '@/components/portfolio/Navbar'
 import PageShell from '@/components/portfolio/PageShell'
 import Footer from '@/components/portfolio/Footer'
@@ -38,7 +38,7 @@ async function load(username: string, locale: 'ar' | 'en') {
 export async function generateMetadata({ params, searchParams }: Params): Promise<Metadata> {
   const { username } = await params
   const { lang } = (await searchParams) ?? {}
-  const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
+  const locale = await pageLocale(lang)
   const alternates = await alternatesFor(`/${username}/articles`, { tenantSlug: username, locale })
   const data = await load(username, locale)
   const name = data?.tenant.name ?? username
@@ -60,7 +60,7 @@ export async function generateMetadata({ params, searchParams }: Params): Promis
 export default async function ArticlesListPage({ params, searchParams }: Params) {
   const { username } = await params
   const { lang } = (await searchParams) ?? {}
-  const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
+  const locale = await pageLocale(lang)
   const data = await load(username, locale)
   if (!data) notFound()
   const { tenant, settings, articles } = data

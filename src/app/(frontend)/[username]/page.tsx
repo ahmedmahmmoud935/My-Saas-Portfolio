@@ -2,7 +2,7 @@ import React from 'react'
 import { notFound } from 'next/navigation'
 import type { Metadata, Viewport } from 'next'
 import { getPortfolio, isVideoSrc, mediaUrl, tenantCssVars } from '@/lib/portfolio'
-import { alternatesFor, absoluteUrl, personJsonLd } from '@/lib/seo'
+import { alternatesFor, absoluteUrl, pageLocale, personJsonLd } from '@/lib/seo'
 import Analytics from '@/components/portfolio/Analytics'
 import Navbar from '@/components/portfolio/Navbar'
 import MotionFx from '@/components/portfolio/MotionFx'
@@ -85,7 +85,7 @@ export async function generateMetadata({ params, searchParams }: Params): Promis
       : undefined,
     alternates: await alternatesFor(`/${username}`, {
       tenantSlug: username,
-      locale: lang === 'ar' ? 'ar' : 'en',
+      locale: await pageLocale(lang),
     }),
     openGraph: {
       title: full,
@@ -100,7 +100,7 @@ export async function generateMetadata({ params, searchParams }: Params): Promis
 export default async function PortfolioPage({ params, searchParams }: Params) {
   const { username } = await params
   const { lang } = (await searchParams) ?? {}
-  const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
+  const locale = await pageLocale(lang)
   const data = await getPortfolio(username, locale)
   if (!data) notFound()
   // Suspended clients: hide the public site.

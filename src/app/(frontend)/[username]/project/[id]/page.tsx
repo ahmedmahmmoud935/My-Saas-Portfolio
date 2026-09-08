@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { mediaUrl } from '@/lib/portfolio'
-import { alternatesFor, absoluteUrl, creativeWorkJsonLd } from '@/lib/seo'
+import { alternatesFor, absoluteUrl, creativeWorkJsonLd, pageLocale } from '@/lib/seo'
 import ProjectView, { type Mod, type SerializedProject } from '@/components/project/ProjectView'
 import Navbar from '@/components/portfolio/Navbar'
 import PageShell from '@/components/portfolio/PageShell'
@@ -111,9 +111,10 @@ function plainText(v: unknown, max = 160): string | undefined {
 export async function generateMetadata({ params, searchParams }: Params): Promise<Metadata> {
   const { username, id } = await params
   const { lang } = (await searchParams) ?? {}
+  const locale = await pageLocale(lang)
   const alternates = await alternatesFor(`/${username}/project/${id}`, {
     tenantSlug: username,
-    locale: lang === 'ar' ? 'ar' : 'en',
+    locale,
   })
 
   try {
@@ -131,8 +132,8 @@ export async function generateMetadata({ params, searchParams }: Params): Promis
       collection: 'projects',
       id,
       depth: 1,
-      locale: lang === 'ar' ? 'ar' : 'en',
-      fallbackLocale: lang === 'ar' ? 'en' : 'ar',
+      locale,
+      fallbackLocale: locale === 'ar' ? 'en' : 'ar',
     })
     if (!project || (project.tenant as { id?: number } | number) === undefined) return { alternates }
     const ownerId =
@@ -166,11 +167,12 @@ export async function generateMetadata({ params, searchParams }: Params): Promis
 
 export default async function ProjectDetailPage({ params, searchParams }: Params) {
   const { username, id } = await params
-  // Same rule as the portfolio page: English unless ?lang=ar. The page used to
-  // read Arabic no matter what, so opening a project from an English site
-  // switched language underneath the visitor.
+  // Same rule as the portfolio page: ?lang decides, and without it the
+  // portfolio's own language does. The page used to read Arabic no matter
+  // what, so opening a project from an English site switched language
+  // underneath the visitor.
   const { lang } = (await searchParams) ?? {}
-  const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
+  const locale = await pageLocale(lang)
   const payload = await getPayload({ config })
 
   const tenants = await payload.find({

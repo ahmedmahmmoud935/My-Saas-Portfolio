@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { mediaUrl } from '@/lib/portfolio'
-import { alternatesFor } from '@/lib/seo'
+import { alternatesFor, pageLocale } from '@/lib/seo'
 import Navbar from '@/components/portfolio/Navbar'
 import PageShell from '@/components/portfolio/PageShell'
 import Footer from '@/components/portfolio/Footer'
@@ -56,7 +56,8 @@ async function load(username: string, slugRaw: string, locale: 'ar' | 'en') {
 export async function generateMetadata({ params, searchParams }: Params): Promise<Metadata> {
   const { username, slug } = await params
   const { lang } = (await searchParams) ?? {}
-  const data = await load(username, slug, lang === 'ar' ? 'ar' : 'en')
+  const locale = await pageLocale(lang)
+  const data = await load(username, slug, locale)
   if (!data) return { title: 'غير موجود' }
   const cover = mediaUrl(data.article.cover, 'card')
   const seo = (data.article as { seo?: { title?: string | null; description?: string | null; noindex?: boolean | null; nofollow?: boolean | null } }).seo
@@ -70,7 +71,7 @@ export async function generateMetadata({ params, searchParams }: Params): Promis
     robots: { index: !seo?.noindex, follow: !seo?.nofollow },
     alternates: await alternatesFor(`/${username}/articles/${slug}`, {
       tenantSlug: username,
-      locale: lang === 'ar' ? 'ar' : 'en',
+      locale,
     }),
     openGraph: {
       title,
@@ -111,7 +112,7 @@ async function movedTo(path: string): Promise<string | null> {
 export default async function ArticlePage({ params, searchParams }: Params) {
   const { username, slug } = await params
   const { lang } = (await searchParams) ?? {}
-  const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
+  const locale = await pageLocale(lang)
   const data = await load(username, slug, locale)
   if (!data) {
     let decoded = slug
