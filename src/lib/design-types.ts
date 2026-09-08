@@ -260,7 +260,12 @@ export type Palette = { name: string; accent: string; bg: string; bg2: string; t
 
 /** Dark-mode ready palettes (set the accent/bg/bg2/text/subtext dark colours). */
 export const DARK_PALETTES: Palette[] = [
-  // Neutral black — the default, and the one that lets the work carry the page.
+  // Deep blue under a warm orange — what the landing page ships with. Pure
+  // black leaves no room underneath it: every panel drawn on it has to be
+  // lighter, so surfaces, cards and hairlines all arrive as greys of one
+  // family and the page reads flat. A blue canvas keeps the range above it.
+  { name: 'Harbour', accent: '#F28C00', bg: '#060D1E', bg2: '#0B1736', text: '#F8FAFC', subtext: '#94A3B8' },
+  // Neutral black — the one that lets the work carry the page.
   { name: 'Ink', accent: '#F97316', bg: '#0A0A0A', bg2: '#161616', text: '#FFFFFF', subtext: '#A3A3A3' },
   // Lifted grey. Not black: softer under long reading, and photographs sit in
   // it instead of floating on it.
@@ -277,6 +282,9 @@ export const DARK_PALETTES: Palette[] = [
 
 /** Light-mode ready palettes (set the *Light colours). */
 export const LIGHT_PALETTES: Palette[] = [
+  // Harbour's other half: the dark canvas becomes the text, so the two themes
+  // are recognisably one brand rather than two.
+  { name: 'Salt', accent: '#A85400', bg: '#FFFFFF', bg2: '#F4F6FB', text: '#0B1736', subtext: '#64748B' },
   // White page, grey cards.
   // #EA6C0A was the old default and only reached 3.2:1 on white — orange has
   // to be taken down a long way before it holds up as a link colour there.

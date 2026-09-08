@@ -43,7 +43,13 @@ export const DEFAULT_LOOK: LandingLook = {
   // The light half. A site that has only ever set dark colours gets these
   // rather than five copies of its dark palette. The text colour is the dark
   // canvas, so the two themes are recognisably the same brand.
-  accentLight: '#E07B00',
+  //
+  // The accent is a much deeper orange than the dark theme's, because it has a
+  // second job here: the small eyebrow above each heading is set in it, on
+  // white. #F28C00 reaches 2.5:1 there and #E07B00 only 3.0 — both below the
+  // 4.5 small text needs. This one reaches 5.3, and its white button label
+  // reaches 5.3 as well.
+  accentLight: '#A85400',
   bgLight: '#FFFFFF',
   bg2Light: '#F4F6FB',
   textLight: '#0B1736',
