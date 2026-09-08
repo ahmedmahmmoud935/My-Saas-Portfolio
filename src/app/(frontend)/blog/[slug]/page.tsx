@@ -4,7 +4,7 @@ import { notFound, permanentRedirect } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { mediaUrl } from '@/lib/portfolio'
-import { alternatesFor, absoluteUrl } from '@/lib/seo'
+import { alternatesFor, absoluteUrl, plainText } from '@/lib/seo'
 import { getLandingLook, landingTokensCss } from '@/lib/landing-look'
 import '../../landing.css'
 
@@ -52,7 +52,7 @@ export async function generateMetadata({ params, searchParams }: Params): Promis
 
   const seo = post.seo ?? {}
   const title = seo.title || post.title
-  const description = seo.description || post.excerpt || undefined
+  const description = seo.description || post.excerpt || plainText(post.contentHtml)
   const cover = mediaUrl(post.cover, 'card')
   return {
     title,

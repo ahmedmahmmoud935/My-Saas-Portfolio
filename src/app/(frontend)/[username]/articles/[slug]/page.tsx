@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { mediaUrl } from '@/lib/portfolio'
-import { alternatesFor, pageLocale } from '@/lib/seo'
+import { alternatesFor, pageLocale, plainText } from '@/lib/seo'
 import Navbar from '@/components/portfolio/Navbar'
 import PageShell from '@/components/portfolio/PageShell'
 import Footer from '@/components/portfolio/Footer'
@@ -64,7 +64,10 @@ export async function generateMetadata({ params, searchParams }: Params): Promis
   // What a results page shows, when it should read differently from the
   // headline on the article itself.
   const title = seo?.title || data.article.title
-  const description = seo?.description || data.article.excerpt || undefined
+  // Same rule as a project: an article that was written but never given a
+  // summary still has its own opening to offer.
+  const description =
+    seo?.description || data.article.excerpt || plainText(data.article.contentHtml)
   return {
     title,
     description,

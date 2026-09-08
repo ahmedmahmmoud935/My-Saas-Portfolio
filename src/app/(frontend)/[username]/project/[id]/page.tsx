@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { mediaUrl } from '@/lib/portfolio'
-import { alternatesFor, absoluteUrl, creativeWorkJsonLd, pageLocale } from '@/lib/seo'
+import { alternatesFor, absoluteUrl, creativeWorkJsonLd, pageLocale, plainText } from '@/lib/seo'
 import ProjectView, { type Mod, type SerializedProject } from '@/components/project/ProjectView'
 import Navbar from '@/components/portfolio/Navbar'
 import PageShell from '@/components/portfolio/PageShell'
@@ -90,17 +90,26 @@ function serializeModules(modules: unknown[]): Mod[] {
 }
 
 /** One address per project, so www and the bare domain don't count as two. */
-/** Plain text from a rich-text or plain description, for a meta description. */
-function plainText(v: unknown, max = 160): string | undefined {
-  if (typeof v !== 'string' || !v.trim()) return undefined
-  const text = v
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/\s+/g, ' ')
-    .trim()
-  if (!text) return undefined
-  return text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text
+/**
+ * The project's own words, for a meta description, when the description field
+ * was left empty.
+ *
+ * A finished case study can run to a thousand words in the page builder and
+ * still leave that one field blank — and the page then went to Google with no
+ * description at all, indistinguishable from a project that is a picture and a
+ * title. The paragraphs are what a reader would call the description; the
+ * headings above them ("Deliverables", "The idea") describe the page's
+ * furniture, not the work, so they are only used when there are no paragraphs.
+ */
+function textFromModules(modules: unknown): string | undefined {
+  if (!Array.isArray(modules)) return undefined
+  const said = (only?: string) =>
+    (modules as Record<string, unknown>[])
+      .filter((m) => m.blockType === 'text' && (!only || m.textType === only))
+      .map((m) => String(m.value ?? '').trim())
+      .filter(Boolean)
+      .join(' ')
+  return said('p') || said() || undefined
 }
 
 /**
@@ -144,7 +153,10 @@ export async function generateMetadata({ params, searchParams }: Params): Promis
       seo?: { title?: string | null; description?: string | null; noindex?: boolean | null; nofollow?: boolean | null }
     }).seo
     const title = seo?.title || `${project.title} — ${tenant.name}`
-    const description = seo?.description || plainText(project.description)
+    const description =
+      seo?.description ||
+      plainText(project.description) ||
+      plainText(textFromModules(project.modules))
     const cover = mediaUrl(project.cover as never, 'card')
 
     return {
@@ -272,7 +284,9 @@ export default async function ProjectDetailPage({ params, searchParams }: Params
           __html: JSON.stringify(
             creativeWorkJsonLd({
               name: String(project.title ?? ''),
-              description: plainText(project.description, 400),
+              description:
+                plainText(project.description, 400) ||
+                plainText(textFromModules(project.modules), 400),
               image: mediaUrl(project.cover as never, 'card'),
               url: await absoluteUrl(`/${tenant.slug}/project/${id}`),
               authorName: tenant.name,

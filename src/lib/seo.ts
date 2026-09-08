@@ -20,6 +20,22 @@ export async function siteOrigin(): Promise<string> {
 }
 
 /**
+ * Readable plain text from a plain or HTML string, trimmed to a meta
+ * description's length.
+ */
+export function plainText(v: unknown, max = 160): string | undefined {
+  if (typeof v !== 'string' || !v.trim()) return undefined
+  const text = v
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/\s+/g, ' ')
+    .trim()
+  if (!text) return undefined
+  return text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text
+}
+
+/**
  * The language this page should be read in.
  *
  * `?lang` wins when it is there — those are the addresses hreflang points at.
