@@ -79,6 +79,7 @@ export const LANDING_BG_SECTIONS: { id: string; ar: string; en: string }[] = [
   { id: 'features', ar: 'المميزات', en: 'Features' },
   { id: 'how', ar: 'طريقة العمل', en: 'How it works' },
   { id: 'showcase', ar: 'الأمثلة', en: 'Showcase' },
+  { id: 'compare', ar: 'المقارنة', en: 'Comparison' },
   { id: 'pricing', ar: 'الأسعار', en: 'Pricing' },
   { id: 'faq', ar: 'الأسئلة', en: 'FAQ' },
   { id: 'cta', ar: 'دعوة الفعل', en: 'Call to action' },

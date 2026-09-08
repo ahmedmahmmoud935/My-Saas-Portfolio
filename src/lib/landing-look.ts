@@ -31,18 +31,23 @@ export type LandingLook = {
 }
 
 export const DEFAULT_LOOK: LandingLook = {
-  accent: '#F97316',
-  bg: '#0A0A0A',
-  bg2: '#111111',
-  text: '#FFFFFF',
-  subtext: '#9AA0AA',
+  // Navy rather than black. A pure black page has no room underneath it: every
+  // panel drawn on it has to be lighter, so surfaces, cards and hairlines all
+  // arrive as greys of the same family and the page reads flat. A deep blue
+  // canvas leaves the whole range above it usable, and warms the orange.
+  accent: '#F28C00',
+  bg: '#060D1E',
+  bg2: '#0B1736',
+  text: '#F8FAFC',
+  subtext: '#94A3B8',
   // The light half. A site that has only ever set dark colours gets these
-  // rather than five copies of its dark palette.
-  accentLight: '#F97316',
+  // rather than five copies of its dark palette. The text colour is the dark
+  // canvas, so the two themes are recognisably the same brand.
+  accentLight: '#E07B00',
   bgLight: '#FFFFFF',
-  bg2Light: '#F3F5F8',
-  textLight: '#0C0F16',
-  subtextLight: '#495265',
+  bg2Light: '#F4F6FB',
+  textLight: '#0B1736',
+  subtextLight: '#64748B',
   logoUrl: null,
   heroUrl: null,
   heroDim: 40,
@@ -68,7 +73,12 @@ export function onAccent(hex: string): string {
     return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
   })
   const L = 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2]
-  return L > 0.36 ? '#0A0A0A' : '#FFFFFF'
+  // The crossover, not a guess. Black scores (L + 0.05) / 0.05 against this
+  // background and white scores 1.05 / (L + 0.05); they are equal at
+  // L = sqrt(1.05 * 0.05) - 0.05 ≈ 0.1791. The threshold used to sit at 0.36,
+  // which handed white to every mid-tone accent — on a mid orange that is a
+  // contrast ratio near 3, where black would have been near 7.
+  return L > 0.1791 ? '#0A0A0A' : '#FFFFFF'
 }
 
 /** Saved colours, minus the blanks — a null column must not beat the default. */
@@ -102,7 +112,13 @@ export function landingTokensCss(look: LandingLook): string {
 html[data-theme='light'] .lp {
   --o: ${look.accentLight}; --lp-on-o: ${onAccent(look.accentLight)};
   --lp-bg: ${look.bgLight}; --lp-bg2: ${look.bg2Light};
-  --lp-text: ${look.textLight}; --lp-sub: ${look.subtextLight}; }
+  --lp-text: ${look.textLight}; --lp-sub: ${look.subtextLight};
+  /* Restated, not inherited. A custom property holding a color-mix() is
+     substituted where it is declared, so a hairline derived from the dark
+     text colour stayed derived from it — a near-white line drawn on a white
+     card, which is no line at all. */
+  --lp-line: color-mix(in srgb, ${look.textLight} 12%, transparent);
+  --lp-line-2: color-mix(in srgb, ${look.textLight} 24%, transparent); }
 `
 }
 

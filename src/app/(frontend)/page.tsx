@@ -172,13 +172,44 @@ async function getShowcase(): Promise<ShowcaseItem[]> {
   }
 }
 
+/**
+ * The three numbers on the page, counted rather than typed.
+ *
+ * A landing page is the worst place to keep a figure that has stopped being
+ * true, and a hand-written one goes stale the day after it is written. These
+ * come from the same tables the product runs on.
+ *
+ * Below a floor they are hidden entirely: a bar announcing five portfolios
+ * argues against the product it is meant to sell, and an empty section is the
+ * more honest of the two.
+ */
+async function getStats(): Promise<{ sites: number; projects: number; visits: number } | null> {
+  try {
+    const payload = await getPayload({ config })
+    const count = async (collection: 'tenants' | 'projects' | 'visits', where?: object) =>
+      (await payload.count({ collection, where: where as never })).totalDocs
+    const [sites, projects, visits] = await Promise.all([
+      count('tenants', { suspended: { not_equals: true } }),
+      count('projects', { published: { equals: true } }),
+      count('visits'),
+    ])
+    return sites >= STATS_FLOOR ? { sites, projects, visits } : null
+  } catch {
+    return null
+  }
+}
+
+/** Portfolios needed before the numbers are worth showing. */
+const STATS_FLOOR = 12
+
 export default async function HomePage({ searchParams }: Params) {
   const { lang } = (await searchParams) ?? {}
   const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
   const { copy, look, sections, tools } = await getLanding(locale)
   const c = copy as (typeof LANDING_COPY)['ar']
   const q = locale === 'en' ? '?lang=en' : ''
-  const showcase = await getShowcase()
+  const [showcase, stats] = await Promise.all([getShowcase(), getStats()])
+  const n = new Intl.NumberFormat(locale === 'en' ? 'en' : 'ar-EG')
   const showcaseStyle = look.showcaseStyle
   const cardStyle = look.cardStyle
 
@@ -205,14 +236,22 @@ export default async function HomePage({ searchParams }: Params) {
             <img src={look.logoUrl} alt="ViralPX" className="lp-logo-img" />
           ) : (
             <>
-              Viral<span>PX</span>
+              <span className="lp-logo-mark" aria-hidden="true">
+                <i />
+              </span>
+              <span className="lp-logo-text">
+                <span>
+                  Viral<span>PX</span>
+                </span>
+                <span className="lp-tagline">{c.tagline}</span>
+              </span>
             </>
           )}
         </a>
         <nav className="lp-nav-links">
           <a href="#features">{c.nav.features}</a>
-          <a href="#how">{c.nav.how}</a>
           <a href="#showcase">{c.nav.showcase}</a>
+          <a href="#compare">{c.nav.compare}</a>
           <a href="#pricing">{c.nav.pricing}</a>
           <a href="#faq">{c.nav.faq}</a>
           {/* The blog is the only part of this site that can rank for anything
@@ -224,8 +263,11 @@ export default async function HomePage({ searchParams }: Params) {
             {locale === 'en' ? 'ع' : 'EN'}
           </a>
           <LandingThemeToggle />
-          <a className="lp-btn lp-btn-ghost" href="/login">
+          <a className="lp-nav-login" href="/login">
             {c.login}
+          </a>
+          <a className="lp-btn lp-btn-primary lp-arrow" href="/login">
+            {c.cta}
           </a>
         </div>
       </header>
@@ -246,24 +288,86 @@ export default async function HomePage({ searchParams }: Params) {
           </h1>
           <p className="lp-lead">{c.heroSub}</p>
           <div className="lp-hero-btns">
-            <a className="lp-btn lp-btn-primary" href="/login">
+            <a className="lp-btn lp-btn-primary lp-btn-lg lp-arrow" href="/login">
               {c.heroBtn1}
             </a>
             {showcase[0] && (
-              <a className="lp-btn lp-btn-ghost" href={`/${showcase[0].slug}${q}`}>
+              <a className="lp-btn lp-btn-ghost lp-btn-lg" href={`/${showcase[0].slug}${q}`}>
                 {c.heroBtn2}
               </a>
             )}
           </div>
+
+          {/* The product itself, drawn from the page's own tokens. Decoration
+              as far as a screen reader is concerned — every word in it is
+              repeated as real copy elsewhere on the page. */}
+          <div className="lp-mock" aria-hidden="true">
+            <div className="lp-mock-frame">
+              <aside className="lp-mock-side">
+                <div className="lp-mock-side-head">{c.mock.panel}</div>
+                <ul>
+                  {c.mock.items.map((it, i) => (
+                    <li className={i === 0 ? 'on' : undefined} key={it}>
+                      <span>{it}</span>
+                      {i === 0 && <b>12</b>}
+                    </li>
+                  ))}
+                </ul>
+              </aside>
+              <div className="lp-mock-main">
+                <div className="lp-mock-circles">
+                  {c.mock.circles.map((t) => (
+                    <span key={t}>
+                      <i />
+                      {t}
+                    </span>
+                  ))}
+                </div>
+                <div className="lp-mock-cards">
+                  {c.mock.cards.map((t, i) => (
+                    <span className="lp-mock-card" key={t}>
+                      <em>{i === 2 ? 'Brand' : 'Reel 9:16'}</em>
+                      <b>{t}</b>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </section>
       </SectionBg>
 
+      {stats && (
+        <section className="lp-metrics">
+          <div className="lp-metrics-in">
+            <div className="lp-metric">
+              <b>{n.format(stats.sites)}</b>
+              <span>{c.metricsLabels.sites}</span>
+            </div>
+            <div className="lp-metric">
+              <b>{n.format(stats.projects)}</b>
+              <span>{c.metricsLabels.projects}</span>
+            </div>
+            <div className="lp-metric">
+              <b>{n.format(stats.visits)}</b>
+              <span>{c.metricsLabels.visits}</span>
+            </div>
+          </div>
+        </section>
+      )}
+
       <SectionBg config={sections.features}>
         <section className="lp-sec" id="features">
-          <h2 className="lp-h2">{c.featuresTitle}</h2>
-          <div className="lp-grid lp-grid-3">
-            {c.features.map((f) => (
-              <div className="lp-card" key={f.t}>
+          <div className="lp-sec-head">
+            <span className="lp-eyebrow-sm">{c.featuresEyebrow}</span>
+            <h2 className="lp-h2">{c.featuresTitle}</h2>
+          </div>
+          {/* Two of the six get a double-width card. Six equal rectangles gave
+              the eye nowhere to land first; which two is a property of the
+              layout, so it is decided here and not in the copy. */}
+          <div className="lp-bento">
+            {c.features.map((f, i) => (
+              <div className={`lp-card${i === 0 || i === 3 ? ' wide' : ''}`} key={f.t}>
                 <div className="lp-card-icon">{f.icon}</div>
                 <h3>{f.t}</h3>
                 <p>{f.d}</p>
@@ -275,7 +379,10 @@ export default async function HomePage({ searchParams }: Params) {
 
       <SectionBg config={sections.how}>
         <section className="lp-sec" id="how">
-          <h2 className="lp-h2">{c.howTitle}</h2>
+          <div className="lp-sec-head">
+            <span className="lp-eyebrow-sm">{c.howEyebrow}</span>
+            <h2 className="lp-h2">{c.howTitle}</h2>
+          </div>
           <div className="lp-grid lp-grid-3">
             {c.how.map((s) => (
               <div className="lp-step" key={s.n}>
@@ -290,7 +397,10 @@ export default async function HomePage({ searchParams }: Params) {
 
       <SectionBg config={sections.showcase}>
         <section className="lp-sec" id="showcase">
-          <h2 className="lp-h2">{c.showcaseTitle}</h2>
+          <div className="lp-sec-head">
+            <span className="lp-eyebrow-sm">{c.showcaseEyebrow}</span>
+            <h2 className="lp-h2">{c.showcaseTitle}</h2>
+          </div>
           {showcase.length === 0 ? (
             <p className="lp-empty">{c.showcaseEmpty}</p>
           ) : (
@@ -321,12 +431,44 @@ export default async function HomePage({ searchParams }: Params) {
         </section>
       </SectionBg>
 
+      <SectionBg config={sections.compare}>
+        <section className="lp-sec" id="compare">
+          <div className="lp-sec-head">
+            <span className="lp-eyebrow-sm">{c.compareEyebrow}</span>
+            <h2 className="lp-h2">{c.compareTitle}</h2>
+          </div>
+          <div className="lp-vs">
+            <div className="lp-vs-col lp-vs-bad">
+              <h3>✕ {c.compareOldTitle}</h3>
+              <ul>
+                {c.compareOld.map((t) => (
+                  <li key={t}>{t}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="lp-vs-col lp-vs-good">
+              <span className="lp-vs-tag">ViralPX</span>
+              <h3>✓ {c.compareNewTitle}</h3>
+              <ul>
+                {c.compareNew.map((t) => (
+                  <li key={t}>{t}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+      </SectionBg>
+
       <SectionBg config={sections.pricing}>
         <section className="lp-sec" id="pricing">
-          <h2 className="lp-h2">{c.pricingTitle}</h2>
+          <div className="lp-sec-head">
+            <span className="lp-eyebrow-sm">{c.pricingEyebrow}</span>
+            <h2 className="lp-h2">{c.pricingTitle}</h2>
+          </div>
           <div className="lp-grid lp-grid-2 lp-pricing">
             {c.plans.map((p) => (
               <div className={`lp-plan${p.hi ? ' lp-plan-hi' : ''}`} key={p.name}>
+                {p.hi && <span className="lp-plan-tag">{locale === 'en' ? 'Most popular' : 'الأكثر طلباً'}</span>}
                 <div className="lp-plan-name">{p.name}</div>
                 <div className="lp-plan-price">
                   <span>{p.price}</span>
@@ -334,10 +476,10 @@ export default async function HomePage({ searchParams }: Params) {
                 </div>
                 <ul>
                   {p.feats.map((f) => (
-                    <li key={f}>✓ {f}</li>
+                    <li key={f}>{f}</li>
                   ))}
                 </ul>
-                <a className={`lp-btn ${p.hi ? 'lp-btn-primary' : 'lp-btn-ghost'}`} href="/login">
+                <a className={`lp-btn lp-btn-lg ${p.hi ? 'lp-btn-primary lp-arrow' : 'lp-btn-ghost'}`} href="/login">
                   {p.cta}
                 </a>
               </div>
@@ -348,7 +490,10 @@ export default async function HomePage({ searchParams }: Params) {
 
       <SectionBg config={sections.faq}>
         <section className="lp-sec" id="faq">
-          <h2 className="lp-h2">{c.faqTitle}</h2>
+          <div className="lp-sec-head">
+            <span className="lp-eyebrow-sm">{c.faqEyebrow}</span>
+            <h2 className="lp-h2">{c.faqTitle}</h2>
+          </div>
           <div className="lp-faq">
             {c.faqs.map((f) => (
               <details className="lp-faq-item" key={f.q}>
@@ -365,7 +510,7 @@ export default async function HomePage({ searchParams }: Params) {
           <div className="lp-cta-inner">
             <h2 className="lp-h2">{c.ctaTitle}</h2>
             <p>{c.ctaSub}</p>
-            <a className="lp-btn lp-btn-primary lp-btn-lg" href="/login">
+            <a className="lp-btn lp-btn-primary lp-btn-lg lp-arrow" href="/login">
               {c.ctaBtn}
             </a>
           </div>
