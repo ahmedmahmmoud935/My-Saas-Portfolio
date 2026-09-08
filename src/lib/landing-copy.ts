@@ -15,6 +15,7 @@ export const LANDING_COPY = {
     heroBtn2: 'شوف مثال حي',
     // The dashboard-and-portfolio picture in the hero. Labels, not screenshots,
     // so the picture translates and never goes stale against the real product.
+    panelTitle: 'لوحة التحكم والموقع',
     mock: {
       panel: 'لوحة التحكم',
       items: ['المشاريع والريلز', 'الهايلايتس', 'المظهر والألوان', 'التحليلات'],
@@ -90,6 +91,7 @@ export const LANDING_COPY = {
       'Show your projects, reels and articles on a fast, responsive site — Arabic & English, on your own domain, no code.',
     heroBtn1: 'Request a portfolio',
     heroBtn2: 'See a live example',
+    panelTitle: 'The dashboard and the site',
     mock: {
       panel: 'Dashboard',
       items: ['Projects & reels', 'Highlights', 'Look & colours', 'Analytics'],

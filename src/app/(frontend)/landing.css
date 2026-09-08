@@ -138,17 +138,36 @@ html[data-theme='light'] .lp-hero-dim { background: #fff; }
    This is the dashboard and the portfolio it publishes, side by side, built
    from the page's own tokens — no screenshot to go stale, and every label is
    translated copy rather than baked into an image. */
-.lp-mock { max-width: 940px; margin: 52px auto 0; border-radius: 26px; padding: 10px;
-  background: color-mix(in srgb, var(--lp-bg2) 70%, transparent); border: 1px solid var(--lp-line);
-  box-shadow: 0 40px 80px -50px rgba(0,0,0,.9); backdrop-filter: blur(10px); }
-/* Cropped, not shrunk. The cards are 9:16 because that is the shape the
-   product exists to show, and three of them at a readable width run taller
-   than the fold has room for. So the frame keeps the shape and shows the top
-   of it, fading out — which reads as a window onto something larger rather
-   than a picture that ran out of space. */
-.lp-mock-frame { display: flex; border-radius: 18px; overflow: hidden;
-  background: var(--lp-bg); border: 1px solid var(--lp-line); text-align: start;
-  max-height: 400px;
+.lp-mock { max-width: 940px; margin: 52px auto 0; border-radius: 20px; overflow: hidden;
+  background: var(--lp-bg2); border: 1px solid var(--lp-line-2);
+  /* It sits over the hero's own backdrop, so it needs a shadow deep enough to
+     lift off a photograph rather than the faint one that reads on flat paint —
+     otherwise the panel looks pasted onto the hero instead of held above it. */
+  box-shadow: 0 30px 70px -30px rgba(0,0,0,.75), 0 0 0 1px color-mix(in srgb, var(--lp-text) 6%, transparent); }
+
+/* The window bar. A title over the panel rather than beside it, so the panel
+   reads as one object — and so a video that fills the frame edge to edge still
+   has somewhere to be named. */
+.lp-mock-bar { display: flex; align-items: center; gap: 10px; padding: 11px 16px;
+  font-size: 12.5px; font-weight: 700; color: var(--lp-sub); text-align: start;
+  background: color-mix(in srgb, var(--lp-bg) 55%, var(--lp-bg2));
+  border-bottom: 1px solid var(--lp-line); }
+.lp-mock-dots { flex: 0 0 auto; width: 38px; height: 9px; border-radius: 999px;
+  background:
+    radial-gradient(circle 4.5px at 4.5px 50%, color-mix(in srgb, var(--lp-text) 22%, transparent) 96%, transparent),
+    radial-gradient(circle 4.5px at 19px 50%, color-mix(in srgb, var(--lp-text) 22%, transparent) 96%, transparent),
+    radial-gradient(circle 4.5px at 33.5px 50%, color-mix(in srgb, var(--lp-text) 22%, transparent) 96%, transparent); }
+
+/* What the owner uploaded. 16:10 keeps a screen recording the shape a screen
+   is, and stops a tall photograph from taking over the fold. */
+.lp-mock-media { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover;
+  background: var(--lp-bg); }
+/* The drawing, shown only until something is uploaded. Cropped, not shrunk:
+   the cards are 9:16 because that is the shape the product exists to show, and
+   three of them at a readable width run taller than the fold has room for. */
+.lp-mock-frame { display: flex; overflow: hidden;
+  background: var(--lp-bg); text-align: start;
+  max-height: 380px;
   -webkit-mask-image: linear-gradient(to bottom, #000 74%, transparent);
   mask-image: linear-gradient(to bottom, #000 74%, transparent); }
 .lp-mock-side { width: 210px; flex: 0 0 auto; padding: 14px; background: var(--lp-bg2);

@@ -54,6 +54,13 @@ async function getLanding(locale: 'ar' | 'en') {
         heroUrl: mediaUrl((im.hero as never) ?? null, 'card'),
         heroDim: (im.heroDim as number) ?? DEFAULT_LOOK.heroDim,
         ogUrl: mediaUrl((im.ogImage as never) ?? null, 'card'),
+        // The original: this one is looked at, and a video has no 'card' size.
+        panelUrl: mediaUrl((im.panel as never) ?? null),
+        panelKind: im.panel
+          ? ((im.panel as { mimeType?: string | null }).mimeType?.startsWith('video/')
+              ? 'video'
+              : 'image')
+          : null,
         showcaseStyle: g?.style?.showcase || DEFAULT_LOOK.showcaseStyle,
         cardStyle: g?.style?.card || DEFAULT_LOOK.cardStyle,
       } as LandingLook,
@@ -298,11 +305,32 @@ export default async function HomePage({ searchParams }: Params) {
             )}
           </div>
 
-          {/* The product itself, drawn from the page's own tokens. Decoration
-              as far as a screen reader is concerned — every word in it is
-              repeated as real copy elsewhere on the page. */}
-          <div className="lp-mock" aria-hidden="true">
-            <div className="lp-mock-frame">
+          {/* The panel: a window with a title, holding whatever the owner
+              uploaded. Until they upload something it holds a drawing of the
+              product, made from the page's own tokens — so the hero is never
+              an empty frame waiting to be filled. */}
+          <figure className="lp-mock">
+            <figcaption className="lp-mock-bar">
+              <span className="lp-mock-dots" aria-hidden="true" />
+              {c.panelTitle}
+            </figcaption>
+
+            {look.panelUrl && look.panelKind === 'video' ? (
+              <video
+                className="lp-mock-media"
+                src={look.panelUrl}
+                poster={look.heroUrl ?? undefined}
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+              />
+            ) : look.panelUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img className="lp-mock-media" src={look.panelUrl} alt={c.panelTitle} />
+            ) : (
+              <div className="lp-mock-frame" aria-hidden="true">
               <aside className="lp-mock-side">
                 <div className="lp-mock-side-head">{c.mock.panel}</div>
                 <ul>
@@ -332,8 +360,9 @@ export default async function HomePage({ searchParams }: Params) {
                   ))}
                 </div>
               </div>
-            </div>
-          </div>
+              </div>
+            )}
+          </figure>
         </section>
       </SectionBg>
 

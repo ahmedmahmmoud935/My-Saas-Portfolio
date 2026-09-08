@@ -26,6 +26,8 @@ export type LandingLook = {
   heroUrl: string | null
   heroDim: number
   ogUrl: string | null
+  panelUrl: string | null
+  panelKind: 'image' | 'video' | null
   showcaseStyle: string
   cardStyle: string
 }
@@ -58,6 +60,8 @@ export const DEFAULT_LOOK: LandingLook = {
   heroUrl: null,
   heroDim: 40,
   ogUrl: null,
+  panelUrl: null,
+  panelKind: null,
   showcaseStyle: 'portrait',
   cardStyle: 'solid',
 }

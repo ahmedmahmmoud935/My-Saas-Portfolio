@@ -121,6 +121,12 @@ export const Landing: GlobalConfig = {
         { name: 'hero', type: 'upload', relationTo: 'media', label: 'Hero image' },
         { name: 'heroDim', type: 'number', defaultValue: 40, min: 0, max: 100 },
         { name: 'ogImage', type: 'upload', relationTo: 'media', label: 'Share preview' },
+        {
+          name: 'panel',
+          type: 'upload',
+          relationTo: 'media',
+          label: 'Hero panel (image or video)',
+        },
       ],
     },
   ],

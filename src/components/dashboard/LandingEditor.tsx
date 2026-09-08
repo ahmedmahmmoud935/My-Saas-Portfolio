@@ -276,6 +276,7 @@ export default function LandingEditor({ initial }: { initial: Form }) {
             {scalar('heroSub', t('الوصف', 'Subtitle'), true)}
             {scalar('heroBtn1', t('زر 1', 'Button 1'))}
             {scalar('heroBtn2', t('زر 2', 'Button 2'))}
+            {scalar('panelTitle', t('عنوان اللوحة', 'Panel title'))}
 
             <div className="mod-card">
               <div className="mod-card-head">
@@ -284,8 +285,8 @@ export default function LandingEditor({ initial }: { initial: Form }) {
               </div>
               <p className="icon-alt-note" style={{ margin: '0 0 14px' }}>
                 {t(
-                  'الرسمة تحت الأزرار — دي كلماتها، مش صورة.',
-                  'The picture under the buttons. These are its words, not an image.',
+                  'الصورة أو الفيديو نفسه بيترفع من تبويب «الصور». دول كلمات الرسمة الافتراضية اللي بتظهر لحد ما ترفع حاجة.',
+                  'The image or video itself is uploaded in the Images tab. These are the words of the default drawing, shown until you upload one.',
                 )}
               </p>
               <Field label={t('اسم اللوحة', 'Panel name')} ar={f.ar.mock.panel} en={f.en.mock.panel} onAr={(v) => setMockName(v, 'ar')} onEn={(v) => setMockName(v, 'en')} />
@@ -555,6 +556,34 @@ export default function LandingEditor({ initial }: { initial: Form }) {
               {t('صورة المشاركة (واتساب/تويتر)', 'Share preview image')}
             </label>
             <MediaUploader compact previewUrl={f.images.ogUrl} onUploaded={(m) => setImages({ ogId: m.id, ogUrl: m.url ?? m.thumbUrl })} />
+
+            <label className="lbl" style={{ marginTop: 24, display: 'block' }}>
+              {t('لوحة القسم الرئيسي — صورة أو فيديو', 'Hero panel — image or video')}
+            </label>
+            <p className="icon-alt-note" style={{ margin: '0 0 10px' }}>
+              {t(
+                'اللوحة اللي تحت الأزرار. من غير رفع، بتفضل الرسمة الافتراضية.',
+                'The panel under the buttons. With nothing uploaded, the default drawing stays.',
+              )}
+            </p>
+            <MediaUploader
+              big
+              accept="image/*,video/*"
+              aspect="16 / 10"
+              previewUrl={f.images.panelUrl}
+              onUploaded={(m) =>
+                setImages({
+                  panelId: m.id,
+                  panelUrl: m.url ?? m.thumbUrl,
+                  panelKind: m.mimeType?.startsWith('video/') ? 'video' : 'image',
+                })
+              }
+              onRemove={
+                f.images.panelUrl
+                  ? () => setImages({ panelId: null, panelUrl: null, panelKind: null })
+                  : undefined
+              }
+            />
           </>
         )}
       </div>

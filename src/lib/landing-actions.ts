@@ -38,6 +38,11 @@ export type LandingImages = {
   heroDim: number
   ogId: number | null
   ogUrl: string | null
+  /** The picture inside the hero: one file, image or video. */
+  panelId: number | null
+  panelUrl: string | null
+  /** Which of the two it is, so the page knows whether to render a <video>. */
+  panelKind: 'image' | 'video' | null
 }
 
 // Not exported: a 'use server' module may only export async functions.
@@ -94,6 +99,14 @@ export async function getLandingForm(): Promise<{
   const im = g.images ?? {}
   const rel = (v: unknown) =>
     v && typeof v === 'object' ? ((v as { id?: number }).id ?? null) : ((v as number) ?? null)
+  /* Image or video, taken from what was stored rather than guessed from the
+     file name — an uploaded video keeps its mime type, and a URL's extension
+     survives compression only by luck. */
+  const panelKind = (v: unknown): 'image' | 'video' | null => {
+    const mime = v && typeof v === 'object' ? (v as { mimeType?: string | null }).mimeType : null
+    if (!v) return null
+    return mime?.startsWith('video/') ? 'video' : 'image'
+  }
 
   return {
     ar: mergeCopy(LANDING_COPY.ar, g.content?.ar),
@@ -107,6 +120,11 @@ export async function getLandingForm(): Promise<{
       heroDim: (im.heroDim as number) ?? 40,
       ogId: rel(im.ogImage),
       ogUrl: mediaUrl((im.ogImage as never) ?? null, 'card'),
+      panelId: rel(im.panel),
+      // The original, not a resized copy: this one is looked at, and a video
+      // has no 'card' size to ask for.
+      panelUrl: mediaUrl((im.panel as never) ?? null),
+      panelKind: panelKind(im.panel),
     },
     style: { ...DEFAULT_LANDING_STYLE, ...setOnly<LandingStyle>(g.style) },
     tools: {
@@ -181,6 +199,7 @@ export async function saveLanding(
                 hero: images.heroId ?? null,
                 heroDim: images.heroDim,
                 ogImage: images.ogId ?? null,
+                panel: images.panelId ?? null,
               },
             }
           : {}),
