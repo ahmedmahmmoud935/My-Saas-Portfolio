@@ -1,7 +1,7 @@
 'use server'
 
 import { getDashboardContext } from './dashboard'
-import { LANDING_COPY } from './landing-copy'
+import { LANDING_COPY, mergeCopy } from './landing-copy'
 import { mediaUrl } from './portfolio'
 import type { SectionBgForm } from './design-types'
 
@@ -96,8 +96,8 @@ export async function getLandingForm(): Promise<{
     v && typeof v === 'object' ? ((v as { id?: number }).id ?? null) : ((v as number) ?? null)
 
   return {
-    ar: { ...LANDING_COPY.ar, ...(g.content?.ar ?? {}) },
-    en: { ...LANDING_COPY.en, ...(g.content?.en ?? {}) },
+    ar: mergeCopy(LANDING_COPY.ar, g.content?.ar),
+    en: mergeCopy(LANDING_COPY.en, g.content?.en),
     theme: { ...DEFAULT_LANDING_THEME, ...setOnly<LandingTheme>(g.theme) },
     images: {
       logoId: rel(im.logo),

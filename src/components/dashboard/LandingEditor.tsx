@@ -32,6 +32,7 @@ const SECTIONS = [
   { id: 'titles', ar: 'عناوين الأقسام', en: 'Section titles' },
   { id: 'features', ar: 'المميزات', en: 'Features' },
   { id: 'how', ar: 'الخطوات', en: 'Steps' },
+  { id: 'compare', ar: 'المقارنة', en: 'Comparison' },
   { id: 'faq', ar: 'الأسئلة', en: 'FAQ' },
   { id: 'cta', ar: 'دعوة الفعل', en: 'Call to action' },
   { id: 'footer', ar: 'الفوتر', en: 'Footer' },
@@ -42,49 +43,87 @@ const SECTIONS = [
   { id: 'tools', ar: 'أدوات جوجل', en: 'Google tools' },
 ] as const
 
-/* A starting point, not a limit — the field takes any emoji or short text. */
-const ICON_SUGGESTIONS = [
-  '🎨', '🖼️', '✍️', '🌐', '⚡', '📩', '🚀', '📱', '💼', '🔒',
-  '📊', '⭐', '🎬', '🛠️', '💡', '🏆', '🔗', '📈', '✅', '🎯',
-]
-
 /**
- * One icon. Shared by both languages on purpose: an emoji doesn't get
- * translated, and keeping a copy per locale means setting it twice and
- * watching the Arabic and English pages drift apart.
+ * One icon: a file you upload, or a character you type.
+ *
+ * The uploaded one wins whenever it is there, so the typed character is the
+ * fallback rather than a competing setting — and clearing the upload brings it
+ * straight back without anything to retype.
+ *
+ * Both are shared between the two languages on purpose. A picture doesn't get
+ * translated, and a copy per locale means setting it twice and watching the
+ * Arabic and English pages drift apart.
  */
 function IconInput({
   label,
   value,
+  url,
   onChange,
+  onUrl,
 }: {
   label: string
   value: string
+  url?: string
   onChange: (v: string) => void
+  onUrl: (v: string) => void
 }) {
+  const { t } = useDashLang()
   return (
-    <div style={{ marginBottom: 12 }}>
+    <div style={{ marginBottom: 14 }}>
       <label className="lbl" style={{ display: 'block' }}>{label}</label>
       <div className="icon-picker">
-        <input
-          className="field icon-field"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          maxLength={8}
+        <MediaUploader
+          compact
+          accept="image/*"
+          previewUrl={url || null}
+          onUploaded={(m) => onUrl(m.thumbUrl || m.url || '')}
+          onRemove={url ? () => onUrl('') : undefined}
         />
-        <div className="icon-chips">
-          {ICON_SUGGESTIONS.map((e) => (
-            <button
-              key={e}
-              type="button"
-              className={`icon-chip ${value === e ? 'active' : ''}`}
-              onClick={() => onChange(e)}
-            >
-              {e}
-            </button>
-          ))}
+        <div className="icon-alt">
+          <span className="icon-alt-note">
+            {url
+              ? t('الصورة المرفوعة هي الظاهرة', 'The uploaded image is what shows')
+              : t('أو اكتب رمزاً', 'Or type a character')}
+          </span>
+          <input
+            className="field icon-field"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            maxLength={8}
+            disabled={Boolean(url)}
+          />
         </div>
       </div>
+    </div>
+  )
+}
+
+/**
+ * A fixed-length list of one-line strings, in both languages — the two sides
+ * of the comparison, and anything else shaped like them.
+ */
+function ListField({
+  label,
+  ar,
+  en,
+  onAr,
+  onEn,
+}: {
+  label: string
+  ar: string[]
+  en: string[]
+  onAr: (i: number, v: string) => void
+  onEn: (i: number, v: string) => void
+}) {
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <label className="lbl" style={{ display: 'block', marginBottom: 8 }}>{label}</label>
+      {ar.map((_, i) => (
+        <div className="grid-2" key={i} style={{ marginBottom: 8 }}>
+          <input className="field" value={ar[i] ?? ''} onChange={(e) => onAr(i, e.target.value)} />
+          <input className="field" dir="ltr" value={en[i] ?? ''} onChange={(e) => onEn(i, e.target.value)} style={{ textAlign: 'start' }} />
+        </div>
+      ))}
     </div>
   )
 }
@@ -141,6 +180,18 @@ export default function LandingEditor({ initial }: { initial: Form }) {
     setF((p) => ({ ...p, [loc]: { ...p[loc], [key]: v } }))
   const setNav = (key: keyof Copy['nav'], v: string, loc: 'ar' | 'en') =>
     setF((p) => ({ ...p, [loc]: { ...p[loc], nav: { ...p[loc].nav, [key]: v } } }))
+  const setMetric = (key: keyof Copy['metricsLabels'], v: string, loc: 'ar' | 'en') =>
+    setF((p) => ({ ...p, [loc]: { ...p[loc], metricsLabels: { ...p[loc].metricsLabels, [key]: v } } }))
+  const setMockName = (v: string, loc: 'ar' | 'en') =>
+    setF((p) => ({ ...p, [loc]: { ...p[loc], mock: { ...p[loc].mock, panel: v } } }))
+  const setMockList = (key: 'items' | 'circles' | 'cards', i: number, v: string, loc: 'ar' | 'en') =>
+    setF((p) => ({
+      ...p,
+      [loc]: {
+        ...p[loc],
+        mock: { ...p[loc].mock, [key]: p[loc].mock[key].map((x, j) => (j === i ? v : x)) },
+      },
+    }))
   const setArr = <K extends 'features' | 'faqs' | 'how'>(arr: K, i: number, field: string, v: string, loc: 'ar' | 'en') =>
     setF((p) => ({
       ...p,
@@ -157,6 +208,14 @@ export default function LandingEditor({ initial }: { initial: Form }) {
         (p[loc][arr] as Record<string, string>[]).map((x, j) => (j === i ? { ...x, [field]: v } : x))
       return { ...p, ar: { ...p.ar, [arr]: patch('ar') }, en: { ...p.en, [arr]: patch('en') } }
     })
+
+  // The two comparison columns are plain string lists, so they need a setter
+  // that reaches an index rather than a named field.
+  const setList = (key: 'compareOld' | 'compareNew', i: number, v: string, loc: 'ar' | 'en') =>
+    setF((p) => ({
+      ...p,
+      [loc]: { ...p[loc], [key]: p[loc][key].map((x, j) => (j === i ? v : x)) },
+    }))
 
   const scalar = (key: keyof Copy, label: string, multiline?: boolean) => (
     <Field
@@ -201,7 +260,9 @@ export default function LandingEditor({ initial }: { initial: Form }) {
             <Field label={t('رابط: الطريقة', 'Nav: How')} ar={f.ar.nav.how} en={f.en.nav.how} onAr={(v) => setNav('how', v, 'ar')} onEn={(v) => setNav('how', v, 'en')} />
             <Field label={t('رابط: أمثلة', 'Nav: Showcase')} ar={f.ar.nav.showcase} en={f.en.nav.showcase} onAr={(v) => setNav('showcase', v, 'ar')} onEn={(v) => setNav('showcase', v, 'en')} />
             <Field label={t('رابط: الأسعار', 'Nav: Pricing')} ar={f.ar.nav.pricing} en={f.en.nav.pricing} onAr={(v) => setNav('pricing', v, 'ar')} onEn={(v) => setNav('pricing', v, 'en')} />
+            <Field label={t('رابط: المقارنة', 'Nav: Comparison')} ar={f.ar.nav.compare} en={f.en.nav.compare} onAr={(v) => setNav('compare', v, 'ar')} onEn={(v) => setNav('compare', v, 'en')} />
             <Field label={t('رابط: الأسئلة', 'Nav: FAQ')} ar={f.ar.nav.faq} en={f.en.nav.faq} onAr={(v) => setNav('faq', v, 'ar')} onEn={(v) => setNav('faq', v, 'en')} />
+            {scalar('tagline', t('السطر تحت الاسم', 'Line under the wordmark'))}
             {scalar('login', t('زر الدخول', 'Login button'))}
             {scalar('cta', t('زر ابدأ', 'Start button'))}
           </>
@@ -215,18 +276,56 @@ export default function LandingEditor({ initial }: { initial: Form }) {
             {scalar('heroSub', t('الوصف', 'Subtitle'), true)}
             {scalar('heroBtn1', t('زر 1', 'Button 1'))}
             {scalar('heroBtn2', t('زر 2', 'Button 2'))}
+
+            <div className="mod-card">
+              <div className="mod-card-head">
+                <span />
+                <strong style={{ color: 'var(--sub)' }}>{t('صورة المنتج', 'The drawn product')}</strong>
+              </div>
+              <p className="icon-alt-note" style={{ margin: '0 0 14px' }}>
+                {t(
+                  'الرسمة تحت الأزرار — دي كلماتها، مش صورة.',
+                  'The picture under the buttons. These are its words, not an image.',
+                )}
+              </p>
+              <Field label={t('اسم اللوحة', 'Panel name')} ar={f.ar.mock.panel} en={f.en.mock.panel} onAr={(v) => setMockName(v, 'ar')} onEn={(v) => setMockName(v, 'en')} />
+              <ListField label={t('عناصر القائمة', 'Sidebar items')} ar={f.ar.mock.items} en={f.en.mock.items} onAr={(i, v) => setMockList('items', i, v, 'ar')} onEn={(i, v) => setMockList('items', i, v, 'en')} />
+              <ListField label={t('الدوائر', 'Circles')} ar={f.ar.mock.circles} en={f.en.mock.circles} onAr={(i, v) => setMockList('circles', i, v, 'ar')} onEn={(i, v) => setMockList('circles', i, v, 'en')} />
+              <ListField label={t('الكروت', 'Cards')} ar={f.ar.mock.cards} en={f.en.mock.cards} onAr={(i, v) => setMockList('cards', i, v, 'ar')} onEn={(i, v) => setMockList('cards', i, v, 'en')} />
+            </div>
           </>
         )}
 
         {sec === 'titles' && (
           <>
+            {scalar('featuresEyebrow', t('المميزات — السطر الصغير', 'Features eyebrow'))}
             {scalar('featuresTitle', t('عنوان المميزات', 'Features title'))}
+            {scalar('howEyebrow', t('الطريقة — السطر الصغير', 'How-it-works eyebrow'))}
             {scalar('howTitle', t('عنوان الطريقة', 'How-it-works title'))}
+            {scalar('showcaseEyebrow', t('الأمثلة — السطر الصغير', 'Showcase eyebrow'))}
             {scalar('showcaseTitle', t('عنوان الأمثلة', 'Showcase title'))}
             {scalar('showcaseEmpty', t('نص لا يوجد أمثلة', 'Showcase empty text'))}
             {scalar('visit', t('كلمة «زيارة»', '“Visit” label'))}
+            {scalar('pricingEyebrow', t('الأسعار — السطر الصغير', 'Pricing eyebrow'))}
             {scalar('pricingTitle', t('عنوان الأسعار', 'Pricing title'))}
+            {scalar('faqEyebrow', t('الأسئلة — السطر الصغير', 'FAQ eyebrow'))}
             {scalar('faqTitle', t('عنوان الأسئلة', 'FAQ title'))}
+
+            <div className="mod-card">
+              <div className="mod-card-head">
+                <span />
+                <strong style={{ color: 'var(--sub)' }}>{t('شريط الأرقام', 'The numbers bar')}</strong>
+              </div>
+              <p className="icon-alt-note" style={{ margin: '0 0 14px' }}>
+                {t(
+                  'الأرقام نفسها بتتحسب من قاعدة البيانات — دي الكلمات اللي تحتها.',
+                  'The numbers are counted from the database. These are the words under them.',
+                )}
+              </p>
+              <Field label={t('البورتفوليوهات', 'Portfolios')} ar={f.ar.metricsLabels.sites} en={f.en.metricsLabels.sites} onAr={(v) => setMetric('sites', v, 'ar')} onEn={(v) => setMetric('sites', v, 'en')} />
+              <Field label={t('المشاريع', 'Projects')} ar={f.ar.metricsLabels.projects} en={f.en.metricsLabels.projects} onAr={(v) => setMetric('projects', v, 'ar')} onEn={(v) => setMetric('projects', v, 'en')} />
+              <Field label={t('الزيارات', 'Visits')} ar={f.ar.metricsLabels.visits} en={f.en.metricsLabels.visits} onAr={(v) => setMetric('visits', v, 'ar')} onEn={(v) => setMetric('visits', v, 'en')} />
+            </div>
           </>
         )}
 
@@ -235,7 +334,7 @@ export default function LandingEditor({ initial }: { initial: Form }) {
             {f.ar.features.map((_, i) => (
               <div className="mod-card" key={i}>
                 <div className="mod-card-head"><span /><strong style={{ color: 'var(--sub)' }}>#{i + 1}</strong></div>
-                <IconInput label={t('الأيقونة', 'Icon')} value={f.ar.features[i].icon} onChange={(v) => setArrBoth('features', i, 'icon', v)} />
+                <IconInput label={t('الأيقونة', 'Icon')} value={f.ar.features[i].icon} url={f.ar.features[i].iconUrl} onChange={(v) => setArrBoth('features', i, 'icon', v)} onUrl={(v) => setArrBoth('features', i, 'iconUrl', v)} />
                 <Field label={t('العنوان', 'Title')} ar={f.ar.features[i].t} en={f.en.features[i].t} onAr={(v) => setArr('features', i, 't', v, 'ar')} onEn={(v) => setArr('features', i, 't', v, 'en')} />
                 <Field label={t('الوصف', 'Description')} ar={f.ar.features[i].d} en={f.en.features[i].d} onAr={(v) => setArr('features', i, 'd', v, 'ar')} onEn={(v) => setArr('features', i, 'd', v, 'en')} multiline />
               </div>
@@ -248,11 +347,48 @@ export default function LandingEditor({ initial }: { initial: Form }) {
             {f.ar.how.map((_, i) => (
               <div className="mod-card" key={i}>
                 <div className="mod-card-head"><span /><strong style={{ color: 'var(--sub)' }}>#{i + 1}</strong></div>
-                <IconInput label={t('العلامة (رقم أو أيقونة)', 'Marker (number or icon)')} value={f.ar.how[i].n} onChange={(v) => setArrBoth('how', i, 'n', v)} />
+                <IconInput label={t('العلامة (رقم أو صورة)', 'Marker (number or image)')} value={f.ar.how[i].n} url={f.ar.how[i].iconUrl} onChange={(v) => setArrBoth('how', i, 'n', v)} onUrl={(v) => setArrBoth('how', i, 'iconUrl', v)} />
                 <Field label={t('العنوان', 'Title')} ar={f.ar.how[i].t} en={f.en.how[i].t} onAr={(v) => setArr('how', i, 't', v, 'ar')} onEn={(v) => setArr('how', i, 't', v, 'en')} />
                 <Field label={t('الوصف', 'Description')} ar={f.ar.how[i].d} en={f.en.how[i].d} onAr={(v) => setArr('how', i, 'd', v, 'ar')} onEn={(v) => setArr('how', i, 'd', v, 'en')} multiline />
               </div>
             ))}
+          </>
+        )}
+
+        {sec === 'compare' && (
+          <>
+            {scalar('compareEyebrow', t('العنوان الصغير', 'Eyebrow'))}
+            {scalar('compareTitle', t('عنوان القسم', 'Section title'))}
+
+            <div className="mod-card">
+              <div className="mod-card-head">
+                <span />
+                <strong style={{ color: 'var(--sub)' }}>{t('العمود الأحمر', 'The red column')}</strong>
+              </div>
+              {scalar('compareOldTitle', t('عنوان العمود', 'Column title'))}
+              <ListField
+                label={t('النقاط', 'Points')}
+                ar={f.ar.compareOld}
+                en={f.en.compareOld}
+                onAr={(i, v) => setList('compareOld', i, v, 'ar')}
+                onEn={(i, v) => setList('compareOld', i, v, 'en')}
+              />
+            </div>
+
+            <div className="mod-card">
+              <div className="mod-card-head">
+                <span />
+                <strong style={{ color: 'var(--sub)' }}>{t('عمود ViralPX', 'The ViralPX column')}</strong>
+              </div>
+              {scalar('compareNewTitle', t('عنوان العمود', 'Column title'))}
+              <ListField
+                label={t('النقاط', 'Points')}
+                ar={f.ar.compareNew}
+                en={f.en.compareNew}
+                onAr={(i, v) => setList('compareNew', i, v, 'ar')}
+                onEn={(i, v) => setList('compareNew', i, v, 'en')}
+              />
+            </div>
           </>
         )}
 

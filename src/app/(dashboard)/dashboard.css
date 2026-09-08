@@ -2959,14 +2959,30 @@ input[type='range']::-moz-range-thumb {
 }
 
 /* ── Icon picker (landing page) ─────────────────────────────────────────────
-   A free text field beside a row of suggestions. The field takes anything —
-   the suggestions exist so the common case is one click, not a trip to an
-   emoji keyboard. */
+   An upload beside a character field. It used to be the character field and a
+   row of emoji to pick from, which quietly decided that every icon on the
+   marketing page would be an emoji from a list somebody else drew. The upload
+   is the first thing in the row because it is the one that wins; the character
+   stays as the fallback for a slot with no file in it yet. */
 .icon-picker {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  align-items: flex-start;
+  gap: 14px;
   flex-wrap: wrap;
+}
+.icon-alt {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.icon-alt-note {
+  font-size: 12px;
+  color: var(--sub);
+  line-height: 1.5;
+}
+.icon-field:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 .icon-field {
   width: 78px;
@@ -2975,33 +2991,6 @@ input[type='range']::-moz-range-thumb {
   line-height: 1;
   text-align: center;
   padding: 8px 6px;
-}
-.icon-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  flex: 1 1 260px;
-}
-.icon-chip {
-  width: 34px;
-  height: 34px;
-  display: grid;
-  place-items: center;
-  font-size: 17px;
-  line-height: 1;
-  cursor: pointer;
-  border-radius: 9px;
-  background: var(--bg-3, var(--bg-2));
-  border: 1px solid var(--border);
-  transition: border-color 0.15s, transform 0.12s;
-}
-.icon-chip:hover {
-  transform: translateY(-1px);
-  border-color: var(--accent);
-}
-.icon-chip.active {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent);
 }
 
 /* ── Grouped sidebar ────────────────────────────────────────────────────────

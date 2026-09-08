@@ -2,7 +2,7 @@ import React from 'react'
 import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { LANDING_COPY } from '@/lib/landing-copy'
+import { LANDING_COPY, mergeCopy } from '@/lib/landing-copy'
 import { mediaUrl } from '@/lib/portfolio'
 import SectionBg, { type SectionBgConfig } from '@/components/portfolio/SectionBg'
 import LandingThemeToggle from '@/components/portfolio/LandingThemeToggle'
@@ -44,7 +44,7 @@ async function getLanding(locale: 'ar' | 'en') {
       }
     }
     return {
-      copy: saved && typeof saved === 'object' ? { ...base, ...saved } : base,
+      copy: mergeCopy(base, saved),
       tools: g?.seoTools ?? {},
       sections,
       look: {
@@ -368,7 +368,14 @@ export default async function HomePage({ searchParams }: Params) {
           <div className="lp-bento">
             {c.features.map((f, i) => (
               <div className={`lp-card${i === 0 || i === 3 ? ' wide' : ''}`} key={f.t}>
-                <div className="lp-card-icon">{f.icon}</div>
+                <div className="lp-card-icon">
+                  {f.iconUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={f.iconUrl} alt="" />
+                  ) : (
+                    f.icon
+                  )}
+                </div>
                 <h3>{f.t}</h3>
                 <p>{f.d}</p>
               </div>
@@ -386,7 +393,14 @@ export default async function HomePage({ searchParams }: Params) {
           <div className="lp-grid lp-grid-3">
             {c.how.map((s) => (
               <div className="lp-step" key={s.n}>
-                <div className="lp-step-n">{s.n}</div>
+                <div className="lp-step-n">
+                  {s.iconUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={s.iconUrl} alt="" />
+                  ) : (
+                    s.n
+                  )}
+                </div>
                 <h3>{s.t}</h3>
                 <p>{s.d}</p>
               </div>

@@ -25,19 +25,19 @@ export const LANDING_COPY = {
     featuresEyebrow: 'المميزات',
     featuresTitle: 'كل اللي تحتاجه في مكان واحد',
     features: [
-      { icon: '🎨', t: 'تصميم قابل للتخصيص', d: 'ألوان وخطوط وأقسام قابلة للترتيب من لوحة تحكم عربية بالكامل.' },
-      { icon: '🖼️', t: 'مشاريع وريلز', d: 'شبكات صور، عارض ريلز عمودي 9:16، ستوري هايلايتس، وصفحات تفاصيل للمشاريع.' },
-      { icon: '✍️', t: 'مدوّنة ومقالات', d: 'محرّر غني + HTML خام، مع SEO و JSON-LD لكل مقال.' },
-      { icon: '🌐', t: 'دومينك الخاص', d: 'اربط دومينك بضغطة، مع شهادة SSL تلقائية.' },
-      { icon: '⚡', t: 'سريع و SEO', d: 'صور WebP، Sitemap، بيانات منظّمة، وتحميل كسول للأداء.' },
-      { icon: '📩', t: 'نموذج تواصل شغّال', d: 'رسائل العملاء توصلك على إيميلك مباشرة، مع صفحة آراء عامة.' },
+      { icon: '🎨', iconUrl: '', t: 'تصميم قابل للتخصيص', d: 'ألوان وخطوط وأقسام قابلة للترتيب من لوحة تحكم عربية بالكامل.' },
+      { icon: '🖼️', iconUrl: '', t: 'مشاريع وريلز', d: 'شبكات صور، عارض ريلز عمودي 9:16، ستوري هايلايتس، وصفحات تفاصيل للمشاريع.' },
+      { icon: '✍️', iconUrl: '', t: 'مدوّنة ومقالات', d: 'محرّر غني + HTML خام، مع SEO و JSON-LD لكل مقال.' },
+      { icon: '🌐', iconUrl: '', t: 'دومينك الخاص', d: 'اربط دومينك بضغطة، مع شهادة SSL تلقائية.' },
+      { icon: '⚡', iconUrl: '', t: 'سريع و SEO', d: 'صور WebP، Sitemap، بيانات منظّمة، وتحميل كسول للأداء.' },
+      { icon: '📩', iconUrl: '', t: 'نموذج تواصل شغّال', d: 'رسائل العملاء توصلك على إيميلك مباشرة، مع صفحة آراء عامة.' },
     ],
     howEyebrow: 'الطريقة',
     howTitle: 'ثلاث خطوات وخلاص',
     how: [
-      { n: '1', t: 'سجّل دخولك', d: 'ادخل لوحة التحكم وابدأ من قالب جاهز.' },
-      { n: '2', t: 'ضيف محتواك', d: 'ارفع مشاريعك وصورك ومقالاتك ورتّب الأقسام.' },
-      { n: '3', t: 'انشر', d: 'اربط دومينك وشارك موقعك مع العالم.' },
+      { n: '1', iconUrl: '', t: 'سجّل دخولك', d: 'ادخل لوحة التحكم وابدأ من قالب جاهز.' },
+      { n: '2', iconUrl: '', t: 'ضيف محتواك', d: 'ارفع مشاريعك وصورك ومقالاتك ورتّب الأقسام.' },
+      { n: '3', iconUrl: '', t: 'انشر', d: 'اربط دومينك وشارك موقعك مع العالم.' },
     ],
     showcaseEyebrow: 'أمثلة حيّة',
     showcaseTitle: 'بورتفوليوهات حيّة على المنصة',
@@ -100,19 +100,19 @@ export const LANDING_COPY = {
     featuresEyebrow: 'Features',
     featuresTitle: 'Everything you need, in one place',
     features: [
-      { icon: '🎨', t: 'Customizable design', d: 'Colors, fonts and reorderable sections from a full dashboard.' },
-      { icon: '🖼️', t: 'Projects & reels', d: 'Image grids, a 9:16 vertical reels player, story highlights and project pages.' },
-      { icon: '✍️', t: 'Blog & articles', d: 'Rich editor + raw HTML, with SEO and JSON-LD per article.' },
-      { icon: '🌐', t: 'Your own domain', d: 'Connect your domain in a click, with automatic SSL.' },
-      { icon: '⚡', t: 'Fast & SEO-ready', d: 'WebP images, sitemap, structured data and lazy loading.' },
-      { icon: '📩', t: 'Working contact form', d: 'Client messages reach your inbox, plus a public reviews page.' },
+      { icon: '🎨', iconUrl: '', t: 'Customizable design', d: 'Colors, fonts and reorderable sections from a full dashboard.' },
+      { icon: '🖼️', iconUrl: '', t: 'Projects & reels', d: 'Image grids, a 9:16 vertical reels player, story highlights and project pages.' },
+      { icon: '✍️', iconUrl: '', t: 'Blog & articles', d: 'Rich editor + raw HTML, with SEO and JSON-LD per article.' },
+      { icon: '🌐', iconUrl: '', t: 'Your own domain', d: 'Connect your domain in a click, with automatic SSL.' },
+      { icon: '⚡', iconUrl: '', t: 'Fast & SEO-ready', d: 'WebP images, sitemap, structured data and lazy loading.' },
+      { icon: '📩', iconUrl: '', t: 'Working contact form', d: 'Client messages reach your inbox, plus a public reviews page.' },
     ],
     howEyebrow: 'How it works',
     howTitle: 'Three steps, done',
     how: [
-      { n: '1', t: 'Log in', d: 'Open the dashboard and start from a ready template.' },
-      { n: '2', t: 'Add your content', d: 'Upload projects, images and articles, arrange sections.' },
-      { n: '3', t: 'Publish', d: 'Connect your domain and share with the world.' },
+      { n: '1', iconUrl: '', t: 'Log in', d: 'Open the dashboard and start from a ready template.' },
+      { n: '2', iconUrl: '', t: 'Add your content', d: 'Upload projects, images and articles, arrange sections.' },
+      { n: '3', iconUrl: '', t: 'Publish', d: 'Connect your domain and share with the world.' },
     ],
     showcaseEyebrow: 'Live examples',
     showcaseTitle: 'Live portfolios on the platform',
@@ -153,4 +153,30 @@ export const LANDING_COPY = {
     ctaBtn: 'Get started',
     rights: 'All rights reserved',
   },
+}
+
+export type LandingCopy = (typeof LANDING_COPY)['ar']
+
+/**
+ * Saved copy laid over the defaults.
+ *
+ * A plain spread is not enough. Copy saved before a field existed replaces the
+ * whole group it belongs to — a saved `nav` written before the comparison link
+ * was added wipes that link out entirely, and the page renders a blank one.
+ * The groups that hold named fields are merged a level deeper so a new field
+ * survives old saved content; the lists are not, because a list is edited as a
+ * whole and merging one by index would resurrect a line somebody deleted.
+ */
+export function mergeCopy(base: LandingCopy, saved: unknown): LandingCopy {
+  if (!saved || typeof saved !== 'object') return base
+  const s = saved as Partial<LandingCopy>
+  const group = <K extends 'nav' | 'mock' | 'metricsLabels'>(k: K): LandingCopy[K] =>
+    s[k] && typeof s[k] === 'object' ? { ...base[k], ...(s[k] as object) } : base[k]
+  return {
+    ...base,
+    ...s,
+    nav: group('nav'),
+    mock: group('mock'),
+    metricsLabels: group('metricsLabels'),
+  }
 }
