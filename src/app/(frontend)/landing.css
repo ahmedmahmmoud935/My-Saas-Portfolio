@@ -43,6 +43,18 @@ html[data-theme='light'] .lp { --lp-accent-2: color-mix(in srgb, var(--o) 74%, #
    accent-filled button was the page's text colour rather than the one picked
    to stay readable on that accent. */
 .lp :where(a) { text-decoration: none; color: inherit; }
+
+/* Arabic letters join. `letter-spacing` pulls them apart at the joins, so a
+   label tracked out for Latin small caps comes out looking like it has been
+   cut into pieces — which is exactly what it is. Every tracked label on this
+   page drops its tracking in Arabic; the sizes and weights stay. */
+/* The tagline is the exception: it ships as Latin ("SHOW. GROW. WIN."), so it
+   keeps its tracking even on an Arabic page. */
+.lp[dir='rtl'] :where(.lp-eyebrow-sm, .lp-plan-name, .lp-footer-links strong,
+  .lp-h1, .lp-h2, .lp-plan-price span) { letter-spacing: normal; }
+/* Uppercasing does nothing to Arabic but the rule is meaningless there, so it
+   goes with them. */
+.lp[dir='rtl'] :where(.lp-eyebrow-sm, .lp-plan-name, .lp-footer-links strong) { text-transform: none; }
 .lp ::selection { background: var(--o); color: var(--lp-on-o); }
 
 /* The shared section wrapper spaces tenant sections apart; the landing's
@@ -552,8 +564,17 @@ html[data-theme='light'] .lp[data-card='elevated'] .lp-faq-item {
    already reading and lets the links sit close enough to belong to it. */
 .lp-footer { max-width: 1180px; margin: 0 auto; padding: 56px 24px 44px;
   color: var(--lp-sub); font-size: 14px; border-top: 1px solid var(--lp-line); }
-.lp-footer-top { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(160px, auto);
-  gap: 48px; align-items: start; }
+/* The brand column is sized to its own text, not to a share of the row —
+   given 1.6fr it took 900px to hold 400px of words, and the leftover became a
+   hole in the middle of the footer with one narrow column stranded past it.
+   The link columns take the rest and end at the page's edge. */
+.lp-footer-top { display: grid; grid-template-columns: minmax(0, 36ch) 1fr;
+  gap: 40px 64px; align-items: start; }
+/* Spread, not bunched. Two short columns pushed together against one edge
+   left most of the row empty; spaced across it, they read as the footer's
+   structure rather than as leftovers. */
+.lp-footer-cols { display: flex; justify-content: space-between; gap: 40px; flex-wrap: wrap; }
+.lp-footer-cols:has(> :only-child) { justify-content: flex-end; }
 .lp-footer-brand { max-width: 42ch; }
 /* The wordmark carries the footer, so it is given the size it has in the nav
    rather than shrinking into a corner of it. */
@@ -568,8 +589,9 @@ html[data-theme='light'] .lp[data-card='elevated'] .lp-faq-item {
 .lp-footer-base { margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--lp-line);
   font-size: 13px; text-align: center; }
 .lp-footer a:hover { color: var(--lp-text); }
-@media (max-width: 640px) {
-  .lp-footer-top { grid-template-columns: 1fr; gap: 32px; }
+@media (max-width: 780px) {
+  .lp-footer-top { grid-template-columns: 1fr; gap: 34px; }
+  .lp-footer-cols { gap: 40px; }
   .lp-footer-base { text-align: start; }
 }
 

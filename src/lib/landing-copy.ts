@@ -85,12 +85,27 @@ export const LANDING_COPY = {
     ctaSub: 'ابدأ دلوقتي — أول بورتفوليو مجاني.',
     ctaBtn: 'ابدأ الآن',
     footerNote: 'منصة بورتفوليو للمصممين وصنّاع المحتوى العرب.',
-    footerLinksTitle: 'روابط',
-    // Add, rename, repoint or delete these from the dashboard. A path starting
-    // with '#' jumps to a section of this page; anything else is a full link.
-    footerLinks: [
-      { label: 'الأسعار', url: '#pricing' },
-      { label: 'الأسئلة', url: '#faq' },
+    // Columns, not one list. A single column of three links left the far half
+    // of the row empty; groups fill it, and they are how a reader expects a
+    // footer to be sorted. Add, rename, repoint or delete any of it from the
+    // dashboard — a path starting with '#' jumps to a section of this page,
+    // anything else is a full link.
+    footerGroups: [
+      {
+        title: 'الموقع',
+        links: [
+          { label: 'المميزات', url: '#features' },
+          { label: 'الأمثلة', url: '#showcase' },
+          { label: 'الأسعار', url: '#pricing' },
+        ],
+      },
+      {
+        title: 'تعرف أكتر',
+        links: [
+          { label: 'ليه إحنا؟', url: '#compare' },
+          { label: 'الأسئلة', url: '#faq' },
+        ],
+      },
     ],
     rights: 'كل الحقوق محفوظة',
   },
@@ -173,10 +188,22 @@ export const LANDING_COPY = {
     ctaSub: 'Start now — your first portfolio is free.',
     ctaBtn: 'Get started',
     footerNote: 'A portfolio platform for Arabic designers and creators.',
-    footerLinksTitle: 'Links',
-    footerLinks: [
-      { label: 'Pricing', url: '#pricing' },
-      { label: 'FAQ', url: '#faq' },
+    footerGroups: [
+      {
+        title: 'The site',
+        links: [
+          { label: 'Features', url: '#features' },
+          { label: 'Showcase', url: '#showcase' },
+          { label: 'Pricing', url: '#pricing' },
+        ],
+      },
+      {
+        title: 'Learn more',
+        links: [
+          { label: 'Why us', url: '#compare' },
+          { label: 'FAQ', url: '#faq' },
+        ],
+      },
     ],
     rights: 'All rights reserved',
   },

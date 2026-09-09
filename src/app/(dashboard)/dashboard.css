@@ -3289,3 +3289,31 @@ input[type='range']::-moz-range-thumb {
   font-size: 12.5px;
   color: var(--sub);
 }
+
+/* ── Full-page editor ───────────────────────────────────────────────────────
+   What replaced the article modal. A dialog is for a decision taken on top of
+   something else; writing an article is the work itself, and the modal's fixed
+   height made a long piece scroll inside a box inside the page. */
+.editor-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+.editor-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  padding: 14px 0 16px;
+  margin-bottom: 8px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.editor-bar strong {
+  font-size: 15px;
+}
+.editor-body {
+  padding: 8px 0 60px;
+}

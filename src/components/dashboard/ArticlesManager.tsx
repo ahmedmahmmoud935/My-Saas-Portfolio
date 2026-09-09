@@ -82,14 +82,20 @@ export default function ArticlesManager({
 
   return (
     <div>
-      <PageHeader
-        icon="📖"
-        title={title ?? t('المقالات', 'Articles')}
-        subtitle={subtitle ?? t('مدوّنتك — كل مقال صفحة تساعد على SEO', 'Your blog — each article is an SEO-friendly page')}
-        actions={<button className="btn btn-primary" onClick={() => setEdit(blank)}>+ {t('مقال جديد', 'New article')}</button>}
-      />
+      {/* Writing an article is not a decision taken in a dialog on top of
+          something else — it is the work. The editor was a modal over the list,
+          which is why it felt cramped and temporary; it takes the page now, and
+          the list waits underneath it. */}
+      {!edit && (
+        <PageHeader
+          icon="📖"
+          title={title ?? t('المقالات', 'Articles')}
+          subtitle={subtitle ?? t('مدوّنتك — كل مقال صفحة تساعد على SEO', 'Your blog — each article is an SEO-friendly page')}
+          actions={<button className="btn btn-primary" onClick={() => setEdit(blank)}>+ {t('مقال جديد', 'New article')}</button>}
+        />
+      )}
 
-      {items.length === 0 ? (
+      {edit ? null : items.length === 0 ? (
         <div className="panel" style={{ textAlign: 'center', padding: 46, color: 'var(--sub)' }}>{t('لا توجد مقالات بعد.', 'No articles yet.')}</div>
       ) : (
         <div className="proj-manage-grid">
@@ -115,13 +121,17 @@ export default function ArticlesManager({
       )}
 
       {edit && (
-        <div className="modal-overlay" onClick={() => setEdit(null)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-head">
-              <button className="icon-btn" onClick={() => setEdit(null)}>✕</button>
-              <strong>{edit.id ? t('تعديل مقال', 'Edit article') : t('مقال جديد', 'New article')}</strong>
-            </div>
-            <div className="modal-body">
+        <div className="editor-page">
+          <div className="editor-bar">
+            <button className="btn btn-ghost" onClick={() => setEdit(null)}>
+              {t('رجوع', 'Back')}
+            </button>
+            <strong>{edit.id ? t('تعديل مقال', 'Edit article') : t('مقال جديد', 'New article')}</strong>
+            <button className="btn btn-primary" onClick={save} disabled={busy || !edit.title.trim()}>
+              {busy ? '…' : t('💾 حفظ', '💾 Save')}
+            </button>
+          </div>
+          <div className="editor-body">
               <label className="lbl">{t('العنوان', 'Title')}</label>
               <input className="field" value={edit.title} onChange={(e) => setEdit({ ...edit, title: e.target.value, slug: edit.slug || slugify(e.target.value) })} />
               <label className="lbl">{t('الـ slug', 'Slug')}</label>
@@ -243,11 +253,6 @@ export default function ArticlesManager({
                 keyphrase={edit.keyphrase}
                 onKeyphrase={(v) => setEdit({ ...edit, keyphrase: v })}
               />
-            </div>
-            <div className="modal-foot">
-              <button className="btn btn-ghost" onClick={() => setEdit(null)}>{t('إلغاء', 'Cancel')}</button>
-              <button className="btn btn-primary" onClick={save} disabled={busy || !edit.title.trim()}>{busy ? '…' : t('💾 حفظ', '💾 Save')}</button>
-            </div>
           </div>
         </div>
       )}

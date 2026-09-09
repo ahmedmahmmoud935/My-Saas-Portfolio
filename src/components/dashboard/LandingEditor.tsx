@@ -270,29 +270,42 @@ export default function LandingEditor({
       en: { ...p.en, plans: p.en.plans.filter((_, j) => j !== i) },
     }))
 
-  /* Footer links are the one list on this page whose length the owner sets,
-     so it needs add and remove as well as edit. The two languages are kept in
-     step by index: the same link, written twice, not two different lists. */
-  const setLink = (i: number, field: 'label' | 'url', v: string, loc: 'ar' | 'en') =>
+  /* Footer link groups. Both languages are kept in step by index — the same
+     link written twice, not two different footers. */
+  const setGroupTitle = (g: number, v: string, loc: 'ar' | 'en') =>
     setF((p) => ({
       ...p,
       [loc]: {
         ...p[loc],
-        footerLinks: p[loc].footerLinks.map((l, j) => (j === i ? { ...l, [field]: v } : l)),
+        footerGroups: p[loc].footerGroups.map((x, i) => (i === g ? { ...x, title: v } : x)),
       },
     }))
-  const addLink = () =>
+  const setGroupLink = (g: number, i: number, field: 'label' | 'url', v: string, loc: 'ar' | 'en') =>
     setF((p) => ({
       ...p,
-      ar: { ...p.ar, footerLinks: [...p.ar.footerLinks, { label: '', url: '' }] },
-      en: { ...p.en, footerLinks: [...p.en.footerLinks, { label: '', url: '' }] },
+      [loc]: {
+        ...p[loc],
+        footerGroups: p[loc].footerGroups.map((x, j) =>
+          j === g
+            ? { ...x, links: x.links.map((l, k) => (k === i ? { ...l, [field]: v } : l)) }
+            : x,
+        ),
+      },
     }))
-  const removeLink = (i: number) =>
+  /* Adding and removing touch both languages at once, so the two never end up
+     with a different number of rows and start writing into each other. */
+  const bothGroups = (fn: (groups: Form['ar']['footerGroups']) => Form['ar']['footerGroups']) =>
     setF((p) => ({
       ...p,
-      ar: { ...p.ar, footerLinks: p.ar.footerLinks.filter((_, j) => j !== i) },
-      en: { ...p.en, footerLinks: p.en.footerLinks.filter((_, j) => j !== i) },
+      ar: { ...p.ar, footerGroups: fn(p.ar.footerGroups) },
+      en: { ...p.en, footerGroups: fn(p.en.footerGroups) },
     }))
+  const addGroup = () => bothGroups((g) => [...g, { title: '', links: [{ label: '', url: '' }] }])
+  const removeGroup = (g: number) => bothGroups((gs) => gs.filter((_, i) => i !== g))
+  const addGroupLink = (g: number) =>
+    bothGroups((gs) => gs.map((x, i) => (i === g ? { ...x, links: [...x.links, { label: '', url: '' }] } : x)))
+  const removeGroupLink = (g: number, i: number) =>
+    bothGroups((gs) => gs.map((x, j) => (j === g ? { ...x, links: x.links.filter((_, k) => k !== i) } : x)))
 
   // The two headline dials are numbers, and each language keeps its own.
   const setNum = (key: 'heroScale' | 'heroLeading', v: number, loc: 'ar' | 'en') =>
@@ -652,48 +665,49 @@ export default function LandingEditor({
             {scalar('footerNote', t('سطر تعريفي', 'A line about the product'), true)}
             {scalar('rights', t('حقوق النشر', 'Copyright text'))}
 
-            <div className="mod-card">
-              <div className="mod-card-head">
-                <span />
-                <strong style={{ color: 'var(--sub)' }}>{t('روابط الفوتر', 'Footer links')}</strong>
-              </div>
-              {scalar('footerLinksTitle', t('عنوان العمود', 'Column heading'))}
-              <p className="icon-alt-note" style={{ margin: '0 0 12px' }}>
-                {t(
-                  'الرابط اللي بيبدأ بـ # بينقل لقسم في نفس الصفحة (زي #pricing). أي حاجة تانية بتتفتح كرابط كامل. رابط المدوّنة بيتحط لوحده.',
-                  'A link starting with # jumps to a section of this page (like #pricing). Anything else opens as a full link. The blog link is added on its own.',
-                )}
-              </p>
+            <p className="icon-alt-note" style={{ margin: '4px 0 14px' }}>
+              {t(
+                'الروابط في أعمدة. الرابط اللي بيبدأ بـ # بينقل لقسم في نفس الصفحة (زي #pricing)، وأي حاجة تانية بتتفتح كرابط كامل. رابط المدوّنة بيتحط لوحده في أول عمود.',
+                'Links sit in columns. One starting with # jumps to a section of this page (like #pricing); anything else opens as a full link. The blog link is added on its own, in the first column.',
+              )}
+            </p>
 
-              {f.ar.footerLinks.map((_, i) => (
-                <div className="mod-card" key={i} style={{ marginBottom: 10 }}>
-                  <div className="mod-card-head">
-                    <span />
-                    <button className="btn btn-sm" onClick={() => removeLink(i)}>
-                      {t('حذف', 'Remove')}
-                    </button>
-                  </div>
-                  <Field
-                    label={t('الاسم', 'Label')}
-                    ar={f.ar.footerLinks[i]?.label ?? ''}
-                    en={f.en.footerLinks[i]?.label ?? ''}
-                    onAr={(v) => setLink(i, 'label', v, 'ar')}
-                    onEn={(v) => setLink(i, 'label', v, 'en')}
-                  />
-                  <Field
-                    label={t('الرابط', 'URL')}
-                    ar={f.ar.footerLinks[i]?.url ?? ''}
-                    en={f.en.footerLinks[i]?.url ?? ''}
-                    onAr={(v) => setLink(i, 'url', v, 'ar')}
-                    onEn={(v) => setLink(i, 'url', v, 'en')}
-                  />
+            {f.ar.footerGroups.map((_, g) => (
+              <div className="mod-card" key={g}>
+                <div className="mod-card-head">
+                  <span />
+                  <strong style={{ color: 'var(--sub)' }}>{t('عمود', 'Column')} #{g + 1}</strong>
+                  <button className="btn btn-sm" onClick={() => removeGroup(g)}>
+                    {t('حذف العمود', 'Remove column')}
+                  </button>
                 </div>
-              ))}
 
-              <button className="btn" onClick={addLink}>
-                + {t('رابط جديد', 'Add a link')}
-              </button>
-            </div>
+                <Field
+                  label={t('عنوان العمود', 'Column heading')}
+                  ar={f.ar.footerGroups[g]?.title ?? ''}
+                  en={f.en.footerGroups[g]?.title ?? ''}
+                  onAr={(v) => setGroupTitle(g, v, 'ar')}
+                  onEn={(v) => setGroupTitle(g, v, 'en')}
+                />
+
+                {(f.ar.footerGroups[g]?.links ?? []).map((_l, i) => (
+                  <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 10, marginBottom: 8 }}>
+                    <input className="field" placeholder={t('الاسم', 'Label')} value={f.ar.footerGroups[g]?.links[i]?.label ?? ''} onChange={(e) => setGroupLink(g, i, 'label', e.target.value, 'ar')} />
+                    <input className="field" dir="ltr" style={{ textAlign: 'start' }} placeholder="Label" value={f.en.footerGroups[g]?.links[i]?.label ?? ''} onChange={(e) => setGroupLink(g, i, 'label', e.target.value, 'en')} />
+                    <button className="btn btn-sm" onClick={() => removeGroupLink(g, i)}>✕</button>
+                    <input className="field" dir="ltr" style={{ textAlign: 'start', gridColumn: 'span 2' }} placeholder="#pricing" value={f.ar.footerGroups[g]?.links[i]?.url ?? ''} onChange={(e) => { setGroupLink(g, i, 'url', e.target.value, 'ar'); setGroupLink(g, i, 'url', e.target.value, 'en') }} />
+                  </div>
+                ))}
+
+                <button className="btn btn-sm" onClick={() => addGroupLink(g)}>
+                  + {t('رابط', 'Link')}
+                </button>
+              </div>
+            ))}
+
+            <button className="btn" onClick={addGroup}>
+              + {t('عمود جديد', 'Add a column')}
+            </button>
           </>
         )}
 

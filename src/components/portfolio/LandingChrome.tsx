@@ -106,20 +106,32 @@ export function LandingFooter({
           {copy.footerNote && <p>{copy.footerNote}</p>}
         </div>
 
-        <nav className="lp-footer-links">
-          <strong>{copy.footerLinksTitle}</strong>
-          <a href={`/blog?lang=${locale}`}>{locale === 'en' ? 'Blog' : 'المدوّنة'}</a>
-          {copy.footerLinks
-            .filter((l) => l.label && l.url)
-            .map((l) => (
-              <a
-                key={l.url + l.label}
-                href={l.url.startsWith('#') ? (atHome ? l.url : `${home}${l.url}`) : l.url}
-              >
-                {l.label}
-              </a>
+        <div className="lp-footer-cols">
+          {copy.footerGroups
+            .filter((g) => g.links.some((l) => l.label && l.url))
+            .map((g, i) => (
+              <nav className="lp-footer-links" key={g.title + i}>
+                <strong>{g.title}</strong>
+                {/* The blog is listed by the page, not by the owner: it is the
+                    one part of this site that can rank for something other than
+                    the product's own name, so it should not be one edit away
+                    from having nothing pointing at it. */}
+                {i === 0 && (
+                  <a href={`/blog?lang=${locale}`}>{locale === 'en' ? 'Blog' : 'المدوّنة'}</a>
+                )}
+                {g.links
+                  .filter((l) => l.label && l.url)
+                  .map((l) => (
+                    <a
+                      key={l.url + l.label}
+                      href={l.url.startsWith('#') ? (atHome ? l.url : `${home}${l.url}`) : l.url}
+                    >
+                      {l.label}
+                    </a>
+                  ))}
+              </nav>
             ))}
-        </nav>
+        </div>
       </div>
 
       <div className="lp-footer-base">
