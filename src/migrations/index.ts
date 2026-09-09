@@ -31,7 +31,8 @@ import * as migration_20260903_030000_seo_keyphrase from './20260903_030000_seo_
 import * as migration_20260904_010000_redirects from './20260904_010000_redirects';
 import * as migration_20260905_010000_search_tools from './20260905_010000_search_tools';
 import * as migration_20260906_010000_posts from './20260906_010000_posts'
-import * as migration_20260908_010000_landing_panel from './20260908_010000_landing_panel';
+import * as migration_20260908_010000_landing_panel from './20260908_010000_landing_panel'
+import * as migration_20260909_010000_landing_sections from './20260909_010000_landing_sections';
 
 export const migrations = [
   {
@@ -203,5 +204,10 @@ export const migrations = [
     up: migration_20260908_010000_landing_panel.up,
     down: migration_20260908_010000_landing_panel.down,
     name: '20260908_010000_landing_panel'
+  },
+  {
+    up: migration_20260909_010000_landing_sections.up,
+    down: migration_20260909_010000_landing_sections.down,
+    name: '20260909_010000_landing_sections'
   },
 ];

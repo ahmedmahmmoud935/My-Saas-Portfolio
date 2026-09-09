@@ -305,10 +305,16 @@ export default async function HomePage({ searchParams }: Params) {
             )}
           </div>
 
-          {/* The panel: a window with a title, holding whatever the owner
-              uploaded. Until they upload something it holds a drawing of the
-              product, made from the page's own tokens — so the hero is never
-              an empty frame waiting to be filled. */}
+        </section>
+      </SectionBg>
+
+      <SectionBg config={sections.panel}>
+        <section className="lp-panel-sec">
+          {/* A band of its own, below the hero rather than inside it: on the
+              hero's backdrop the panel read as a card dropped onto a
+              photograph. Here it has its own ground, and its own entry in the
+              section-backdrop list. Until something is uploaded it holds a
+              drawing of the product, so the band is never an empty frame. */}
           <figure className="lp-mock">
             <figcaption className="lp-mock-bar">
               <span className="lp-mock-dots" aria-hidden="true" />

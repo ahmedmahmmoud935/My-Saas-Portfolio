@@ -5,6 +5,7 @@ export const LANDING_SECTION_IDS = [
   'hero',
   'features',
   'how',
+  'panel',
   'showcase',
   'compare',
   'pricing',
