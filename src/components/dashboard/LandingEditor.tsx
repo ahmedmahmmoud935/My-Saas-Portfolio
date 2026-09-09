@@ -411,6 +411,20 @@ export default function LandingEditor({
             {scalar('heroEyebrow', t('السطر العلوي', 'Eyebrow'))}
             {scalar('heroTitle', t('العنوان', 'Title'), true)}
             {scalar('heroTitleAccent', t('الكلمة المميّزة', 'Accent word'), true)}
+            <label className="lbl" style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '-2px 0 12px' }}>
+              <input
+                type="checkbox"
+                checked={f.ar.heroTitleBreak !== false}
+                onChange={(e) =>
+                  setF((p) => ({
+                    ...p,
+                    ar: { ...p.ar, heroTitleBreak: e.target.checked },
+                    en: { ...p.en, heroTitleBreak: e.target.checked },
+                  }))
+                }
+              />
+              {t('الكلمة المميّزة في سطر لوحدها', 'Accent word on its own line')}
+            </label>
             <p className="icon-alt-note" style={{ margin: '-4px 0 14px' }}>
               {t(
                 'اضغط Enter جوّه العنوان عشان تنزل سطر في المكان اللي انت عايزه. من غير Enter الصفحة بتلف السطور لوحدها.',

@@ -16,6 +16,9 @@ export const LANDING_COPY = {
     // and Cairo does not sit on the line the way Montserrat does.
     heroScale: 100,
     heroLeading: 100,
+    // Two fields, two lines. Off, they flow together as one sentence and wrap
+    // wherever the width happens to run out.
+    heroTitleBreak: true,
     heroBtn1: 'اطلب بورتفوليو',
     heroBtn2: 'شوف مثال حي',
     // The dashboard-and-portfolio picture in the hero. Labels, not screenshots,
@@ -121,6 +124,7 @@ export const LANDING_COPY = {
       'Show your projects, reels and articles on a fast, responsive site — Arabic & English, on your own domain, no code.',
     heroScale: 100,
     heroLeading: 100,
+    heroTitleBreak: true,
     heroBtn1: 'Request a portfolio',
     heroBtn2: 'See a live example',
     panelEyebrow: 'A look inside',

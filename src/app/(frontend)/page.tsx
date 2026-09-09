@@ -282,7 +282,12 @@ export default async function HomePage({ searchParams }: Params) {
           )}
           <span className="lp-eyebrow">{c.heroEyebrow}</span>
           <h1
-            className={`lp-h1${/\n/.test(`${c.heroTitle}${c.heroTitleAccent}`) ? ' has-breaks' : ''}`}
+            /* Its own width once the lines are decided here rather than by
+               where the box runs out — a 15ch cap would wrap a line the owner
+               meant to keep whole and put the count back up. */
+            className={`lp-h1${
+              c.heroTitleBreak || /\n/.test(`${c.heroTitle}${c.heroTitleAccent}`) ? ' has-breaks' : ''
+            }`}
             style={
               {
                 '--lp-h1-scale': (c.heroScale ?? 100) / 100,
@@ -290,7 +295,9 @@ export default async function HomePage({ searchParams }: Params) {
               } as React.CSSProperties
             }
           >
-            {c.heroTitle} <span className="lp-accent">{c.heroTitleAccent}</span>
+            {c.heroTitle}
+            {c.heroTitleBreak ? <br /> : ' '}
+            <span className="lp-accent">{c.heroTitleAccent}</span>
           </h1>
           <p className="lp-lead">{c.heroSub}</p>
           <div className="lp-hero-btns">
