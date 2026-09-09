@@ -33,8 +33,12 @@ export async function generateMetadata({ params, searchParams }: Params): Promis
   const { lang } = (await searchParams) ?? {}
   const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
   const post = await load(slug, locale)
-  const alternates = await alternatesFor(`/blog/${slug}`, { locale })
-  if (!post) return { title: 'Not found', alternates }
+  if (!post) return { title: 'Not found', alternates: await alternatesFor(`/blog/${slug}`, { locale }) }
+  /* The canonical names the language the page is actually written in, not the
+     one the address asked for. A post published only in Arabic, reached at its
+     bare address, was canonicalising to ?lang=en — so the address the sitemap
+     offers Google pointed at an English URL serving Arabic. */
+  const alternates = await alternatesFor(`/blog/${slug}`, { locale: post.locale })
 
   const seo = post.seo
   const title = seo.title || post.title
