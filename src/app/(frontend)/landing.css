@@ -132,6 +132,7 @@ html[data-theme='light'] .lp { --lp-accent-2: color-mix(in srgb, var(--o) 74%, #
 .lp-eyebrow-sm { display: block; font-size: 12px; letter-spacing: 2.2px; font-weight: 900;
   text-transform: uppercase; color: var(--o); margin-bottom: 10px; }
 .lp-h2 { text-align: center; font-size: clamp(26px, 4.4vw, 44px); font-weight: 900; margin: 0 0 44px;
+  white-space: pre-line;
   line-height: 1.25; font-family: var(--lp-display); }
 .lp-sec-head .lp-h2 { margin: 0; }
 .lp[dir='rtl'] .lp-h2 { font-family: var(--font-cairo), sans-serif; }
@@ -179,10 +180,20 @@ iframe.lp-mock-media { border: 0; }
   font-size: calc(clamp(32px, 6.2vw, 62px) * var(--lp-h1-scale, 1));
   line-height: calc(var(--lp-h1-lh) * var(--lp-h1-leading, 1));
   margin: 24px auto 0; font-weight: 900;
-  max-width: 15ch; font-family: var(--lp-display); }
+  max-width: 15ch; font-family: var(--lp-display);
+  /* A line break typed in the dashboard is a decision, so it is kept. Long
+     lines still wrap on their own — pre-line honours the newline without
+     turning the rest of the headline into preformatted text. */
+  white-space: pre-line; }
+
+/* Once the breaks are authored, the width cap is what fights them: at 15ch a
+   line the owner meant to keep whole wraps anyway and the count goes up
+   instead of down. So a headline carrying its own breaks sets its own width. */
+.lp-h1.has-breaks { max-width: none; }
 /* Arabic ink sits taller in its line box than Latin caps do, so a line height
    tuned on English letters makes Arabic rows touch. */
 .lp[dir='rtl'] .lp-h1 { --lp-h1-lh: 1.34; font-family: var(--font-cairo), sans-serif; max-width: 17ch; }
+.lp[dir='rtl'] .lp-h1.has-breaks { max-width: none; }
 
 /* The accented half of the headline, lit rather than merely coloured.
    `background-clip: text` paints only inside the inline box, which is roughly

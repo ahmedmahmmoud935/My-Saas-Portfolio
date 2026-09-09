@@ -348,8 +348,14 @@ export default function LandingEditor({
         {sec === 'hero' && (
           <>
             {scalar('heroEyebrow', t('السطر العلوي', 'Eyebrow'))}
-            {scalar('heroTitle', t('العنوان', 'Title'))}
-            {scalar('heroTitleAccent', t('الكلمة المميّزة', 'Accent word'))}
+            {scalar('heroTitle', t('العنوان', 'Title'), true)}
+            {scalar('heroTitleAccent', t('الكلمة المميّزة', 'Accent word'), true)}
+            <p className="icon-alt-note" style={{ margin: '-4px 0 14px' }}>
+              {t(
+                'اضغط Enter جوّه العنوان عشان تنزل سطر في المكان اللي انت عايزه. من غير Enter الصفحة بتلف السطور لوحدها.',
+                'Press Enter inside a heading to break the line where you want it. Without one, the page wraps on its own.',
+              )}
+            </p>
 
             <div className="grid-2" style={{ marginBottom: 14 }}>
               {(['ar', 'en'] as const).map((loc) => (
@@ -371,7 +377,7 @@ export default function LandingEditor({
             {scalar('heroBtn1', t('زر 1', 'Button 1'))}
             {scalar('heroBtn2', t('زر 2', 'Button 2'))}
             {scalar('panelEyebrow', t('اللوحة — السطر الصغير', 'Panel eyebrow'))}
-            {scalar('panelHeading', t('عنوان قسم اللوحة', 'Panel section heading'))}
+            {scalar('panelHeading', t('عنوان قسم اللوحة', 'Panel section heading'), true)}
             {scalar('panelTitle', t('عنوان شريط اللوحة', 'Panel window-bar title'))}
 
             <div className="mod-card">
@@ -396,17 +402,17 @@ export default function LandingEditor({
         {sec === 'titles' && (
           <>
             {scalar('featuresEyebrow', t('المميزات — السطر الصغير', 'Features eyebrow'))}
-            {scalar('featuresTitle', t('عنوان المميزات', 'Features title'))}
+            {scalar('featuresTitle', t('عنوان المميزات', 'Features title'), true)}
             {scalar('howEyebrow', t('الطريقة — السطر الصغير', 'How-it-works eyebrow'))}
-            {scalar('howTitle', t('عنوان الطريقة', 'How-it-works title'))}
+            {scalar('howTitle', t('عنوان الطريقة', 'How-it-works title'), true)}
             {scalar('showcaseEyebrow', t('الأمثلة — السطر الصغير', 'Showcase eyebrow'))}
-            {scalar('showcaseTitle', t('عنوان الأمثلة', 'Showcase title'))}
+            {scalar('showcaseTitle', t('عنوان الأمثلة', 'Showcase title'), true)}
             {scalar('showcaseEmpty', t('نص لا يوجد أمثلة', 'Showcase empty text'))}
             {scalar('visit', t('كلمة «زيارة»', '“Visit” label'))}
             {scalar('pricingEyebrow', t('الأسعار — السطر الصغير', 'Pricing eyebrow'))}
-            {scalar('pricingTitle', t('عنوان الأسعار', 'Pricing title'))}
+            {scalar('pricingTitle', t('عنوان الأسعار', 'Pricing title'), true)}
             {scalar('faqEyebrow', t('الأسئلة — السطر الصغير', 'FAQ eyebrow'))}
-            {scalar('faqTitle', t('عنوان الأسئلة', 'FAQ title'))}
+            {scalar('faqTitle', t('عنوان الأسئلة', 'FAQ title'), true)}
 
             <div className="mod-card">
               <div className="mod-card-head">
@@ -455,7 +461,7 @@ export default function LandingEditor({
         {sec === 'compare' && (
           <>
             {scalar('compareEyebrow', t('العنوان الصغير', 'Eyebrow'))}
-            {scalar('compareTitle', t('عنوان القسم', 'Section title'))}
+            {scalar('compareTitle', t('عنوان القسم', 'Section title'), true)}
 
             <div className="mod-card">
               <div className="mod-card-head">
@@ -503,7 +509,7 @@ export default function LandingEditor({
 
         {sec === 'cta' && (
           <>
-            {scalar('ctaTitle', t('العنوان', 'Title'))}
+            {scalar('ctaTitle', t('العنوان', 'Title'), true)}
             {scalar('ctaSub', t('الوصف', 'Subtitle'), true)}
             {scalar('ctaBtn', t('الزر', 'Button'))}
           </>

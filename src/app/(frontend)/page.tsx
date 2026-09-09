@@ -315,7 +315,7 @@ export default async function HomePage({ searchParams }: Params) {
           )}
           <span className="lp-eyebrow">{c.heroEyebrow}</span>
           <h1
-            className="lp-h1"
+            className={`lp-h1${/\n/.test(`${c.heroTitle}${c.heroTitleAccent}`) ? ' has-breaks' : ''}`}
             style={
               {
                 '--lp-h1-scale': (c.heroScale ?? 100) / 100,
