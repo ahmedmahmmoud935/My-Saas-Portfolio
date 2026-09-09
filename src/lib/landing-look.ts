@@ -126,7 +126,13 @@ export function landingTokensCss(look: LandingLook): string {
   --lp-text: ${look.text}; --lp-sub: ${look.subtext};
   --lp-line: color-mix(in srgb, var(--lp-text) 9%, transparent);
   --lp-line-2: color-mix(in srgb, var(--lp-text) 20%, transparent);
-  background: var(--lp-bg); color: var(--lp-text); overflow-x: hidden;
+  background: var(--lp-bg); color: var(--lp-text);
+  /* clip, not hidden. Both stop a wide child from scrolling the page
+     sideways, but hidden makes this element a scroll container — and a sticky
+     navbar then sticks to the top of THAT, which is the whole page, so it
+     never sticks to anything the reader can see. clip scrolls nothing, so the
+     bar stays. */
+  overflow-x: clip;
   font-family: var(--font-cairo), system-ui, sans-serif; }
 
 html[data-theme='light'] .lp {

@@ -50,6 +50,12 @@ html[data-theme='light'] .lp { --lp-accent-2: color-mix(in srgb, var(--o) 74%, #
 .lp .pf-sec-bg { margin-top: 0; }
 
 /* ── Nav ─────────────────────────────────────────────────────────────── */
+/* The backdrop wrapper is what sticks, not the bar inside it.
+   `position: sticky` sticks within its own containing block, and wrapping the
+   header so it could carry a backdrop gave it a container exactly one bar
+   tall — so it scrolled away with the wrapper the moment the page moved. */
+.pf-sec-bg:has(.lp-nav) { position: sticky; top: 0; z-index: 30; }
+
 .lp-nav { position: sticky; top: 0; z-index: 20; display: flex; align-items: center;
   justify-content: space-between; gap: 20px; padding: 14px 24px;
   background: color-mix(in srgb, var(--lp-bg) 88%, transparent); backdrop-filter: blur(14px);
@@ -72,11 +78,16 @@ html[data-theme='light'] .lp { --lp-accent-2: color-mix(in srgb, var(--o) 74%, #
 .lp-nav-links a { color: var(--lp-sub); transition: color .15s; }
 .lp-nav-links a:hover { color: var(--o); }
 .lp-nav-actions { display: flex; align-items: center; gap: 10px; }
-.lp-lang { font-size: 12px; font-weight: 700; color: var(--lp-sub);
-  border: 1px solid var(--lp-line-2); border-radius: 999px; padding: 7px 11px; }
-.lp-lang:hover { color: var(--lp-text); border-color: var(--o); }
-.lp-theme { display: inline-flex; align-items: center; justify-content: center;
-  padding: 7px 9px; background: none; }
+/* Two buttons doing the same kind of job — switching one thing about the page
+   — so they are the same shape and the same size. The language one was a
+   lozenge whose width changed with its label, next to a round one that never
+   moved. */
+.lp-lang, .lp-theme { display: inline-grid; place-items: center; flex: 0 0 auto;
+  width: 38px; height: 38px; border-radius: 50%; padding: 0;
+  border: 1px solid var(--lp-line-2); background: none; color: var(--lp-sub);
+  font-size: 12px; font-weight: 700; line-height: 1;
+  transition: color .18s, border-color .18s; }
+.lp-lang:hover, .lp-theme:hover { color: var(--lp-text); border-color: var(--o); }
 /* A word, not a button — the primary action beside it is the button, and two
    buttons of equal weight would have made neither of them the next step. */
 .lp-nav-login { font-size: 14px; font-weight: 700; color: var(--lp-sub); padding: 0 6px; }
@@ -534,20 +545,33 @@ html[data-theme='light'] .lp[data-card='elevated'] .lp-faq-item {
    the last thing on the page and the only place a reader who scrolled all the
    way down can be sent anywhere, so it now carries a line about the product
    and a column of links the owner controls. */
-.lp-footer { max-width: 1180px; margin: 0 auto; padding: 48px 24px 56px;
-  color: var(--lp-sub); font-size: 13.5px; border-top: 1px solid var(--lp-line); }
-.lp-footer-top { display: flex; align-items: flex-start; justify-content: space-between;
-  gap: 40px; flex-wrap: wrap; }
-.lp-footer-brand { max-width: 44ch; }
-.lp-footer-brand p { margin: 14px 0 0; line-height: 1.75; }
-.lp-footer-links { display: flex; flex-direction: column; gap: 10px; }
-.lp-footer-links strong { color: var(--lp-text); font-size: 13px; font-weight: 800;
-  margin-bottom: 2px; }
+/* Two blocks pushed to opposite edges of a 1180px row left a hand's width of
+   nothing down the middle, and the brand block — a small square logo with a
+   sentence under it — had nothing to balance against. A grid with a wide
+   first column and a narrow second one puts the sentence where the eye is
+   already reading and lets the links sit close enough to belong to it. */
+.lp-footer { max-width: 1180px; margin: 0 auto; padding: 56px 24px 44px;
+  color: var(--lp-sub); font-size: 14px; border-top: 1px solid var(--lp-line); }
+.lp-footer-top { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(160px, auto);
+  gap: 48px; align-items: start; }
+.lp-footer-brand { max-width: 42ch; }
+/* The wordmark carries the footer, so it is given the size it has in the nav
+   rather than shrinking into a corner of it. */
+.lp-footer-brand .lp-logo { font-size: 22px; }
+.lp-footer-brand .lp-logo-img { height: 40px; }
+.lp-footer-brand p { margin: 16px 0 0; line-height: 1.8; font-size: 14px; }
+.lp-footer-links { display: flex; flex-direction: column; gap: 11px; align-items: flex-start; }
+.lp-footer-links strong { color: var(--lp-text); font-size: 12px; font-weight: 800;
+  letter-spacing: 1.4px; text-transform: uppercase; margin-bottom: 4px; }
+.lp-footer-links a { color: var(--lp-sub); }
 .lp-footer-links a:hover { color: var(--o); }
-.lp-footer-base { margin-top: 40px; padding-top: 22px; border-top: 1px solid var(--lp-line);
-  font-size: 13px; }
+.lp-footer-base { margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--lp-line);
+  font-size: 13px; text-align: center; }
 .lp-footer a:hover { color: var(--lp-text); }
-@media (max-width: 560px) { .lp-footer-top { gap: 28px; } }
+@media (max-width: 640px) {
+  .lp-footer-top { grid-template-columns: 1fr; gap: 32px; }
+  .lp-footer-base { text-align: start; }
+}
 
 @media (max-width: 900px) { .lp-nav-links { display: none; } .lp-tagline { display: none; } }
 @media (max-width: 480px) { .lp-nav { padding: 12px 16px; } .lp-sec { padding: 64px 18px; } }
