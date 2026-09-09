@@ -45,6 +45,7 @@ const SECTION_GROUPS = [
       { id: 'features', ar: 'المميزات', en: 'Features' },
       { id: 'how', ar: 'الخطوات', en: 'Steps' },
       { id: 'compare', ar: 'المقارنة', en: 'Comparison' },
+      { id: 'pricing', ar: 'الأسعار', en: 'Pricing' },
       { id: 'faq', ar: 'الأسئلة', en: 'FAQ' },
       { id: 'cta', ar: 'دعوة الفعل', en: 'Call to action' },
       { id: 'titles', ar: 'عناوين الأقسام', en: 'Section titles' },
@@ -222,6 +223,53 @@ export default function LandingEditor({
     setF((p) => ({ ...p, [loc]: { ...p[loc], [key]: v } }))
   const setNav = (key: keyof Copy['nav'], v: string, loc: 'ar' | 'en') =>
     setF((p) => ({ ...p, [loc]: { ...p[loc], nav: { ...p[loc].nav, [key]: v } } }))
+  /* Plans. The words are per language; whether a plan is highlighted and what
+     colour it wears are not, so those two are written to both at once. */
+  const setPlan = (i: number, field: 'name' | 'price' | 'per' | 'cta', v: string, loc: 'ar' | 'en') =>
+    setF((p) => ({
+      ...p,
+      [loc]: { ...p[loc], plans: p[loc].plans.map((x, j) => (j === i ? { ...x, [field]: v } : x)) },
+    }))
+  const setPlanBoth = (i: number, field: 'hi' | 'color', v: boolean | string) =>
+    setF((p) => {
+      const patch = (loc: 'ar' | 'en') =>
+        p[loc].plans.map((x, j) => (j === i ? { ...x, [field]: v } : x))
+      return { ...p, ar: { ...p.ar, plans: patch('ar') }, en: { ...p.en, plans: patch('en') } }
+    })
+  const setFeat = (i: number, j: number, v: string, loc: 'ar' | 'en') =>
+    setF((p) => ({
+      ...p,
+      [loc]: {
+        ...p[loc],
+        plans: p[loc].plans.map((x, k) =>
+          k === i ? { ...x, feats: x.feats.map((ft, m) => (m === j ? v : ft)) } : x,
+        ),
+      },
+    }))
+  const addFeat = (i: number) =>
+    setF((p) => {
+      const patch = (loc: 'ar' | 'en') =>
+        p[loc].plans.map((x, k) => (k === i ? { ...x, feats: [...x.feats, ''] } : x))
+      return { ...p, ar: { ...p.ar, plans: patch('ar') }, en: { ...p.en, plans: patch('en') } }
+    })
+  const removeFeat = (i: number, j: number) =>
+    setF((p) => {
+      const patch = (loc: 'ar' | 'en') =>
+        p[loc].plans.map((x, k) => (k === i ? { ...x, feats: x.feats.filter((_, m) => m !== j) } : x))
+      return { ...p, ar: { ...p.ar, plans: patch('ar') }, en: { ...p.en, plans: patch('en') } }
+    })
+  const addPlan = () =>
+    setF((p) => {
+      const blank = { name: '', price: '', per: '', feats: [''], cta: '', hi: false, color: '' }
+      return { ...p, ar: { ...p.ar, plans: [...p.ar.plans, blank] }, en: { ...p.en, plans: [...p.en.plans, blank] } }
+    })
+  const removePlan = (i: number) =>
+    setF((p) => ({
+      ...p,
+      ar: { ...p.ar, plans: p.ar.plans.filter((_, j) => j !== i) },
+      en: { ...p.en, plans: p.en.plans.filter((_, j) => j !== i) },
+    }))
+
   /* Footer links are the one list on this page whose length the owner sets,
      so it needs add and remove as well as edit. The two languages are kept in
      step by index: the same link, written twice, not two different lists. */
@@ -409,8 +457,6 @@ export default function LandingEditor({
             {scalar('showcaseTitle', t('عنوان الأمثلة', 'Showcase title'), true)}
             {scalar('showcaseEmpty', t('نص لا يوجد أمثلة', 'Showcase empty text'))}
             {scalar('visit', t('كلمة «زيارة»', '“Visit” label'))}
-            {scalar('pricingEyebrow', t('الأسعار — السطر الصغير', 'Pricing eyebrow'))}
-            {scalar('pricingTitle', t('عنوان الأسعار', 'Pricing title'), true)}
             {scalar('faqEyebrow', t('الأسئلة — السطر الصغير', 'FAQ eyebrow'))}
             {scalar('faqTitle', t('عنوان الأسئلة', 'FAQ title'), true)}
 
@@ -507,6 +553,77 @@ export default function LandingEditor({
                 onEn={(i, v) => setList('compareNew', i, v, 'en')}
               />
             </div>
+          </>
+        )}
+
+        {sec === 'pricing' && (
+          <>
+            {scalar('pricingEyebrow', t('السطر الصغير', 'Eyebrow'))}
+            {scalar('pricingTitle', t('عنوان القسم', 'Section title'), true)}
+
+            {f.ar.plans.map((_, i) => (
+              <div className="mod-card" key={i}>
+                <div className="mod-card-head">
+                  <span />
+                  <strong style={{ color: 'var(--sub)' }}>
+                    {t('خطة', 'Plan')} #{i + 1}
+                  </strong>
+                  <button className="btn btn-sm" onClick={() => removePlan(i)}>
+                    {t('حذف الخطة', 'Remove plan')}
+                  </button>
+                </div>
+
+                <Field label={t('الاسم', 'Name')} ar={f.ar.plans[i]?.name ?? ''} en={f.en.plans[i]?.name ?? ''} onAr={(v) => setPlan(i, 'name', v, 'ar')} onEn={(v) => setPlan(i, 'name', v, 'en')} />
+                <Field label={t('السعر', 'Price')} ar={f.ar.plans[i]?.price ?? ''} en={f.en.plans[i]?.price ?? ''} onAr={(v) => setPlan(i, 'price', v, 'ar')} onEn={(v) => setPlan(i, 'price', v, 'en')} />
+                <Field label={t('المدة', 'Per')} ar={f.ar.plans[i]?.per ?? ''} en={f.en.plans[i]?.per ?? ''} onAr={(v) => setPlan(i, 'per', v, 'ar')} onEn={(v) => setPlan(i, 'per', v, 'en')} />
+                <Field label={t('نص الزر', 'Button text')} ar={f.ar.plans[i]?.cta ?? ''} en={f.en.plans[i]?.cta ?? ''} onAr={(v) => setPlan(i, 'cta', v, 'ar')} onEn={(v) => setPlan(i, 'cta', v, 'en')} />
+
+                <div className="grid-2" style={{ alignItems: 'end', marginBottom: 14 }}>
+                  <ColorInput
+                    label={t('لون الخطة', 'Plan colour')}
+                    value={f.ar.plans[i]?.color || f.theme.accent}
+                    onChange={(v) => setPlanBoth(i, 'color', v)}
+                  />
+                  <div>
+                    <label className="lbl" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <input
+                        type="checkbox"
+                        checked={f.ar.plans[i]?.hi === true}
+                        onChange={(e) => setPlanBoth(i, 'hi', e.target.checked)}
+                      />
+                      {t('الخطة المميّزة', 'Highlighted plan')}
+                    </label>
+                    {f.ar.plans[i]?.color && (
+                      <button className="btn btn-sm" style={{ marginTop: 8 }} onClick={() => setPlanBoth(i, 'color', '')}>
+                        {t('رجّع لون الصفحة', 'Back to the page colour')}
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <p className="icon-alt-note" style={{ margin: '-6px 0 14px' }}>
+                  {t(
+                    'اللون بيغيّر كل حاجة جوّه الكارت — الاسم والعلامات والإطار والزرار. ولون نص الزرار بيتحسب لوحده عشان يفضل مقروء.',
+                    'The colour repaints everything inside the card — the name, the ticks, the border, the button. The button label is worked out from it, so it stays readable.',
+                  )}
+                </p>
+
+                <label className="lbl" style={{ display: 'block', marginBottom: 8 }}>{t('المميزات', 'Features')}</label>
+                {(f.ar.plans[i]?.feats ?? []).map((_, j) => (
+                  <div className="grid-2" key={j} style={{ marginBottom: 8, gridTemplateColumns: '1fr 1fr auto', gap: 10 }}>
+                    <input className="field" value={f.ar.plans[i]?.feats[j] ?? ''} onChange={(e) => setFeat(i, j, e.target.value, 'ar')} />
+                    <input className="field" dir="ltr" style={{ textAlign: 'start' }} value={f.en.plans[i]?.feats[j] ?? ''} onChange={(e) => setFeat(i, j, e.target.value, 'en')} />
+                    <button className="btn btn-sm" onClick={() => removeFeat(i, j)}>✕</button>
+                  </div>
+                ))}
+                <button className="btn btn-sm" onClick={() => addFeat(i)}>
+                  + {t('ميزة', 'Feature')}
+                </button>
+              </div>
+            ))}
+
+            <button className="btn" onClick={addPlan}>
+              + {t('خطة جديدة', 'Add a plan')}
+            </button>
           </>
         )}
 

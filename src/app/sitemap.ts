@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { livePosts } from '@/lib/posts'
 
 export const dynamic = 'force-dynamic'
 
@@ -36,13 +37,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // The platform's own writing.
     const index = `${base}/blog`
     urls.push({ url: index, changeFrequency: 'weekly', priority: 0.7, alternates: langs(index) })
-    const posts = await payload.find({
-      collection: 'posts',
-      where: { published: { equals: true } },
-      limit: 500,
-      depth: 0,
-    })
-    for (const p of posts.docs) {
+    // Live in any language, not just the one this query happens to default to
+    // — asking a single locale left every post out of the sitemap.
+    const posts = await livePosts('ar')
+    for (const p of posts) {
       const url = `${base}/blog/${p.slug}`
       urls.push({
         url,

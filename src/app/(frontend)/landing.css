@@ -483,7 +483,13 @@ html[data-theme='light'] .lp[data-card='elevated'] .lp-faq-item {
   box-shadow: 0 16px 34px -22px rgba(16,24,40,.28), 0 2px 5px rgba(16,24,40,.07); }
 
 /* ── Pricing ─────────────────────────────────────────────────────────── */
-.lp-pricing { max-width: 900px; margin: 0 auto; align-items: stretch; }
+/* Two plans want a pair of wide cards; three or more want as many as fit.
+   The max-width goes up with the count so a third plan does not squeeze the
+   first two into columns too narrow to read a feature line in. */
+.lp-pricing { max-width: 900px; margin: 0 auto; align-items: stretch;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr)); }
+.lp-pricing.lp-grid-2 { grid-template-columns: repeat(2, 1fr); }
+.lp-sec:has(.lp-pricing:not(.lp-grid-2)) .lp-pricing { max-width: 1180px; }
 .lp-plan { background: var(--lp-bg2); border: 1px solid var(--lp-line); border-radius: 26px; padding: 34px;
   display: flex; flex-direction: column; }
 .lp-plan-hi { background: var(--lp-card); border: 2px solid var(--o); position: relative;

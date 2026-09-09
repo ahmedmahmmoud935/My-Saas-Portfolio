@@ -70,8 +70,8 @@ export const LANDING_COPY = {
     pricingEyebrow: 'الأسعار',
     pricingTitle: 'أسعار بسيطة',
     plans: [
-      { name: 'مجاني', price: '0', per: 'للأبد', feats: ['بورتفوليو واحد', 'رابط ViralPX', 'مشاريع ومقالات', 'مساحة 1GB'], cta: 'ابدأ مجاناً', hi: false },
-      { name: 'برو', price: '199', per: 'شهرياً', feats: ['دومينك الخاص + SSL', 'مساحة أكبر', 'إزالة العلامة', 'أولوية الدعم'], cta: 'اشترك في برو', hi: true },
+      { name: 'مجاني', price: '0', per: 'للأبد', feats: ['بورتفوليو واحد', 'رابط ViralPX', 'مشاريع ومقالات', 'مساحة 1GB'], cta: 'ابدأ مجاناً', hi: false, color: '' },
+      { name: 'برو', price: '199', per: 'شهرياً', feats: ['دومينك الخاص + SSL', 'مساحة أكبر', 'إزالة العلامة', 'أولوية الدعم'], cta: 'اشترك في برو', hi: true, color: '' },
     ],
     faqEyebrow: 'إجابات سريعة',
     faqTitle: 'أسئلة شائعة',
@@ -158,8 +158,8 @@ export const LANDING_COPY = {
     pricingEyebrow: 'Pricing',
     pricingTitle: 'Simple pricing',
     plans: [
-      { name: 'Free', price: '0', per: 'forever', feats: ['One portfolio', 'ViralPX link', 'Projects & articles', '1GB storage'], cta: 'Start free', hi: false },
-      { name: 'Pro', price: '199', per: '/mo', feats: ['Your own domain + SSL', 'More storage', 'Remove branding', 'Priority support'], cta: 'Go Pro', hi: true },
+      { name: 'Free', price: '0', per: 'forever', feats: ['One portfolio', 'ViralPX link', 'Projects & articles', '1GB storage'], cta: 'Start free', hi: false, color: '' },
+      { name: 'Pro', price: '199', per: '/mo', feats: ['Your own domain + SSL', 'More storage', 'Remove branding', 'Priority support'], cta: 'Go Pro', hi: true, color: '' },
     ],
     faqEyebrow: 'Quick answers',
     faqTitle: 'Frequently asked',

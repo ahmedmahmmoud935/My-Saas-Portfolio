@@ -10,7 +10,7 @@ import LandingThemeToggle from '@/components/portfolio/LandingThemeToggle'
 import Analytics from '@/components/portfolio/Analytics'
 import ShowcaseRail from '@/components/portfolio/ShowcaseRail'
 import { LandingNav, LandingFooter } from '@/components/portfolio/LandingChrome'
-import { DEFAULT_LOOK, landingTokensCss, setOnly, type LandingLook } from '@/lib/landing-look'
+import { DEFAULT_LOOK, landingTokensCss, onAccent, setOnly, type LandingLook } from '@/lib/landing-look'
 import './landing.css'
 
 
@@ -551,9 +551,22 @@ export default async function HomePage({ searchParams }: Params) {
             <span className="lp-eyebrow-sm">{c.pricingEyebrow}</span>
             <h2 className="lp-h2">{c.pricingTitle}</h2>
           </div>
-          <div className="lp-grid lp-grid-2 lp-pricing">
+          <div className={`lp-grid lp-pricing${c.plans.length > 2 ? '' : ' lp-grid-2'}`}>
             {c.plans.map((p) => (
-              <div className={`lp-plan${p.hi ? ' lp-plan-hi' : ''}`} key={p.name}>
+              <div
+                className={`lp-plan${p.hi ? ' lp-plan-hi' : ''}`}
+                key={p.name}
+                /* A plan's own colour replaces the page accent inside its card
+                   only. Everything in there — the name, the ticks, the border,
+                   the button — is already written against --o, so one variable
+                   repaints the whole card. Its label follows, or a pale accent
+                   would take white text into an unreadable button. */
+                style={
+                  p.color
+                    ? ({ '--o': p.color, '--lp-on-o': onAccent(p.color) } as React.CSSProperties)
+                    : undefined
+                }
+              >
                 {p.hi && <span className="lp-plan-tag">{locale === 'en' ? 'Most popular' : 'الأكثر طلباً'}</span>}
                 <div className="lp-plan-name">{p.name}</div>
                 <div className="lp-plan-price">

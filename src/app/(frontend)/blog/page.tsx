@@ -1,8 +1,7 @@
 import React from 'react'
 import type { Metadata } from 'next'
-import { getPayload } from 'payload'
-import config from '@payload-config'
 import { mediaUrl } from '@/lib/portfolio'
+import { livePosts } from '@/lib/posts'
 import { alternatesFor } from '@/lib/seo'
 import { getLandingChrome, landingTokensCss } from '@/lib/landing-look'
 import { LandingNav, LandingFooter } from '@/components/portfolio/LandingChrome'
@@ -11,24 +10,6 @@ import '../landing.css'
 export const dynamic = 'force-dynamic'
 
 type Params = { searchParams?: Promise<{ lang?: string }> }
-
-async function load(locale: 'ar' | 'en') {
-  try {
-    const payload = await getPayload({ config })
-    const res = await payload.find({
-      collection: 'posts',
-      where: { published: { equals: true } },
-      sort: '-createdAt',
-      limit: 100,
-      depth: 1,
-      locale,
-      fallbackLocale: locale === 'ar' ? 'en' : 'ar',
-    })
-    return res.docs
-  } catch {
-    return []
-  }
-}
 
 export async function generateMetadata({ searchParams }: Params): Promise<Metadata> {
   const { lang } = (await searchParams) ?? {}
@@ -50,7 +31,7 @@ export async function generateMetadata({ searchParams }: Params): Promise<Metada
 export default async function BlogIndex({ searchParams }: Params) {
   const { lang } = (await searchParams) ?? {}
   const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
-  const posts = await load(locale)
+  const posts = await livePosts(locale)
   // The same palette AND the same nav and footer the landing page wears. The
   // blog is not a second site, and it used to arrive looking like one.
   const { look, copy: c } = await getLandingChrome(locale)
@@ -86,7 +67,7 @@ export default async function BlogIndex({ searchParams }: Params) {
         ) : (
           <div className="lp-grid lp-grid-3">
             {posts.map((p) => (
-              <a className="lp-card blog-card" key={p.id} href={`/blog/${p.slug}?lang=${locale}`}>
+              <a className="lp-card blog-card" key={p.id} href={`/blog/${p.slug}?lang=${p.locale}`}>
                 {mediaUrl(p.cover, 'card') && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={mediaUrl(p.cover, 'card')!} alt={p.title} loading="lazy" />

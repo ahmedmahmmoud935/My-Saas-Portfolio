@@ -4,6 +4,7 @@ import { notFound, permanentRedirect } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { mediaUrl } from '@/lib/portfolio'
+import { livePost } from '@/lib/posts'
 import { alternatesFor, absoluteUrl, plainText } from '@/lib/seo'
 import { getLandingChrome, landingTokensCss } from '@/lib/landing-look'
 import { LandingNav, LandingFooter } from '@/components/portfolio/LandingChrome'
@@ -23,24 +24,7 @@ async function load(slugRaw: string, locale: 'ar' | 'en') {
   } catch {
     /* keep raw */
   }
-  const payload = await getPayload({ config })
-  const other = locale === 'ar' ? 'en' : 'ar'
-  const find = (l: 'ar' | 'en') =>
-    payload.find({
-      collection: 'posts',
-      where: { slug: { equals: slug } },
-      limit: 1,
-      depth: 1,
-      locale: l,
-      fallbackLocale: l === 'ar' ? 'en' : 'ar',
-    })
-
-  // Slugs are per language, so an address written in one will not match a
-  // lookup in the other. Try both before giving up on a valid link.
-  let post = (await find(locale)).docs[0]
-  if (!post) post = (await find(other)).docs[0]
-  if (!post || post.published !== true) return null
-  return post
+  return livePost(slug, locale)
 }
 
 export async function generateMetadata({ params, searchParams }: Params): Promise<Metadata> {
@@ -51,7 +35,7 @@ export async function generateMetadata({ params, searchParams }: Params): Promis
   const alternates = await alternatesFor(`/blog/${slug}`, { locale })
   if (!post) return { title: 'Not found', alternates }
 
-  const seo = post.seo ?? {}
+  const seo = post.seo
   const title = seo.title || post.title
   const description = seo.description || post.excerpt || plainText(post.contentHtml)
   const cover = mediaUrl(post.cover, 'card')
