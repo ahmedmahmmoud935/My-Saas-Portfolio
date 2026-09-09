@@ -570,11 +570,10 @@ html[data-theme='light'] .lp[data-card='elevated'] .lp-faq-item {
    The link columns take the rest and end at the page's edge. */
 .lp-footer-top { display: grid; grid-template-columns: minmax(0, 36ch) 1fr;
   gap: 40px 64px; align-items: start; }
-/* Spread, not bunched. Two short columns pushed together against one edge
-   left most of the row empty; spaced across it, they read as the footer's
-   structure rather than as leftovers. */
-.lp-footer-cols { display: flex; justify-content: space-between; gap: 40px; flex-wrap: wrap; }
-.lp-footer-cols:has(> :only-child) { justify-content: flex-end; }
+/* The columns stay together at the far end, opposite the brand. Spread across
+   the row instead, one of them drifted into the middle and the footer read as
+   three unrelated things rather than two sides. */
+.lp-footer-cols { display: flex; justify-content: flex-end; gap: 72px; flex-wrap: wrap; }
 .lp-footer-brand { max-width: 42ch; }
 /* The wordmark carries the footer, so it is given the size it has in the nav
    rather than shrinking into a corner of it. */
