@@ -5,6 +5,7 @@ import { livePosts } from '@/lib/posts'
 import { alternatesFor } from '@/lib/seo'
 import { getLandingChrome, landingTokensCss } from '@/lib/landing-look'
 import { LandingNav, LandingFooter } from '@/components/portfolio/LandingChrome'
+import Analytics from '@/components/portfolio/Analytics'
 import '../landing.css'
 
 export const dynamic = 'force-dynamic'
@@ -34,7 +35,7 @@ export default async function BlogIndex({ searchParams }: Params) {
   const posts = await livePosts(locale)
   // The same palette AND the same nav and footer the landing page wears. The
   // blog is not a second site, and it used to arrive looking like one.
-  const { look, copy: c } = await getLandingChrome(locale)
+  const { look, copy: c, analyticsId } = await getLandingChrome(locale)
 
   return (
     <div
@@ -45,6 +46,7 @@ export default async function BlogIndex({ searchParams }: Params) {
       dir={locale === 'en' ? 'ltr' : 'rtl'}
       lang={locale}
     >
+      <Analytics id={analyticsId} />
       <LandingNav
         look={look}
         copy={c}

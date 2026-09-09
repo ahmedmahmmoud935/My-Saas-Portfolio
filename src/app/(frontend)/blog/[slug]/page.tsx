@@ -8,6 +8,7 @@ import { livePost } from '@/lib/posts'
 import { alternatesFor, absoluteUrl, plainText } from '@/lib/seo'
 import { getLandingChrome, landingTokensCss } from '@/lib/landing-look'
 import { LandingNav, LandingFooter } from '@/components/portfolio/LandingChrome'
+import Analytics from '@/components/portfolio/Analytics'
 import '../../landing.css'
 
 export const dynamic = 'force-dynamic'
@@ -84,7 +85,7 @@ export default async function BlogPost({ params, searchParams }: Params) {
   }
 
   const cover = mediaUrl(post.cover, 'card')
-  const { look, copy: c } = await getLandingChrome(locale)
+  const { look, copy: c, analyticsId } = await getLandingChrome(locale)
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -111,6 +112,7 @@ export default async function BlogPost({ params, searchParams }: Params) {
       {/* eslint-disable-next-line react/no-danger */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
+      <Analytics id={analyticsId} />
       <LandingNav
         look={look}
         copy={c}

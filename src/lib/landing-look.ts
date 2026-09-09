@@ -193,6 +193,7 @@ export async function getLandingChrome(locale: 'ar' | 'en') {
       theme?: Partial<LandingLook>
       style?: { showcase?: string | null; card?: string | null; fontAr?: string | null; fontLatin?: string | null }
       images?: Record<string, unknown>
+      seoTools?: { analyticsId?: string | null }
     }
     const im = g?.images ?? {}
     return {
@@ -205,8 +206,9 @@ export async function getLandingChrome(locale: 'ar' | 'en') {
         cardStyle: g?.style?.card || DEFAULT_LOOK.cardStyle,
       } as LandingLook,
       copy: mergeCopy(LANDING_COPY[locale], g?.content),
+      analyticsId: g?.seoTools?.analyticsId ?? null,
     }
   } catch {
-    return { look: DEFAULT_LOOK, copy: LANDING_COPY[locale] }
+    return { look: DEFAULT_LOOK, copy: LANDING_COPY[locale], analyticsId: null }
   }
 }

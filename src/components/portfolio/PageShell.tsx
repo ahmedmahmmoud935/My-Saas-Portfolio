@@ -3,6 +3,7 @@ import { mediaUrl, tenantCssVars } from '@/lib/portfolio'
 import { pageBackground, dimOpacity } from '@/lib/background'
 import { LEGACY_FONT_PAIRS } from '@/lib/design-types'
 import type { SiteSetting } from '@/payload-types'
+import Analytics from './Analytics'
 
 /**
  * The tenant's page surface: palette, fonts, direction, component styles, and
@@ -57,6 +58,7 @@ export default function PageShell({
       data-navbar={comp.navbar || 'blur'}
       data-btn={comp.button || 'rounded'}
     >
+      <Analytics id={settings?.seoTools?.analyticsId} />
       {bgDark && (
         <div
           className={`pf-bg-layer for-dark${bgDark.animated ? ' animated' : ''}${bgDark.scrolls ? ' scrolls' : ''}`}
