@@ -13,6 +13,22 @@
    rather than a sixth colour picker, so it follows any palette — and it moves
    toward the text colour, which is lighter on a dark theme and darker on a
    light one, in both cases away from the page. */
+/* ── Faces ───────────────────────────────────────────────────────────────
+   The same two choices a portfolio has, over the same faces — every one of
+   them is already loaded by the frontend layout. The pattern mirrors
+   `.pf-root` in globals.css, including why the display stack names the Latin
+   family literally: that keeps Next's metric fallback (a system font with
+   Arabic coverage) out of it, so Arabic headings reach the chosen Arabic face
+   instead of always landing on Tajawal. */
+.lp { --lp-display: 'Montserrat', var(--font-cairo), system-ui, sans-serif; }
+.lp[data-font-ar='cairo'] { --font-cairo: var(--f-cairo); }
+.lp[data-font-ar='almarai'] { --font-cairo: var(--f-almarai); }
+.lp[data-font-ar='markazi'] { --font-cairo: var(--f-markazi); }
+.lp[data-font-latin='inter'] { --lp-display: 'Inter', var(--font-cairo), system-ui, sans-serif; }
+.lp[data-font-latin='playfair'] { --lp-display: 'Playfair Display', var(--font-cairo), system-ui, sans-serif; }
+.lp[data-font-latin='cormorant'] { --lp-display: 'Cormorant', var(--font-cairo), system-ui, sans-serif; }
+.lp[data-font-latin='bebas'] { --lp-display: 'Bebas Neue', var(--font-cairo), system-ui, sans-serif; }
+
 .lp { --lp-card: color-mix(in srgb, var(--lp-bg2) 93%, var(--lp-text));
   /* The far end of the headline's gradient. Lifting the accent towards white
      glows on a dark page and washes out on a light one, so on light it is
@@ -39,7 +55,7 @@ html[data-theme='light'] .lp { --lp-accent-2: color-mix(in srgb, var(--o) 74%, #
   background: color-mix(in srgb, var(--lp-bg) 88%, transparent); backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--lp-line); }
 .lp-logo { display: inline-flex; align-items: center; gap: 11px;
-  font-family: var(--font-montserrat), sans-serif; font-weight: 900; font-size: 21px; letter-spacing: -.5px; }
+  font-family: var(--lp-display); font-weight: 900; font-size: 21px; letter-spacing: -.5px; }
 .lp-logo span { color: var(--o); }
 .lp-logo-img { height: 34px; width: auto; display: block; }
 /* The mark stands in for a logo nobody has uploaded yet — a bordered square
@@ -50,7 +66,7 @@ html[data-theme='light'] .lp { --lp-accent-2: color-mix(in srgb, var(--o) 74%, #
 .lp-logo-mark i { width: 13px; height: 13px; border: 2px solid var(--o); border-radius: 3px; display: block; }
 .lp-logo-text { display: flex; flex-direction: column; line-height: 1; }
 .lp-tagline { font-size: 9px; letter-spacing: 2.4px; font-weight: 700; color: var(--lp-sub);
-  margin-top: 3px; font-family: var(--font-montserrat), sans-serif; }
+  margin-top: 3px; font-family: var(--lp-display); }
 
 .lp-nav-links { display: flex; gap: 24px; font-size: 14px; font-weight: 700; }
 .lp-nav-links a { color: var(--lp-sub); transition: color .15s; }
@@ -70,6 +86,7 @@ html[data-theme='light'] .lp { --lp-accent-2: color-mix(in srgb, var(--o) 74%, #
 /* ── Buttons ─────────────────────────────────────────────────────────── */
 .lp-btn { display: inline-flex; align-items: center; justify-content: center; gap: 9px;
   border-radius: 999px; padding: 11px 22px; font-weight: 800; font-size: 14px; cursor: pointer;
+  min-height: 42px;
   transition: transform .14s, filter .14s, background .2s, border-color .2s, color .2s; }
 .lp-btn:hover { transform: translateY(-1px); }
 .lp-btn-primary { background: var(--o); color: var(--lp-on-o);
@@ -78,7 +95,32 @@ html[data-theme='light'] .lp { --lp-accent-2: color-mix(in srgb, var(--o) 74%, #
   box-shadow: 0 14px 30px -12px color-mix(in srgb, var(--o) 85%, transparent); }
 .lp-btn-ghost { border: 1px solid var(--lp-line-2); color: var(--lp-text); background: var(--lp-bg2); }
 .lp-btn-ghost:hover { border-color: var(--o); color: var(--o); }
-.lp-btn-lg { padding: 15px 32px; font-size: 16px; }
+.lp-btn-lg { padding: 15px 32px; font-size: 16px; min-height: 49px; }
+
+/* ── Optical centring ────────────────────────────────────────────────────
+   A browser centres the LINE box, which reserves descender space whether or
+   not the label uses it. Measured on this page's own primary button: the ink
+   of «اطلب بورتفوليو» in Tajawal sits 1.63px above the centre of the box it is
+   in, because the glyphs reach above the font's ascent and stop well short of
+   its descent. `text-box` cuts the box down to cap-height→baseline, which is
+   what the eye reads as the middle.
+
+   The label needs a box of its own: bare text inside a flex container lives in
+   an anonymous box no selector can reach. The min-heights above and below give
+   back the height the trim takes away, and the flex centring then places the
+   trimmed label in the middle of it.
+
+   Ignored where unsupported — the label simply stays where it was. */
+@supports (text-box: trim-both cap alphabetic) {
+  .lp-btn-label,
+  .lp-eyebrow,
+  .lp-eyebrow-sm,
+  .lp-lang,
+  .lp-plan-tag,
+  .lp-vs-tag,
+  .lp-mock-card em,
+  .lp-mock-side li b { text-box: trim-both cap alphabetic; }
+}
 /* The arrow points the way the language reads, so it never points back at the
    text it is meant to lead away from. */
 .lp-arrow::after { content: '→'; font-size: .95em; }
@@ -90,7 +132,7 @@ html[data-theme='light'] .lp { --lp-accent-2: color-mix(in srgb, var(--o) 74%, #
 .lp-eyebrow-sm { display: block; font-size: 12px; letter-spacing: 2.2px; font-weight: 900;
   text-transform: uppercase; color: var(--o); margin-bottom: 10px; }
 .lp-h2 { text-align: center; font-size: clamp(26px, 4.4vw, 44px); font-weight: 900; margin: 0 0 44px;
-  line-height: 1.25; font-family: var(--font-montserrat), var(--font-cairo), sans-serif; }
+  line-height: 1.25; font-family: var(--lp-display); }
 .lp-sec-head .lp-h2 { margin: 0; }
 .lp[dir='rtl'] .lp-h2 { font-family: var(--font-cairo), sans-serif; }
 .lp-grid { display: grid; gap: 20px; }
@@ -137,7 +179,7 @@ iframe.lp-mock-media { border: 0; }
   font-size: calc(clamp(32px, 6.2vw, 62px) * var(--lp-h1-scale, 1));
   line-height: calc(var(--lp-h1-lh) * var(--lp-h1-leading, 1));
   margin: 24px auto 0; font-weight: 900;
-  max-width: 15ch; font-family: var(--font-montserrat), var(--font-cairo), sans-serif; }
+  max-width: 15ch; font-family: var(--lp-display); }
 /* Arabic ink sits taller in its line box than Latin caps do, so a line height
    tuned on English letters makes Arabic rows touch. */
 .lp[dir='rtl'] .lp-h1 { --lp-h1-lh: 1.34; font-family: var(--font-cairo), sans-serif; max-width: 17ch; }
@@ -427,10 +469,24 @@ html[data-theme='light'] .lp[data-card='elevated'] .lp-faq-item {
 .lp-cta-inner p { color: var(--lp-sub); margin: 0 0 30px; font-size: 16.5px; line-height: 1.8; }
 .lp-cta-inner .lp-h2 { margin-bottom: 16px; }
 
-.lp-footer { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap;
-  max-width: 1180px; margin: 0 auto; padding: 34px 24px 56px; color: var(--lp-sub); font-size: 13.5px;
-  border-top: 1px solid var(--lp-line); }
+/* The footer was a logo, one link and a copyright line on a single row. It is
+   the last thing on the page and the only place a reader who scrolled all the
+   way down can be sent anywhere, so it now carries a line about the product
+   and a column of links the owner controls. */
+.lp-footer { max-width: 1180px; margin: 0 auto; padding: 48px 24px 56px;
+  color: var(--lp-sub); font-size: 13.5px; border-top: 1px solid var(--lp-line); }
+.lp-footer-top { display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 40px; flex-wrap: wrap; }
+.lp-footer-brand { max-width: 44ch; }
+.lp-footer-brand p { margin: 14px 0 0; line-height: 1.75; }
+.lp-footer-links { display: flex; flex-direction: column; gap: 10px; }
+.lp-footer-links strong { color: var(--lp-text); font-size: 13px; font-weight: 800;
+  margin-bottom: 2px; }
+.lp-footer-links a:hover { color: var(--o); }
+.lp-footer-base { margin-top: 40px; padding-top: 22px; border-top: 1px solid var(--lp-line);
+  font-size: 13px; }
 .lp-footer a:hover { color: var(--lp-text); }
+@media (max-width: 560px) { .lp-footer-top { gap: 28px; } }
 
 @media (max-width: 900px) { .lp-nav-links { display: none; } .lp-tagline { display: none; } }
 @media (max-width: 480px) { .lp-nav { padding: 12px 16px; } .lp-sec { padding: 64px 18px; } }

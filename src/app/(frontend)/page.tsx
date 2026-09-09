@@ -22,7 +22,12 @@ async function getLanding(locale: 'ar' | 'en') {
       theme?: Partial<LandingLook>
       images?: Record<string, unknown>
       sectionBg?: Record<string, unknown>[]
-      style?: { showcase?: string | null; card?: string | null }
+      style?: {
+        showcase?: string | null
+        card?: string | null
+        fontAr?: string | null
+        fontLatin?: string | null
+      }
       seoTools?: { searchConsole?: string | null; analyticsId?: string | null }
     }
     const saved = g?.content
@@ -65,6 +70,8 @@ async function getLanding(locale: 'ar' | 'en') {
         panelVideoUrl: (im.panelVideoUrl as string) || null,
         showcaseStyle: g?.style?.showcase || DEFAULT_LOOK.showcaseStyle,
         cardStyle: g?.style?.card || DEFAULT_LOOK.cardStyle,
+        fontAr: g?.style?.fontAr || DEFAULT_LOOK.fontAr,
+        fontLatin: g?.style?.fontLatin || DEFAULT_LOOK.fontLatin,
       } as LandingLook,
     }
   } catch {
@@ -236,11 +243,19 @@ export default async function HomePage({ searchParams }: Params) {
   }
 
   return (
-    <div className="lp" data-card={cardStyle} dir={locale === 'en' ? 'ltr' : 'rtl'} lang={locale}>
+    <div
+      className="lp"
+      data-card={cardStyle}
+      data-font-ar={look.fontAr}
+      data-font-latin={look.fontLatin}
+      dir={locale === 'en' ? 'ltr' : 'rtl'}
+      lang={locale}
+    >
       {/* eslint-disable-next-line react/no-danger */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
 
       <Analytics id={tools?.analyticsId} />
+      <SectionBg config={sections.header}>
       <header className="lp-nav">
         <a href={`/${q}`} className="lp-logo">
           {look.logoUrl ? (
@@ -279,10 +294,11 @@ export default async function HomePage({ searchParams }: Params) {
             {c.login}
           </a>
           <a className="lp-btn lp-btn-primary lp-arrow" href="/login">
-            {c.cta}
+            <span className="lp-btn-label">{c.cta}</span>
           </a>
         </div>
       </header>
+      </SectionBg>
 
       <SectionBg config={sections.hero}>
         <section className={`lp-hero${look.heroUrl ? ' has-image' : ''}`}>
@@ -309,11 +325,11 @@ export default async function HomePage({ searchParams }: Params) {
           <p className="lp-lead">{c.heroSub}</p>
           <div className="lp-hero-btns">
             <a className="lp-btn lp-btn-primary lp-btn-lg lp-arrow" href="/login">
-              {c.heroBtn1}
+              <span className="lp-btn-label">{c.heroBtn1}</span>
             </a>
             {showcase[0] && (
               <a className="lp-btn lp-btn-ghost lp-btn-lg" href={`/${showcase[0].slug}${q}`}>
-                {c.heroBtn2}
+                <span className="lp-btn-label">{c.heroBtn2}</span>
               </a>
             )}
           </div>
@@ -568,7 +584,7 @@ export default async function HomePage({ searchParams }: Params) {
                   ))}
                 </ul>
                 <a className={`lp-btn lp-btn-lg ${p.hi ? 'lp-btn-primary lp-arrow' : 'lp-btn-ghost'}`} href="/login">
-                  {p.cta}
+                  <span className="lp-btn-label">{p.cta}</span>
                 </a>
               </div>
             ))}
@@ -599,30 +615,59 @@ export default async function HomePage({ searchParams }: Params) {
             <h2 className="lp-h2">{c.ctaTitle}</h2>
             <p>{c.ctaSub}</p>
             <a className="lp-btn lp-btn-primary lp-btn-lg lp-arrow" href="/login">
-              {c.ctaBtn}
+              <span className="lp-btn-label">{c.ctaBtn}</span>
             </a>
           </div>
         </section>
       </SectionBg>
 
-      <footer className="lp-footer">
-        <a href={`/${q}`} className="lp-logo">
-          {look.logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={look.logoUrl} alt="ViralPX" className="lp-logo-img" />
-          ) : (
-            <>
-              Viral<span>PX</span>
-            </>
-          )}
-        </a>
-        <span>
-          <a href={`/blog?lang=${locale}`} style={{ marginInlineEnd: 14 }}>
-            {locale === 'en' ? 'Blog' : 'المدوّنة'}
-          </a>
-          © {new Date().getFullYear()} ViralPX — {c.rights}
-        </span>
-      </footer>
+      <SectionBg config={sections.footer}>
+        <footer className="lp-footer">
+          <div className="lp-footer-top">
+            <div className="lp-footer-brand">
+              <a href={`/${q}`} className="lp-logo">
+                {look.logoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={look.logoUrl} alt="ViralPX" className="lp-logo-img" />
+                ) : (
+                  <>
+                    <span className="lp-logo-mark" aria-hidden="true">
+                      <i />
+                    </span>
+                    <span className="lp-logo-text">
+                      <span>
+                        Viral<span>PX</span>
+                      </span>
+                      <span className="lp-tagline">{c.tagline}</span>
+                    </span>
+                  </>
+                )}
+              </a>
+              {c.footerNote && <p>{c.footerNote}</p>}
+            </div>
+
+            <nav className="lp-footer-links">
+              <strong>{c.footerLinksTitle}</strong>
+              {/* The blog is listed by the page rather than by the owner: it is
+                  the one part of this site that can rank for something other
+                  than the product's own name, so it should not be one edit away
+                  from having no link into it. */}
+              <a href={`/blog?lang=${locale}`}>{locale === 'en' ? 'Blog' : 'المدوّنة'}</a>
+              {c.footerLinks
+                .filter((l) => l.label && l.url)
+                .map((l) => (
+                  <a key={l.url + l.label} href={l.url.startsWith('#') ? `/${q}${l.url}` : l.url}>
+                    {l.label}
+                  </a>
+                ))}
+            </nav>
+          </div>
+
+          <div className="lp-footer-base">
+            © {new Date().getFullYear()} ViralPX — {c.rights}
+          </div>
+        </footer>
+      </SectionBg>
 
       <style>{landingTokensCss(look)}</style>
     </div>

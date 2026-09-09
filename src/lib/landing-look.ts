@@ -31,6 +31,8 @@ export type LandingLook = {
   panelVideoUrl: string | null
   showcaseStyle: string
   cardStyle: string
+  fontAr: string
+  fontLatin: string
 }
 
 export const DEFAULT_LOOK: LandingLook = {
@@ -66,6 +68,8 @@ export const DEFAULT_LOOK: LandingLook = {
   panelVideoUrl: null,
   showcaseStyle: 'portrait',
   cardStyle: 'solid',
+  fontAr: 'tajawal',
+  fontLatin: 'montserrat',
 }
 
 /**
@@ -145,13 +149,20 @@ export async function getLandingLook(): Promise<LandingLook> {
     const payload = await getPayload({ config })
     const g = (await payload.findGlobal({ slug: 'landing', depth: 0 })) as {
       theme?: Partial<LandingLook>
-      style?: { showcase?: string | null; card?: string | null }
+      style?: {
+        showcase?: string | null
+        card?: string | null
+        fontAr?: string | null
+        fontLatin?: string | null
+      }
     }
     return {
       ...DEFAULT_LOOK,
       ...setOnly<LandingLook>(g?.theme),
       showcaseStyle: g?.style?.showcase || DEFAULT_LOOK.showcaseStyle,
       cardStyle: g?.style?.card || DEFAULT_LOOK.cardStyle,
+      fontAr: g?.style?.fontAr || DEFAULT_LOOK.fontAr,
+      fontLatin: g?.style?.fontLatin || DEFAULT_LOOK.fontLatin,
     }
   } catch {
     return DEFAULT_LOOK

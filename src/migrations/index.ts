@@ -33,7 +33,9 @@ import * as migration_20260905_010000_search_tools from './20260905_010000_searc
 import * as migration_20260906_010000_posts from './20260906_010000_posts'
 import * as migration_20260908_010000_landing_panel from './20260908_010000_landing_panel'
 import * as migration_20260909_010000_landing_sections from './20260909_010000_landing_sections'
-import * as migration_20260909_030000_landing_panel_link from './20260909_030000_landing_panel_link';
+import * as migration_20260909_030000_landing_panel_link from './20260909_030000_landing_panel_link'
+import * as migration_20260909_050000_landing_chrome_bg from './20260909_050000_landing_chrome_bg'
+import * as migration_20260909_070000_landing_fonts from './20260909_070000_landing_fonts';
 
 export const migrations = [
   {
@@ -215,5 +217,15 @@ export const migrations = [
     up: migration_20260909_030000_landing_panel_link.up,
     down: migration_20260909_030000_landing_panel_link.down,
     name: '20260909_030000_landing_panel_link'
+  },
+  {
+    up: migration_20260909_050000_landing_chrome_bg.up,
+    down: migration_20260909_050000_landing_chrome_bg.down,
+    name: '20260909_050000_landing_chrome_bg'
+  },
+  {
+    up: migration_20260909_070000_landing_fonts.up,
+    down: migration_20260909_070000_landing_fonts.down,
+    name: '20260909_070000_landing_fonts'
   },
 ];

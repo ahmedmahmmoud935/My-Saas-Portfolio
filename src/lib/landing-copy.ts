@@ -84,6 +84,14 @@ export const LANDING_COPY = {
     ctaTitle: 'جاهز تطلق بورتفوليوك؟',
     ctaSub: 'ابدأ دلوقتي — أول بورتفوليو مجاني.',
     ctaBtn: 'ابدأ الآن',
+    footerNote: 'منصة بورتفوليو للمصممين وصنّاع المحتوى العرب.',
+    footerLinksTitle: 'روابط',
+    // Add, rename, repoint or delete these from the dashboard. A path starting
+    // with '#' jumps to a section of this page; anything else is a full link.
+    footerLinks: [
+      { label: 'الأسعار', url: '#pricing' },
+      { label: 'الأسئلة', url: '#faq' },
+    ],
     rights: 'كل الحقوق محفوظة',
   },
   en: {
@@ -164,6 +172,12 @@ export const LANDING_COPY = {
     ctaTitle: 'Ready to launch your portfolio?',
     ctaSub: 'Start now — your first portfolio is free.',
     ctaBtn: 'Get started',
+    footerNote: 'A portfolio platform for Arabic designers and creators.',
+    footerLinksTitle: 'Links',
+    footerLinks: [
+      { label: 'Pricing', url: '#pricing' },
+      { label: 'FAQ', url: '#faq' },
+    ],
     rights: 'All rights reserved',
   },
 }

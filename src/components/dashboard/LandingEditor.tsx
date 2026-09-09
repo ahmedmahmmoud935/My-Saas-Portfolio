@@ -10,6 +10,8 @@ import { saveLanding, type LandingImages, type LandingStyle, type LandingTheme, 
 import { LANDING_COPY } from '@/lib/landing-copy'
 import {
   DARK_PALETTES,
+  FONT_AR_OPTIONS,
+  FONT_LATIN_OPTIONS,
   LIGHT_PALETTES,
   LANDING_BG_SECTIONS,
   type SectionBgForm,
@@ -208,6 +210,30 @@ export default function LandingEditor({ initial }: { initial: Form }) {
     setF((p) => ({ ...p, [loc]: { ...p[loc], [key]: v } }))
   const setNav = (key: keyof Copy['nav'], v: string, loc: 'ar' | 'en') =>
     setF((p) => ({ ...p, [loc]: { ...p[loc], nav: { ...p[loc].nav, [key]: v } } }))
+  /* Footer links are the one list on this page whose length the owner sets,
+     so it needs add and remove as well as edit. The two languages are kept in
+     step by index: the same link, written twice, not two different lists. */
+  const setLink = (i: number, field: 'label' | 'url', v: string, loc: 'ar' | 'en') =>
+    setF((p) => ({
+      ...p,
+      [loc]: {
+        ...p[loc],
+        footerLinks: p[loc].footerLinks.map((l, j) => (j === i ? { ...l, [field]: v } : l)),
+      },
+    }))
+  const addLink = () =>
+    setF((p) => ({
+      ...p,
+      ar: { ...p.ar, footerLinks: [...p.ar.footerLinks, { label: '', url: '' }] },
+      en: { ...p.en, footerLinks: [...p.en.footerLinks, { label: '', url: '' }] },
+    }))
+  const removeLink = (i: number) =>
+    setF((p) => ({
+      ...p,
+      ar: { ...p.ar, footerLinks: p.ar.footerLinks.filter((_, j) => j !== i) },
+      en: { ...p.en, footerLinks: p.en.footerLinks.filter((_, j) => j !== i) },
+    }))
+
   // The two headline dials are numbers, and each language keeps its own.
   const setNum = (key: 'heroScale' | 'heroLeading', v: number, loc: 'ar' | 'en') =>
     setF((p) => ({ ...p, [loc]: { ...p[loc], [key]: v } }))
@@ -471,10 +497,63 @@ export default function LandingEditor({ initial }: { initial: Form }) {
           </>
         )}
 
-        {sec === 'footer' && <>{scalar('rights', t('حقوق النشر', 'Copyright text'))}</>}
+        {sec === 'footer' && (
+          <>
+            {scalar('footerNote', t('سطر تعريفي', 'A line about the product'), true)}
+            {scalar('rights', t('حقوق النشر', 'Copyright text'))}
+
+            <div className="mod-card">
+              <div className="mod-card-head">
+                <span />
+                <strong style={{ color: 'var(--sub)' }}>{t('روابط الفوتر', 'Footer links')}</strong>
+              </div>
+              {scalar('footerLinksTitle', t('عنوان العمود', 'Column heading'))}
+              <p className="icon-alt-note" style={{ margin: '0 0 12px' }}>
+                {t(
+                  'الرابط اللي بيبدأ بـ # بينقل لقسم في نفس الصفحة (زي #pricing). أي حاجة تانية بتتفتح كرابط كامل. رابط المدوّنة بيتحط لوحده.',
+                  'A link starting with # jumps to a section of this page (like #pricing). Anything else opens as a full link. The blog link is added on its own.',
+                )}
+              </p>
+
+              {f.ar.footerLinks.map((_, i) => (
+                <div className="mod-card" key={i} style={{ marginBottom: 10 }}>
+                  <div className="mod-card-head">
+                    <span />
+                    <button className="btn btn-sm" onClick={() => removeLink(i)}>
+                      {t('حذف', 'Remove')}
+                    </button>
+                  </div>
+                  <Field
+                    label={t('الاسم', 'Label')}
+                    ar={f.ar.footerLinks[i]?.label ?? ''}
+                    en={f.en.footerLinks[i]?.label ?? ''}
+                    onAr={(v) => setLink(i, 'label', v, 'ar')}
+                    onEn={(v) => setLink(i, 'label', v, 'en')}
+                  />
+                  <Field
+                    label={t('الرابط', 'URL')}
+                    ar={f.ar.footerLinks[i]?.url ?? ''}
+                    en={f.en.footerLinks[i]?.url ?? ''}
+                    onAr={(v) => setLink(i, 'url', v, 'ar')}
+                    onEn={(v) => setLink(i, 'url', v, 'en')}
+                  />
+                </div>
+              ))}
+
+              <button className="btn" onClick={addLink}>
+                + {t('رابط جديد', 'Add a link')}
+              </button>
+            </div>
+          </>
+        )}
 
         {sec === 'style' && (
           <>
+            <div className="grid-2" style={{ marginBottom: 20 }}>
+              <Opt label={t('الخط العربي', 'Arabic font')} value={f.style.fontAr} options={FONT_AR_OPTIONS} onChange={(v) => setStyle({ fontAr: v })} />
+              <Opt label={t('الخط اللاتيني (العناوين)', 'Latin font (headings)')} value={f.style.fontLatin} options={FONT_LATIN_OPTIONS} onChange={(v) => setStyle({ fontLatin: v })} />
+            </div>
+
             <div className="design-subtabs">
               <button className={`dst ${!light ? 'active' : ''}`} onClick={() => setLight(false)}>
                 🌙 {t('داكن', 'Dark')}

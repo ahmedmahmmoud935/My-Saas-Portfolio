@@ -2,6 +2,7 @@ import type { GlobalConfig } from 'payload'
 
 /** Landing sections a backdrop can be attached to (mirrors LANDING_BG_SECTIONS). */
 export const LANDING_SECTION_IDS = [
+  'header',
   'hero',
   'features',
   'how',
@@ -11,6 +12,7 @@ export const LANDING_SECTION_IDS = [
   'pricing',
   'faq',
   'cta',
+  'footer',
 ] as const
 
 /**
@@ -67,6 +69,18 @@ export const Landing: GlobalConfig = {
           type: 'text',
           defaultValue: 'solid',
           admin: { description: 'solid | outline | glass | elevated' },
+        },
+        {
+          name: 'fontAr',
+          type: 'text',
+          defaultValue: 'tajawal',
+          admin: { description: 'tajawal | cairo | almarai | markazi' },
+        },
+        {
+          name: 'fontLatin',
+          type: 'text',
+          defaultValue: 'montserrat',
+          admin: { description: 'montserrat | inter | playfair | cormorant | bebas' },
         },
       ],
     },

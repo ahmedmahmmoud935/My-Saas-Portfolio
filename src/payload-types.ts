@@ -1845,13 +1845,35 @@ export interface Landing {
      * solid | outline | glass | elevated
      */
     card?: string | null;
+    /**
+     * tajawal | cairo | almarai | markazi
+     */
+    fontAr?: string | null;
+    /**
+     * montserrat | inter | playfair | cormorant | bebas
+     */
+    fontLatin?: string | null;
   };
   /**
    * Give one section its own backdrop — a colour, a picture or a looping video. Sections not listed here keep the page background. A row serves both themes; only the veil over it changes colour.
    */
   sectionBg?:
     | {
-        section?: ('hero' | 'features' | 'how' | 'panel' | 'showcase' | 'compare' | 'pricing' | 'faq' | 'cta') | null;
+        section?:
+          | (
+              | 'header'
+              | 'hero'
+              | 'features'
+              | 'how'
+              | 'panel'
+              | 'showcase'
+              | 'compare'
+              | 'pricing'
+              | 'faq'
+              | 'cta'
+              | 'footer'
+            )
+          | null;
         mode?: ('color' | 'image' | 'video') | null;
         color?: string | null;
         image?: (number | null) | Media;
@@ -1903,6 +1925,8 @@ export interface LandingSelect<T extends boolean = true> {
     | {
         showcase?: T;
         card?: T;
+        fontAr?: T;
+        fontLatin?: T;
       };
   sectionBg?:
     | T

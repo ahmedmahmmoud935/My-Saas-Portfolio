@@ -26,6 +26,10 @@ export type LandingStyle = {
   showcase: string
   /** solid | outline | glass | elevated */
   card: string
+  /** The Arabic/body face, and the Latin/heading one. Same names the
+      portfolios use, and the same faces — they are already loaded. */
+  fontAr: string
+  fontLatin: string
 }
 /** The two ids Google gives you for the platform's own site. */
 export type LandingTools = { searchConsole: string; analyticsId: string }
@@ -71,7 +75,12 @@ function setOnly<T extends object>(o: unknown): Partial<T> {
   ) as Partial<T>
 }
 
-const DEFAULT_LANDING_STYLE: LandingStyle = { showcase: 'portrait', card: 'solid' }
+const DEFAULT_LANDING_STYLE: LandingStyle = {
+  showcase: 'portrait',
+  card: 'solid',
+  fontAr: 'tajawal',
+  fontLatin: 'montserrat',
+}
 
 async function ownerCtx() {
   const ctx = await getDashboardContext()

@@ -75,6 +75,7 @@ export const BG_SECTIONS: { id: string; ar: string; en: string }[] = [
 
 /** The landing page's own sections (matches LANDING_SECTION_IDS server-side). */
 export const LANDING_BG_SECTIONS: { id: string; ar: string; en: string }[] = [
+  { id: 'header', ar: 'الشريط العلوي', en: 'Header' },
   { id: 'hero', ar: 'القسم الرئيسي', en: 'Hero' },
   { id: 'features', ar: 'المميزات', en: 'Features' },
   { id: 'how', ar: 'طريقة العمل', en: 'How it works' },
@@ -84,6 +85,7 @@ export const LANDING_BG_SECTIONS: { id: string; ar: string; en: string }[] = [
   { id: 'pricing', ar: 'الأسعار', en: 'Pricing' },
   { id: 'faq', ar: 'الأسئلة', en: 'FAQ' },
   { id: 'cta', ar: 'دعوة الفعل', en: 'Call to action' },
+  { id: 'footer', ar: 'الفوتر', en: 'Footer' },
 ]
 
 /**
