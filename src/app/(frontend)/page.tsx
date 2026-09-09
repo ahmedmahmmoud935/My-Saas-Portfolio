@@ -8,6 +8,8 @@ import { mediaUrl } from '@/lib/portfolio'
 import SectionBg, { type SectionBgConfig } from '@/components/portfolio/SectionBg'
 import LandingThemeToggle from '@/components/portfolio/LandingThemeToggle'
 import Analytics from '@/components/portfolio/Analytics'
+import ShowcaseRail from '@/components/portfolio/ShowcaseRail'
+import { LandingNav, LandingFooter } from '@/components/portfolio/LandingChrome'
 import { DEFAULT_LOOK, landingTokensCss, setOnly, type LandingLook } from '@/lib/landing-look'
 import './landing.css'
 
@@ -259,48 +261,13 @@ export default async function HomePage({ searchParams }: Params) {
 
       <Analytics id={tools?.analyticsId} />
       <SectionBg config={sections.header}>
-      <header className="lp-nav">
-        <a href={`/${q}`} className="lp-logo">
-          {look.logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={look.logoUrl} alt="ViralPX" className="lp-logo-img" />
-          ) : (
-            <>
-              <span className="lp-logo-mark" aria-hidden="true">
-                <i />
-              </span>
-              <span className="lp-logo-text">
-                <span>
-                  Viral<span>PX</span>
-                </span>
-                <span className="lp-tagline">{c.tagline}</span>
-              </span>
-            </>
-          )}
-        </a>
-        <nav className="lp-nav-links">
-          <a href="#features">{c.nav.features}</a>
-          <a href="#showcase">{c.nav.showcase}</a>
-          <a href="#compare">{c.nav.compare}</a>
-          <a href="#pricing">{c.nav.pricing}</a>
-          <a href="#faq">{c.nav.faq}</a>
-          {/* The blog is the only part of this site that can rank for anything
-              other than the product's own name. */}
-          <a href={`/blog?lang=${locale}`}>{locale === 'en' ? 'Blog' : 'المدوّنة'}</a>
-        </nav>
-        <div className="lp-nav-actions">
-          <a className="lp-lang" href={locale === 'en' ? '/?lang=ar' : '/'}>
-            {locale === 'en' ? 'ع' : 'EN'}
-          </a>
-          <LandingThemeToggle />
-          <a className="lp-nav-login" href="/login">
-            {c.login}
-          </a>
-          <a className="lp-btn lp-btn-primary lp-arrow" href="/login">
-            <span className="lp-btn-label">{c.cta}</span>
-          </a>
-        </div>
-      </header>
+        <LandingNav
+          look={look}
+          copy={c}
+          locale={locale}
+          atHome
+          otherLang={locale === 'en' ? '/?lang=ar' : '/'}
+        />
       </SectionBg>
 
       <SectionBg config={sections.hero}>
@@ -458,9 +425,13 @@ export default async function HomePage({ searchParams }: Params) {
           {/* Two of the six get a double-width card. Six equal rectangles gave
               the eye nowhere to land first; which two is a property of the
               layout, so it is decided here and not in the copy. */}
-          <div className="lp-bento">
-            {c.features.map((f, i) => (
-              <div className={`lp-card${i === 0 || i === 3 ? ' wide' : ''}`} key={f.t}>
+          <div className="lp-grid lp-grid-3">
+            {c.features.map((f) => (
+              <div
+                className={`lp-card${f.bgUrl ? ' has-bg' : ''}`}
+                key={f.t}
+                style={f.bgUrl ? { backgroundImage: `url(${JSON.stringify(f.bgUrl)})` } : undefined}
+              >
                 <div className="lp-card-icon">
                   {f.iconUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -511,7 +482,9 @@ export default async function HomePage({ searchParams }: Params) {
           {showcase.length === 0 ? (
             <p className="lp-empty">{c.showcaseEmpty}</p>
           ) : (
-            <div
+            <ShowcaseRail
+              rail={showcaseRail}
+              names={showcase.map((s) => s.name)}
               className={
                 showcaseRail
                   ? `lp-rail lp-showcase sc-${showcaseStyle}`
@@ -539,7 +512,7 @@ export default async function HomePage({ searchParams }: Params) {
                   <span className="lp-tenant-go">{c.visit} →</span>
                 </a>
               ))}
-            </div>
+            </ShowcaseRail>
           )}
         </section>
       </SectionBg>
@@ -631,51 +604,7 @@ export default async function HomePage({ searchParams }: Params) {
       </SectionBg>
 
       <SectionBg config={sections.footer}>
-        <footer className="lp-footer">
-          <div className="lp-footer-top">
-            <div className="lp-footer-brand">
-              <a href={`/${q}`} className="lp-logo">
-                {look.logoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={look.logoUrl} alt="ViralPX" className="lp-logo-img" />
-                ) : (
-                  <>
-                    <span className="lp-logo-mark" aria-hidden="true">
-                      <i />
-                    </span>
-                    <span className="lp-logo-text">
-                      <span>
-                        Viral<span>PX</span>
-                      </span>
-                      <span className="lp-tagline">{c.tagline}</span>
-                    </span>
-                  </>
-                )}
-              </a>
-              {c.footerNote && <p>{c.footerNote}</p>}
-            </div>
-
-            <nav className="lp-footer-links">
-              <strong>{c.footerLinksTitle}</strong>
-              {/* The blog is listed by the page rather than by the owner: it is
-                  the one part of this site that can rank for something other
-                  than the product's own name, so it should not be one edit away
-                  from having no link into it. */}
-              <a href={`/blog?lang=${locale}`}>{locale === 'en' ? 'Blog' : 'المدوّنة'}</a>
-              {c.footerLinks
-                .filter((l) => l.label && l.url)
-                .map((l) => (
-                  <a key={l.url + l.label} href={l.url.startsWith('#') ? `/${q}${l.url}` : l.url}>
-                    {l.label}
-                  </a>
-                ))}
-            </nav>
-          </div>
-
-          <div className="lp-footer-base">
-            © {new Date().getFullYear()} ViralPX — {c.rights}
-          </div>
-        </footer>
+        <LandingFooter look={look} copy={c} locale={locale} atHome />
       </SectionBg>
 
       <style>{landingTokensCss(look)}</style>

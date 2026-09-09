@@ -438,6 +438,21 @@ export default function LandingEditor({
               <div className="mod-card" key={i}>
                 <div className="mod-card-head"><span /><strong style={{ color: 'var(--sub)' }}>#{i + 1}</strong></div>
                 <IconInput label={t('الأيقونة', 'Icon')} value={f.ar.features[i].icon} url={f.ar.features[i].iconUrl} onChange={(v) => setArrBoth('features', i, 'icon', v)} onUrl={(v) => setArrBoth('features', i, 'iconUrl', v)} />
+
+                <label className="lbl" style={{ display: 'block' }}>{t('خلفية الكارت', 'Card background')}</label>
+                <p className="icon-alt-note" style={{ margin: '0 0 8px' }}>
+                  {t(
+                    'اختيارية. الصورة بتتحط تحت طبقة خفيفة عشان الكلام يفضل مقروء.',
+                    'Optional. It sits under a light veil so the words stay readable.',
+                  )}
+                </p>
+                <MediaUploader
+                  compact
+                  accept="image/*"
+                  previewUrl={f.ar.features[i].bgUrl || null}
+                  onUploaded={(m) => setArrBoth('features', i, 'bgUrl', m.url ?? m.thumbUrl ?? '')}
+                  onRemove={f.ar.features[i].bgUrl ? () => setArrBoth('features', i, 'bgUrl', '') : undefined}
+                />
                 <Field label={t('العنوان', 'Title')} ar={f.ar.features[i].t} en={f.en.features[i].t} onAr={(v) => setArr('features', i, 't', v, 'ar')} onEn={(v) => setArr('features', i, 't', v, 'en')} />
                 <Field label={t('الوصف', 'Description')} ar={f.ar.features[i].d} en={f.en.features[i].d} onAr={(v) => setArr('features', i, 'd', v, 'ar')} onEn={(v) => setArr('features', i, 'd', v, 'en')} multiline />
               </div>

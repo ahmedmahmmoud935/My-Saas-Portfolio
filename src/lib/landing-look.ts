@@ -10,6 +10,8 @@
  */
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { LANDING_COPY, mergeCopy } from './landing-copy'
+import { mediaUrl } from './portfolio'
 
 export type LandingLook = {
   accent: string
@@ -170,5 +172,35 @@ export async function getLandingLook(): Promise<LandingLook> {
     }
   } catch {
     return DEFAULT_LOOK
+  }
+}
+
+/**
+ * The palette and the copy together — what a page needs to wear this site's
+ * nav and footer without being the landing page.
+ */
+export async function getLandingChrome(locale: 'ar' | 'en') {
+  try {
+    const payload = await getPayload({ config })
+    const g = (await payload.findGlobal({ slug: 'landing', locale, depth: 1 })) as {
+      content?: unknown
+      theme?: Partial<LandingLook>
+      style?: { showcase?: string | null; card?: string | null; fontAr?: string | null; fontLatin?: string | null }
+      images?: Record<string, unknown>
+    }
+    const im = g?.images ?? {}
+    return {
+      look: {
+        ...DEFAULT_LOOK,
+        ...setOnly<LandingLook>(g?.theme),
+        logoUrl: mediaUrl((im.logo as never) ?? null, 'thumb'),
+        fontAr: g?.style?.fontAr || DEFAULT_LOOK.fontAr,
+        fontLatin: g?.style?.fontLatin || DEFAULT_LOOK.fontLatin,
+        cardStyle: g?.style?.card || DEFAULT_LOOK.cardStyle,
+      } as LandingLook,
+      copy: mergeCopy(LANDING_COPY[locale], g?.content),
+    }
+  } catch {
+    return { look: DEFAULT_LOOK, copy: LANDING_COPY[locale] }
   }
 }

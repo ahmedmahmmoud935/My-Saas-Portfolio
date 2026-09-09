@@ -4,8 +4,8 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { mediaUrl } from '@/lib/portfolio'
 import { alternatesFor } from '@/lib/seo'
-import { LANDING_COPY } from '@/lib/landing-copy'
-import { getLandingLook, landingTokensCss } from '@/lib/landing-look'
+import { getLandingChrome, landingTokensCss } from '@/lib/landing-look'
+import { LandingNav, LandingFooter } from '@/components/portfolio/LandingChrome'
 import '../landing.css'
 
 export const dynamic = 'force-dynamic'
@@ -51,31 +51,25 @@ export default async function BlogIndex({ searchParams }: Params) {
   const { lang } = (await searchParams) ?? {}
   const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
   const posts = await load(locale)
-  const c = LANDING_COPY[locale]
-  // The same palette the landing page is wearing — the blog is the same site,
-  // so a hard-coded dark theme here would break the moment the owner picks
-  // their own colours or the reader switches to light.
-  const look = await getLandingLook()
+  // The same palette AND the same nav and footer the landing page wears. The
+  // blog is not a second site, and it used to arrive looking like one.
+  const { look, copy: c } = await getLandingChrome(locale)
 
   return (
-    <div className="lp blog" dir={locale === 'en' ? 'ltr' : 'rtl'} lang={locale}>
-      <header className="lp-nav">
-        <a href={`/?lang=${locale}`} className="lp-logo">
-          Viral<span>PX</span>
-        </a>
-        <nav className="lp-nav-links">
-          <a href={`/?lang=${locale}#features`}>{c.nav.features}</a>
-          <a href={`/?lang=${locale}#pricing`}>{c.nav.pricing}</a>
-        </nav>
-        <div className="lp-nav-actions">
-          <a className="lp-lang" href={locale === 'en' ? '/blog?lang=ar' : '/blog?lang=en'}>
-            {locale === 'en' ? 'ع' : 'EN'}
-          </a>
-          <a className="lp-btn lp-btn-ghost" href="/login">
-            {c.login}
-          </a>
-        </div>
-      </header>
+    <div
+      className="lp blog"
+      data-card={look.cardStyle}
+      data-font-ar={look.fontAr}
+      data-font-latin={look.fontLatin}
+      dir={locale === 'en' ? 'ltr' : 'rtl'}
+      lang={locale}
+    >
+      <LandingNav
+        look={look}
+        copy={c}
+        locale={locale}
+        otherLang={locale === 'en' ? '/blog?lang=ar' : '/blog?lang=en'}
+      />
 
       <section className="lp-sec">
         <h1 className="lp-h2" style={{ marginBottom: 12 }}>
@@ -104,6 +98,8 @@ export default async function BlogIndex({ searchParams }: Params) {
           </div>
         )}
       </section>
+
+      <LandingFooter look={look} copy={c} locale={locale} />
 
       <style>{landingTokensCss(look)}</style>
     </div>

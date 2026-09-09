@@ -216,7 +216,12 @@ iframe.lp-mock-media { border: 0; }
    translated copy rather than baked into an image. */
 .lp-mock { max-width: 940px; margin: 0 auto; border-radius: 20px; overflow: hidden;
   background: var(--lp-bg2); border: 1px solid var(--lp-line-2);
-  box-shadow: 0 26px 60px -34px rgba(0,0,0,.7); }
+  /* The shadow arrives on hover. Permanently lit, it read as a thing already
+     being pointed at; held back, it becomes the page's answer to the pointer. */
+  box-shadow: 0 0 0 rgba(0,0,0,0);
+  transition: box-shadow .28s ease, transform .28s ease; }
+.lp-mock:hover { box-shadow: 0 30px 66px -34px rgba(0,0,0,.72); transform: translateY(-2px); }
+@media (prefers-reduced-motion: reduce) { .lp-mock:hover { transform: none; } }
 
 /* The window bar. A title over the panel rather than beside it, so the panel
    reads as one object — and so a video that fills the frame edge to edge still
@@ -308,18 +313,20 @@ iframe.lp-mock-media { border: 0; }
 .lp-card h3 { margin: 0 0 9px; font-size: 19px; font-weight: 800; }
 .lp-card p, .lp-step p { color: var(--lp-sub); line-height: 1.8; margin: 0; font-size: 14.5px; }
 
-/* Bento: the same cards, at two sizes, so the eye has somewhere to land
-   first instead of six equal rectangles. */
-.lp-bento { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-.lp-bento .lp-card { display: flex; flex-direction: column; }
-.lp-bento .lp-card.wide { grid-column: span 2; padding: 34px; }
-.lp-bento .lp-card.wide h3 { font-size: 23px; }
-.lp-bento .lp-card.wide p { font-size: 15px; max-width: 52ch; }
-@media (max-width: 860px) {
-  .lp-bento { grid-template-columns: 1fr 1fr; }
-  .lp-bento .lp-card.wide { grid-column: span 2; }
-}
-@media (max-width: 580px) { .lp-bento { grid-template-columns: 1fr; } .lp-bento .lp-card.wide { grid-column: auto; } }
+/* A picture behind a card. It sits under a veil rather than straight behind
+   the words: the owner picks the image, not its contrast, and unveiled
+   photography swallows body text on roughly half of them. */
+.lp-card.has-bg { position: relative; isolation: isolate; overflow: hidden;
+  background-size: cover; background-position: center; }
+.lp-card.has-bg::before { content: ''; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(to top,
+    color-mix(in srgb, var(--lp-bg2) 92%, transparent),
+    color-mix(in srgb, var(--lp-bg2) 68%, transparent)); }
+.lp-card.has-bg:hover::before {
+  background: linear-gradient(to top,
+    color-mix(in srgb, var(--lp-bg2) 86%, transparent),
+    color-mix(in srgb, var(--lp-bg2) 56%, transparent)); }
+.lp-card.has-bg::before { transition: background .28s ease; }
 
 .lp-step { text-align: center; padding: 10px; }
 .lp-step-n { width: 54px; height: 54px; margin: 0 auto 16px; border-radius: 50%;
@@ -368,15 +375,22 @@ iframe.lp-mock-media { border: 0; }
   /* The padding pulls the row out to the section's edges and back, so the
      first card lines up with the heading and the last one can still reach the
      middle of the screen. */
-  padding: 4px 0 22px; margin: 0 -4px; scroll-padding-inline: 4px;
-  scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--lp-text) 22%, transparent) transparent; }
+  padding: 4px 0; margin: 0 -4px; scroll-padding-inline: 4px;
+  /* The names above are the control now, so the bar under the row is noise. */
+  scrollbar-width: none; }
+.lp-rail::-webkit-scrollbar { display: none; }
+
+/* One name per portfolio. A scrollbar says "this scrolls" and nothing else;
+   the names say who is in there, which is the question a reader actually has
+   in front of a row of strangers' work. */
+.lp-rail-names { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
+  margin: 0 0 26px; }
+.lp-rail-name { border: 1px solid var(--lp-line-2); background: var(--lp-bg2);
+  color: var(--lp-sub); border-radius: 999px; padding: 8px 16px; font-size: 13px;
+  font-weight: 700; cursor: pointer; transition: color .18s, border-color .18s, background .18s; }
+.lp-rail-name:hover { color: var(--lp-text); border-color: var(--o); }
+.lp-rail-name.active { background: var(--o); border-color: var(--o); color: var(--lp-on-o); }
 .lp-rail > * { flex: 0 0 clamp(230px, 26vw, 300px); scroll-snap-align: start; }
-.lp-rail::-webkit-scrollbar { height: 6px; }
-.lp-rail::-webkit-scrollbar-track { background: transparent; }
-.lp-rail::-webkit-scrollbar-thumb { border-radius: 999px;
-  background: color-mix(in srgb, var(--lp-text) 20%, transparent); }
-.lp-rail::-webkit-scrollbar-thumb:hover { background: var(--o); }
 /* The plate layout hangs a photograph above its card, so the rail needs the
    same room at the top that the grid gives it. */
 .lp-rail.sc-plate { padding-top: 50px; }
