@@ -568,18 +568,22 @@ html[data-theme='light'] .lp[data-card='elevated'] .lp-faq-item {
    given 1.6fr it took 900px to hold 400px of words, and the leftover became a
    hole in the middle of the footer with one narrow column stranded past it.
    The link columns take the rest and end at the page's edge. */
-.lp-footer-top { display: grid; grid-template-columns: minmax(0, 36ch) 1fr;
+.lp-footer-top { display: grid; grid-template-columns: minmax(0, 40ch) 1fr;
   gap: 40px 64px; align-items: start; }
 /* The columns stay together at the far end, opposite the brand. Spread across
    the row instead, one of them drifted into the middle and the footer read as
    three unrelated things rather than two sides. */
 .lp-footer-cols { display: flex; justify-content: flex-end; gap: 72px; flex-wrap: wrap; }
 .lp-footer-brand { max-width: 42ch; }
-/* The wordmark carries the footer, so it is given the size it has in the nav
-   rather than shrinking into a corner of it. */
-.lp-footer-brand .lp-logo { font-size: 22px; }
-.lp-footer-brand .lp-logo-img { height: 40px; }
-.lp-footer-brand p { margin: 16px 0 0; line-height: 1.8; font-size: 14px; }
+/* The wordmark carries this side of the footer on its own, so it is bigger
+   here than in the nav, not smaller — the link columns opposite it are two
+   full columns of text, and a 40px mark with a caption under it had nothing
+   like their weight. */
+.lp-footer-brand .lp-logo { font-size: 26px; }
+.lp-footer-brand .lp-logo-mark { width: 46px; height: 46px; border-radius: 13px; }
+.lp-footer-brand .lp-logo-mark i { width: 16px; height: 16px; }
+.lp-footer-brand .lp-logo-img { height: 56px; }
+.lp-footer-brand p { margin: 20px 0 0; line-height: 1.8; font-size: 15.5px; }
 .lp-footer-links { display: flex; flex-direction: column; gap: 11px; align-items: flex-start; }
 .lp-footer-links strong { color: var(--lp-text); font-size: 12px; font-weight: 800;
   letter-spacing: 1.4px; text-transform: uppercase; margin-bottom: 4px; }
