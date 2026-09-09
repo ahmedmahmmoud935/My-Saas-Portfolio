@@ -140,18 +140,34 @@ export default function ArticlesManager({
               <textarea className="field" rows={8} dir="ltr" value={edit.contentHtml} onChange={(e) => setEdit({ ...edit, contentHtml: e.target.value })} style={{ textAlign: 'start', fontFamily: 'monospace' }} />
               <label className="lbl">{t('الوسوم (مفصولة بفاصلة)', 'Tags (comma separated)')}</label>
               <input className="field" value={edit.tags} onChange={(e) => setEdit({ ...edit, tags: e.target.value })} />
-              <div className="grid-2">
-                <div>
-                  <label className="lbl">{t('دقائق القراءة', 'Read minutes')}</label>
-                  <input className="field" type="number" value={edit.readMin} onChange={(e) => setEdit({ ...edit, readMin: Number(e.target.value) })} />
+              <div>
+                <label className="lbl">{t('دقائق القراءة', 'Read minutes')}</label>
+                <input className="field" type="number" value={edit.readMin} onChange={(e) => setEdit({ ...edit, readMin: Number(e.target.value) })} />
+              </div>
+
+              {/* The one control that decides whether any of this is on the
+                  site. It used to be an unlabelled switch in the right half of
+                  a two-column row, under the heading "Status" — which reads as
+                  a thing being reported, not a thing you press. A whole draft
+                  sat unpublished because its author could not find it. */}
+              <div className={`pub-row ${edit.published ? 'live' : ''}`}>
+                <div className="pub-state">
+                  <strong>{edit.published ? t('منشور', 'Published') : t('مسودّة', 'Draft')}</strong>
+                  <span>
+                    {edit.published
+                      ? t('ظاهر على الموقع', 'Visible on the site')
+                      : t('مش ظاهر على الموقع لحد ما تنشره', 'Not on the site until you publish it')}
+                  </span>
                 </div>
-                <div>
-                  <label className="lbl">{t('الحالة', 'Status')}</label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 8, justifyContent: 'flex-end' }}>
-                    <span style={{ fontSize: 13 }}>{edit.published ? t('منشور', 'Published') : t('مسودّة', 'Draft')}</span>
-                    <div className={`toggle ${edit.published ? 'on' : ''}`} role="switch" aria-checked={edit.published} onClick={() => setEdit({ ...edit, published: !edit.published })} />
-                  </div>
-                </div>
+                <button
+                  type="button"
+                  className={`btn ${edit.published ? '' : 'btn-primary'}`}
+                  onClick={() => setEdit({ ...edit, published: !edit.published })}
+                >
+                  {edit.published
+                    ? t('رجّعه مسودّة', 'Back to draft')
+                    : t('انشر المقال', 'Publish')}
+                </button>
               </div>
 
               {/* ── SEO ────────────────────────────────────────────────────
