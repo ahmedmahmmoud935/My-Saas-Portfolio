@@ -1851,7 +1851,7 @@ export interface Landing {
    */
   sectionBg?:
     | {
-        section?: ('hero' | 'features' | 'how' | 'showcase' | 'compare' | 'pricing' | 'faq' | 'cta') | null;
+        section?: ('hero' | 'features' | 'how' | 'panel' | 'showcase' | 'compare' | 'pricing' | 'faq' | 'cta') | null;
         mode?: ('color' | 'image' | 'video') | null;
         color?: string | null;
         image?: (number | null) | Media;
@@ -1873,6 +1873,7 @@ export interface Landing {
     heroDim?: number | null;
     ogImage?: (number | null) | Media;
     panel?: (number | null) | Media;
+    panelVideoUrl?: string | null;
   };
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -1931,6 +1932,7 @@ export interface LandingSelect<T extends boolean = true> {
         heroDim?: T;
         ogImage?: T;
         panel?: T;
+        panelVideoUrl?: T;
       };
   updatedAt?: T;
   createdAt?: T;

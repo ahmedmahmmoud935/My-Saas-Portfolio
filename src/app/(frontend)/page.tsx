@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { LANDING_COPY, mergeCopy } from '@/lib/landing-copy'
+import { resolveVideoUrl } from '@/lib/video'
 import { mediaUrl } from '@/lib/portfolio'
 import SectionBg, { type SectionBgConfig } from '@/components/portfolio/SectionBg'
 import LandingThemeToggle from '@/components/portfolio/LandingThemeToggle'
@@ -61,6 +62,7 @@ async function getLanding(locale: 'ar' | 'en') {
               ? 'video'
               : 'image')
           : null,
+        panelVideoUrl: (im.panelVideoUrl as string) || null,
         showcaseStyle: g?.style?.showcase || DEFAULT_LOOK.showcaseStyle,
         cardStyle: g?.style?.card || DEFAULT_LOOK.cardStyle,
       } as LandingLook,
@@ -217,6 +219,9 @@ export default async function HomePage({ searchParams }: Params) {
   const q = locale === 'en' ? '?lang=en' : ''
   const [showcase, stats] = await Promise.all([getShowcase(), getStats()])
   const n = new Intl.NumberFormat(locale === 'en' ? 'en' : 'ar-EG')
+  // A link is the fallback for the panel, not a competitor: an uploaded file
+  // is the more deliberate choice, so it wins whenever there is one.
+  const panelLink = look.panelUrl ? null : resolveVideoUrl(look.panelVideoUrl)
   const showcaseStyle = look.showcaseStyle
   const cardStyle = look.cardStyle
 
@@ -290,7 +295,15 @@ export default async function HomePage({ searchParams }: Params) {
             <div className="lp-hero-glow" />
           )}
           <span className="lp-eyebrow">{c.heroEyebrow}</span>
-          <h1 className="lp-h1">
+          <h1
+            className="lp-h1"
+            style={
+              {
+                '--lp-h1-scale': (c.heroScale ?? 100) / 100,
+                '--lp-h1-leading': (c.heroLeading ?? 100) / 100,
+              } as React.CSSProperties
+            }
+          >
             {c.heroTitle} <span className="lp-accent">{c.heroTitleAccent}</span>
           </h1>
           <p className="lp-lead">{c.heroSub}</p>
@@ -309,7 +322,12 @@ export default async function HomePage({ searchParams }: Params) {
       </SectionBg>
 
       <SectionBg config={sections.panel}>
-        <section className="lp-panel-sec">
+        <section className="lp-panel-sec" id="panel">
+          <div className="lp-sec-head">
+            <span className="lp-eyebrow-sm">{c.panelEyebrow}</span>
+            <h2 className="lp-h2">{c.panelHeading}</h2>
+          </div>
+
           {/* A band of its own, below the hero rather than inside it: on the
               hero's backdrop the panel read as a card dropped onto a
               photograph. Here it has its own ground, and its own entry in the
@@ -332,6 +350,27 @@ export default async function HomePage({ searchParams }: Params) {
                 playsInline
                 preload="metadata"
               />
+            ) : !look.panelUrl && panelLink ? (
+              panelLink.kind === 'file' ? (
+                <video
+                  className="lp-mock-media"
+                  src={panelLink.url}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                />
+              ) : (
+                <iframe
+                  className="lp-mock-media"
+                  src={panelLink.url}
+                  title={c.panelTitle}
+                  loading="lazy"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              )
             ) : look.panelUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img className="lp-mock-media" src={look.panelUrl} alt={c.panelTitle} />
@@ -487,19 +526,19 @@ export default async function HomePage({ searchParams }: Params) {
             <h2 className="lp-h2">{c.compareTitle}</h2>
           </div>
           <div className="lp-vs">
-            <div className="lp-vs-col lp-vs-bad">
-              <h3>✕ {c.compareOldTitle}</h3>
-              <ul>
-                {c.compareOld.map((t) => (
-                  <li key={t}>{t}</li>
-                ))}
-              </ul>
-            </div>
             <div className="lp-vs-col lp-vs-good">
               <span className="lp-vs-tag">ViralPX</span>
               <h3>✓ {c.compareNewTitle}</h3>
               <ul>
                 {c.compareNew.map((t) => (
+                  <li key={t}>{t}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="lp-vs-col lp-vs-bad">
+              <h3>✕ {c.compareOldTitle}</h3>
+              <ul>
+                {c.compareOld.map((t) => (
                   <li key={t}>{t}</li>
                 ))}
               </ul>

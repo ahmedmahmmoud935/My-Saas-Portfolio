@@ -43,6 +43,8 @@ export type LandingImages = {
   panelUrl: string | null
   /** Which of the two it is, so the page knows whether to render a <video>. */
   panelKind: 'image' | 'video' | null
+  /** A video that lives somewhere else — used when no file was uploaded. */
+  panelVideoUrl: string
 }
 
 // Not exported: a 'use server' module may only export async functions.
@@ -125,6 +127,7 @@ export async function getLandingForm(): Promise<{
       // has no 'card' size to ask for.
       panelUrl: mediaUrl((im.panel as never) ?? null),
       panelKind: panelKind(im.panel),
+      panelVideoUrl: (im.panelVideoUrl as string) ?? '',
     },
     style: { ...DEFAULT_LANDING_STYLE, ...setOnly<LandingStyle>(g.style) },
     tools: {
@@ -200,6 +203,7 @@ export async function saveLanding(
                 heroDim: images.heroDim,
                 ogImage: images.ogId ?? null,
                 panel: images.panelId ?? null,
+                panelVideoUrl: images.panelVideoUrl || null,
               },
             }
           : {}),

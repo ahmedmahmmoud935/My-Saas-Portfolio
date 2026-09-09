@@ -26,22 +26,50 @@ type Form = {
   sectionBg: SectionBgForm[]
 }
 
-const SECTIONS = [
-  { id: 'header', ar: 'الهيدر', en: 'Header' },
-  { id: 'hero', ar: 'القسم الرئيسي', en: 'Hero' },
-  { id: 'titles', ar: 'عناوين الأقسام', en: 'Section titles' },
-  { id: 'features', ar: 'المميزات', en: 'Features' },
-  { id: 'how', ar: 'الخطوات', en: 'Steps' },
-  { id: 'compare', ar: 'المقارنة', en: 'Comparison' },
-  { id: 'faq', ar: 'الأسئلة', en: 'FAQ' },
-  { id: 'cta', ar: 'دعوة الفعل', en: 'Call to action' },
-  { id: 'footer', ar: 'الفوتر', en: 'Footer' },
-  { id: 'style', ar: 'الألوان', en: 'Colours' },
-  { id: 'cards', ar: 'شكل الكروت', en: 'Card style' },
-  { id: 'backgrounds', ar: 'خلفيات الأقسام', en: 'Section backgrounds' },
-  { id: 'images', ar: 'الصور', en: 'Images' },
-  { id: 'tools', ar: 'أدوات جوجل', en: 'Google tools' },
+/**
+ * The editor's tabs, in the same three groups the client dashboard uses.
+ *
+ * Fourteen equally-weighted pills in one row gave no clue that half of them
+ * are about what the page says and the rest about how it looks — you read the
+ * whole row every time to find one. The grouping is presentational: the ids
+ * and what each tab edits are unchanged.
+ */
+const SECTION_GROUPS = [
+  {
+    ar: 'المحتوى',
+    en: 'Content',
+    items: [
+      { id: 'hero', ar: 'القسم الرئيسي', en: 'Hero' },
+      { id: 'features', ar: 'المميزات', en: 'Features' },
+      { id: 'how', ar: 'الخطوات', en: 'Steps' },
+      { id: 'compare', ar: 'المقارنة', en: 'Comparison' },
+      { id: 'faq', ar: 'الأسئلة', en: 'FAQ' },
+      { id: 'cta', ar: 'دعوة الفعل', en: 'Call to action' },
+      { id: 'titles', ar: 'عناوين الأقسام', en: 'Section titles' },
+    ],
+  },
+  {
+    ar: 'التصميم',
+    en: 'Design',
+    items: [
+      { id: 'style', ar: 'الألوان', en: 'Colours' },
+      { id: 'cards', ar: 'شكل الكروت', en: 'Card style' },
+      { id: 'images', ar: 'الصور والفيديو', en: 'Images & video' },
+      { id: 'backgrounds', ar: 'خلفيات الأقسام', en: 'Section backgrounds' },
+    ],
+  },
+  {
+    ar: 'الموقع',
+    en: 'Site',
+    items: [
+      { id: 'header', ar: 'الشريط العلوي', en: 'Header' },
+      { id: 'footer', ar: 'الفوتر', en: 'Footer' },
+      { id: 'tools', ar: 'أدوات جوجل', en: 'Google tools' },
+    ],
+  },
 ] as const
+
+type SectionId = (typeof SECTION_GROUPS)[number]['items'][number]['id']
 
 /**
  * One icon: a file you upload, or a character you type.
@@ -159,7 +187,7 @@ function Field({
 
 export default function LandingEditor({ initial }: { initial: Form }) {
   const [f, setF] = useState<Form>(initial)
-  const [sec, setSec] = useState<(typeof SECTIONS)[number]['id']>('hero')
+  const [sec, setSec] = useState<SectionId>('hero')
   const [busy, setBusy] = useState(false)
   const [light, setLight] = useState(false)
   const [toast, setToast] = useState(false)
@@ -180,6 +208,10 @@ export default function LandingEditor({ initial }: { initial: Form }) {
     setF((p) => ({ ...p, [loc]: { ...p[loc], [key]: v } }))
   const setNav = (key: keyof Copy['nav'], v: string, loc: 'ar' | 'en') =>
     setF((p) => ({ ...p, [loc]: { ...p[loc], nav: { ...p[loc].nav, [key]: v } } }))
+  // The two headline dials are numbers, and each language keeps its own.
+  const setNum = (key: 'heroScale' | 'heroLeading', v: number, loc: 'ar' | 'en') =>
+    setF((p) => ({ ...p, [loc]: { ...p[loc], [key]: v } }))
+
   const setMetric = (key: keyof Copy['metricsLabels'], v: string, loc: 'ar' | 'en') =>
     setF((p) => ({ ...p, [loc]: { ...p[loc], metricsLabels: { ...p[loc].metricsLabels, [key]: v } } }))
   const setMockName = (v: string, loc: 'ar' | 'en') =>
@@ -245,11 +277,18 @@ export default function LandingEditor({ initial }: { initial: Form }) {
         actions={<button className="btn btn-primary" onClick={save} disabled={busy}>{busy ? '…' : t('💾 حفظ', '💾 Save')}</button>}
       />
 
-      <div className="cat-pills" style={{ marginBottom: 18 }}>
-        {SECTIONS.map((s) => (
-          <button key={s.id} className={`pill ${sec === s.id ? 'active' : ''}`} onClick={() => setSec(s.id)}>
-            {t(s.ar, s.en)}
-          </button>
+      <div className="lp-tabs">
+        {SECTION_GROUPS.map((g) => (
+          <div className="lp-tab-group" key={g.en}>
+            <div className="nav-group-title">{t(g.ar, g.en)}</div>
+            <div className="cat-pills">
+              {g.items.map((s) => (
+                <button key={s.id} className={`pill ${sec === s.id ? 'active' : ''}`} onClick={() => setSec(s.id)}>
+                  {t(s.ar, s.en)}
+                </button>
+              ))}
+            </div>
+          </div>
         ))}
       </div>
 
@@ -273,10 +312,29 @@ export default function LandingEditor({ initial }: { initial: Form }) {
             {scalar('heroEyebrow', t('السطر العلوي', 'Eyebrow'))}
             {scalar('heroTitle', t('العنوان', 'Title'))}
             {scalar('heroTitleAccent', t('الكلمة المميّزة', 'Accent word'))}
+
+            <div className="grid-2" style={{ marginBottom: 14 }}>
+              {(['ar', 'en'] as const).map((loc) => (
+                <div key={loc}>
+                  <div className="lbl" style={{ marginBottom: 6 }}>
+                    {loc === 'ar' ? t('حجم العنوان (عربي)', 'Title size (Arabic)') : t('حجم العنوان (إنجليزي)', 'Title size (English)')}: {f[loc].heroScale ?? 100}%
+                  </div>
+                  <input type="range" min={60} max={150} step={5} value={f[loc].heroScale ?? 100} onChange={(e) => setNum('heroScale', Number(e.target.value), loc)} style={{ width: '100%' }} />
+
+                  <div className="lbl" style={{ margin: '12px 0 6px' }}>
+                    {loc === 'ar' ? t('تباعد السطور (عربي)', 'Line spacing (Arabic)') : t('تباعد السطور (إنجليزي)', 'Line spacing (English)')}: {f[loc].heroLeading ?? 100}%
+                  </div>
+                  <input type="range" min={70} max={160} step={5} value={f[loc].heroLeading ?? 100} onChange={(e) => setNum('heroLeading', Number(e.target.value), loc)} style={{ width: '100%' }} />
+                </div>
+              ))}
+            </div>
+
             {scalar('heroSub', t('الوصف', 'Subtitle'), true)}
             {scalar('heroBtn1', t('زر 1', 'Button 1'))}
             {scalar('heroBtn2', t('زر 2', 'Button 2'))}
-            {scalar('panelTitle', t('عنوان اللوحة', 'Panel title'))}
+            {scalar('panelEyebrow', t('اللوحة — السطر الصغير', 'Panel eyebrow'))}
+            {scalar('panelHeading', t('عنوان قسم اللوحة', 'Panel section heading'))}
+            {scalar('panelTitle', t('عنوان شريط اللوحة', 'Panel window-bar title'))}
 
             <div className="mod-card">
               <div className="mod-card-head">
@@ -583,6 +641,24 @@ export default function LandingEditor({ initial }: { initial: Form }) {
                   ? () => setImages({ panelId: null, panelUrl: null, panelKind: null })
                   : undefined
               }
+            />
+
+            <label className="lbl" style={{ marginTop: 14, display: 'block' }}>
+              {t('أو لينك فيديو', 'Or a video link')}
+            </label>
+            <p className="icon-alt-note" style={{ margin: '0 0 8px' }}>
+              {t(
+                'يوتيوب أو فيميو أو لينك ملف مباشر. الملف المرفوع فوق بيكسب لو الاتنين موجودين.',
+                'YouTube, Vimeo, or a direct file link. An uploaded file above wins if both are set.',
+              )}
+            </p>
+            <input
+              className="field"
+              dir="ltr"
+              placeholder="https://youtube.com/watch?v=…"
+              value={f.images.panelVideoUrl}
+              onChange={(e) => setImages({ panelVideoUrl: e.target.value })}
+              style={{ textAlign: 'start' }}
             />
           </>
         )}

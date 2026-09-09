@@ -3234,3 +3234,21 @@ input[type='range']::-moz-range-thumb {
   padding-top: 16px;
   border-top: 1px solid var(--border);
 }
+
+/* ── Landing editor tabs ────────────────────────────────────────────────────
+   The same three groups the sidebar uses, laid out across a page instead of
+   down a column. The headings stay quiet for the same reason they do there:
+   they are there to let the eye skip two groups, not to be read. */
+.lp-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 26px;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+.lp-tab-group .nav-group-title {
+  margin-bottom: 7px;
+}
+.lp-tab-group .cat-pills {
+  margin: 0;
+}

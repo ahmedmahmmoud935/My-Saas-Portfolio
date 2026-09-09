@@ -11,10 +11,17 @@ export const LANDING_COPY = {
     heroTitleAccent: 'في دقائق.',
     heroSub:
       'اعرض مشاريعك وريلزك ومقالاتك في موقع سريع ومتجاوب — بالعربي والإنجليزي، على دومينك الخاص، من غير كود.',
+    // Percentages over what the page already chose. Arabic and English are
+    // sized separately on purpose: the same headline is not the same length,
+    // and Cairo does not sit on the line the way Montserrat does.
+    heroScale: 100,
+    heroLeading: 100,
     heroBtn1: 'اطلب بورتفوليو',
     heroBtn2: 'شوف مثال حي',
     // The dashboard-and-portfolio picture in the hero. Labels, not screenshots,
     // so the picture translates and never goes stale against the real product.
+    panelEyebrow: 'شكل المنتج',
+    panelHeading: 'لوحة تحكم واحدة، وموقع بيتبني منها',
     panelTitle: 'لوحة التحكم والموقع',
     mock: {
       panel: 'لوحة التحكم',
@@ -89,8 +96,12 @@ export const LANDING_COPY = {
     heroTitleAccent: 'in minutes.',
     heroSub:
       'Show your projects, reels and articles on a fast, responsive site — Arabic & English, on your own domain, no code.',
+    heroScale: 100,
+    heroLeading: 100,
     heroBtn1: 'Request a portfolio',
     heroBtn2: 'See a live example',
+    panelEyebrow: 'A look inside',
+    panelHeading: 'One dashboard, and the site it publishes',
     panelTitle: 'The dashboard and the site',
     mock: {
       panel: 'Dashboard',

@@ -128,6 +128,11 @@ export const Landing: GlobalConfig = {
           relationTo: 'media',
           label: 'Hero panel (image or video)',
         },
+        {
+          name: 'panelVideoUrl',
+          type: 'text',
+          label: 'Hero panel video link (YouTube / Vimeo / direct)',
+        },
       ],
     },
   ],
