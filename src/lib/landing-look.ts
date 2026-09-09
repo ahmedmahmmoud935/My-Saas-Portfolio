@@ -31,6 +31,7 @@ export type LandingLook = {
   panelVideoUrl: string | null
   showcaseStyle: string
   cardStyle: string
+  showcaseLayout: string
   fontAr: string
   fontLatin: string
 }
@@ -68,6 +69,7 @@ export const DEFAULT_LOOK: LandingLook = {
   panelVideoUrl: null,
   showcaseStyle: 'portrait',
   cardStyle: 'solid',
+  showcaseLayout: 'slider',
   fontAr: 'tajawal',
   fontLatin: 'montserrat',
 }
@@ -152,6 +154,7 @@ export async function getLandingLook(): Promise<LandingLook> {
       style?: {
         showcase?: string | null
         card?: string | null
+        showcaseLayout?: string | null
         fontAr?: string | null
         fontLatin?: string | null
       }
@@ -161,6 +164,7 @@ export async function getLandingLook(): Promise<LandingLook> {
       ...setOnly<LandingLook>(g?.theme),
       showcaseStyle: g?.style?.showcase || DEFAULT_LOOK.showcaseStyle,
       cardStyle: g?.style?.card || DEFAULT_LOOK.cardStyle,
+      showcaseLayout: g?.style?.showcaseLayout || DEFAULT_LOOK.showcaseLayout,
       fontAr: g?.style?.fontAr || DEFAULT_LOOK.fontAr,
       fontLatin: g?.style?.fontLatin || DEFAULT_LOOK.fontLatin,
     }

@@ -343,6 +343,36 @@ iframe.lp-mock-media { border: 0; }
 .lp-vs-col li::before { flex: 0 0 auto; font-weight: 900; line-height: 1.5; }
 .lp-vs-bad li::before { content: '✕'; color: #f87171; }
 .lp-vs-good li::before { content: '✓'; color: var(--o); }
+/* ── The showcase rail ───────────────────────────────────────────────────
+   A three-across grid leaves a hole whenever the number of portfolios is not
+   a multiple of three — at five that is two-thirds of an empty row, directly
+   under the work it is meant to show off. A rail has no such arithmetic, and
+   the card cut off at the edge says "there are more of these" where a gap said
+   "that is all of them".
+
+   Scroll-snap rather than script: the drag, the wheel, the trackpad, the
+   keyboard and the touch gesture are all the browser's already, and a rail
+   built on them keeps working with JavaScript off. */
+.lp-rail { display: flex; gap: 20px; overflow-x: auto; scroll-snap-type: x mandatory;
+  /* The padding pulls the row out to the section's edges and back, so the
+     first card lines up with the heading and the last one can still reach the
+     middle of the screen. */
+  padding: 4px 0 22px; margin: 0 -4px; scroll-padding-inline: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--lp-text) 22%, transparent) transparent; }
+.lp-rail > * { flex: 0 0 clamp(230px, 26vw, 300px); scroll-snap-align: start; }
+.lp-rail::-webkit-scrollbar { height: 6px; }
+.lp-rail::-webkit-scrollbar-track { background: transparent; }
+.lp-rail::-webkit-scrollbar-thumb { border-radius: 999px;
+  background: color-mix(in srgb, var(--lp-text) 20%, transparent); }
+.lp-rail::-webkit-scrollbar-thumb:hover { background: var(--o); }
+/* The plate layout hangs a photograph above its card, so the rail needs the
+   same room at the top that the grid gives it. */
+.lp-rail.sc-plate { padding-top: 50px; }
+/* Lifting a card on hover inside a scroller would nudge the scroll position;
+   the border is enough of an answer to the pointer here. */
+.lp-rail .lp-tenant:hover { transform: none; }
+
 /* ── Showcase cards ────────────────────────────────────────────────
    Four layouts over one piece of markup. Each portfolio already
    publishes a face and a one-line title, so the card shows those; the

@@ -1846,6 +1846,10 @@ export interface Landing {
      */
     card?: string | null;
     /**
+     * grid | slider
+     */
+    showcaseLayout?: string | null;
+    /**
      * tajawal | cairo | almarai | markazi
      */
     fontAr?: string | null;
@@ -1925,6 +1929,7 @@ export interface LandingSelect<T extends boolean = true> {
     | {
         showcase?: T;
         card?: T;
+        showcaseLayout?: T;
         fontAr?: T;
         fontLatin?: T;
       };

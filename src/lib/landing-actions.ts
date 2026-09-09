@@ -26,6 +26,8 @@ export type LandingStyle = {
   showcase: string
   /** solid | outline | glass | elevated */
   card: string
+  /** grid | slider */
+  showcaseLayout: string
   /** The Arabic/body face, and the Latin/heading one. Same names the
       portfolios use, and the same faces — they are already loaded. */
   fontAr: string
@@ -78,6 +80,7 @@ function setOnly<T extends object>(o: unknown): Partial<T> {
 const DEFAULT_LANDING_STYLE: LandingStyle = {
   showcase: 'portrait',
   card: 'solid',
+  showcaseLayout: 'slider',
   fontAr: 'tajawal',
   fontLatin: 'montserrat',
 }

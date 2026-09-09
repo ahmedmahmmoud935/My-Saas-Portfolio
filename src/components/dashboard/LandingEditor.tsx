@@ -608,6 +608,22 @@ export default function LandingEditor({ initial }: { initial: Form }) {
         {sec === 'cards' && (
           <>
             <Opt
+              label={t('عرض البورتفوليوهات', 'Showcase layout')}
+              value={f.style.showcaseLayout}
+              options={[
+                { value: 'slider', label: t('سلايدر', 'Slider') },
+                { value: 'grid', label: t('شبكة', 'Grid') },
+              ]}
+              onChange={(v) => setStyle({ showcaseLayout: v })}
+            />
+            <p style={{ color: 'var(--sub)', fontSize: 13, margin: '0 0 20px' }}>
+              {t(
+                'الشبكة بتسيب فراغ لو العدد مش من مضاعفات ٣. السلايدر مبيفرقش معاه العدد.',
+                'A grid leaves a hole when the count is not a multiple of three. A slider does not care about the count.',
+              )}
+            </p>
+
+            <Opt
               label={t('كروت البورتفوليوهات', 'Showcase cards')}
               value={f.style.showcase}
               options={[

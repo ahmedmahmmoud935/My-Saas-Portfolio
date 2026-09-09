@@ -25,6 +25,7 @@ async function getLanding(locale: 'ar' | 'en') {
       style?: {
         showcase?: string | null
         card?: string | null
+        showcaseLayout?: string | null
         fontAr?: string | null
         fontLatin?: string | null
       }
@@ -70,6 +71,7 @@ async function getLanding(locale: 'ar' | 'en') {
         panelVideoUrl: (im.panelVideoUrl as string) || null,
         showcaseStyle: g?.style?.showcase || DEFAULT_LOOK.showcaseStyle,
         cardStyle: g?.style?.card || DEFAULT_LOOK.cardStyle,
+        showcaseLayout: g?.style?.showcaseLayout || DEFAULT_LOOK.showcaseLayout,
         fontAr: g?.style?.fontAr || DEFAULT_LOOK.fontAr,
         fontLatin: g?.style?.fontLatin || DEFAULT_LOOK.fontLatin,
       } as LandingLook,
@@ -230,6 +232,7 @@ export default async function HomePage({ searchParams }: Params) {
   // is the more deliberate choice, so it wins whenever there is one.
   const panelLink = look.panelUrl ? null : resolveVideoUrl(look.panelVideoUrl)
   const showcaseStyle = look.showcaseStyle
+  const showcaseRail = look.showcaseLayout !== 'grid'
   const cardStyle = look.cardStyle
 
   const faqJsonLd = {
@@ -508,7 +511,13 @@ export default async function HomePage({ searchParams }: Params) {
           {showcase.length === 0 ? (
             <p className="lp-empty">{c.showcaseEmpty}</p>
           ) : (
-            <div className={`lp-grid lp-grid-3 lp-showcase sc-${showcaseStyle}`}>
+            <div
+              className={
+                showcaseRail
+                  ? `lp-rail lp-showcase sc-${showcaseStyle}`
+                  : `lp-grid lp-grid-3 lp-showcase sc-${showcaseStyle}`
+              }
+            >
               {showcase.map((s) => (
                 <a className="lp-tenant" href={`/${s.slug}${q}`} key={s.slug}>
                   <span className="lp-tenant-badge">

@@ -71,6 +71,12 @@ export const Landing: GlobalConfig = {
           admin: { description: 'solid | outline | glass | elevated' },
         },
         {
+          name: 'showcaseLayout',
+          type: 'text',
+          defaultValue: 'slider',
+          admin: { description: 'grid | slider' },
+        },
+        {
           name: 'fontAr',
           type: 'text',
           defaultValue: 'tajawal',
