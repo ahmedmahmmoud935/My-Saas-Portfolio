@@ -187,9 +187,21 @@ function Field({
   )
 }
 
-export default function LandingEditor({ initial }: { initial: Form }) {
+export default function LandingEditor({
+  initial,
+  groups,
+  title,
+  subtitle,
+}: {
+  initial: Form
+  /** Which of the three groups this page shows. All of them when omitted. */
+  groups?: readonly string[]
+  title?: string
+  subtitle?: string
+}) {
+  const shown = groups ? SECTION_GROUPS.filter((g) => groups.includes(g.en)) : SECTION_GROUPS
   const [f, setF] = useState<Form>(initial)
-  const [sec, setSec] = useState<SectionId>('hero')
+  const [sec, setSec] = useState<SectionId>(shown[0]?.items[0]?.id ?? 'hero')
   const [busy, setBusy] = useState(false)
   const [light, setLight] = useState(false)
   const [toast, setToast] = useState(false)
@@ -297,16 +309,16 @@ export default function LandingEditor({ initial }: { initial: Form }) {
   return (
     <div>
       <PageHeader
-        icon="🌍"
-        title={t('الصفحة الرئيسية', 'Landing page')}
-        subtitle={t('عدّل نصوص وهوية صفحة الموقع الرئيسية', 'Edit the marketing landing page copy')}
+        icon={groups?.includes('Design') && groups.length === 1 ? '🎨' : '🌍'}
+        title={title ?? t('الصفحة الرئيسية', 'Landing page')}
+        subtitle={subtitle ?? t('عدّل نصوص وهوية صفحة الموقع الرئيسية', 'Edit the marketing landing page copy')}
         actions={<button className="btn btn-primary" onClick={save} disabled={busy}>{busy ? '…' : t('💾 حفظ', '💾 Save')}</button>}
       />
 
       <div className="lp-tabs">
-        {SECTION_GROUPS.map((g) => (
+        {shown.map((g) => (
           <div className="lp-tab-group" key={g.en}>
-            <div className="nav-group-title">{t(g.ar, g.en)}</div>
+            {shown.length > 1 && <div className="nav-group-title">{t(g.ar, g.en)}</div>}
             <div className="cat-pills">
               {g.items.map((s) => (
                 <button key={s.id} className={`pill ${sec === s.id ? 'active' : ''}`} onClick={() => setSec(s.id)}>

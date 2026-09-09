@@ -12,5 +12,6 @@ export default async function LandingPage() {
 
 
   const form = await getLandingForm()
-  return <LandingEditor initial={form} />
+  // The look lives at /owner/design; this page is what the page says.
+  return <LandingEditor initial={form} groups={['Content', 'Site']} />
 }
