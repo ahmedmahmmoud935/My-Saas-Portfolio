@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { recordSlugRedirect } from '@/lib/record-redirect'
 
 /**
  * The platform's own writing, at /blog.
@@ -14,6 +15,32 @@ import type { CollectionConfig } from 'payload'
  */
 export const Posts: CollectionConfig = {
   slug: 'posts',
+  hooks: {
+    afterChange: [
+      /**
+       * The same courtesy a tenant's articles get: a published post that is
+       * renamed leaves its old address working.
+       *
+       * `published` and `slug` are both per language, so this asks about the
+       * language being saved — renaming the Arabic slug must not be judged by
+       * whether the English one was ever published.
+       */
+      async ({ req, doc, previousDoc, operation }) => {
+        if (operation !== 'update') return doc
+        const before = previousDoc?.slug as string | undefined
+        const after = doc?.slug as string | undefined
+        if (!before || !after || before === after) return doc
+        if (previousDoc?.published !== true) return doc
+
+        await recordSlugRedirect({
+          req,
+          from: `/blog/${before}`,
+          to: `/blog/${after}`,
+        })
+        return doc
+      },
+    ],
+  },
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'slug', 'published', 'updatedAt'],

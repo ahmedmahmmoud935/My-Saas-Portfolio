@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { recordSlugRedirect } from '@/lib/record-redirect'
 
 /**
  * Blog articles (spec/01). Bilingual title/excerpt via localization.
@@ -47,38 +48,13 @@ export const Articles: CollectionConfig = {
           })
           if (!tenant?.slug) return doc
 
-          const from = `/${tenant.slug}/articles/${before}`
-          const to = `/${tenant.slug}/articles/${after}`
-
-          // Renaming twice must not leave a chain: anything that already
-          // pointed at the old address is re-pointed at the new one.
-          const stale = await req.payload.find({
-            collection: 'redirects',
-            where: { to: { equals: from } },
-            limit: 100,
-            depth: 0,
+          await recordSlugRedirect({
+            req,
+            from: `/${tenant.slug}/articles/${before}`,
+            to: `/${tenant.slug}/articles/${after}`,
+            tenant: tenantId,
           })
-          for (const r of stale.docs) {
-            await req.payload.update({ collection: 'redirects', id: r.id, data: { to } })
-          }
-
-          const existing = await req.payload.find({
-            collection: 'redirects',
-            where: { from: { equals: from } },
-            limit: 1,
-            depth: 0,
-          })
-          if (existing.docs[0]) {
-            await req.payload.update({ collection: 'redirects', id: existing.docs[0].id, data: { to } })
-          } else {
-            await req.payload.create({
-              collection: 'redirects',
-              data: { from, to, auto: true, tenant: tenantId } as never,
-            })
-          }
         } catch (err) {
-          // A redirect is a courtesy; never fail the save over one — but say so,
-          // otherwise a broken one is invisible.
           req.payload.logger.error({ err }, 'could not record redirect for renamed slug')
         }
         return doc
