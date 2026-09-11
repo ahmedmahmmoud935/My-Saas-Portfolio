@@ -100,8 +100,11 @@ export async function getLandingForm(): Promise<{
   style: LandingStyle
   tools: LandingTools
   sectionBg: SectionBgForm[]
+  /** Every portfolio, so the showcase tab can take any of them off the page. */
+  tenants: { slug: string; name: string }[]
 }> {
   const ctx = await ownerCtx()
+  const tenants = await ctx.payload.find({ collection: 'tenants', limit: 200, depth: 0, sort: '-createdAt' })
   const g = (await ctx.payload.findGlobal({ slug: 'landing', locale: 'all', depth: 1 })) as {
     content?: { ar?: Partial<Copy>; en?: Partial<Copy> }
     theme?: Partial<LandingTheme>
@@ -161,6 +164,7 @@ export async function getLandingForm(): Promise<{
       posX: (r.posX as number) ?? 50,
       posY: (r.posY as number) ?? 50,
     })),
+    tenants: tenants.docs.map((t) => ({ slug: t.slug, name: t.name })),
   }
 }
 

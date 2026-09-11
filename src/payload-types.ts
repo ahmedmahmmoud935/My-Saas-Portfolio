@@ -1873,6 +1873,8 @@ export interface Landing {
               | 'showcase'
               | 'compare'
               | 'pricing'
+              | 'audience'
+              | 'testimonials'
               | 'faq'
               | 'cta'
               | 'footer'

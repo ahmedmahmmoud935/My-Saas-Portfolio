@@ -10,6 +10,8 @@ export const LANDING_SECTION_IDS = [
   'showcase',
   'compare',
   'pricing',
+  'audience',
+  'testimonials',
   'faq',
   'cta',
   'footer',

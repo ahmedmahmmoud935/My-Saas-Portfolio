@@ -37,6 +37,7 @@ import * as migration_20260909_030000_landing_panel_link from './20260909_030000
 import * as migration_20260909_050000_landing_chrome_bg from './20260909_050000_landing_chrome_bg'
 import * as migration_20260909_070000_landing_fonts from './20260909_070000_landing_fonts'
 import * as migration_20260909_090000_showcase_layout from './20260909_090000_showcase_layout';
+import * as migration_20260911_010000_landing_sales_copy from './20260911_010000_landing_sales_copy';
 
 export const migrations = [
   {
@@ -233,5 +234,10 @@ export const migrations = [
     up: migration_20260909_090000_showcase_layout.up,
     down: migration_20260909_090000_showcase_layout.down,
     name: '20260909_090000_showcase_layout'
+  },
+  {
+    up: migration_20260911_010000_landing_sales_copy.up,
+    down: migration_20260911_010000_landing_sales_copy.down,
+    name: '20260911_010000_landing_sales_copy'
   },
 ];

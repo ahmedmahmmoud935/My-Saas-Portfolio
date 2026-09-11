@@ -76,7 +76,7 @@ export function LandingNav({
         <a className="lp-nav-login" href="/login">
           {copy.login}
         </a>
-        <a className="lp-btn lp-btn-primary lp-arrow" href="/login">
+        <a className="lp-btn lp-btn-primary lp-arrow" href={copy.ctaUrl || '/login'}>
           <span className="lp-btn-label">{copy.cta}</span>
         </a>
       </div>
@@ -131,6 +131,21 @@ export function LandingFooter({
                   ))}
               </nav>
             ))}
+
+          {/* Listed by the page, and only the ones that have been written: a
+              refund-policy link that opens nothing is worse than no link. */}
+          {copy.legal.some((p) => p.body.trim()) && (
+            <nav className="lp-footer-links">
+              <strong>{copy.legalHeading}</strong>
+              {copy.legal
+                .filter((p) => p.body.trim())
+                .map((p) => (
+                  <a key={p.slug} href={`/legal/${p.slug}?lang=${locale}`}>
+                    {p.title}
+                  </a>
+                ))}
+            </nav>
+          )}
         </div>
       </div>
 
