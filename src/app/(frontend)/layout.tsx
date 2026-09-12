@@ -10,6 +10,7 @@ import {
   Playfair_Display,
   Cormorant,
   Bebas_Neue,
+  Poppins,
 } from 'next/font/google'
 import './globals.css'
 
@@ -45,6 +46,7 @@ const markazi = Markazi_Text({ subsets: ['arabic', 'latin'], weight: ['400', '50
 const inter = Inter({ subsets: ['latin'], weight: ['400', '600', '700', '900'], variable: '--f-inter', display: 'swap', adjustFontFallback: false, fallback: ['Tajawal', 'Cairo', 'system-ui', 'sans-serif'] })
 const playfair = Playfair_Display({ subsets: ['latin'], weight: ['500', '700', '800'], variable: '--f-playfair', display: 'swap', adjustFontFallback: false, fallback: ['Tajawal', 'Cairo', 'system-ui', 'sans-serif'] })
 const cormorant = Cormorant({ subsets: ['latin'], weight: ['500', '600', '700'], variable: '--f-cormorant', display: 'swap', adjustFontFallback: false, fallback: ['Tajawal', 'Cairo', 'system-ui', 'sans-serif'] })
+const poppins = Poppins({ subsets: ['latin'], weight: ['400', '600', '700', '800', '900'], variable: '--f-poppins', display: 'swap', adjustFontFallback: false, fallback: ['Tajawal', 'Cairo', 'system-ui', 'sans-serif'] })
 const bebas = Bebas_Neue({ subsets: ['latin'], weight: ['400'], variable: '--f-bebas', display: 'swap', adjustFontFallback: false, fallback: ['Tajawal', 'Cairo', 'system-ui', 'sans-serif'] })
 
 const fontVars = [
@@ -57,6 +59,7 @@ const fontVars = [
   playfair.variable,
   cormorant.variable,
   bebas.variable,
+  poppins.variable,
 ].join(' ')
 
 export const metadata = {

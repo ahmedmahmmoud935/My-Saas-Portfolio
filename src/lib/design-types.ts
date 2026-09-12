@@ -217,6 +217,7 @@ export const FONT_LATIN_OPTIONS = [
   { value: 'playfair', label: 'Playfair Display' },
   { value: 'cormorant', label: 'Cormorant' },
   { value: 'bebas', label: 'Bebas Neue' },
+  { value: 'poppins', label: 'Poppins' },
 ]
 
 /**

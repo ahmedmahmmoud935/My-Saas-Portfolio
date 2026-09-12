@@ -28,6 +28,7 @@
 .lp[data-font-latin='playfair'] { --lp-display: 'Playfair Display', var(--font-cairo), system-ui, sans-serif; }
 .lp[data-font-latin='cormorant'] { --lp-display: 'Cormorant', var(--font-cairo), system-ui, sans-serif; }
 .lp[data-font-latin='bebas'] { --lp-display: 'Bebas Neue', var(--font-cairo), system-ui, sans-serif; }
+.lp[data-font-latin='poppins'] { --lp-display: 'Poppins', var(--font-cairo), system-ui, sans-serif; }
 
 .lp { --lp-card: color-mix(in srgb, var(--lp-bg2) 93%, var(--lp-text));
   /* The far end of the headline's gradient. Lifting the accent towards white

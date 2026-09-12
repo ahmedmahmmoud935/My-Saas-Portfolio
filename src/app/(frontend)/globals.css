@@ -2666,6 +2666,9 @@ body {
 .pf-root[data-font-latin='bebas'] {
   --font-display: 'Bebas Neue', var(--font-cairo), system-ui, sans-serif;
 }
+.pf-root[data-font-latin='poppins'] {
+  --font-display: 'Poppins', var(--font-cairo), system-ui, sans-serif;
+}
 
 /* ═══ Optical centring ═══════════════════════════════════════════════════
    A browser centres the LINE box, which reserves descender space whether or

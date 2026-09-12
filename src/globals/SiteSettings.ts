@@ -375,7 +375,7 @@ export const SiteSettings: CollectionConfig = {
                       name: 'fontLatin',
                       type: 'text',
                       defaultValue: 'montserrat',
-                      admin: { description: 'montserrat | inter | playfair | cormorant | bebas' },
+                      admin: { description: 'montserrat | inter | playfair | cormorant | bebas | poppins' },
                     },
                   ],
                 },
