@@ -271,10 +271,21 @@ function LinkField({
           dir="ltr"
           style={{ textAlign: 'start' }}
           placeholder={t('فاضي = رابط «ابدأ» الموحّد', 'Empty = the shared start link')}
+          title={t(
+            'رقم واتساب، أو لينك كامل، أو مسار جوّه الموقع زي /kamal',
+            'A WhatsApp number, a full link, or a path on this site like /kamal',
+          )}
           value={value}
           onChange={(e) => onChange(e.target.value)}
         />
-        <button className="btn btn-sm" onClick={() => onChange('https://wa.me/20')}>
+        <button
+          className="btn btn-sm"
+          onClick={() => onChange('https://wa.me/20')}
+          title={t(
+            'الرقم لازم يكون بكود الدولة من غير الصفر — 201001234567 مش 01001234567.',
+            'The number needs its country code and no leading zero — 201001234567, not 01001234567.',
+          )}
+        >
           {t('واتساب', 'WhatsApp')}
         </button>
         <select

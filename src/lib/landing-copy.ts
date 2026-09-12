@@ -352,6 +352,30 @@ export const LANDING_COPY = {
 
 export type LandingCopy = (typeof LANDING_COPY)['ar']
 
+/**
+ * What a link typed in the dashboard means as an address.
+ *
+ * The button fields are filled in by a person, not by a developer, and the
+ * thing most often typed into them is a phone number — "+971558710190". As an
+ * href that is a path: the browser reads it as a page of this site and the
+ * button lands on a 404. A bare number is a WhatsApp number here (the field's
+ * own shortcut offers nothing else), so it is read as one, and a bare domain
+ * gets the scheme it is missing.
+ *
+ * Anything already addressed — a path, an anchor, a full URL, a mailto: or
+ * tel: — is left exactly as written.
+ */
+export function resolveLink(value: string | null | undefined, fallback = '/login'): string {
+  const v = (value ?? '').trim()
+  if (!v) return fallback
+  if (/^(https?:|mailto:|tel:|#|\/)/i.test(v)) return v
+  if (/^(wa\.me|www\.|[a-z0-9-]+\.[a-z]{2,})/i.test(v)) return `https://${v}`
+  // A phone number, in any of the ways one gets written down.
+  const digits = v.replace(/[^\d]/g, '')
+  if (/^\+?[\d\s()./-]+$/.test(v) && digits.length >= 7) return `https://wa.me/${digits}`
+  return v
+}
+
 /** The legal pages, in the order the footer lists them. */
 export const LEGAL_SLUGS = ['privacy', 'terms', 'refund'] as const
 

@@ -2,7 +2,7 @@ import React from 'react'
 import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { LANDING_COPY, mergeCopy } from '@/lib/landing-copy'
+import { LANDING_COPY, mergeCopy, resolveLink } from '@/lib/landing-copy'
 import { resolveVideoUrl } from '@/lib/video'
 import { mediaUrl } from '@/lib/portfolio'
 import SectionBg, { type SectionBgConfig } from '@/components/portfolio/SectionBg'
@@ -252,13 +252,17 @@ export default async function HomePage({ searchParams }: Params) {
   // Every "start" button on the page asks for the same thing, so they all go
   // to the same place — one the owner sets, for as long as sign-up lives
   // somewhere other than the login page.
-  const start = c.ctaUrl || '/login'
+  const start = resolveLink(c.ctaUrl, '/login')
   /* A button's own address when it has been given one, and the shared start
      link when it has not — so pointing one button at WhatsApp does not mean
      repeating that address in the other five. */
-  const to = (v?: string) => (v ?? '').trim() || start
+  const to = (v?: string) => resolveLink(v, start)
   /* The second hero button: its own address, or the first portfolio on show. */
-  const heroBtn2Href = (c.heroBtn2Url ?? '').trim() || (showcase[0] ? `/${showcase[0].slug}${q}` : null)
+  const heroBtn2Href = (c.heroBtn2Url ?? '').trim()
+    ? resolveLink(c.heroBtn2Url)
+    : showcase[0]
+      ? `/${showcase[0].slug}${q}`
+      : null
   const showcaseStyle = look.showcaseStyle
   const showcaseRail = look.showcaseLayout !== 'grid'
   const cardStyle = look.cardStyle

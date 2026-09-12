@@ -1,6 +1,6 @@
 import React from 'react'
 import LandingThemeToggle from './LandingThemeToggle'
-import type { LandingCopy } from '@/lib/landing-copy'
+import { resolveLink, type LandingCopy } from '@/lib/landing-copy'
 import type { LandingLook } from '@/lib/landing-look'
 
 /**
@@ -76,7 +76,7 @@ export function LandingNav({
         <a className="lp-nav-login" href="/login">
           {copy.login}
         </a>
-        <a className="lp-btn lp-btn-primary lp-arrow" href={copy.ctaUrl || '/login'}>
+        <a className="lp-btn lp-btn-primary lp-arrow" href={resolveLink(copy.ctaUrl)}>
           <span className="lp-btn-label">{copy.cta}</span>
         </a>
       </div>
@@ -124,7 +124,13 @@ export function LandingFooter({
                   .map((l) => (
                     <a
                       key={l.url + l.label}
-                      href={l.url.startsWith('#') ? (atHome ? l.url : `${home}${l.url}`) : l.url}
+                      href={
+                        l.url.startsWith('#')
+                          ? atHome
+                            ? l.url
+                            : `${home}${l.url}`
+                          : resolveLink(l.url, l.url)
+                      }
                     >
                       {l.label}
                     </a>
