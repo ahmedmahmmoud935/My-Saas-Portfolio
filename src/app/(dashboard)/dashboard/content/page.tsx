@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { getDashboardContext, getTenantSettings } from '@/lib/dashboard'
 import { mediaUrl } from '@/lib/portfolio'
 import ContentHub from '@/components/dashboard/ContentHub'
+import { lightDim } from '@/lib/content-types'
 import type { ContentForm, Loc } from '@/lib/content-types'
 
 const L = (x: unknown): Loc => {
@@ -55,6 +56,7 @@ export default async function ContentPage() {
         imageUrl: mediaUrl(it.image as never, 'card'),
         bgZoom: (it.bgZoom as number) ?? 100,
         bgOverlay: (it.bgOverlay as number) ?? 45,
+        bgOverlayLight: (it.bgOverlayLight as number) ?? lightDim((it.bgOverlay as number) ?? 45),
         bgPosX: (it.bgPosX as number) ?? 50,
         bgPosY: (it.bgPosY as number) ?? 50,
       })),

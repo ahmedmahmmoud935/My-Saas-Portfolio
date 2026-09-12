@@ -685,7 +685,8 @@ export const SiteSettings: CollectionConfig = {
                         // Background image + simple controls (used by the "stack" layout).
                         { name: 'image', type: 'upload', relationTo: 'media', label: 'Background image' },
                         { name: 'bgZoom', type: 'number', defaultValue: 100, admin: { description: 'Zoom %' } },
-                        { name: 'bgOverlay', type: 'number', defaultValue: 45, admin: { description: 'Dim %' } },
+                        { name: 'bgOverlay', type: 'number', defaultValue: 45, admin: { description: 'Dim % (dark theme)' } },
+                        { name: 'bgOverlayLight', type: 'number', admin: { description: 'Dim % (light theme). Empty: derived from the dark one.' } },
                         { name: 'bgPosX', type: 'number', defaultValue: 50 },
                         { name: 'bgPosY', type: 'number', defaultValue: 50 },
                       ],

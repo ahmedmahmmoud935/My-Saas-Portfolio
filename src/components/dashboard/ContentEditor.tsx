@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { portfolioTitle } from '@/lib/title'
+import { lightDim } from '@/lib/content-types'
 import PageHeader from './PageHeader'
 import MediaUploader from './MediaUploader'
 import { saveContent } from '@/lib/content-actions'
@@ -340,8 +341,10 @@ export default function ContentEditor({ initial }: { initial: ContentForm }) {
                       <div className="bg-ctrls">
                         <label className="lbl">{t('الزوم', 'Zoom')} — {it.bgZoom}%</label>
                         <input type="range" min={100} max={220} value={it.bgZoom} onChange={(e) => setEx(i, { bgZoom: Number(e.target.value) })} />
-                        <label className="lbl">{t('التعتيم', 'Dim')} — {it.bgOverlay}%</label>
+                        <label className="lbl">🌙 {t('التعتيم — الوضع الداكن', 'Dim — dark mode')} — {it.bgOverlay}%</label>
                         <input type="range" min={0} max={90} value={it.bgOverlay} onChange={(e) => setEx(i, { bgOverlay: Number(e.target.value) })} />
+                        <label className="lbl">☀️ {t('التعتيم — الوضع الفاتح', 'Dim — light mode')} — {it.bgOverlayLight}%</label>
+                        <input type="range" min={0} max={95} value={it.bgOverlayLight} onChange={(e) => setEx(i, { bgOverlayLight: Number(e.target.value) })} />
                         <label className="lbl">{t('الموضع ↔', 'Position ↔')} — {it.bgPosX}%</label>
                         <input type="range" min={0} max={100} value={it.bgPosX} onChange={(e) => setEx(i, { bgPosX: Number(e.target.value) })} />
                         <label className="lbl">{t('الموضع ↕', 'Position ↕')} — {it.bgPosY}%</label>
@@ -356,7 +359,7 @@ export default function ContentEditor({ initial }: { initial: ContentForm }) {
                 </div>
               </ArrayCard>
             ))}
-            <button className="btn btn-ghost" onClick={() => patch({ expertise: { ...f.expertise, items: [...f.expertise.items, { title: emptyLoc(), description: emptyLoc(), iconId: null, iconUrl: null, imageId: null, imageUrl: null, bgZoom: 100, bgOverlay: 45, bgPosX: 50, bgPosY: 50 }] } })}>+ {t('خدمة', 'Service')}</button>
+            <button className="btn btn-ghost" onClick={() => patch({ expertise: { ...f.expertise, items: [...f.expertise.items, { title: emptyLoc(), description: emptyLoc(), iconId: null, iconUrl: null, imageId: null, imageUrl: null, bgZoom: 100, bgOverlay: 45, bgOverlayLight: lightDim(45), bgPosX: 50, bgPosY: 50 }] } })}>+ {t('خدمة', 'Service')}</button>
           </>
         )}
 

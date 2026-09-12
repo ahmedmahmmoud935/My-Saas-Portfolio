@@ -893,9 +893,13 @@ export interface SiteSetting {
              */
             bgZoom?: number | null;
             /**
-             * Dim %
+             * Dim % (dark theme)
              */
             bgOverlay?: number | null;
+            /**
+             * Dim % (light theme). Empty: derived from the dark one.
+             */
+            bgOverlayLight?: number | null;
             bgPosX?: number | null;
             bgPosY?: number | null;
             id?: string | null;
@@ -1692,6 +1696,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
                     image?: T;
                     bgZoom?: T;
                     bgOverlay?: T;
+                    bgOverlayLight?: T;
                     bgPosX?: T;
                     bgPosY?: T;
                     id?: T;

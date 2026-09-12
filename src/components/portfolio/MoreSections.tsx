@@ -1,5 +1,6 @@
 import React from 'react'
 import CardStack from './CardStack'
+import { lightDim } from '@/lib/content-types'
 
 export function Expertise({
   title,
@@ -14,6 +15,7 @@ export function Expertise({
     imageUrl?: string | null
     bgZoom?: number
     bgOverlay?: number
+    bgOverlayLight?: number
     bgPosX?: number
     bgPosY?: number
   }[]
@@ -48,7 +50,19 @@ export function Expertise({
                         objectPosition: `${it.bgPosX ?? 50}% ${it.bgPosY ?? 50}%`,
                       }}
                     />
-                    <span className="card-dim" style={{ opacity: (it.bgOverlay ?? 45) / 100 }} />
+                    {/* The veil turns from black to white with the theme, so
+                        its strength is carried as two variables and the
+                        stylesheet picks — the switch happens in the browser,
+                        after this markup has been sent. */}
+                    <span
+                      className="card-dim"
+                      style={
+                        {
+                          '--dim': (it.bgOverlay ?? 45) / 100,
+                          '--dim-light': (it.bgOverlayLight ?? lightDim(it.bgOverlay ?? 45)) / 100,
+                        } as React.CSSProperties
+                      }
+                    />
                   </>
                 )}
                 <div className="card-body">

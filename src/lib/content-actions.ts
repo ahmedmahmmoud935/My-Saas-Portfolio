@@ -33,6 +33,7 @@ function buildContent(form: ContentForm, loc: 'ar' | 'en', ids?: IdMap) {
         image: it.imageId ?? null,
         bgZoom: it.bgZoom,
         bgOverlay: it.bgOverlay,
+        bgOverlayLight: it.bgOverlayLight,
         bgPosX: it.bgPosX,
         bgPosY: it.bgPosY,
       })),

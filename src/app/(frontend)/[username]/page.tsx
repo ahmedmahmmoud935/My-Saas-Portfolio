@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from 'next'
 import { getPortfolio, isVideoSrc, mediaUrl, tenantCssVars } from '@/lib/portfolio'
 import { alternatesFor, absoluteUrl, pageLocale, personJsonLd, plainText } from '@/lib/seo'
 import { portfolioName, portfolioTitle } from '@/lib/title'
+import { lightDim } from '@/lib/content-types'
 import Analytics from '@/components/portfolio/Analytics'
 import Navbar from '@/components/portfolio/Navbar'
 import MotionFx from '@/components/portfolio/MotionFx'
@@ -225,6 +226,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
           imageUrl: mediaUrl(it.image, 'card'),
           bgZoom: it.bgZoom ?? 100,
           bgOverlay: it.bgOverlay ?? 45,
+          bgOverlayLight: it.bgOverlayLight ?? lightDim(it.bgOverlay ?? 45),
           bgPosX: it.bgPosX ?? 50,
           bgPosY: it.bgPosY ?? 50,
         }))}

@@ -1890,6 +1890,7 @@ body {
   position: absolute;
   inset: 0;
   background: #000;
+  opacity: var(--dim, 0.45);
   z-index: -1;
 }
 .card.has-bg .card-body h4,
@@ -1899,6 +1900,21 @@ body {
 .card.has-bg .ic {
   background: rgba(255, 255, 255, 0.18);
   color: #fff;
+}
+/* On the light theme the veil is white, exactly as a section backdrop's is —
+   otherwise a card with a picture stayed a dark rectangle among pale ones. The
+   text over it follows the veil it sits on, or white would be left on white. */
+html[data-theme='light'] .card-dim {
+  background: #fff;
+  opacity: var(--dim-light, var(--dim, 0.45));
+}
+html[data-theme='light'] .card.has-bg .card-body h4,
+html[data-theme='light'] .card.has-bg .card-body p {
+  color: var(--text);
+}
+html[data-theme='light'] .card.has-bg .ic {
+  background: rgba(0, 0, 0, 0.1);
+  color: var(--text);
 }
 
 .card .ic {

@@ -11,7 +11,10 @@ export type ExpertiseItem = {
   imageId: number | null
   imageUrl: string | null
   bgZoom: number
+  /** The veil over the picture, per theme. White has to work harder than
+   *  black: unset, the light one is derived from the dark one. */
   bgOverlay: number
+  bgOverlayLight: number
   bgPosX: number
   bgPosY: number
 }
@@ -49,3 +52,15 @@ export const CONTENT_SECTIONS: { id: keyof ContentForm; label: string }[] = [
   { id: 'testimonials', label: 'الآراء' },
   { id: 'contact', label: 'التواصل' },
 ]
+
+/**
+ * The light theme's veil, when nobody has chosen one.
+ *
+ * A black veil darkens a photograph towards white text; a white one has to
+ * lift the same photograph far enough for dark text to read on it, and at the
+ * same percentage it does not get there. A quarter more, capped so the picture
+ * is never washed out completely.
+ */
+export function lightDim(dark: number): number {
+  return Math.min(85, Math.round(dark) + 25)
+}
