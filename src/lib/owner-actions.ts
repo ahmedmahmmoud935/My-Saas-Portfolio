@@ -1,7 +1,10 @@
 'use server'
 
+import type { PayloadRequest } from 'payload'
 import { getDashboardContext } from './dashboard'
 import { sendActivation } from './activation'
+import { recordSlugRedirect } from './record-redirect'
+import { cleanSlug, slugProblem } from './slug-rules'
 
 async function ownerCtx() {
   const ctx = await getDashboardContext()
@@ -47,10 +50,42 @@ export async function resendActivation(email: string) {
 
 export async function updateTenant(
   id: number,
-  data: { storageLimitMb?: number; domain?: string | null },
+  data: { storageLimitMb?: number; domain?: string | null; slug?: string },
 ) {
   const ctx = await ownerCtx()
-  await ctx.payload.update({ collection: 'tenants', id, data })
+  const { slug, ...rest } = data
+
+  /* A username is the address people were given. Changing it is allowed —
+     a client who signed up as "kamal" may want "kamal-semeta" — but the old
+     one has to keep working, so the rename is recorded as a redirect and the
+     middleware sends every path under it to the new name. */
+  if (slug !== undefined) {
+    const next = cleanSlug(slug)
+    const problem = slugProblem(next)
+    if (problem) throw new Error(`slug:${problem}`)
+
+    const before = await ctx.payload.findByID({ collection: 'tenants', id, depth: 0 })
+    if (before.slug !== next) {
+      const taken = await ctx.payload.find({
+        collection: 'tenants',
+        where: { slug: { equals: next } },
+        limit: 1,
+        depth: 0,
+      })
+      if (taken.docs.length) throw new Error('slug:taken')
+
+      await ctx.payload.update({ collection: 'tenants', id, data: { slug: next } })
+      await recordSlugRedirect({
+        // The action has no request of its own; the helper only ever reaches
+        // for `payload` on it.
+        req: { payload: ctx.payload } as unknown as PayloadRequest,
+        from: `/${before.slug}`,
+        to: `/${next}`,
+      })
+    }
+  }
+
+  if (Object.keys(rest).length) await ctx.payload.update({ collection: 'tenants', id, data: rest })
   return { ok: true }
 }
 

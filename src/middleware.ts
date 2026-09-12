@@ -9,10 +9,15 @@ const appHost = (process.env.NEXT_PUBLIC_SERVER_URL || '')
   .toLowerCase()
 if (appHost) PRIMARY.add(appHost)
 
-type SiteMap = { domains: Record<string, string>; langs: Record<string, string> }
+type SiteMap = {
+  domains: Record<string, string>
+  langs: Record<string, string>
+  /** A username that was renamed → what it is called now. */
+  slugs: Record<string, string>
+}
 
 // Cache the map (module scope survives across invocations per instance).
-let cache: { at: number; map: SiteMap } = { at: 0, map: { domains: {}, langs: {} } }
+let cache: { at: number; map: SiteMap } = { at: 0, map: { domains: {}, langs: {}, slugs: {} } }
 
 async function getMap(fallbackOrigin: string): Promise<SiteMap> {
   if (Date.now() - cache.at < 60_000) return cache.map
@@ -69,6 +74,16 @@ export async function middleware(req: NextRequest) {
 
   if (isPrimary || !mappedSlug) {
     const slug = slugFromPath(req.nextUrl.pathname)
+    /* A portfolio that was renamed: everything under the old username moves
+       with it, permanently, so a link someone was given years ago still opens
+       the same page rather than a 404 — and search engines hand the ranking
+       over to the new address instead of dropping it. */
+    const renamed = slug ? (map.slugs ?? {})[slug] : null
+    if (slug && renamed) {
+      const url = req.nextUrl.clone()
+      url.pathname = `/${renamed}${req.nextUrl.pathname.slice(slug.length + 1)}`
+      return NextResponse.redirect(url, 308)
+    }
     return NextResponse.next({ request: { headers: localeHeaders(req, slug, map.langs) } })
   }
 

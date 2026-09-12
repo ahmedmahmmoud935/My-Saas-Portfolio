@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { cleanSlug, slugProblem, slugProblemText } from '@/lib/slug-rules'
 import { useRouter } from 'next/navigation'
 import PageHeader from './PageHeader'
 import { createClient, updateTenant, resendActivation, setSuspended, deleteClient } from '@/lib/owner-actions'
@@ -30,6 +31,11 @@ export default function UsersManager({ clients }: { clients: Client[] }) {
       alert(t('املأ كل الحقول', 'Fill in all fields'))
       return
     }
+    const problem = slugProblem(nc.slug)
+    if (problem) {
+      alert(slugProblemText(problem, t('ar', 'en') === 'ar'))
+      return
+    }
     setBusy(true)
     try {
       await createClient(nc)
@@ -44,8 +50,36 @@ export default function UsersManager({ clients }: { clients: Client[] }) {
     }
   }
 
-  async function saveQuota(c: Client, storageLimitMb: number, domain: string) {
-    await updateTenant(c.id, { storageLimitMb, domain: domain || null })
+  async function saveQuota(c: Client, storageLimitMb: number, domain: string, slug: string) {
+    const next = cleanSlug(slug)
+    const problem = slugProblem(next)
+    if (problem) {
+      alert(slugProblemText(problem, t('ar', 'en') === 'ar'))
+      return
+    }
+    /* Renaming is the one change here that alters an address people already
+       have, so it is the one that asks first — and says what happens to the
+       old one, which is not obvious. */
+    if (next !== c.slug) {
+      const ok = confirm(
+        t(
+          `تغيير اسم المستخدم من «${c.slug}» إلى «${next}»؟\nالرابط القديم هيفضل شغال وهيحوّل على الجديد تلقائيًا.`,
+          `Rename «${c.slug}» to «${next}»?\nThe old address keeps working and redirects to the new one.`,
+        ),
+      )
+      if (!ok) return
+    }
+    try {
+      await updateTenant(c.id, { storageLimitMb, domain: domain || null, slug: next })
+    } catch (e) {
+      const code = (e as Error)?.message?.replace('slug:', '')
+      alert(
+        code === 'taken'
+          ? t('الاسم ده مستخدم مع عميل تاني', 'Another client already has that name')
+          : t('مش قادر أحفظ — راجع الاسم', 'Could not save — check the name'),
+      )
+      return
+    }
     router.refresh()
   }
   async function resendLink(c: Client) {
@@ -96,7 +130,13 @@ export default function UsersManager({ clients }: { clients: Client[] }) {
               <label className="lbl">{t('الاسم', 'Name')}</label>
               <input className="field" value={nc.name} onChange={(e) => setNc({ ...nc, name: e.target.value })} />
               <label className="lbl">{t('اسم المستخدم (URL)', 'Username (URL)')}</label>
-              <input className="field" dir="ltr" value={nc.slug} onChange={(e) => setNc({ ...nc, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') })} style={{ textAlign: 'start' }} />
+              <input className="field" dir="ltr" value={nc.slug} onChange={(e) => setNc({ ...nc, slug: cleanSlug(e.target.value) })} style={{ textAlign: 'start' }} />
+              <p className="lbl" style={{ color: 'var(--sub)', marginTop: 4 }}>
+                {t(
+                  'حروف إنجليزي وأرقام وشرطة. كلمة واحدة زي kamal أو اتنين زي kamal-semeta. يتغيّر بعدين عادي والرابط القديم بيفضل شغال.',
+                  'Latin letters, digits and hyphens. One word like kamal, or two like kamal-semeta. It can be changed later; the old address keeps working.',
+                )}
+              </p>
               <label className="lbl">{t('الإيميل', 'Email')}</label>
               <input className="field" dir="ltr" value={nc.email} onChange={(e) => setNc({ ...nc, email: e.target.value })} style={{ textAlign: 'start' }} />
               <p className="lbl" style={{ color: 'var(--sub)', marginTop: 4 }}>
@@ -124,7 +164,7 @@ function ClientRow({
   onDelete,
 }: {
   c: Client
-  onSaveQuota: (c: Client, limit: number, domain: string) => void
+  onSaveQuota: (c: Client, limit: number, domain: string, slug: string) => void
   onPassword: () => void
   onSuspend: () => void
   onDelete: () => void
@@ -132,6 +172,7 @@ function ClientRow({
   const [limit, setLimit] = useState(c.storageLimitMb)
   const { t } = useDashLang()
   const [domain, setDomain] = useState(c.domain)
+  const [slug, setSlug] = useState(c.slug)
   const pct = Math.min(100, Math.round((c.storageUsedMb / Math.max(1, limit)) * 100))
   return (
     <div className="panel" style={c.suspended ? { opacity: 0.7, borderColor: 'var(--danger)' } : undefined}>
@@ -147,16 +188,29 @@ function ClientRow({
       <div style={{ color: 'var(--sub)', fontSize: 12, textAlign: 'end', marginBottom: 8 }}>{c.storageUsedMb.toFixed(1)} / {limit} MB</div>
       <div className="grid-2">
         <div>
-          <label className="lbl">{t('حد التخزين (MB)', 'Storage limit (MB)')}</label>
-          <input className="field" type="number" value={limit} onChange={(e) => setLimit(Number(e.target.value))} />
+          <label className="lbl">{t('اسم المستخدم (الرابط)', 'Username (the address)')}</label>
+          <input
+            className="field"
+            dir="ltr"
+            value={slug}
+            onChange={(e) => setSlug(cleanSlug(e.target.value))}
+            style={{ textAlign: 'start' }}
+          />
+          <div className="lbl" style={{ color: 'var(--sub)', marginTop: 4 }} dir="ltr">
+            viralpx.com/{slug || '…'}
+          </div>
         </div>
         <div>
           <label className="lbl">{t('دومين مخصّص', 'Custom domain')}</label>
           <input className="field" dir="ltr" value={domain} onChange={(e) => setDomain(e.target.value)} style={{ textAlign: 'start' }} />
         </div>
       </div>
+      <div style={{ marginTop: 10 }}>
+        <label className="lbl">{t('حد التخزين (MB)', 'Storage limit (MB)')}</label>
+        <input className="field" type="number" value={limit} onChange={(e) => setLimit(Number(e.target.value))} />
+      </div>
       <div style={{ display: 'flex', gap: 8, marginTop: 10, justifyContent: 'flex-start', flexWrap: 'wrap' }}>
-        <button className="btn btn-primary" onClick={() => onSaveQuota(c, limit, domain)}>{t('💾 حفظ', '💾 Save')}</button>
+        <button className="btn btn-primary" onClick={() => onSaveQuota(c, limit, domain, slug)}>{t('💾 حفظ', '💾 Save')}</button>
         <button className="btn btn-ghost" onClick={onPassword} disabled={!c.userId}>{t('📧 إرسال رابط كلمة السر', '📧 Send password link')}</button>
         <button className="btn btn-ghost" onClick={onSuspend}>{c.suspended ? t('▶ تفعيل', '▶ Enable') : t('⏸ تعطيل', '⏸ Suspend')}</button>
         <button className="btn btn-danger" onClick={onDelete} style={{ marginInlineStart: 'auto' }}>{t('🗑 حذف', '🗑 Delete')}</button>
