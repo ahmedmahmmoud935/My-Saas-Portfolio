@@ -1,4 +1,5 @@
 import { getPortfolio, mediaUrl } from '@/lib/portfolio'
+import { portfolioName, portfolioTitle } from '@/lib/title'
 
 /**
  * Per-portfolio web app manifest. Installing `/<username>` to the home screen
@@ -24,8 +25,10 @@ export async function GET(
   const icon = `/${username}/icon-512.png`
 
   const body = {
-    name: `${name} — ${title}`,
-    short_name: name,
+    // Same two names the tab uses: the person first, and a short one for the
+    // label under the icon.
+    name: portfolioTitle(name, title, data.tenant.name || username),
+    short_name: portfolioName(name, title, data.tenant.name || username),
     description: settings?.content?.about?.text?.slice(0, 180) || title,
     start_url: `/${username}`,
     scope: `/${username}`,

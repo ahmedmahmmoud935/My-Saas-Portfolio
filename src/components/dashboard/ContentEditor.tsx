@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { portfolioTitle } from '@/lib/title'
 import PageHeader from './PageHeader'
 import MediaUploader from './MediaUploader'
 import { saveContent } from '@/lib/content-actions'
@@ -270,6 +271,31 @@ export default function ContentEditor({ initial }: { initial: ContentForm }) {
               multiline
             />
             <LocField label={t('التخصص / العنوان', 'Specialty / title')} value={f.hero.title} onChange={(v) => patch({ hero: { ...f.hero, title: v } })} />
+
+            {/* The two boxes above are a design decision — a big line and a
+                small one — but they are also what the browser tab and the
+                Google result are built from. Shown here so that is not a
+                surprise discovered after publishing. The name leads even when
+                it was typed into the small box. */}
+            <div className="serp" dir="auto" style={{ marginBottom: 16 }}>
+              <div className="serp-url">
+                {t('شكل التاب ونتيجة جوجل', 'How the tab and the Google result read')}
+              </div>
+              <div className="serp-title">
+                {portfolioTitle(f.hero.name.ar, f.hero.title.ar, t('اسمك', 'Your name'))}
+              </div>
+              {(f.hero.name.en || f.hero.title.en) && (
+                <div className="serp-title" dir="ltr" style={{ textAlign: 'start' }}>
+                  {portfolioTitle(f.hero.name.en, f.hero.title.en, '')}
+                </div>
+              )}
+              <div className="serp-desc">
+                {t(
+                  'اسمك بيتحط الأول تلقائيًا، حتى لو كاتب جملة تسويقية في الخانة الكبيرة.',
+                  'Your name is put first automatically, even when the big box holds a sales line.',
+                )}
+              </div>
+            </div>
             <LocField label={t('الوصف', 'Description')} value={f.hero.desc} onChange={(v) => patch({ hero: { ...f.hero, desc: v } })} multiline />
             <LocField label={t('زر 1', 'Button 1')} value={f.hero.btn1} onChange={(v) => patch({ hero: { ...f.hero, btn1: v } })} />
             <LocField label={t('زر 2', 'Button 2')} value={f.hero.btn2} onChange={(v) => patch({ hero: { ...f.hero, btn2: v } })} />

@@ -2,7 +2,8 @@ import React from 'react'
 import { notFound } from 'next/navigation'
 import type { Metadata, Viewport } from 'next'
 import { getPortfolio, isVideoSrc, mediaUrl, tenantCssVars } from '@/lib/portfolio'
-import { alternatesFor, absoluteUrl, pageLocale, personJsonLd } from '@/lib/seo'
+import { alternatesFor, absoluteUrl, pageLocale, personJsonLd, plainText } from '@/lib/seo'
+import { portfolioName, portfolioTitle } from '@/lib/title'
 import Analytics from '@/components/portfolio/Analytics'
 import Navbar from '@/components/portfolio/Navbar'
 import MotionFx from '@/components/portfolio/MotionFx'
@@ -57,11 +58,15 @@ export async function generateMetadata({ params, searchParams }: Params): Promis
   const { lang } = (await searchParams) ?? {}
   const data = await getPortfolio(username)
   if (!data) return { title: 'Not found' }
-  const name = data.settings?.content?.hero?.name || data.tenant.name
-  const title = data.settings?.content?.hero?.title || 'Portfolio'
-  const description = data.settings?.content?.about?.text || undefined
+  const heroName = data.settings?.content?.hero?.name || data.tenant.name
+  const heroTitle = data.settings?.content?.hero?.title || ''
+  // The tab and the search result read the hero, which is written as a design
+  // rather than as a title: line breaks in it, and the name in whichever of the
+  // two boxes suited the layout. `portfolioTitle` puts the name first and takes
+  // the breaks out; `plainText` does the same for the bio behind the snippet.
+  const description = plainText(data.settings?.content?.about?.text, 160)
   const cover = mediaUrl(data.settings?.brand?.heroCover, 'card')
-  const full = `${name} — ${title}`
+  const full = portfolioTitle(heroName, heroTitle, data.tenant.name)
   // iOS ignores manifest icons — it reads apple-touch-icon — so point it at the
   // same rendered PNG the manifest uses.
   const appIcon = `/${username}/icon-512.png`
@@ -70,7 +75,12 @@ export async function generateMetadata({ params, searchParams }: Params): Promis
     description,
     manifest: `/${username}/manifest.webmanifest`,
     icons: { icon: appIcon, apple: appIcon },
-    appleWebApp: { capable: true, title: name, statusBarStyle: 'black-translucent' },
+    appleWebApp: {
+      capable: true,
+      // The home-screen label sits under an icon: a sentence does not fit.
+      title: portfolioName(heroName, heroTitle, data.tenant.name),
+      statusBarStyle: 'black-translucent',
+    },
     // Next emits the modern `mobile-web-app-capable`; older iOS Safari still
     // only understands the apple-prefixed one.
     other: { 'apple-mobile-web-app-capable': 'yes' },
