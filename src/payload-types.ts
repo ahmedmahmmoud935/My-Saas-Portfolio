@@ -688,6 +688,7 @@ export interface SiteSetting {
           | null;
         mode?: ('color' | 'image' | 'video') | null;
         color?: string | null;
+        colorLight?: string | null;
         image?: (number | null) | Media;
         videoUrl?: string | null;
         fixed?: boolean | null;
@@ -712,7 +713,7 @@ export interface SiteSetting {
      */
     fontAr?: string | null;
     /**
-     * montserrat | inter | playfair | cormorant | bebas
+     * montserrat | inter | playfair | cormorant | bebas | poppins
      */
     fontLatin?: string | null;
     direction?: ('auto' | 'rtl' | 'ltr') | null;
@@ -1508,6 +1509,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         section?: T;
         mode?: T;
         color?: T;
+        colorLight?: T;
         image?: T;
         videoUrl?: T;
         fixed?: T;
@@ -1854,12 +1856,12 @@ export interface Landing {
      */
     fontAr?: string | null;
     /**
-     * montserrat | inter | playfair | cormorant | bebas
+     * montserrat | inter | playfair | cormorant | bebas | poppins
      */
     fontLatin?: string | null;
   };
   /**
-   * Give one section its own backdrop — a colour, a picture or a looping video. Sections not listed here keep the page background. A row serves both themes; only the veil over it changes colour.
+   * Give one section its own backdrop — a colour, a picture or a looping video. Sections not listed here keep the page background. A picture serves both themes with only its veil changing; a colour is set per theme.
    */
   sectionBg?:
     | {
@@ -1882,6 +1884,7 @@ export interface Landing {
           | null;
         mode?: ('color' | 'image' | 'video') | null;
         color?: string | null;
+        colorLight?: string | null;
         image?: (number | null) | Media;
         videoUrl?: string | null;
         fixed?: boolean | null;
@@ -1941,6 +1944,7 @@ export interface LandingSelect<T extends boolean = true> {
         section?: T;
         mode?: T;
         color?: T;
+        colorLight?: T;
         image?: T;
         videoUrl?: T;
         fixed?: T;

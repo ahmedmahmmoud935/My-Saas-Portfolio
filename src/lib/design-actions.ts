@@ -42,6 +42,7 @@ export async function saveDesign(form: DesignForm) {
           section: s.section,
           mode: s.mode,
           color: s.color,
+          colorLight: s.colorLight || null,
           image: s.imageId ?? null,
           videoUrl: s.videoUrl,
           fixed: s.fixed,

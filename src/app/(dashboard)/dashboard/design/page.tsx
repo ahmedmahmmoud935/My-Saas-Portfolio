@@ -37,6 +37,7 @@ export default async function DesignPage() {
       section: String(r.section ?? 'about'),
       mode: String(r.mode ?? 'color'),
       color: String(r.color ?? ''),
+      colorLight: String(r.colorLight ?? ''),
       imageId: relId(r.image),
       imageUrl: mediaUrl((r.image as never) ?? null, 'thumb'),
       videoUrl: String(r.videoUrl ?? ''),

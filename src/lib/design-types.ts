@@ -21,7 +21,9 @@ export type SectionBgForm = {
   section: string
   /** color | image | video */
   mode: string
+  /** The flat colour, per theme: a picture is shared, a colour is not. */
   color: string
+  colorLight: string
   imageId: number | null
   imageUrl: string | null
   videoUrl: string
@@ -48,6 +50,7 @@ export const emptySectionBg = (theme = 'dark'): SectionBgForm => ({
   section: 'about',
   mode: 'color',
   color: '',
+  colorLight: '',
   imageId: null,
   imageUrl: null,
   videoUrl: '',

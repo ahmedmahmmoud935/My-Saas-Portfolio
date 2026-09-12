@@ -44,6 +44,7 @@ async function getLanding(locale: 'ar' | 'en') {
       sections[id] = {
         mode: (r.mode as string) || 'color',
         color: (r.color as string) || null,
+        colorLight: (r.colorLight as string) || null,
         imageUrl: mediaUrl((r.image as never) ?? null, 'card'),
         videoUrl: (r.videoUrl as string) || null,
         fixed: Boolean(r.fixed),

@@ -3,6 +3,7 @@ import React from 'react'
 export type SectionBgConfig = {
   mode?: string | null
   color?: string | null
+  colorLight?: string | null
   imageUrl?: string | null
   videoUrl?: string | null
   fixed?: boolean | null
@@ -73,12 +74,21 @@ export default function SectionBg({
 
   const isColour = (config.mode || 'color') === 'color'
   const colour = isColour ? config.color || null : null
+  /* The light theme's own colour. Both are written into the markup because the
+     theme switch happens in the browser, long after this was sent; the CSS
+     picks between them, and falls back to the dark one when this is unset. */
+  const colourLight = isColour ? config.colorLight || null : null
   const hasMedia = !isColour
 
   return (
     <div
       className={`pf-sec-bg${hasMedia ? ' media' : ''}`}
-      style={(colour ? { '--sec-bg': colour } : {}) as React.CSSProperties}
+      style={
+        {
+          ...(colour ? { '--sec-bg': colour } : {}),
+          ...(colourLight ? { '--sec-bg-light': colourLight } : {}),
+        } as React.CSSProperties
+      }
     >
       <Layer config={config} />
       {hasMedia ? <div className="pf-sec-inner">{children}</div> : children}

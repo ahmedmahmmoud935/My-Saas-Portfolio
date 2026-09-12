@@ -269,6 +269,9 @@ export const SiteSettings: CollectionConfig = {
                   ],
                 },
                 { name: 'color', type: 'text' },
+                // A picture serves both themes under a veil that changes
+                // colour; a flat colour cannot, so it is set twice.
+                { name: 'colorLight', type: 'text', label: 'Colour (light theme)' },
                 { name: 'image', type: 'upload', relationTo: 'media' },
                 { name: 'videoUrl', type: 'text' },
                 { name: 'fixed', type: 'checkbox', label: 'Parallax (background stays put)' },

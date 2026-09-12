@@ -98,7 +98,7 @@ export const Landing: GlobalConfig = {
       label: 'Per-section backgrounds',
       admin: {
         description:
-          'Give one section its own backdrop — a colour, a picture or a looping video. Sections not listed here keep the page background. A row serves both themes; only the veil over it changes colour.',
+          'Give one section its own backdrop — a colour, a picture or a looping video. Sections not listed here keep the page background. A picture serves both themes with only its veil changing; a colour is set per theme.',
       },
       fields: [
         {
@@ -117,6 +117,7 @@ export const Landing: GlobalConfig = {
           ],
         },
         { name: 'color', type: 'text' },
+        { name: 'colorLight', type: 'text', label: 'Colour (light theme)' },
         { name: 'image', type: 'upload', relationTo: 'media' },
         { name: 'videoUrl', type: 'text' },
         { name: 'fixed', type: 'checkbox', label: 'Parallax (background stays put)' },

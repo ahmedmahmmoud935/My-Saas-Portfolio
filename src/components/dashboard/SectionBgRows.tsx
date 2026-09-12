@@ -34,8 +34,8 @@ export default function SectionBgRows({
     <>
       <p style={{ color: 'var(--sub)', fontSize: 13, margin: '0 0 12px' }}>
         {tr(
-          'أي قسم مش مضاف هنا بياخد خلفية الصفحة. الخلفية دي بتشتغل في الثيمين — اللي بيتغيّر هو لون التعتيم بس (أسود على الداكن، أبيض على الفاتح).',
-          'Sections not listed here use the page background. A background applies to both themes — only the veil colour changes (black on dark, white on light).',
+          'أي قسم مش مضاف هنا بياخد خلفية الصفحة. الصورة والفيديو بيشتغلوا في الثيمين واللي بيتغيّر هو لون التعتيم بس (أسود على الداكن، أبيض على الفاتح). اللون بقى لكل ثيم لون لوحده.',
+          'Sections not listed here use the page background. A picture or video serves both themes — only the veil changes (black on dark, white on light). A flat colour is set per theme.',
         )}
       </p>
 
@@ -71,7 +71,18 @@ export default function SectionBgRows({
           </div>
 
           {r.mode === 'color' && (
-            <ColorInput label={tr('اللون', 'Colour')} value={r.color} onChange={(v) => patchRow(i, { color: v })} />
+            <>
+              <div className="de-grid">
+                <ColorInput label={tr('🌙 لون الثيم الداكن', '🌙 Dark theme colour')} value={r.color} onChange={(v) => patchRow(i, { color: v })} />
+                <ColorInput label={tr('☀️ لون الثيم الفاتح', '☀️ Light theme colour')} value={r.colorLight} onChange={(v) => patchRow(i, { colorLight: v })} />
+              </div>
+              <p style={{ color: 'var(--sub)', fontSize: 12.5, margin: '6px 0 0' }}>
+                {tr(
+                  'سيب لون الثيم الفاتح فاضي عشان الاتنين ياخدوا نفس اللون زي الأول.',
+                  'Leave the light colour empty and both themes keep wearing the dark one, as before.',
+                )}
+              </p>
+            </>
           )}
 
           {r.mode === 'image' && (
