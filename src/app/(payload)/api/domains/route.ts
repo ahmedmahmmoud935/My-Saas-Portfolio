@@ -11,6 +11,8 @@ export const dynamic = 'force-dynamic'
  *             to their portfolio.
  *   slugs   — a username that has been renamed → the one it is now, so every
  *             address given out under the old one still arrives.
+ *   live    — every username in use, so a subdomain of the platform can be
+ *             recognised as a portfolio before the page is reached.
  *   langs   — tenant slug → the language that portfolio is actually written in,
  *             so `<html lang>` can say so. Without it every page declared "en",
  *             including portfolios that are Arabic from top to bottom, and a
@@ -32,6 +34,7 @@ export async function GET() {
   const domains: Record<string, string> = {}
   const langs: Record<string, string> = {}
   const slugs: Record<string, string> = {}
+  let live: string[] = []
   try {
     const payload = await getPayload({ config })
     const tenants = await payload.find({ collection: 'tenants', limit: 2000, depth: 0 })
@@ -45,7 +48,8 @@ export async function GET() {
        single-segment rows are usernames — the rest are articles and posts,
        which the pages themselves resolve — and only those pointing at a
        portfolio that still exists. */
-    const live = new Set(tenants.docs.map((t) => t.slug))
+    const liveSet = new Set(tenants.docs.map((t) => t.slug))
+    live = [...liveSet]
     const moved = await payload.db.find({
       collection: 'redirects',
       where: { auto: { equals: true } } as never,
@@ -55,7 +59,7 @@ export async function GET() {
     for (const r of moved.docs as { from?: string; to?: string }[]) {
       const from = (r.from ?? '').split('/').filter(Boolean)
       const to = (r.to ?? '').split('/').filter(Boolean)
-      if (from.length === 1 && to.length === 1 && live.has(to[0]) && !live.has(from[0])) {
+      if (from.length === 1 && to.length === 1 && liveSet.has(to[0]) && !liveSet.has(from[0])) {
         slugs[from[0]] = to[0]
       }
     }
@@ -79,5 +83,5 @@ export async function GET() {
   } catch {
     /* DB unavailable — empty maps */
   }
-  return Response.json({ domains, langs, slugs }, { headers: { 'cache-control': 'public, max-age=60' } })
+  return Response.json({ domains, langs, slugs, live }, { headers: { 'cache-control': 'public, max-age=60' } })
 }

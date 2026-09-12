@@ -14,10 +14,23 @@ type SiteMap = {
   langs: Record<string, string>
   /** A username that was renamed → what it is called now. */
   slugs: Record<string, string>
+  /** Every username in use. */
+  live: string[]
+}
+
+/* The platform's own domain, without the www a browser drops anyway: a
+   portfolio is served at <username> under it. */
+const BASE = appHost.replace(/^www\./, '')
+
+/** The username a platform subdomain names, e.g. kamal.viralpx.com → "kamal". */
+function subdomainLabel(host: string): string | null {
+  if (!BASE || !host.endsWith(`.${BASE}`)) return null
+  const label = host.slice(0, -(BASE.length + 1))
+  return label && label !== 'www' && !label.includes('.') ? label : null
 }
 
 // Cache the map (module scope survives across invocations per instance).
-let cache: { at: number; map: SiteMap } = { at: 0, map: { domains: {}, langs: {}, slugs: {} } }
+let cache: { at: number; map: SiteMap } = { at: 0, map: { domains: {}, langs: {}, slugs: {}, live: [] } }
 
 async function getMap(fallbackOrigin: string): Promise<SiteMap> {
   if (Date.now() - cache.at < 60_000) return cache.map
@@ -72,7 +85,27 @@ export async function middleware(req: NextRequest) {
   const map = await getMap(req.nextUrl.origin)
   const mappedSlug = isPrimary ? null : map.domains[host]
 
-  if (isPrimary || !mappedSlug) {
+  /* A portfolio on its own subdomain of the platform. It behaves exactly like
+     a client's custom domain — same rewrite, same canonical — because to a
+     reader it is one: their name is the first thing in the address. */
+  const sub = !isPrimary && !mappedSlug ? subdomainLabel(host) : null
+  if (sub) {
+    const renamed = (map.slugs ?? {})[sub]
+    if (renamed) {
+      return NextResponse.redirect(
+        new URL(`${req.nextUrl.pathname}${req.nextUrl.search}`, `https://${renamed}.${BASE}`),
+        308,
+      )
+    }
+    // A name nobody has: the platform's own site rather than a dead end.
+    if (!(map.live ?? []).includes(sub)) {
+      return NextResponse.redirect(new URL('/', `https://${appHost}`), 308)
+    }
+  }
+
+  const tenantSlug = mappedSlug || sub
+
+  if (isPrimary || !tenantSlug) {
     const slug = slugFromPath(req.nextUrl.pathname)
     /* A portfolio that was renamed: everything under the old username moves
        with it, permanently, so a link someone was given years ago still opens
@@ -87,12 +120,12 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next({ request: { headers: localeHeaders(req, slug, map.langs) } })
   }
 
-  const headers = localeHeaders(req, mappedSlug, map.langs)
+  const headers = localeHeaders(req, tenantSlug, map.langs)
   const url = req.nextUrl.clone()
-  if (url.pathname === `/${mappedSlug}` || url.pathname.startsWith(`/${mappedSlug}/`)) {
+  if (url.pathname === `/${tenantSlug}` || url.pathname.startsWith(`/${tenantSlug}/`)) {
     return NextResponse.next({ request: { headers } })
   }
-  url.pathname = url.pathname === '/' ? `/${mappedSlug}` : `/${mappedSlug}${url.pathname}`
+  url.pathname = url.pathname === '/' ? `/${tenantSlug}` : `/${tenantSlug}${url.pathname}`
   return NextResponse.rewrite(url, { request: { headers } })
 }
 
