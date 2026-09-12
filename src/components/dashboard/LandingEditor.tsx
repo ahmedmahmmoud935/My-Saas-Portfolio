@@ -240,6 +240,62 @@ function Card({ title, action, children }: { title: React.ReactNode; action?: Re
   )
 }
 
+/**
+ * Where one button goes.
+ *
+ * Left empty it follows the shared start link, so the page keeps its single
+ * address by default and only the buttons that should differ carry one of
+ * their own. The two shortcuts are the two answers that are actually typed
+ * here — a WhatsApp number, and one of the portfolios on the site.
+ */
+function LinkField({
+  label,
+  value,
+  onChange,
+  tenants,
+  hint,
+}: {
+  label: string
+  value: string
+  onChange: (v: string) => void
+  tenants: { slug: string; name: string }[]
+  hint?: string
+}) {
+  const { t } = useDashLang()
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <label className="lbl" style={{ display: 'block' }}>{label}</label>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: 8 }}>
+        <input
+          className="field"
+          dir="ltr"
+          style={{ textAlign: 'start' }}
+          placeholder={t('فاضي = رابط «ابدأ» الموحّد', 'Empty = the shared start link')}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        />
+        <button className="btn btn-sm" onClick={() => onChange('https://wa.me/20')}>
+          {t('واتساب', 'WhatsApp')}
+        </button>
+        <select
+          className="field"
+          style={{ width: 'auto' }}
+          value=""
+          onChange={(e) => e.target.value && onChange(e.target.value)}
+        >
+          <option value="">{t('بورتفوليو…', 'Portfolio…')}</option>
+          {tenants.map((tn) => (
+            <option key={tn.slug} value={`/${tn.slug}`}>
+              {tn.name} /{tn.slug}
+            </option>
+          ))}
+        </select>
+      </div>
+      {hint && <Note style={{ margin: '6px 0 0' }}>{hint}</Note>}
+    </div>
+  )
+}
+
 export default function LandingEditor({
   initial,
   groups,
@@ -290,7 +346,7 @@ export default function LandingEditor({
       ...p,
       [loc]: { ...p[loc], plans: p[loc].plans.map((x, j) => (j === i ? { ...x, [field]: v } : x)) },
     }))
-  const setPlanBoth = (i: number, field: 'hi' | 'color', v: boolean | string) =>
+  const setPlanBoth = (i: number, field: 'hi' | 'color' | 'url', v: boolean | string) =>
     setF((p) => {
       const patch = (loc: 'ar' | 'en') =>
         p[loc].plans.map((x, j) => (j === i ? { ...x, [field]: v } : x))
@@ -320,7 +376,7 @@ export default function LandingEditor({
     })
   const addPlan = () =>
     setF((p) => {
-      const blank = { name: '', badge: '', price: '', per: '', note: '', feats: [''], cta: '', hi: false, color: '' }
+      const blank = { name: '', badge: '', price: '', per: '', note: '', feats: [''], cta: '', url: '', hi: false, color: '' }
       return { ...p, ar: { ...p.ar, plans: [...p.ar.plans, blank] }, en: { ...p.en, plans: [...p.en.plans, blank] } }
     })
   const removePlan = (i: number) =>
@@ -449,6 +505,16 @@ export default function LandingEditor({
     setKeyBoth('showcaseHidden', show ? now.filter((s) => s !== slug) : [...now, slug])
   }
 
+  const link = (key: keyof Copy, label: string, hint?: string) => (
+    <LinkField
+      label={label}
+      value={String(f.ar[key] ?? '')}
+      onChange={(v) => setKeyBoth(key, v)}
+      tenants={f.tenants}
+      hint={hint}
+    />
+  )
+
   const scalar = (key: keyof Copy, label: string, multiline?: boolean) => (
     <Field
       label={label}
@@ -505,22 +571,15 @@ export default function LandingEditor({
             {scalar('login', t('زر الدخول', 'Login button'))}
             {scalar('cta', t('زر ابدأ', 'Start button'))}
 
-            <label className="lbl" style={{ display: 'block', marginTop: 8 }}>
-              {t('رابط كل أزرار «ابدأ»', 'Where every "start" button goes')}
-            </label>
-            <Note style={{ margin: '0 0 8px' }}>
-              {t(
-                'زرار الشريط، والقسم الرئيسي، والفيديو، والخطوات، والأسعار، وآخر الصفحة — كلهم بيروحوا هنا. لو التسجيل لسه مش متاح، حط لينك واتساب (زي https://wa.me/20…) بدل صفحة الدخول.',
-                'The nav, hero, video, steps, pricing and closing buttons all go here. Until sign-up is open, a WhatsApp link (like https://wa.me/20…) works better than the login page.',
-              )}
-            </Note>
-            <input
-              className="field"
-              dir="ltr"
-              placeholder="/login"
+            <LinkField
+              label={t('رابط أزرار «ابدأ» الموحّد', 'The shared "start" button link')}
               value={f.ar.ctaUrl}
-              onChange={(e) => setKeyBoth('ctaUrl', e.target.value)}
-              style={{ textAlign: 'start' }}
+              onChange={(v) => setKeyBoth('ctaUrl', v)}
+              tenants={f.tenants}
+              hint={t(
+                'كل زرار مالهوش لينك خاص بيروح هنا: زرار الشريط، والقسم الرئيسي، والفيديو، والخطوات، والأسعار، وآخر الصفحة. وأي زرار فيهم تقدر تديله لينك لوحده من تبويب قسمه. لو التسجيل لسه مش متاح، حط لينك واتساب.',
+                'Every button without a link of its own comes here: the nav, hero, video, steps, pricing and closing buttons. Any one of them can be given its own address from its section tab. Until sign-up is open, point it at WhatsApp.',
+              )}
             />
           </>
         )}
@@ -569,7 +628,16 @@ export default function LandingEditor({
 
             {scalar('heroSub', t('الوصف', 'Subtitle'), true)}
             {scalar('heroBtn1', t('الزر الأساسي', 'Main button'))}
-            {scalar('heroBtn2', t('الزر الثانوي (بيفتح أول بورتفوليو في الأمثلة)', 'Second button (opens the first showcase portfolio)'))}
+            {link('heroBtn1Url', t('رابط الزر الأساسي', 'Main button link'))}
+            {scalar('heroBtn2', t('الزر الثانوي', 'Second button'))}
+            {link(
+              'heroBtn2Url',
+              t('رابط الزر الثانوي', 'Second button link'),
+              t(
+                'سيبه فاضي عشان يفتح أول بورتفوليو في قسم الأمثلة لوحده.',
+                'Leave it empty and it opens the first portfolio in the showcase on its own.',
+              ),
+            )}
             {scalar('heroNote', t('السطر الصغير تحت الأزرار', 'Small line under the buttons'))}
           </>
         )}
@@ -591,6 +659,7 @@ export default function LandingEditor({
             </Card>
 
             {scalar('compareLink', t('الرابط تحت الكروت', 'Link under the cards'))}
+            {link('compareLinkUrl', t('وجهة الرابط', 'Where it goes'))}
           </>
         )}
 
@@ -673,6 +742,7 @@ export default function LandingEditor({
             </Card>
 
             {scalar('panelBtn', t('الزر تحت الفيديو', 'Button under the video'))}
+            {link('panelBtnUrl', t('وجهة الزر', 'Where it goes'))}
             {scalar('panelNote', t('السطر الصغير تحت الزر', 'Small line under the button'), true)}
 
             <Card title={t('الرسمة الافتراضية', 'The default drawing')}>
@@ -746,6 +816,7 @@ export default function LandingEditor({
             ))}
 
             {scalar('howBtn', t('الزر تحت الخطوات', 'Button under the steps'))}
+            {link('howBtnUrl', t('وجهة الزر', 'Where it goes'))}
           </>
         )}
 
@@ -812,6 +883,12 @@ export default function LandingEditor({
                 <Field label={t('المدة', 'Per')} ar={f.ar.plans[i]?.per ?? ''} en={f.en.plans[i]?.per ?? ''} onAr={(v) => setPlan(i, 'per', v, 'ar')} onEn={(v) => setPlan(i, 'per', v, 'en')} />
                 <Field label={t('سطر تحت السعر', 'Line under the price')} ar={f.ar.plans[i]?.note ?? ''} en={f.en.plans[i]?.note ?? ''} onAr={(v) => setPlan(i, 'note', v, 'ar')} onEn={(v) => setPlan(i, 'note', v, 'en')} />
                 <Field label={t('نص الزر', 'Button text')} ar={f.ar.plans[i]?.cta ?? ''} en={f.en.plans[i]?.cta ?? ''} onAr={(v) => setPlan(i, 'cta', v, 'ar')} onEn={(v) => setPlan(i, 'cta', v, 'en')} />
+                <LinkField
+                  label={t('وجهة زر الخطة', 'Where the plan button goes')}
+                  value={f.ar.plans[i]?.url ?? ''}
+                  onChange={(v) => setPlanBoth(i, 'url', v)}
+                  tenants={f.tenants}
+                />
 
                 <div className="grid-2" style={{ alignItems: 'end', marginBottom: 14 }}>
                   <ColorInput
@@ -958,6 +1035,7 @@ export default function LandingEditor({
             {scalar('ctaTitle', t('العنوان', 'Title'), true)}
             {scalar('ctaSub', t('الوصف', 'Subtitle'), true)}
             {scalar('ctaBtn', t('الزر', 'Button'))}
+            {link('ctaBtnUrl', t('وجهة الزر', 'Where it goes'))}
           </>
         )}
 

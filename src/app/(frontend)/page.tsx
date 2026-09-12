@@ -253,6 +253,12 @@ export default async function HomePage({ searchParams }: Params) {
   // to the same place — one the owner sets, for as long as sign-up lives
   // somewhere other than the login page.
   const start = c.ctaUrl || '/login'
+  /* A button's own address when it has been given one, and the shared start
+     link when it has not — so pointing one button at WhatsApp does not mean
+     repeating that address in the other five. */
+  const to = (v?: string) => (v ?? '').trim() || start
+  /* The second hero button: its own address, or the first portfolio on show. */
+  const heroBtn2Href = (c.heroBtn2Url ?? '').trim() || (showcase[0] ? `/${showcase[0].slug}${q}` : null)
   const showcaseStyle = look.showcaseStyle
   const showcaseRail = look.showcaseLayout !== 'grid'
   const cardStyle = look.cardStyle
@@ -349,11 +355,11 @@ export default async function HomePage({ searchParams }: Params) {
           </h1>
           <p className="lp-lead">{c.heroSub}</p>
           <div className="lp-hero-btns">
-            <a className="lp-btn lp-btn-primary lp-btn-lg lp-arrow" href={start}>
+            <a className="lp-btn lp-btn-primary lp-btn-lg lp-arrow" href={to(c.heroBtn1Url)}>
               <span className="lp-btn-label">{c.heroBtn1}</span>
             </a>
-            {showcase[0] && (
-              <a className="lp-btn lp-btn-ghost lp-btn-lg" href={`/${showcase[0].slug}${q}`}>
+            {heroBtn2Href && (
+              <a className="lp-btn lp-btn-ghost lp-btn-lg" href={heroBtn2Href}>
                 <span className="lp-btn-label">{c.heroBtn2}</span>
               </a>
             )}
@@ -389,7 +395,7 @@ export default async function HomePage({ searchParams }: Params) {
           </div>
           {c.compareLink && (
             <div className="lp-sec-foot">
-              <a className="lp-textlink lp-arrow" href={start}>
+              <a className="lp-textlink lp-arrow" href={to(c.compareLinkUrl)}>
                 {c.compareLink}
               </a>
             </div>
@@ -457,7 +463,7 @@ export default async function HomePage({ searchParams }: Params) {
           {(c.panelBtn || c.panelNote) && (
             <div className="lp-sec-foot">
               {c.panelBtn && (
-                <a className="lp-btn lp-btn-primary lp-btn-lg lp-arrow" href={start}>
+                <a className="lp-btn lp-btn-primary lp-btn-lg lp-arrow" href={to(c.panelBtnUrl)}>
                   <span className="lp-btn-label">{c.panelBtn}</span>
                 </a>
               )}
@@ -527,7 +533,7 @@ export default async function HomePage({ searchParams }: Params) {
           </div>
           {c.howBtn && (
             <div className="lp-sec-foot">
-              <a className="lp-btn lp-btn-primary lp-btn-lg lp-arrow" href={start}>
+              <a className="lp-btn lp-btn-primary lp-btn-lg lp-arrow" href={to(c.howBtnUrl)}>
                 <span className="lp-btn-label">{c.howBtn}</span>
               </a>
             </div>
@@ -626,7 +632,7 @@ export default async function HomePage({ searchParams }: Params) {
                     <li key={f}>{f}</li>
                   ))}
                 </ul>
-                <a className={`lp-btn lp-btn-lg ${p.hi ? 'lp-btn-primary lp-arrow' : 'lp-btn-ghost'}`} href={start}>
+                <a className={`lp-btn lp-btn-lg ${p.hi ? 'lp-btn-primary lp-arrow' : 'lp-btn-ghost'}`} href={to(p.url)}>
                   <span className="lp-btn-label">{p.cta}</span>
                 </a>
               </div>
@@ -702,7 +708,7 @@ export default async function HomePage({ searchParams }: Params) {
           <div className="lp-cta-inner">
             <h2 className="lp-h2">{c.ctaTitle}</h2>
             <p>{c.ctaSub}</p>
-            <a className="lp-btn lp-btn-primary lp-btn-lg lp-arrow" href={start}>
+            <a className="lp-btn lp-btn-primary lp-btn-lg lp-arrow" href={to(c.ctaBtnUrl)}>
               <span className="lp-btn-label">{c.ctaBtn}</span>
             </a>
           </div>

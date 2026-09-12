@@ -41,6 +41,12 @@ export const LANDING_COPY = {
     heroBtn1: 'ابدأ شهرك المجاني',
     heroBtn2: 'شوف بورتفوليو حقيقي',
     heroNote: 'من غير بطاقة دفع · كل المميزات مفتوحة · تلغي في أي وقت',
+    // Where each button goes, when it should not go where the rest of them do.
+    // Empty means the shared start link above, so one address still moves the
+    // whole page and any single button can be pointed elsewhere.
+    heroBtn1Url: '',
+    // Empty here means the first portfolio in the showcase, as before.
+    heroBtn2Url: '',
     // The explainer: a video when there is one, the drawn product until then.
     panelEyebrow: 'شوفها بنفسك',
     panelHeading: 'تعدّل من هنا، يتحدّث هناك.',
@@ -52,6 +58,7 @@ export const LANDING_COPY = {
     panelDuration: '',
     panelBtn: 'ابدأ شهرك المجاني',
     panelNote: 'نفس اللي شفته، جرّبه بنفسك 30 يوم مجانًا.',
+    panelBtnUrl: '',
     mock: {
       panel: 'لوحة التحكم',
       items: ['المشاريع والريلز', 'الهايلايتس', 'المظهر والألوان', 'التحليلات'],
@@ -83,6 +90,7 @@ export const LANDING_COPY = {
       { n: '3', iconUrl: '', t: 'انشر واستقبل عملاء', d: 'اربط دومينك وشارك موقعك، والعملاء يكلموك مباشرة.' },
     ],
     howBtn: 'ابدأ الخطوة الأولى',
+    howBtnUrl: '',
     showcaseEyebrow: 'أمثلة حية',
     showcaseTitle: 'مبدعين عرب بيعرضوا شغلهم على ViralPX',
     showcaseSub: 'دوس على أي بورتفوليو وشوف بنفسك التجربة اللي عملاءهم بيشوفوها.',
@@ -109,13 +117,14 @@ export const LANDING_COPY = {
       'زر واتساب ونموذج تواصل — العميل يكلمك في نفس اللحظة.',
     ],
     compareLink: 'جرّب الفرق مجانًا',
+    compareLinkUrl: '',
     pricingEyebrow: 'الأسعار',
     pricingTitle: 'جرّب شهر كامل مجانًا، وبعدها اختار اللي يريحك',
     pricingSub: 'كل الخطط فيها كل المميزات بالكامل — الفرق الوحيد هو طريقة الدفع.',
     plans: [
-      { name: 'شهري', badge: '', price: '199', per: '/ شهريًا', note: 'مرونة كاملة من غير التزام طويل.', feats: ['ادفع شهر بشهر', 'الغي في أي وقت', 'كل المميزات'], cta: 'ابدأ شهرك المجاني', hi: false, color: '' },
-      { name: 'سنوي', badge: 'الأوفر', price: '1,990', per: '/ سنويًا', note: 'يعني حوالي 166 في الشهر — وفّر شهرين', feats: ['شهرين مجانًا كل سنة', 'سعرك ثابت طول السنة', 'كل المميزات'], cta: 'ابدأ شهرك المجاني', hi: true, color: '' },
-      { name: 'مرة واحدة', badge: 'مدى الحياة', price: '4,990', per: '/ مرة واحدة', note: 'ادفع مرة، وموقعك ليك على طول.', feats: ['من غير اشتراكات متجددة', 'كل التحديثات الجاية مشمولة', 'كل المميزات'], cta: 'ابدأ شهرك المجاني', hi: false, color: '' },
+      { name: 'شهري', badge: '', price: '199', per: '/ شهريًا', note: 'مرونة كاملة من غير التزام طويل.', feats: ['ادفع شهر بشهر', 'الغي في أي وقت', 'كل المميزات'], cta: 'ابدأ شهرك المجاني', url: '', hi: false, color: '' },
+      { name: 'سنوي', badge: 'الأوفر', price: '1,990', per: '/ سنويًا', note: 'يعني حوالي 166 في الشهر — وفّر شهرين', feats: ['شهرين مجانًا كل سنة', 'سعرك ثابت طول السنة', 'كل المميزات'], cta: 'ابدأ شهرك المجاني', url: '', hi: true, color: '' },
+      { name: 'مرة واحدة', badge: 'مدى الحياة', price: '4,990', per: '/ مرة واحدة', note: 'ادفع مرة، وموقعك ليك على طول.', feats: ['من غير اشتراكات متجددة', 'كل التحديثات الجاية مشمولة', 'كل المميزات'], cta: 'ابدأ شهرك المجاني', url: '', hi: false, color: '' },
     ],
     // What every plan has, said once under the cards rather than repeated in
     // each of them — identical lists side by side read as padding.
@@ -150,6 +159,7 @@ export const LANDING_COPY = {
     ctaTitle: 'شغلك جاهز. ناقصه بس موقع يليق بيه.',
     ctaSub: 'ابدأ شهرك المجاني النهارده — كل المميزات مفتوحة، ومن غير بطاقة دفع.',
     ctaBtn: 'ابدأ شهرك المجاني',
+    ctaBtnUrl: '',
     footerNote: 'منصة بورتفوليو للمصممين وصنّاع المحتوى العرب.',
     // Columns, not one list. A single column of three links left the far half
     // of the row empty; groups fill it, and they are how a reader expects a
@@ -203,6 +213,8 @@ export const LANDING_COPY = {
     heroBtn1: 'Start your free month',
     heroBtn2: 'See a real portfolio',
     heroNote: 'No card needed · Every feature unlocked · Cancel anytime',
+    heroBtn1Url: '',
+    heroBtn2Url: '',
     panelEyebrow: 'See it for yourself',
     panelHeading: 'Edit it here, and it updates there.',
     panelSub: 'A short video showing how to build a complete portfolio from the dashboard — no code, no designer.',
@@ -212,6 +224,7 @@ export const LANDING_COPY = {
     panelDuration: '',
     panelBtn: 'Start your free month',
     panelNote: 'Everything you just watched — try it yourself, free for 30 days.',
+    panelBtnUrl: '',
     mock: {
       panel: 'Dashboard',
       items: ['Projects & reels', 'Highlights', 'Look & colours', 'Analytics'],
@@ -241,6 +254,7 @@ export const LANDING_COPY = {
       { n: '3', iconUrl: '', t: 'Publish and get clients', d: 'Connect your domain, share your site, and clients contact you directly.' },
     ],
     howBtn: 'Take the first step',
+    howBtnUrl: '',
     showcaseEyebrow: 'Live examples',
     showcaseTitle: 'Arab creators showing their work on ViralPX',
     showcaseSub: 'Open any portfolio and see the exact experience their clients get.',
@@ -265,13 +279,14 @@ export const LANDING_COPY = {
       'A WhatsApp button and a contact form — the client reaches you on the spot.',
     ],
     compareLink: 'Try the difference free',
+    compareLinkUrl: '',
     pricingEyebrow: 'Pricing',
     pricingTitle: 'Try a full month free, then pick what suits you',
     pricingSub: 'Every plan includes every feature — the only difference is how you pay.',
     plans: [
-      { name: 'Monthly', badge: '', price: '199', per: '/ month', note: 'Full flexibility, no long commitment.', feats: ['Pay month to month', 'Cancel anytime', 'Every feature'], cta: 'Start your free month', hi: false, color: '' },
-      { name: 'Yearly', badge: 'Best value', price: '1,990', per: '/ year', note: 'About 166 a month — two months free', feats: ['Two months free every year', 'Your price stays fixed all year', 'Every feature'], cta: 'Start your free month', hi: true, color: '' },
-      { name: 'One-time', badge: 'Lifetime', price: '4,990', per: '/ once', note: 'Pay once, and your site is yours for good.', feats: ['No recurring subscription', 'All future updates included', 'Every feature'], cta: 'Start your free month', hi: false, color: '' },
+      { name: 'Monthly', badge: '', price: '199', per: '/ month', note: 'Full flexibility, no long commitment.', feats: ['Pay month to month', 'Cancel anytime', 'Every feature'], cta: 'Start your free month', url: '', hi: false, color: '' },
+      { name: 'Yearly', badge: 'Best value', price: '1,990', per: '/ year', note: 'About 166 a month — two months free', feats: ['Two months free every year', 'Your price stays fixed all year', 'Every feature'], cta: 'Start your free month', url: '', hi: true, color: '' },
+      { name: 'One-time', badge: 'Lifetime', price: '4,990', per: '/ once', note: 'Pay once, and your site is yours for good.', feats: ['No recurring subscription', 'All future updates included', 'Every feature'], cta: 'Start your free month', url: '', hi: false, color: '' },
     ],
     pricingIncludedTitle: 'In every plan:',
     pricingIncluded: [
@@ -303,6 +318,7 @@ export const LANDING_COPY = {
     ctaTitle: 'Your work is ready. It just needs a site worthy of it.',
     ctaSub: 'Start your free month today — every feature unlocked, no card needed.',
     ctaBtn: 'Start your free month',
+    ctaBtnUrl: '',
     footerNote: 'A portfolio platform for Arabic designers and creators.',
     footerGroups: [
       {
