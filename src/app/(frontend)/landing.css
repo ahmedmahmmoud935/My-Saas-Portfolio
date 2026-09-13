@@ -666,6 +666,55 @@ html[data-theme='light'] .lp[data-card='elevated'] .lp-faq-item {
 .lp-quote-who span { color: var(--lp-sub); font-size: 13px; }
 .lp-quote-who a:hover strong { color: var(--o); }
 
+/* ── The dashboard, one claim at a time ─────────────────────────────────
+   A list of features and a strip of screenshots are two things to read. Side
+   by side, with one line open at a time, the picture belongs to the line the
+   reader chose — and the column of words stays a column of words. */
+.lp-dash { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 40px; align-items: start; max-width: 1120px; margin: 0 auto; }
+/* Which side the picture sits on, set from the dashboard. Order rather than
+   column numbers, so it mirrors correctly in both writing directions. */
+.lp-dash-media { order: 1; position: sticky; top: 92px; }
+.lp-dash-list { order: 2; }
+.lp-dash-sec.side-end .lp-dash-media { order: 2; }
+.lp-dash-sec.side-end .lp-dash-list { order: 1; }
+
+.lp-dash-row { background: var(--lp-bg2); border: 1px solid var(--lp-line);
+  border-radius: 18px; overflow: hidden; transition: border-color .2s, background .2s; }
+.lp-dash-row + .lp-dash-row { margin-top: 12px; }
+.lp-dash-row.on { border-color: color-mix(in srgb, var(--o) 55%, transparent); }
+.lp-dash-head { display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  width: 100%; padding: 18px 22px; margin: 0; border: 0; background: none; color: inherit;
+  font: inherit; font-weight: 800; font-size: 16px; text-align: start; cursor: pointer; }
+.lp-dash-row.on .lp-dash-head { color: var(--o); }
+/* A chevron that turns. Its borders are physical, not logical: a caret means
+   "this opens downwards" in either writing direction, and mirroring it in
+   Arabic points it at the edge of the screen instead. */
+.lp-dash-head i { flex: 0 0 auto; width: 9px; height: 9px;
+  border-right: 2px solid currentColor; border-bottom: 2px solid currentColor;
+  transform: rotate(45deg) translate(-2px, -2px); transition: transform .2s; }
+.lp-dash-row.on .lp-dash-head i { transform: rotate(225deg) translate(-2px, -2px); }
+.lp-dash-body { padding: 0 22px 20px; }
+.lp-dash-body p { margin: 0; color: var(--lp-sub); font-size: 14.5px; line-height: 1.85; }
+
+.lp-dash-frame { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover;
+  border-radius: 20px; border: 1px solid var(--lp-line); background: var(--lp-bg2); }
+iframe.lp-dash-frame { border: 0; }
+button.lp-dash-frame { position: relative; padding: 0; overflow: hidden; cursor: pointer; }
+button.lp-dash-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lp-dash-blank { background:
+  radial-gradient(70% 90% at 50% 35%, color-mix(in srgb, var(--o) 18%, transparent), transparent 70%),
+  var(--lp-bg2); }
+
+/* Narrow: the picture belongs under the line it explains, not in a column
+   of its own that would be half a screen away from it. */
+.lp-dash-media-inline { display: none; margin-top: 16px; }
+@media (max-width: 860px) {
+  .lp-dash { grid-template-columns: 1fr; gap: 0; }
+  .lp-dash-media { display: none; }
+  .lp-dash-media-inline { display: block; }
+}
+
 /* The explainer before it is played: its poster, darkened a little at the
    bottom so the running time reads, and one unmistakable button. */
 .lp-video { position: relative; display: block; width: 100%; margin: 0; padding: 0; border: 0;

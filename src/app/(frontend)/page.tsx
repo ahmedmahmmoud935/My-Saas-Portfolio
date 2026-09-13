@@ -9,6 +9,7 @@ import SectionBg, { type SectionBgConfig } from '@/components/portfolio/SectionB
 import Analytics from '@/components/portfolio/Analytics'
 import ShowcaseRail from '@/components/portfolio/ShowcaseRail'
 import VideoFacade from '@/components/portfolio/VideoFacade'
+import DashShowcase from '@/components/portfolio/DashShowcase'
 import { LandingNav, LandingFooter } from '@/components/portfolio/LandingChrome'
 import { DEFAULT_LOOK, landingTokensCss, onAccent, setOnly, type LandingLook } from '@/lib/landing-look'
 import { tenantUrl } from '@/lib/tenant-url'
@@ -272,6 +273,7 @@ export default async function HomePage({ searchParams }: Params) {
   const audience = (c.audience ?? []).filter((t) => t.trim())
   const included = (c.pricingIncluded ?? []).filter((t) => t.trim())
   const testimonials = (c.testimonials ?? []).filter((t) => t.quote?.trim())
+  const dash = (c.dash ?? []).filter((d) => d.t?.trim())
 
   /* What the explainer frame holds. A link written for this language comes
      first — its subtitles are burned in, so the English page needs its own —
@@ -505,6 +507,15 @@ export default async function HomePage({ searchParams }: Params) {
           </div>
         </section>
       </SectionBg>
+
+      {dash.length > 0 && (
+        <SectionBg config={sections.dashboard}>
+          <section className={`lp-sec lp-dash-sec side-${c.dashSide === 'end' ? 'end' : 'start'}`} id="dashboard">
+            <Head eyebrow={c.dashEyebrow} title={c.dashTitle} sub={c.dashSub} />
+            <DashShowcase items={dash} playLabel={locale === 'en' ? 'Play the video' : 'شغّل الفيديو'} />
+          </section>
+        </SectionBg>
+      )}
 
       {audience.length > 0 && (
         <SectionBg config={sections.audience}>

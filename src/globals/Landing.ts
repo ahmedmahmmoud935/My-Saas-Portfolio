@@ -11,6 +11,7 @@ export const LANDING_SECTION_IDS = [
   'compare',
   'pricing',
   'audience',
+  'dashboard',
   'testimonials',
   'faq',
   'cta',

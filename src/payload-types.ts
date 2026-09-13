@@ -1881,6 +1881,7 @@ export interface Landing {
               | 'compare'
               | 'pricing'
               | 'audience'
+              | 'dashboard'
               | 'testimonials'
               | 'faq'
               | 'cta'

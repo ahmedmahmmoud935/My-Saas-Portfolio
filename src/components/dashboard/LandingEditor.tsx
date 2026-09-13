@@ -46,6 +46,7 @@ const SECTION_GROUPS = [
       { id: 'compare', ar: 'الفرق', en: 'Comparison' },
       { id: 'panel', ar: 'فيديو الشرح', en: 'Explainer video' },
       { id: 'features', ar: 'المميزات', en: 'Features' },
+      { id: 'dash', ar: 'قسم لوحة التحكم', en: 'Dashboard tour' },
       { id: 'audience', ar: 'لمين؟', en: 'Who it is for' },
       { id: 'how', ar: 'الخطوات', en: 'Steps' },
       { id: 'showcase', ar: 'الأمثلة', en: 'Showcase' },
@@ -450,7 +451,7 @@ export default function LandingEditor({
         mock: { ...p[loc].mock, [key]: p[loc].mock[key].map((x, j) => (j === i ? v : x)) },
       },
     }))
-  type RowList = 'features' | 'faqs' | 'how' | 'testimonials'
+  type RowList = 'features' | 'faqs' | 'how' | 'testimonials' | 'dash'
   const setArr = (arr: RowList, i: number, field: string, v: string, loc: 'ar' | 'en') =>
     setF((p) => ({
       ...p,
@@ -467,13 +468,18 @@ export default function LandingEditor({
         (p[loc][arr] as unknown as Record<string, string>[]).map((x, j) => (j === i ? { ...x, [field]: v } : x))
       return { ...p, ar: { ...p.ar, [arr]: patch('ar') }, en: { ...p.en, [arr]: patch('en') } }
     })
-  const addRow = (arr: 'faqs' | 'testimonials') =>
+  const addRow = (arr: 'faqs' | 'testimonials' | 'dash') =>
     setF((p) => {
-      const blank = arr === 'faqs' ? { q: '', a: '' } : { name: '', role: '', quote: '', photoUrl: '', url: '' }
+      const blank =
+        arr === 'faqs'
+          ? { q: '', a: '' }
+          : arr === 'dash'
+            ? { t: '', d: '', imageUrl: '', videoUrl: '', poster: '' }
+            : { name: '', role: '', quote: '', photoUrl: '', url: '' }
       const grow = (loc: 'ar' | 'en') => [...(p[loc][arr] as unknown as object[]), blank]
       return { ...p, ar: { ...p.ar, [arr]: grow('ar') }, en: { ...p.en, [arr]: grow('en') } }
     })
-  const removeRow = (arr: 'faqs' | 'testimonials', i: number) =>
+  const removeRow = (arr: 'faqs' | 'testimonials' | 'dash', i: number) =>
     setF((p) => {
       const cut = (loc: 'ar' | 'en') => (p[loc][arr] as unknown as object[]).filter((_, j) => j !== i)
       return { ...p, ar: { ...p.ar, [arr]: cut('ar') }, en: { ...p.en, [arr]: cut('en') } }
@@ -799,6 +805,94 @@ export default function LandingEditor({
                 <Field label={t('الوصف', 'Description')} ar={f.ar.features[i].d} en={f.en.features[i].d} onAr={(v) => setArr('features', i, 'd', v, 'ar')} onEn={(v) => setArr('features', i, 'd', v, 'en')} multiline />
               </Card>
             ))}
+          </>
+        )}
+
+        {sec === 'dash' && (
+          <>
+            {scalar('dashEyebrow', t('العنوان الصغير', 'Eyebrow'))}
+            {scalar('dashTitle', t('عنوان القسم', 'Section title'), true)}
+            {scalar('dashSub', t('الوصف', 'Description'), true)}
+
+            <Opt
+              label={t('مكان الصورة', 'Which side the picture sits on')}
+              value={f.ar.dashSide === 'end' ? 'end' : 'start'}
+              options={[
+                { value: 'start', label: t('يمين (بداية السطر)', 'Start of the line') },
+                { value: 'end', label: t('شمال (نهاية السطر)', 'End of the line') },
+              ]}
+              onChange={(v) => setKeyBoth('dashSide', v)}
+            />
+            <Note style={{ margin: '6px 0 18px' }}>
+              {t(
+                'كل سطر هنا بيتفتح لوحده — لما الزائر يفتح واحد، اللي قبله بيتقفل والصورة أو الفيديو جنبه بيتغيّر للي فتحه.',
+                'One line opens at a time — opening one closes the last, and the picture beside it becomes that line’s.',
+              )}
+            </Note>
+
+            {f.ar.dash.map((_, i) => (
+              <Card
+                key={i}
+                title={`#${i + 1}`}
+                action={
+                  <button className="btn btn-sm" onClick={() => removeRow('dash', i)}>
+                    {t('حذف', 'Remove')}
+                  </button>
+                }
+              >
+                <Field label={t('العنوان', 'Title')} ar={f.ar.dash[i]?.t ?? ''} en={f.en.dash[i]?.t ?? ''} onAr={(v) => setArr('dash', i, 't', v, 'ar')} onEn={(v) => setArr('dash', i, 't', v, 'en')} />
+                <Field label={t('الوصف', 'Description')} ar={f.ar.dash[i]?.d ?? ''} en={f.en.dash[i]?.d ?? ''} onAr={(v) => setArr('dash', i, 'd', v, 'ar')} onEn={(v) => setArr('dash', i, 'd', v, 'en')} multiline />
+
+                <label className="lbl" style={{ display: 'block' }}>{t('صورة', 'Image')}</label>
+                <Note style={{ margin: '0 0 8px' }}>
+                  {t(
+                    'لقطة من لوحة التحكم بتوضّح السطر ده. لو حطيت لينك فيديو تحت، الفيديو بيكسب.',
+                    'A shot of the dashboard showing this line. A video link below wins over it.',
+                  )}
+                </Note>
+                <MediaUploader
+                  big
+                  accept="image/*"
+                  aspect="16 / 10"
+                  previewUrl={f.ar.dash[i]?.imageUrl || null}
+                  onUploaded={(m) => setArrBoth('dash', i, 'imageUrl', m.url ?? m.thumbUrl ?? '')}
+                  onRemove={f.ar.dash[i]?.imageUrl ? () => setArrBoth('dash', i, 'imageUrl', '') : undefined}
+                />
+
+                <label className="lbl" style={{ display: 'block', marginTop: 16 }}>
+                  {t('أو لينك فيديو', 'Or a video link')}
+                </label>
+                <input
+                  className="field"
+                  dir="ltr"
+                  placeholder="https://youtube.com/watch?v=…"
+                  value={f.ar.dash[i]?.videoUrl ?? ''}
+                  onChange={(e) => setArrBoth('dash', i, 'videoUrl', e.target.value)}
+                  style={{ textAlign: 'start' }}
+                />
+
+                <label className="lbl" style={{ display: 'block', marginTop: 16 }}>
+                  {t('غلاف الفيديو', 'Video poster')}
+                </label>
+                <Note style={{ margin: '0 0 8px' }}>
+                  {t(
+                    'الصورة اللي بتظهر قبل ما الزائر يدوس تشغيل. من غيرها بتتستخدم الصورة اللي فوق.',
+                    'What shows before the visitor presses play. Without one, the image above is used.',
+                  )}
+                </Note>
+                <MediaUploader
+                  compact
+                  accept="image/*"
+                  previewUrl={f.ar.dash[i]?.poster || null}
+                  onUploaded={(m) => setArrBoth('dash', i, 'poster', m.url ?? m.thumbUrl ?? '')}
+                  onRemove={f.ar.dash[i]?.poster ? () => setArrBoth('dash', i, 'poster', '') : undefined}
+                />
+              </Card>
+            ))}
+
+            <button className="btn" onClick={() => addRow('dash')}>
+              + {t('سطر جديد', 'Add a line')}
+            </button>
           </>
         )}
 
