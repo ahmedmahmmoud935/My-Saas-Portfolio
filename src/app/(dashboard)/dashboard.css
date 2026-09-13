@@ -3239,18 +3239,74 @@ input[type='range']::-moz-range-thumb {
    The same three groups the sidebar uses, laid out across a page instead of
    down a column. The headings stay quiet for the same reason they do there:
    they are there to let the eye skip two groups, not to be read. */
-.lp-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 26px;
-  align-items: flex-start;
-  margin-bottom: 20px;
+/* The landing editor's own navigation.
+   Fifteen sections as pills wrapped into a wall: you read the whole wall to
+   find one, and the groups stopped looking like groups. Down the side they
+   read as a list — the same shape the client's dashboard has, one level in. */
+.lp-editor {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
 }
-.lp-tab-group .nav-group-title {
-  margin-bottom: 7px;
+.lp-side {
+  position: sticky;
+  top: 16px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
 }
-.lp-tab-group .cat-pills {
-  margin: 0;
+.lp-side-group + .lp-side-group {
+  margin-top: 14px;
+}
+.lp-side .nav-group-title {
+  margin: 0 8px 6px;
+}
+.lp-side-item {
+  display: block;
+  width: 100%;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: var(--sub);
+  font: inherit;
+  font-weight: 600;
+  font-size: 13.5px;
+  text-align: start;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+.lp-side-item:hover {
+  color: var(--text);
+  background: var(--bg-3);
+}
+.lp-side-item.active {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+/* Narrow: the list goes back on top, where a column would squeeze the fields. */
+@media (max-width: 900px) {
+  .lp-editor {
+    grid-template-columns: 1fr;
+  }
+  .lp-side {
+    position: static;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .lp-side-group {
+    display: contents;
+  }
+  .lp-side .nav-group-title {
+    flex: 1 0 100%;
+    margin: 6px 4px 2px;
+  }
+  .lp-side-item {
+    width: auto;
+  }
 }
 
 /* ── Publish row ────────────────────────────────────────────────────────────

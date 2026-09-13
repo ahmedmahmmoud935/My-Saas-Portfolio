@@ -94,6 +94,13 @@ export const Landing: GlobalConfig = {
       ],
     },
     {
+      /* Which bands the page shows and in what order — [{ id, on }]. JSON so a
+         band added later needs no migration; the page reconciles the list it
+         reads against the bands it actually has. */
+      name: 'sectionOrder',
+      type: 'json',
+    },
+    {
       name: 'sectionBg',
       type: 'array',
       label: 'Per-section backgrounds',

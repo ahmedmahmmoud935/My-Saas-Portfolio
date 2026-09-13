@@ -41,6 +41,7 @@ import * as migration_20260911_010000_landing_sales_copy from './20260911_010000
 import * as migration_20260913_010000_section_bg_light_colour from './20260913_010000_section_bg_light_colour';
 import * as migration_20260913_020000_expertise_light_dim from './20260913_020000_expertise_light_dim';
 import * as migration_20260914_010000_landing_dashboard_section from './20260914_010000_landing_dashboard_section';
+import * as migration_20260914_020000_landing_section_order from './20260914_020000_landing_section_order';
 
 export const migrations = [
   {
@@ -257,5 +258,10 @@ export const migrations = [
     up: migration_20260914_010000_landing_dashboard_section.up,
     down: migration_20260914_010000_landing_dashboard_section.down,
     name: '20260914_010000_landing_dashboard_section'
+  },
+  {
+    up: migration_20260914_020000_landing_section_order.up,
+    down: migration_20260914_020000_landing_section_order.down,
+    name: '20260914_020000_landing_section_order'
   },
 ];

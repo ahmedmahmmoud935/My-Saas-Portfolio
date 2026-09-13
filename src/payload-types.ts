@@ -1865,6 +1865,15 @@ export interface Landing {
      */
     fontLatin?: string | null;
   };
+  sectionOrder?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   /**
    * Give one section its own backdrop — a colour, a picture or a looping video. Sections not listed here keep the page background. A picture serves both themes with only its veil changing; a colour is set per theme.
    */
@@ -1944,6 +1953,7 @@ export interface LandingSelect<T extends boolean = true> {
         fontAr?: T;
         fontLatin?: T;
       };
+  sectionOrder?: T;
   sectionBg?:
     | T
     | {

@@ -4,6 +4,7 @@ import { getDashboardContext } from './dashboard'
 import { LANDING_COPY, mergeCopy } from './landing-copy'
 import { mediaUrl } from './portfolio'
 import type { SectionBgForm } from './design-types'
+import { resolveLandingOrder, type LandingOrderItem } from './landing-order'
 
 type Copy = (typeof LANDING_COPY)['ar']
 
@@ -100,6 +101,8 @@ export async function getLandingForm(): Promise<{
   style: LandingStyle
   tools: LandingTools
   sectionBg: SectionBgForm[]
+  /** Which bands the page shows, and in what order. */
+  order: LandingOrderItem[]
   /** Every portfolio, so the showcase tab can take any of them off the page. */
   tenants: { slug: string; name: string }[]
 }> {
@@ -112,6 +115,7 @@ export async function getLandingForm(): Promise<{
     style?: Partial<LandingStyle>
     seoTools?: Partial<LandingTools>
     sectionBg?: Record<string, unknown>[]
+    sectionOrder?: unknown
   }
   const im = g.images ?? {}
   const rel = (v: unknown) =>
@@ -165,6 +169,7 @@ export async function getLandingForm(): Promise<{
       posX: (r.posX as number) ?? 50,
       posY: (r.posY as number) ?? 50,
     })),
+    order: resolveLandingOrder(g.sectionOrder),
     tenants: tenants.docs.map((t) => ({ slug: t.slug, name: t.name })),
   }
 }
@@ -178,17 +183,19 @@ export async function saveLanding(
   sectionBg?: SectionBgForm[],
   style?: LandingStyle,
   tools?: LandingTools,
+  order?: LandingOrderItem[],
 ) {
   const ctx = await ownerCtx()
   // Locale-specific copy first, then the shared look in one non-localized pass.
   await ctx.payload.updateGlobal({ slug: 'landing', data: { content: ar } as never, locale: 'ar' })
   await ctx.payload.updateGlobal({ slug: 'landing', data: { content: en } as never, locale: 'en' })
-  if (theme || images || sectionBg || style || tools) {
+  if (theme || images || sectionBg || style || tools || order) {
     await ctx.payload.updateGlobal({
       slug: 'landing',
       data: {
         ...(theme ? { theme } : {}),
         ...(style ? { style } : {}),
+        ...(order ? { sectionOrder: order } : {}),
         ...(tools
           ? {
               seoTools: {

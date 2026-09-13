@@ -8,6 +8,7 @@ import SectionBgRows from './SectionBgRows'
 import { ColorInput, Opt } from './controls'
 import { saveLanding, type LandingImages, type LandingStyle, type LandingTheme, type LandingTools } from '@/lib/landing-actions'
 import { LANDING_COPY } from '@/lib/landing-copy'
+import { LANDING_BANDS, type LandingOrderItem } from '@/lib/landing-order'
 import {
   DARK_PALETTES,
   FONT_AR_OPTIONS,
@@ -26,6 +27,7 @@ type Form = {
   style: LandingStyle
   tools: LandingTools
   sectionBg: SectionBgForm[]
+  order: LandingOrderItem[]
   tenants: { slug: string; name: string }[]
 }
 
@@ -60,6 +62,7 @@ const SECTION_GROUPS = [
     ar: 'التصميم',
     en: 'Design',
     items: [
+      { id: 'order', ar: 'ترتيب الأقسام', en: 'Section order' },
       { id: 'style', ar: 'الألوان', en: 'Colours' },
       { id: 'cards', ar: 'شكل الكروت', en: 'Card style' },
       { id: 'images', ar: 'الصور', en: 'Images' },
@@ -332,6 +335,19 @@ export default function LandingEditor({
   const setTheme = (p: Partial<LandingTheme>) => setF((f0) => ({ ...f0, theme: { ...f0.theme, ...p } }))
   const setImages = (p: Partial<LandingImages>) => setF((f0) => ({ ...f0, images: { ...f0.images, ...p } }))
   const setSectionBg = (rows: SectionBgForm[]) => setF((f0) => ({ ...f0, sectionBg: rows }))
+  const moveBand = (i: number, dir: -1 | 1) =>
+    setF((f0) => {
+      const j = i + dir
+      if (j < 0 || j >= f0.order.length) return f0
+      const next = [...f0.order]
+      ;[next[i], next[j]] = [next[j], next[i]]
+      return { ...f0, order: next }
+    })
+  const toggleBand = (i: number) =>
+    setF((f0) => ({
+      ...f0,
+      order: f0.order.map((b, j) => (j === i ? { ...b, on: !b.on } : b)),
+    }))
   const setStyle = (p: Partial<LandingStyle>) => setF((f0) => ({ ...f0, style: { ...f0.style, ...p } }))
   const setTools = (p: Partial<LandingTools>) => setF((f0) => ({ ...f0, tools: { ...f0.tools, ...p } }))
   // Which half of the palette the Colours tab is editing.
@@ -545,7 +561,7 @@ export default function LandingEditor({
 
   async function save() {
     setBusy(true)
-    await saveLanding(f.ar, f.en, f.theme, f.images, f.sectionBg, f.style, f.tools)
+    await saveLanding(f.ar, f.en, f.theme, f.images, f.sectionBg, f.style, f.tools, f.order)
     setBusy(false)
     setToast(true)
     setTimeout(() => setToast(false), 1800)
@@ -560,22 +576,29 @@ export default function LandingEditor({
         actions={<button className="btn btn-primary" onClick={save} disabled={busy}>{busy ? '…' : t('💾 حفظ', '💾 Save')}</button>}
       />
 
-      <div className="lp-tabs">
-        {shown.map((g) => (
-          <div className="lp-tab-group" key={g.en}>
-            {shown.length > 1 && <div className="nav-group-title">{t(g.ar, g.en)}</div>}
-            <div className="cat-pills">
+      {/* A column of sections rather than a wall of pills: fifteen of them in
+          one wrapped row meant reading the whole row to find one, and the
+          groups stopped reading as groups. Same shape the client's dashboard
+          has, one level in. */}
+      <div className="lp-editor">
+        <aside className="lp-side">
+          {shown.map((g) => (
+            <div className="lp-side-group" key={g.en}>
+              <div className="nav-group-title">{t(g.ar, g.en)}</div>
               {g.items.map((s) => (
-                <button key={s.id} className={`pill ${sec === s.id ? 'active' : ''}`} onClick={() => setSec(s.id)}>
+                <button
+                  key={s.id}
+                  className={`lp-side-item ${sec === s.id ? 'active' : ''}`}
+                  onClick={() => setSec(s.id)}
+                >
                   {t(s.ar, s.en)}
                 </button>
               ))}
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </aside>
 
-      <div className="panel">
+        <div className="panel">
         {sec === 'header' && (
           <>
             <Field label={t('رابط: المميزات', 'Nav: Features')} ar={f.ar.nav.features} en={f.en.nav.features} onAr={(v) => setNav('features', v, 'ar')} onEn={(v) => setNav('features', v, 'en')} />
@@ -1214,6 +1237,41 @@ export default function LandingEditor({
           </>
         )}
 
+        {sec === 'order' && (
+          <>
+            <Note>
+              {t(
+                'رتّب أقسام الصفحة بالسهمين، واقفل أي قسم لحد ما يبقى جاهز. الشريط العلوي والفوتر ثابتين.',
+                'Reorder the page with the arrows, and switch a section off until it is ready. The header and footer stay put.',
+              )}
+            </Note>
+            {f.order.map((b, i) => {
+              const band = LANDING_BANDS.find((x) => x.id === b.id)
+              return (
+                <div className="list-row" key={b.id} style={{ alignItems: 'stretch' }}>
+                  <div
+                    className={`toggle ${b.on ? 'on' : ''}`}
+                    onClick={() => toggleBand(i)}
+                    role="switch"
+                    aria-checked={b.on}
+                  />
+                  <div
+                    className="field"
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                  >
+                    <span style={{ color: 'var(--sub)', fontSize: 12 }}>{band?.en ?? b.id}</span>
+                    <span style={{ fontWeight: 700 }}>{band?.ar ?? b.id}</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <button className="icon-btn" style={{ height: 20 }} onClick={() => moveBand(i, -1)}>▲</button>
+                    <button className="icon-btn" style={{ height: 20 }} onClick={() => moveBand(i, 1)}>▼</button>
+                  </div>
+                </div>
+              )
+            })}
+          </>
+        )}
+
         {sec === 'style' && (
           <>
             <div className="grid-2" style={{ marginBottom: 20 }}>
@@ -1394,6 +1452,7 @@ export default function LandingEditor({
             </Note>
           </>
         )}
+        </div>
       </div>
 
       {toast && <div className="toast">{t('تم الحفظ ✓', 'Saved ✓')}</div>}
