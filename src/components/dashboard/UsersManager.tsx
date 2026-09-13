@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { tenantUrl } from '@/lib/tenant-url'
 import { cleanSlug, slugProblem, slugProblemText } from '@/lib/slug-rules'
 import { useRouter } from 'next/navigation'
 import PageHeader from './PageHeader'
@@ -182,7 +183,7 @@ function ClientRow({
           {c.suspended && <span className="pill" style={{ marginInlineStart: 8, color: 'var(--danger)', borderColor: 'var(--danger)' }}>{t('موقوف', 'Suspended')}</span>}
           <div style={{ color: 'var(--sub)', fontSize: 12 }} dir="ltr">{c.email}</div>
         </div>
-        <a className="pill" href={`/${c.slug}`} target="_blank" rel="noreferrer">{t('عرض', 'View')}</a>
+        <a className="pill" href={tenantUrl(c.slug, c.domain)} target="_blank" rel="noreferrer">{t('عرض', 'View')}</a>
       </div>
       <div className="storage-bar" style={{ margin: '10px 0' }}><span style={{ width: `${pct}%` }} /></div>
       <div style={{ color: 'var(--sub)', fontSize: 12, textAlign: 'end', marginBottom: 8 }}>{c.storageUsedMb.toFixed(1)} / {limit} MB</div>

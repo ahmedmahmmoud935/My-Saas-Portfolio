@@ -1,5 +1,6 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { tenantHost } from '@/lib/tenant-url'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,6 +14,8 @@ export const dynamic = 'force-dynamic'
  *             address given out under the old one still arrives.
  *   live    — every username in use, so a subdomain of the platform can be
  *             recognised as a portfolio before the page is reached.
+ *   hosts   — username → the one host that portfolio should be read on, so the
+ *             old path form can be sent there instead of serving a copy.
  *   langs   — tenant slug → the language that portfolio is actually written in,
  *             so `<html lang>` can say so. Without it every page declared "en",
  *             including portfolios that are Arabic from top to bottom, and a
@@ -35,6 +38,7 @@ export async function GET() {
   const langs: Record<string, string> = {}
   const slugs: Record<string, string> = {}
   let live: string[] = []
+  const hosts: Record<string, string> = {}
   try {
     const payload = await getPayload({ config })
     const tenants = await payload.find({ collection: 'tenants', limit: 2000, depth: 0 })
@@ -50,6 +54,10 @@ export async function GET() {
        portfolio that still exists. */
     const liveSet = new Set(tenants.docs.map((t) => t.slug))
     live = [...liveSet]
+    for (const t of tenants.docs) {
+      const host = tenantHost(t.slug, t.domain)
+      if (host) hosts[t.slug] = host
+    }
     const moved = await payload.db.find({
       collection: 'redirects',
       where: { auto: { equals: true } } as never,
@@ -83,5 +91,8 @@ export async function GET() {
   } catch {
     /* DB unavailable — empty maps */
   }
-  return Response.json({ domains, langs, slugs, live }, { headers: { 'cache-control': 'public, max-age=60' } })
+  return Response.json(
+    { domains, langs, slugs, live, hosts },
+    { headers: { 'cache-control': 'public, max-age=60' } },
+  )
 }

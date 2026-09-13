@@ -16,6 +16,8 @@ type SiteMap = {
   slugs: Record<string, string>
   /** Every username in use. */
   live: string[]
+  /** username → the one host that portfolio is read on. */
+  hosts: Record<string, string>
 }
 
 /* The platform's own domain, without the www a browser drops anyway: a
@@ -30,7 +32,10 @@ function subdomainLabel(host: string): string | null {
 }
 
 // Cache the map (module scope survives across invocations per instance).
-let cache: { at: number; map: SiteMap } = { at: 0, map: { domains: {}, langs: {}, slugs: {}, live: [] } }
+let cache: { at: number; map: SiteMap } = {
+  at: 0,
+  map: { domains: {}, langs: {}, slugs: {}, live: [], hosts: {} },
+}
 
 async function getMap(fallbackOrigin: string): Promise<SiteMap> {
   if (Date.now() - cache.at < 60_000) return cache.map
@@ -101,17 +106,36 @@ export async function middleware(req: NextRequest) {
     if (!(map.live ?? []).includes(sub)) {
       return NextResponse.redirect(new URL('/', `https://${appHost}`), 308)
     }
+    /* Once a client connects a domain of their own, that is the address —
+       the subdomain hands over to it rather than serving the same pages at a
+       second one. */
+    const owned = (map.hosts ?? {})[sub]
+    if (owned && owned !== host) {
+      return NextResponse.redirect(
+        new URL(`${req.nextUrl.pathname}${req.nextUrl.search}`, `https://${owned}`),
+        308,
+      )
+    }
   }
 
   const tenantSlug = mappedSlug || sub
 
   if (isPrimary || !tenantSlug) {
     const slug = slugFromPath(req.nextUrl.pathname)
-    /* A portfolio that was renamed: everything under the old username moves
-       with it, permanently, so a link someone was given years ago still opens
-       the same page rather than a 404 — and search engines hand the ranking
-       over to the new address instead of dropping it. */
+    /* The path form is not an address any more, it is a signpost. A portfolio
+       is read on its own host — its subdomain, or the domain the client
+       bought — and everything under /<username> is sent there permanently:
+       the page keeps its one address, and a link handed out under the old
+       shape still opens it. A renamed username travels the same road, in one
+       hop rather than two. */
     const renamed = slug ? (map.slugs ?? {})[slug] : null
+    const owner = renamed ?? (slug && (map.live ?? []).includes(slug) ? slug : null)
+    const host = owner ? (map.hosts ?? {})[owner] : null
+    if (slug && owner && host) {
+      const rest = req.nextUrl.pathname.slice(slug.length + 1)
+      return NextResponse.redirect(new URL(`${rest || '/'}${req.nextUrl.search}`, `https://${host}`), 308)
+    }
+    // No host to send it to (developing on localhost): serve it in place.
     if (slug && renamed) {
       const url = req.nextUrl.clone()
       url.pathname = `/${renamed}${req.nextUrl.pathname.slice(slug.length + 1)}`

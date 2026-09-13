@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import { tenantUrl } from '@/lib/tenant-url'
 import { usePathname, useRouter } from 'next/navigation'
 import { DASHBOARD_NAV_GROUPS } from '@/lib/dashboard-nav'
 import { useDashLang } from './DashLang'
@@ -109,7 +110,7 @@ export default function Sidebar({
         <div className="who" style={{ fontSize: 12 }}>
           {storageUsed.toFixed(2)} / {storageLimit} MB
         </div>
-        <a className="foot-link" href={`/${tenantSlug}`} target="_blank" rel="noreferrer">
+        <a className="foot-link" href={tenantUrl(tenantSlug)} target="_blank" rel="noreferrer">
           <span>{t('عرض الموقع', 'View site')}</span>
           <NavIcon id="external" size={15} />
         </a>

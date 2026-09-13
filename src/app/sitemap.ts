@@ -2,6 +2,7 @@ import type { MetadataRoute } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { livePosts } from '@/lib/posts'
+import { tenantUrl } from '@/lib/tenant-url'
 
 export const dynamic = 'force-dynamic'
 
@@ -57,7 +58,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       // A suspended client's site 404s; listing it would only earn crawl errors.
       if ((t as { suspended?: boolean }).suspended) continue
 
-      const home = `${base}/${t.slug}`
+      // Their own host — the subdomain, or the domain they bought.
+      const home = tenantUrl(t.slug, (t as { domain?: string | null }).domain)
       urls.push({
         url: home,
         changeFrequency: 'weekly',

@@ -11,6 +11,7 @@ import ShowcaseRail from '@/components/portfolio/ShowcaseRail'
 import VideoFacade from '@/components/portfolio/VideoFacade'
 import { LandingNav, LandingFooter } from '@/components/portfolio/LandingChrome'
 import { DEFAULT_LOOK, landingTokensCss, onAccent, setOnly, type LandingLook } from '@/lib/landing-look'
+import { tenantUrl } from '@/lib/tenant-url'
 import './landing.css'
 
 
@@ -134,6 +135,8 @@ export async function generateMetadata({ searchParams }: Params): Promise<Metada
 type ShowcaseItem = {
   name: string
   slug: string
+  /** Where that portfolio is read — its own subdomain or domain. */
+  url: string
   title: string | null
   avatarUrl: string | null
   coverUrl: string | null
@@ -184,6 +187,7 @@ async function getShowcase(hidden: string[]): Promise<ShowcaseItem[]> {
       return {
         name: t.name,
         slug: t.slug,
+        url: tenantUrl(t.slug, t.domain),
         title: (hero.title as string) || null,
         // Whichever picture of themselves they have set, in the order a person
         // would expect to be recognised by.
@@ -261,9 +265,7 @@ export default async function HomePage({ searchParams }: Params) {
   /* The second hero button: its own address, or the first portfolio on show. */
   const heroBtn2Href = (c.heroBtn2Url ?? '').trim()
     ? resolveLink(c.heroBtn2Url)
-    : showcase[0]
-      ? `/${showcase[0].slug}${q}`
-      : null
+    : (showcase[0]?.url ?? null)
   const showcaseStyle = look.showcaseStyle
   const showcaseRail = look.showcaseLayout !== 'grid'
   const cardStyle = look.cardStyle
@@ -581,7 +583,7 @@ export default async function HomePage({ searchParams }: Params) {
               }
             >
               {showcase.map((s) => (
-                <a className="lp-tenant" href={`/${s.slug}${q}`} key={s.slug}>
+                <a className="lp-tenant" href={s.url} key={s.slug}>
                   <span className="lp-tenant-badge">
                     {(showcaseStyle === 'cover' ? s.coverUrl : s.avatarUrl) ? (
                       // eslint-disable-next-line @next/next/no-img-element
