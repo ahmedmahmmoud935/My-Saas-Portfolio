@@ -99,7 +99,7 @@ export default async function ContentPage() {
   }
 
   // Collections that also fill portfolio sections — managed here too.
-  const [logosRes, achRes, testRes] = await Promise.all([
+  const [logosRes, achRes, testRes, teamRes] = await Promise.all([
     ctx.payload.find({
       collection: 'logos',
       where: { tenant: { equals: ctx.tenantId } },
@@ -122,6 +122,16 @@ export default async function ContentPage() {
       limit: 200,
       depth: 1,
       locale: 'ar',
+    }),
+    /* Both languages at once: a member is edited bilingually in one modal, so
+       the form needs the Arabic and the English halves side by side. */
+    ctx.payload.find({
+      collection: 'team',
+      where: { tenant: { equals: ctx.tenantId } },
+      sort: ['sortOrder', 'createdAt'],
+      limit: 200,
+      depth: 1,
+      locale: 'all',
     }),
   ])
 
@@ -153,6 +163,31 @@ export default async function ContentPage() {
     avatarUrl: mediaUrl(tt.avatar, 'thumb'),
   }))
 
+  const loc = (v: unknown): { ar: string; en: string } => {
+    if (v && typeof v === 'object') {
+      const o = v as { ar?: string | null; en?: string | null }
+      return { ar: o.ar ?? '', en: o.en ?? '' }
+    }
+    return { ar: typeof v === 'string' ? v : '', en: '' }
+  }
+  const team = teamRes.docs.map((m, i) => {
+    const name = loc(m.name)
+    const role = loc(m.role)
+    const bio = loc(m.bio)
+    return {
+      id: m.id,
+      nameAr: name.ar,
+      nameEn: name.en,
+      roleAr: role.ar,
+      roleEn: role.en,
+      bioAr: bio.ar,
+      bioEn: bio.en,
+      photoId: (m.photo && typeof m.photo === 'object' ? m.photo.id : (m.photo as number)) ?? null,
+      photoUrl: mediaUrl(m.photo as never, 'thumb'),
+      sortOrder: m.sortOrder ?? i,
+    }
+  })
+
   // The public review page is addressed by the tenant's slug, so the dashboard
   // needs it to show the link the owner sends to clients.
   const tenant = await ctx.payload.findByID({ collection: 'tenants', id: ctx.tenantId, depth: 0 })
@@ -163,6 +198,7 @@ export default async function ContentPage() {
       logos={logos}
       achievements={achievements}
       testimonials={testimonials}
+      team={team}
       slug={tenant.slug}
     />
   )

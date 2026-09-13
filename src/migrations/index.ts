@@ -42,6 +42,7 @@ import * as migration_20260913_010000_section_bg_light_colour from './20260913_0
 import * as migration_20260913_020000_expertise_light_dim from './20260913_020000_expertise_light_dim';
 import * as migration_20260914_010000_landing_dashboard_section from './20260914_010000_landing_dashboard_section';
 import * as migration_20260914_020000_landing_section_order from './20260914_020000_landing_section_order';
+import * as migration_20260914_030000_team from './20260914_030000_team';
 
 export const migrations = [
   {
@@ -263,5 +264,10 @@ export const migrations = [
     up: migration_20260914_020000_landing_section_order.up,
     down: migration_20260914_020000_landing_section_order.down,
     name: '20260914_020000_landing_section_order'
+  },
+  {
+    up: migration_20260914_030000_team.up,
+    down: migration_20260914_030000_team.down,
+    name: '20260914_030000_team'
   },
 ];

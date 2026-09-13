@@ -1871,6 +1871,60 @@ body {
   line-height: 1.7;
   margin: 0;
 }
+/* ── The team ───────────────────────────────────────────────────────────
+   Four portraits and four short paragraphs. The photograph leads because a
+   client reading this is deciding whether they are dealing with people, and
+   the cards are the same height whatever the length of the lines under them. */
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 22px;
+}
+.team-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border, var(--border));
+  border-radius: var(--radius-card, 14px);
+  padding: 26px 20px 24px;
+  text-align: center;
+}
+.team-photo {
+  width: 104px;
+  height: 104px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent);
+  font-size: 34px;
+  font-weight: 900;
+  box-shadow: 0 0 0 3px var(--bg), 0 0 0 4px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.team-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.team-card h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+}
+.team-role {
+  margin: 6px 0 0;
+  color: var(--accent);
+  font-size: 13.5px;
+  font-weight: 700;
+}
+.team-bio {
+  margin: 12px 0 0;
+  color: var(--sub);
+  font-size: 14px;
+  line-height: 1.8;
+}
+
 /* A card carrying a background picture: the image sits behind, dimmed, and the
    text rides on top — the same arrangement the stacked layout uses. */
 .card.has-bg {

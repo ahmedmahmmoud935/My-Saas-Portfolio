@@ -17,6 +17,7 @@ import { Redirects } from './collections/Redirects'
 import { Posts } from './collections/Posts'
 import { Logos } from './collections/Logos'
 import { Testimonials } from './collections/Testimonials'
+import { Team } from './collections/Team'
 import { Achievements } from './collections/Achievements'
 import { Visits } from './collections/Visits'
 import { Imports } from './collections/Imports'
@@ -56,6 +57,7 @@ export default buildConfig({
     Redirects,
     Logos,
     Testimonials,
+    Team,
     Achievements,
     Visits,
     Imports,
@@ -91,6 +93,7 @@ export default buildConfig({
         redirects: {},
         logos: {},
         testimonials: {},
+        team: {},
         achievements: {},
         visits: {},
         // One settings document per tenant (behaves like a global).

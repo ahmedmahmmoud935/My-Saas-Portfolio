@@ -3239,6 +3239,27 @@ input[type='range']::-moz-range-thumb {
    The same three groups the sidebar uses, laid out across a page instead of
    down a column. The headings stay quiet for the same reason they do there:
    they are there to let the eye skip two groups, not to be read. */
+/* A team member's face in the list, and the initial standing in for one. */
+.team-thumb {
+  width: 54px;
+  height: 54px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 800;
+  font-size: 20px;
+}
+.team-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 /* The landing editor's own navigation.
    Fifteen sections as pills wrapped into a wall: you read the whole wall to
    find one, and the groups stopped looking like groups. Down the side they

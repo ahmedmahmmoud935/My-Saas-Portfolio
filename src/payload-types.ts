@@ -76,6 +76,7 @@ export interface Config {
     redirects: Redirect;
     logos: Logo;
     testimonials: Testimonial;
+    team: Team;
     achievements: Achievement;
     visits: Visit;
     imports: Import;
@@ -96,6 +97,7 @@ export interface Config {
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     logos: LogosSelect<false> | LogosSelect<true>;
     testimonials: TestimonialsSelect<false> | TestimonialsSelect<true>;
+    team: TeamSelect<false> | TeamSelect<true>;
     achievements: AchievementsSelect<false> | AchievementsSelect<true>;
     visits: VisitsSelect<false> | VisitsSelect<true>;
     imports: ImportsSelect<false> | ImportsSelect<true>;
@@ -511,6 +513,24 @@ export interface Testimonial {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "team".
+ */
+export interface Team {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  name: string;
+  /**
+   * Job title
+   */
+  role?: string | null;
+  bio?: string | null;
+  photo?: (number | null) | Media;
+  sortOrder?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "achievements".
  */
 export interface Achievement {
@@ -678,6 +698,7 @@ export interface SiteSetting {
               | 'achievements'
               | 'expertise'
               | 'testimonials'
+              | 'team'
               | 'logos'
               | 'experience'
               | 'tools'
@@ -822,6 +843,7 @@ export interface SiteSetting {
           | 'achievements'
           | 'expertise'
           | 'testimonials'
+          | 'team'
           | 'logos'
           | 'experience'
           | 'tools'
@@ -943,6 +965,9 @@ export interface SiteSetting {
     testimonials?: {
       title?: string | null;
     };
+    team?: {
+      title?: string | null;
+    };
     tools?: {
       title?: string | null;
       items?:
@@ -1026,6 +1051,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'testimonials';
         value: number | Testimonial;
+      } | null)
+    | ({
+        relationTo: 'team';
+        value: number | Team;
       } | null)
     | ({
         relationTo: 'achievements';
@@ -1375,6 +1404,20 @@ export interface TestimonialsSelect<T extends boolean = true> {
   rating?: T;
   source?: T;
   approved?: T;
+  sortOrder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "team_select".
+ */
+export interface TeamSelect<T extends boolean = true> {
+  tenant?: T;
+  name?: T;
+  role?: T;
+  bio?: T;
+  photo?: T;
   sortOrder?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1742,6 +1785,11 @@ export interface SiteSettingsSelect<T extends boolean = true> {
               title?: T;
             };
         testimonials?:
+          | T
+          | {
+              title?: T;
+            };
+        team?:
           | T
           | {
               title?: T;

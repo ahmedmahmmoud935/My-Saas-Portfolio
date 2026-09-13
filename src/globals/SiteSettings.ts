@@ -16,6 +16,7 @@ const SECTION_IDS = [
   'achievements',
   'expertise',
   'testimonials',
+  'team',
   'logos',
   'experience',
   'tools',
@@ -745,6 +746,13 @@ export const SiteSettings: CollectionConfig = {
                 },
                 {
                   name: 'testimonials',
+                  type: 'group',
+                  fields: [{ name: 'title', type: 'text', localized: true }],
+                },
+                {
+                  // The people behind the work — the heading over the section
+                  // the `team` collection fills.
+                  name: 'team',
                   type: 'group',
                   fields: [{ name: 'title', type: 'text', localized: true }],
                 },

@@ -14,6 +14,7 @@ import ProjectsGrid from '@/components/portfolio/ProjectsGrid'
 import Achievements from '@/components/portfolio/Achievements'
 import Logos from '@/components/portfolio/Logos'
 import Testimonials from '@/components/portfolio/Testimonials'
+import Team from '@/components/portfolio/Team'
 import Contact from '@/components/portfolio/Contact'
 import Footer from '@/components/portfolio/Footer'
 import TrackVisit from '@/components/portfolio/TrackVisit'
@@ -117,7 +118,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
   // Suspended clients: hide the public site.
   if ((data.tenant as { suspended?: boolean }).suspended) notFound()
 
-  const { tenant, settings, projects, achievements, logos, testimonials } = data
+  const { tenant, settings, projects, achievements, logos, testimonials, team } = data
   const content = settings?.content ?? {}
   const brand = settings?.brand ?? {}
 
@@ -291,6 +292,18 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
         }))}
       />
     ),
+    team: (
+      <Team
+        title={content.team?.title || (locale === 'en' ? 'The team' : 'الفريق')}
+        items={team.map((m) => ({
+          id: m.id,
+          name: m.name,
+          role: m.role,
+          bio: m.bio,
+          photoUrl: mediaUrl(m.photo, 'card'),
+        }))}
+      />
+    ),
     testimonials: (
       <Testimonials
         title={content.testimonials?.title || 'Testimonials'}
@@ -329,6 +342,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
     'achievements',
     'expertise',
     'testimonials',
+    'team',
     'logos',
     'experience',
     'tools',
@@ -336,14 +350,19 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
     'skills',
     'contact',
   ]
-  const ordered =
-    settings?.sections && settings.sections.length > 0
-      ? [...settings.sections]
-          .filter((s) => s.visible !== false)
-          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-          .map((s) => String(s.sectionId))
-          .filter((id) => id in sectionEls)
-      : defaultOrder
+  /* A saved order is a snapshot of the sections that existed when it was
+     saved, so a section added since — the team — would be missing from every
+     portfolio saved before today. Anything the page knows about and the saved
+     list does not is appended rather than dropped. */
+  const ordered = (() => {
+    if (!settings?.sections?.length) return defaultOrder
+    const saved = [...settings.sections]
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .map((s) => ({ id: String(s.sectionId), on: s.visible !== false }))
+    const seen = new Set(saved.map((s) => s.id))
+    const missing = defaultOrder.filter((id) => !seen.has(id)).map((id) => ({ id, on: true }))
+    return [...saved, ...missing].filter((s) => s.on && s.id in sectionEls).map((s) => s.id)
+  })()
 
   const cssVars = tenantCssVars(settings) as React.CSSProperties
 

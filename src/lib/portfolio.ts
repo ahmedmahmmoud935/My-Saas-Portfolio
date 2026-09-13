@@ -6,6 +6,7 @@ import type {
   Achievement,
   Logo,
   Testimonial,
+  Team,
   SiteSetting,
   Media,
 } from '../payload-types'
@@ -17,6 +18,7 @@ export type PortfolioData = {
   achievements: Achievement[]
   logos: Logo[]
   testimonials: Testimonial[]
+  team: Team[]
 }
 
 /** Resolve a URL field (upload) to a usable src. Prefers the thumbnail when asked. */
@@ -52,7 +54,7 @@ export async function getPortfolio(
 
   const tenantFilter = { tenant: { equals: tenant.id } }
 
-  const [settingsRes, projectsRes, achievementsRes, logosRes, testimonialsRes] =
+  const [settingsRes, projectsRes, achievementsRes, logosRes, testimonialsRes, teamRes] =
     await Promise.all([
       payload.find({
         collection: 'site-settings',
@@ -96,6 +98,15 @@ export async function getPortfolio(
         depth: 1,
         locale,
       }),
+      payload.find({
+        collection: 'team',
+        where: tenantFilter,
+        // Hand-ordered; the order people are introduced in is a decision.
+        sort: ['sortOrder', 'createdAt'],
+        limit: 60,
+        depth: 1,
+        locale,
+      }),
     ])
 
   return {
@@ -105,6 +116,7 @@ export async function getPortfolio(
     achievements: achievementsRes.docs,
     logos: logosRes.docs,
     testimonials: testimonialsRes.docs,
+    team: teamRes.docs,
   }
 }
 

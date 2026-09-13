@@ -3,8 +3,8 @@
 import { getDashboardContext } from './dashboard'
 
 // Generic tenant-scoped CRUD for the simple per-tenant collections.
-type Coll = 'logos' | 'achievements' | 'testimonials' | 'articles' | 'redirects' | 'posts'
-const ALLOWED: Coll[] = ['logos', 'achievements', 'testimonials', 'articles', 'redirects', 'posts']
+type Coll = 'logos' | 'achievements' | 'testimonials' | 'team' | 'articles' | 'redirects' | 'posts'
+const ALLOWED: Coll[] = ['logos', 'achievements', 'testimonials', 'team', 'articles', 'redirects', 'posts']
 
 /**
  * Collections that belong to the platform rather than to a tenant.
@@ -34,6 +34,10 @@ export async function saveDoc(
   collection: Coll,
   id: number | undefined,
   data: Record<string, unknown>,
+  /* Which language these words belong to. Payload stores a localized field per
+     locale, so a bilingual row is written twice — Arabic first, because that is
+     the pass that creates it. */
+  locale: 'ar' | 'en' = 'ar',
 ) {
   const ctx = await getDashboardContext()
   if (!ctx) throw new Error('unauthorized')
@@ -49,14 +53,14 @@ export async function saveDoc(
 
   if (id) {
     await assertOwns(ctx, collection, id)
-    await ctx.payload.update({ collection, id, data: clean as never, locale: 'ar' })
+    await ctx.payload.update({ collection, id, data: clean as never, locale })
     return { ok: true, id }
   }
   const created = await ctx.payload.create({
     collection,
     // A platform collection has no tenant to stamp.
     data: (platform ? clean : { ...clean, tenant: ctx.tenantId }) as never,
-    locale: 'ar',
+    locale,
   })
   return { ok: true, id: created.id }
 }

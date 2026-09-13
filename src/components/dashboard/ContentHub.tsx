@@ -5,16 +5,18 @@ import ContentEditor from './ContentEditor'
 import LogosManager from './LogosManager'
 import AchievementsManager from './AchievementsManager'
 import TestimonialsManager from './TestimonialsManager'
+import TeamManager from './TeamManager'
 import { useDashLang } from './DashLang'
 import type { ContentForm } from '@/lib/content-types'
 
-type HubTab = 'content' | 'clients' | 'achievements' | 'testimonials'
+type HubTab = 'content' | 'clients' | 'achievements' | 'testimonials' | 'team'
 
 const TABS: { id: HubTab; ar: string; en: string }[] = [
   { id: 'content', ar: 'النصوص', en: 'Texts' },
   { id: 'clients', ar: 'العملاء', en: 'Clients' },
   { id: 'achievements', ar: 'الإنجازات', en: 'Achievements' },
   { id: 'testimonials', ar: 'آراء العملاء', en: 'Testimonials' },
+  { id: 'team', ar: 'الفريق', en: 'The team' },
 ]
 
 /**
@@ -27,12 +29,14 @@ export default function ContentHub({
   logos,
   achievements,
   testimonials,
+  team,
   slug,
 }: {
   content: ContentForm
   logos: React.ComponentProps<typeof LogosManager>['logos']
   achievements: React.ComponentProps<typeof AchievementsManager>['items']
   testimonials: React.ComponentProps<typeof TestimonialsManager>['items']
+  team: React.ComponentProps<typeof TeamManager>['items']
   /** The tenant's slug — the public review page lives at /testimonial/<slug>. */
   slug: string
 }) {
@@ -57,6 +61,7 @@ export default function ContentHub({
       {tab === 'clients' && <LogosManager logos={logos} />}
       {tab === 'achievements' && <AchievementsManager items={achievements} />}
       {tab === 'testimonials' && <TestimonialsManager items={testimonials} slug={slug} />}
+      {tab === 'team' && <TeamManager items={team} />}
     </div>
   )
 }
