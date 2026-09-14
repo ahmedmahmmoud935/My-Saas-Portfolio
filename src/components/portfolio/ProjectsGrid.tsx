@@ -26,6 +26,7 @@ export default function ProjectsGrid({
   projects,
   username,
   lang,
+  langQ,
   tabLabels,
   cols,
   highlights,
@@ -41,6 +42,9 @@ export default function ProjectsGrid({
   username: string
   /** Carried into the project link so opening one doesn't switch language. */
   lang?: 'ar' | 'en'
+  /** That same language as a query — empty when the bare address already
+   *  answers in it, so an Arabic site's links stay bare. */
+  langQ?: string
   tabLabels?: Partial<Record<TabId, string>>
   cols?: {
     image?: { d?: number | null; t?: number | null; m?: number | null }
@@ -161,7 +165,7 @@ export default function ProjectsGrid({
                 {inner}
               </button>
             ) : (
-              <a className="project-card" key={p.id} href={`/${username}/project/${p.id}${lang ? `?lang=${lang}` : ''}`}>
+              <a className="project-card" key={p.id} href={`/${username}/project/${p.id}${langQ ?? (lang ? `?lang=${lang}` : '')}`}>
                 {inner}
               </a>
             )

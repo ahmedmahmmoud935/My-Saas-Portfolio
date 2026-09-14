@@ -177,6 +177,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
         videoCategories={toCategoryRows(settings?.categories?.video ?? [])}
         username={tenant.slug}
         lang={locale}
+        langQ={q}
         tabLabels={{
           designs: settings?.projTabs?.designs?.label || undefined,
           reels: settings?.projTabs?.reels?.label || undefined,
@@ -510,6 +511,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
           }))}
           whatsapp={settings?.social?.whatsapp || undefined}
           username={tenant.slug}
+          langQ={q}
         />
       )}
     </div>

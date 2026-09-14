@@ -24,10 +24,15 @@ export default function MobileBar({
   buttons,
   whatsapp,
   username,
+  langQ = '',
 }: {
   buttons: MBtn[]
   whatsapp?: string
   username: string
+  /** The `?lang=` this page is being read in, empty when the bare address
+   *  already answers in it — so the bar does not drop the language on the way
+   *  to the articles, nor add a parameter that says nothing. */
+  langQ?: string
 }) {
   if (!buttons.length) return null
   const order = ['right', 'center', 'left']
@@ -38,7 +43,7 @@ export default function MobileBar({
       case 'whatsapp':
         return waLink(whatsapp)
       case 'articles':
-        return `/${username}/articles`
+        return `/${username}/articles${langQ}`
       case 'link':
         return b.target || '#'
       default:
