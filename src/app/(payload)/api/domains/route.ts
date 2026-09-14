@@ -1,6 +1,7 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { tenantHost } from '@/lib/tenant-url'
+import { settingsLang } from '@/lib/site-lang'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,12 +28,6 @@ export const dynamic = 'force-dynamic'
  * instead: a portfolio whose hero reads in Arabic is an Arabic page whether or
  * not anyone ticked a box, and saying otherwise is the thing that was wrong.
  */
-const ARABIC = /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/
-
-/** The script a headline is written in, when there is a headline to read. */
-function scriptOf(text: unknown): 'ar' | null {
-  return typeof text === 'string' && ARABIC.test(text) ? 'ar' : null
-}
 export async function GET() {
   const domains: Record<string, string> = {}
   const langs: Record<string, string> = {}
@@ -79,14 +74,8 @@ export async function GET() {
       const id = typeof owner === 'object' ? (owner as { id?: number })?.id : owner
       const slug = typeof id === 'number' ? slugById.get(id) : undefined
       if (!slug) continue
-      const dir = (s.style as { direction?: string } | undefined)?.direction
-      if (dir === 'rtl' || dir === 'ltr') {
-        langs[slug] = dir === 'rtl' ? 'ar' : 'en'
-        continue
-      }
-      const hero = (s.content as { hero?: { name?: string; title?: string } } | undefined)?.hero
-      const guessed = scriptOf(hero?.name) ?? scriptOf(hero?.title)
-      if (guessed) langs[slug] = guessed
+      const own = settingsLang(s as Parameters<typeof settingsLang>[0])
+      if (own) langs[slug] = own
     }
   } catch {
     /* DB unavailable — empty maps */
