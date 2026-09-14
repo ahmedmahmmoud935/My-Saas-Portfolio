@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { mediaUrl } from '@/lib/portfolio'
-import { alternatesFor, pageLocale } from '@/lib/seo'
+import { alternatesFor, langQuery, pageLocale } from '@/lib/seo'
 import Navbar from '@/components/portfolio/Navbar'
 import PageShell from '@/components/portfolio/PageShell'
 import Footer from '@/components/portfolio/Footer'
@@ -65,11 +65,12 @@ export default async function ArticlesListPage({ params, searchParams }: Params)
   if (!data) notFound()
   const { tenant, settings, articles } = data
   const logo = tenant.name?.[0]?.toUpperCase() || 'V'
+  const q = await langQuery(locale)
   return (
     <PageShell settings={settings} locale={locale}>
       <Navbar
         logo={logo}
-        links={[{ label: locale === 'en' ? 'Home' : 'الرئيسية', href: `/${tenant.slug}?lang=${locale}` }]}
+        links={[{ label: locale === 'en' ? 'Home' : 'الرئيسية', href: `/${tenant.slug}${q}` }]}
         langHref={`?lang=${locale === 'en' ? 'ar' : 'en'}`}
         langLabel={locale === 'en' ? 'ع' : 'EN'}
       />
@@ -83,7 +84,7 @@ export default async function ArticlesListPage({ params, searchParams }: Params)
           ) : (
             <div className="tst-grid">
               {articles.map((a) => (
-                <a key={a.id} href={`/${tenant.slug}/articles/${a.slug}?lang=${locale}`} className="tst" style={{ padding: 0, overflow: 'hidden', display: 'block' }}>
+                <a key={a.id} href={`/${tenant.slug}/articles/${a.slug}${q}`} className="tst" style={{ padding: 0, overflow: 'hidden', display: 'block' }}>
                   {mediaUrl(a.cover, 'card') && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={mediaUrl(a.cover, 'card')!} alt={a.title} style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover' }} />

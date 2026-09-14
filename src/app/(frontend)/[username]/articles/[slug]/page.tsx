@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { mediaUrl } from '@/lib/portfolio'
-import { alternatesFor, pageLocale, plainText } from '@/lib/seo'
+import { alternatesFor, langQuery, pageLocale, plainText } from '@/lib/seo'
 import Navbar from '@/components/portfolio/Navbar'
 import PageShell from '@/components/portfolio/PageShell'
 import Footer from '@/components/portfolio/Footer'
@@ -145,14 +145,16 @@ export default async function ArticlePage({ params, searchParams }: Params) {
     author: { '@type': 'Person', name: tenant.name },
   }
 
+  const q = await langQuery(locale)
+
   return (
     <PageShell settings={settings} locale={locale}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Navbar
         logo={logo}
         links={[
-          { label: locale === 'en' ? 'Articles' : 'المقالات', href: `/${tenant.slug}/articles?lang=${locale}` },
-          { label: locale === 'en' ? 'Home' : 'الرئيسية', href: `/${tenant.slug}?lang=${locale}` },
+          { label: locale === 'en' ? 'Articles' : 'المقالات', href: `/${tenant.slug}/articles${q}` },
+          { label: locale === 'en' ? 'Home' : 'الرئيسية', href: `/${tenant.slug}${q}` },
         ]}
         langHref={`?lang=${locale === 'en' ? 'ar' : 'en'}`}
         langLabel={locale === 'en' ? 'ع' : 'EN'}

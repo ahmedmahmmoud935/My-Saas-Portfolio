@@ -69,15 +69,68 @@ async function getMap(fallbackOrigin: string): Promise<SiteMap> {
  * Otherwise the portfolio's own pinned direction decides, and failing that the
  * app default.
  */
-function localeHeaders(req: NextRequest, slug: string | null, langs: Record<string, string>) {
+function localeHeaders(req: NextRequest, slug: string | null, map: SiteMap) {
   const asked = req.nextUrl.searchParams.get('lang')
-  const lang = asked === 'ar' || asked === 'en' ? asked : slug ? (langs[slug] ?? 'en') : 'en'
+  const site = siteLang(slug, map)
+  const lang = asked === 'ar' || asked === 'en' ? asked : site
   const headers = new Headers(req.headers)
   headers.set('x-pf-lang', lang)
+  /* The language the bare address serves, whatever this particular request
+     asked for — which is how a page knows that `?lang=ar` on an Arabic site
+     adds nothing, and leaves it off the addresses it hands to a reader or a
+     crawler. */
+  headers.set('x-pf-site-lang', site)
   // The host the visitor typed. A client on their own domain should have that
   // domain in their canonical, not the platform's.
   headers.set('x-pf-host', (req.headers.get('host') || '').split(':')[0].toLowerCase())
   return headers
+}
+
+/**
+ * The language a bare address is read in.
+ *
+ * A portfolio is read in the language it is written in — the direction its
+ * owner pinned. The platform's own pages (the landing, the blog, the legal
+ * pages) have no owner to ask and answer for themselves: Arabic, which is what
+ * the product is written in and what the people it is sold to read.
+ */
+function siteLang(slug: string | null, map: SiteMap): 'ar' | 'en' {
+  const own = slug ? map.langs[slug] : null
+  if (own === 'ar' || own === 'en') return own
+  return isTenant(slug, map) ? 'en' : 'ar'
+}
+
+/** Whether this address belongs to a client's portfolio or to the platform. */
+const isTenant = (slug: string | null, map: SiteMap) =>
+  !!slug && (map.live ?? []).includes(slug)
+
+/**
+ * `?lang=ar` on a page that is Arabic anyway is noise in an address people
+ * paste, share and print on a card. The bare address is the site's own
+ * language; the parameter only ever names the other one.
+ */
+function cleanSearch(req: NextRequest, site: 'ar' | 'en'): string {
+  if (req.nextUrl.searchParams.get('lang') !== site) return req.nextUrl.search
+  const params = new URLSearchParams(req.nextUrl.searchParams)
+  params.delete('lang')
+  const rest = params.toString()
+  return rest ? `?${rest}` : ''
+}
+
+/**
+ * The same, as a redirect — for a request that is otherwise served in place.
+ *
+ * Permanent for the platform, whose language is fixed. Temporary for a
+ * portfolio, because its owner can switch the language it is written in, and a
+ * 308 cached in a visitor's browser would go on swallowing `?lang=` long after
+ * it stopped being the redundant one.
+ */
+function stripDefaultLang(req: NextRequest, site: 'ar' | 'en', permanent: boolean) {
+  const search = cleanSearch(req, site)
+  if (search === req.nextUrl.search) return null
+  const url = req.nextUrl.clone()
+  url.search = search
+  return NextResponse.redirect(url, permanent ? 308 : 307)
 }
 
 /** The tenant a path already addresses, e.g. /ahmed/project/3 → "ahmed". */
@@ -98,7 +151,10 @@ export async function middleware(req: NextRequest) {
     const renamed = (map.slugs ?? {})[sub]
     if (renamed) {
       return NextResponse.redirect(
-        new URL(`${req.nextUrl.pathname}${req.nextUrl.search}`, `https://${renamed}.${BASE}`),
+        new URL(
+          `${req.nextUrl.pathname}${cleanSearch(req, siteLang(renamed, map))}`,
+          `https://${renamed}.${BASE}`,
+        ),
         308,
       )
     }
@@ -112,7 +168,7 @@ export async function middleware(req: NextRequest) {
     const owned = (map.hosts ?? {})[sub]
     if (owned && owned !== host) {
       return NextResponse.redirect(
-        new URL(`${req.nextUrl.pathname}${req.nextUrl.search}`, `https://${owned}`),
+        new URL(`${req.nextUrl.pathname}${cleanSearch(req, siteLang(sub, map))}`, `https://${owned}`),
         308,
       )
     }
@@ -133,7 +189,10 @@ export async function middleware(req: NextRequest) {
     const host = owner ? (map.hosts ?? {})[owner] : null
     if (slug && owner && host) {
       const rest = req.nextUrl.pathname.slice(slug.length + 1)
-      return NextResponse.redirect(new URL(`${rest || '/'}${req.nextUrl.search}`, `https://${host}`), 308)
+      return NextResponse.redirect(
+        new URL(`${rest || '/'}${cleanSearch(req, siteLang(owner, map))}`, `https://${host}`),
+        308,
+      )
     }
     // No host to send it to (developing on localhost): serve it in place.
     if (slug && renamed) {
@@ -141,10 +200,16 @@ export async function middleware(req: NextRequest) {
       url.pathname = `/${renamed}${req.nextUrl.pathname.slice(slug.length + 1)}`
       return NextResponse.redirect(url, 308)
     }
-    return NextResponse.next({ request: { headers: localeHeaders(req, slug, map.langs) } })
+    return (
+      stripDefaultLang(req, siteLang(slug, map), !isTenant(slug, map)) ??
+      NextResponse.next({ request: { headers: localeHeaders(req, slug, map) } })
+    )
   }
 
-  const headers = localeHeaders(req, tenantSlug, map.langs)
+  const redundant = stripDefaultLang(req, siteLang(tenantSlug, map), false)
+  if (redundant) return redundant
+
+  const headers = localeHeaders(req, tenantSlug, map)
   const url = req.nextUrl.clone()
   if (url.pathname === `/${tenantSlug}` || url.pathname.startsWith(`/${tenantSlug}/`)) {
     return NextResponse.next({ request: { headers } })

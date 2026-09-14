@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getPortfolio, tenantCssVars } from '@/lib/portfolio'
 import TestimonialForm from '@/components/portfolio/TestimonialForm'
-import { pageLocale } from '@/lib/seo'
+import { langQuery, pageLocale } from '@/lib/seo'
 
 export const dynamic = 'force-dynamic'
 
@@ -80,7 +80,7 @@ export default async function TestimonialPage({ params, searchParams }: Params) 
       lang={locale}
     >
       <main className="tf-wrap">
-        <a className="tf-back" href={`/${tenant.slug}${locale === 'en' ? '?lang=en' : ''}`}>
+        <a className="tf-back" href={`/${tenant.slug}${await langQuery(locale)}`}>
           ← {name}
         </a>
         <h1 className="tf-heading">{c.heading}</h1>

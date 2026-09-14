@@ -66,7 +66,7 @@ export function LandingNav({
         <a href={sec('faq')}>{copy.nav.faq}</a>
         {/* The blog is the only part of this site that can rank for anything
             other than the product's own name. */}
-        <a href={`/blog?lang=${locale}`}>{locale === 'en' ? 'Blog' : 'المدوّنة'}</a>
+        <a href={`/blog${q}`}>{locale === 'en' ? 'Blog' : 'المدوّنة'}</a>
       </nav>
       <div className="lp-nav-actions">
         <a className="lp-lang" href={otherLang}>
@@ -117,7 +117,7 @@ export function LandingFooter({
                     the product's own name, so it should not be one edit away
                     from having nothing pointing at it. */}
                 {i === 0 && (
-                  <a href={`/blog?lang=${locale}`}>{locale === 'en' ? 'Blog' : 'المدوّنة'}</a>
+                  <a href={`/blog${q}`}>{locale === 'en' ? 'Blog' : 'المدوّنة'}</a>
                 )}
                 {g.links
                   .filter((l) => l.label && l.url)
@@ -146,7 +146,7 @@ export function LandingFooter({
               {copy.legal
                 .filter((p) => p.body.trim())
                 .map((p) => (
-                  <a key={p.slug} href={`/legal/${p.slug}?lang=${locale}`}>
+                  <a key={p.slug} href={`/legal/${p.slug}${q}`}>
                     {p.title}
                   </a>
                 ))}

@@ -14,6 +14,7 @@ import { LandingNav, LandingFooter } from '@/components/portfolio/LandingChrome'
 import { DEFAULT_LOOK, landingTokensCss, onAccent, setOnly, type LandingLook } from '@/lib/landing-look'
 import { tenantUrl } from '@/lib/tenant-url'
 import { resolveLandingOrder } from '@/lib/landing-order'
+import { platformLocale } from '@/lib/seo'
 import './landing.css'
 
 
@@ -104,8 +105,8 @@ const SITE = process.env.NEXT_PUBLIC_SERVER_URL || ''
 
 export async function generateMetadata({ searchParams }: Params): Promise<Metadata> {
   const { lang } = (await searchParams) ?? {}
-  const en = lang !== 'ar'
-  const landing = await getLanding(en ? 'en' : 'ar')
+  const locale = platformLocale(lang)
+  const landing = await getLanding(locale)
   const look = landing.look
   // Falls back to the hero picture when no share image has been set, so a
   // shared link is never a bare grey card.
@@ -119,10 +120,13 @@ export async function generateMetadata({ searchParams }: Params): Promise<Metada
       ? { google: landing.tools.searchConsole }
       : undefined,
     alternates: {
-      canonical: SITE || undefined,
+      /* Arabic is the bare address — the one written on a card and pasted into
+         a message — so that is what it canonicalises to, and `?lang=ar` folds
+         into it. English is a page of its own and says so. */
+      canonical: SITE ? (locale === 'en' ? `${SITE}/?lang=en` : SITE) : undefined,
       // The landing is the one page that never carried these.
       languages: SITE
-        ? { ar: `${SITE}/?lang=ar`, en: `${SITE}/?lang=en`, 'x-default': SITE }
+        ? { ar: SITE, en: `${SITE}/?lang=en`, 'x-default': SITE }
         : undefined,
     },
     openGraph: {
@@ -253,7 +257,7 @@ function Head({ eyebrow, title, sub }: { eyebrow?: string; title: string; sub?: 
 
 export default async function HomePage({ searchParams }: Params) {
   const { lang } = (await searchParams) ?? {}
-  const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
+  const locale = platformLocale(lang)
   const { copy, look, sections, tools, order } = await getLanding(locale)
   const c = copy as (typeof LANDING_COPY)['ar']
   const q = locale === 'en' ? '?lang=en' : ''
@@ -752,7 +756,7 @@ export default async function HomePage({ searchParams }: Params) {
           copy={c}
           locale={locale}
           atHome
-          otherLang={locale === 'en' ? '/?lang=ar' : '/'}
+          otherLang={locale === 'en' ? '/' : '/?lang=en'}
         />
       </SectionBg>
 

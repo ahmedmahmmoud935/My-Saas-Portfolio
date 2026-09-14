@@ -29,7 +29,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   })
 
   const urls: MetadataRoute.Sitemap = [
-    { url: base, changeFrequency: 'weekly', priority: 1, alternates: langs(base) },
+    // The landing page alone canonicalises Arabic to the bare address, so its
+    // alternates say the same thing; anywhere else the two languages are both
+    // spelled out.
+    {
+      url: base,
+      changeFrequency: 'weekly',
+      priority: 1,
+      alternates: { languages: { ar: base, en: `${base}?lang=en` } },
+    },
   ]
 
   try {

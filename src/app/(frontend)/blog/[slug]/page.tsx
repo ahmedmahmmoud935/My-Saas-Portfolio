@@ -5,7 +5,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { mediaUrl } from '@/lib/portfolio'
 import { livePost } from '@/lib/posts'
-import { alternatesFor, absoluteUrl, plainText } from '@/lib/seo'
+import { alternatesFor, absoluteUrl, plainText, platformLocale } from '@/lib/seo'
 import { getLandingChrome, landingTokensCss } from '@/lib/landing-look'
 import { LandingNav, LandingFooter } from '@/components/portfolio/LandingChrome'
 import Analytics from '@/components/portfolio/Analytics'
@@ -31,7 +31,7 @@ async function load(slugRaw: string, locale: 'ar' | 'en') {
 export async function generateMetadata({ params, searchParams }: Params): Promise<Metadata> {
   const { slug } = await params
   const { lang } = (await searchParams) ?? {}
-  const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
+  const locale = platformLocale(lang)
   const post = await load(slug, locale)
   if (!post) return { title: 'Not found', alternates: await alternatesFor(`/blog/${slug}`, { locale }) }
   /* The canonical names the language the page is actually written in, not the
@@ -73,7 +73,7 @@ async function movedTo(path: string): Promise<string | null> {
 export default async function BlogPost({ params, searchParams }: Params) {
   const { slug } = await params
   const { lang } = (await searchParams) ?? {}
-  const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
+  const locale = platformLocale(lang)
   const post = await load(slug, locale)
 
   if (!post) {
@@ -121,7 +121,7 @@ export default async function BlogPost({ params, searchParams }: Params) {
         look={look}
         copy={c}
         locale={locale}
-        otherLang={locale === 'en' ? `/blog/${slug}?lang=ar` : `/blog/${slug}?lang=en`}
+        otherLang={locale === 'en' ? `/blog/${slug}` : `/blog/${slug}?lang=en`}
       />
 
       <article className="lp-sec blog-post">

@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { mediaUrl } from '@/lib/portfolio'
-import { alternatesFor, absoluteUrl, creativeWorkJsonLd, pageLocale, plainText } from '@/lib/seo'
+import { alternatesFor, absoluteUrl, creativeWorkJsonLd, langQuery, pageLocale, plainText } from '@/lib/seo'
 import ProjectView, { type Mod, type SerializedProject } from '@/components/project/ProjectView'
 import Navbar from '@/components/portfolio/Navbar'
 import PageShell from '@/components/portfolio/PageShell'
@@ -247,7 +247,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Params
   // The portfolio's own navbar, kept on the project page — leaving the visitor
   // with nothing but a Back button meant no way to reach any other section.
   // The links are anchors on the portfolio page, so they need its path here.
-  const qs = `?lang=${locale}`
+  const qs = await langQuery(locale)
   const navLinks = [
     ...((settings as { navbarLinks?: { linkId?: string; label?: string; visible?: boolean }[] } | null)
       ?.navbarLinks ?? [])

@@ -1,7 +1,7 @@
 import React from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { alternatesFor } from '@/lib/seo'
+import { alternatesFor, platformLocale } from '@/lib/seo'
 import { getLandingChrome, landingTokensCss } from '@/lib/landing-look'
 import { LandingNav, LandingFooter } from '@/components/portfolio/LandingChrome'
 import Analytics from '@/components/portfolio/Analytics'
@@ -24,7 +24,7 @@ async function load(slug: string, locale: 'ar' | 'en') {
 export async function generateMetadata({ params, searchParams }: Params): Promise<Metadata> {
   const { slug } = await params
   const { lang } = (await searchParams) ?? {}
-  const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
+  const locale = platformLocale(lang)
   const { page } = await load(slug, locale)
   if (!page) return { title: 'Not found' }
   return {
@@ -84,7 +84,7 @@ function Prose({ text }: { text: string }) {
 export default async function LegalPage({ params, searchParams }: Params) {
   const { slug } = await params
   const { lang } = (await searchParams) ?? {}
-  const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
+  const locale = platformLocale(lang)
   const { chrome, page } = await load(slug, locale)
   if (!page) notFound()
   const { look, copy: c, analyticsId } = chrome
@@ -103,7 +103,7 @@ export default async function LegalPage({ params, searchParams }: Params) {
         look={look}
         copy={c}
         locale={locale}
-        otherLang={`/legal/${slug}?lang=${locale === 'en' ? 'ar' : 'en'}`}
+        otherLang={locale === 'en' ? `/legal/${slug}` : `/legal/${slug}?lang=en`}
       />
 
       <article className="lp-sec blog-post">

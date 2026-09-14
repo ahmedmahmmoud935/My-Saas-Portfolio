@@ -2,7 +2,7 @@ import React from 'react'
 import type { Metadata } from 'next'
 import { mediaUrl } from '@/lib/portfolio'
 import { livePosts } from '@/lib/posts'
-import { alternatesFor } from '@/lib/seo'
+import { alternatesFor, platformLocale, platformLangQuery } from '@/lib/seo'
 import { getLandingChrome, landingTokensCss } from '@/lib/landing-look'
 import { LandingNav, LandingFooter } from '@/components/portfolio/LandingChrome'
 import Analytics from '@/components/portfolio/Analytics'
@@ -14,7 +14,7 @@ type Params = { searchParams?: Promise<{ lang?: string }> }
 
 export async function generateMetadata({ searchParams }: Params): Promise<Metadata> {
   const { lang } = (await searchParams) ?? {}
-  const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
+  const locale = platformLocale(lang)
   const title = locale === 'en' ? 'Blog — ViralPX' : 'المدوّنة — ViralPX'
   const description =
     locale === 'en'
@@ -31,7 +31,7 @@ export async function generateMetadata({ searchParams }: Params): Promise<Metada
 
 export default async function BlogIndex({ searchParams }: Params) {
   const { lang } = (await searchParams) ?? {}
-  const locale: 'ar' | 'en' = lang === 'ar' ? 'ar' : 'en'
+  const locale = platformLocale(lang)
   const posts = await livePosts(locale)
   // The same palette AND the same nav and footer the landing page wears. The
   // blog is not a second site, and it used to arrive looking like one.
@@ -51,7 +51,7 @@ export default async function BlogIndex({ searchParams }: Params) {
         look={look}
         copy={c}
         locale={locale}
-        otherLang={locale === 'en' ? '/blog?lang=ar' : '/blog?lang=en'}
+        otherLang={locale === 'en' ? '/blog' : '/blog?lang=en'}
       />
 
       <section className="lp-sec">
@@ -69,7 +69,7 @@ export default async function BlogIndex({ searchParams }: Params) {
         ) : (
           <div className="lp-grid lp-grid-3">
             {posts.map((p) => (
-              <a className="lp-card blog-card" key={p.id} href={`/blog/${p.slug}?lang=${p.locale}`}>
+              <a className="lp-card blog-card" key={p.id} href={`/blog/${p.slug}${platformLangQuery(p.locale)}`}>
                 {mediaUrl(p.cover, 'card') && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={mediaUrl(p.cover, 'card')!} alt={p.title} loading="lazy" />

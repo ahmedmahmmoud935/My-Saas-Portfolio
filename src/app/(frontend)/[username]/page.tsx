@@ -2,7 +2,7 @@ import React from 'react'
 import { notFound } from 'next/navigation'
 import type { Metadata, Viewport } from 'next'
 import { getPortfolio, isVideoSrc, mediaUrl, tenantCssVars } from '@/lib/portfolio'
-import { alternatesFor, absoluteUrl, pageLocale, personJsonLd, plainText } from '@/lib/seo'
+import { alternatesFor, absoluteUrl, langQuery, pageLocale, personJsonLd, plainText } from '@/lib/seo'
 import { portfolioName, portfolioTitle } from '@/lib/title'
 import { lightDim } from '@/lib/content-types'
 import Analytics from '@/components/portfolio/Analytics'
@@ -122,12 +122,16 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
   const content = settings?.content ?? {}
   const brand = settings?.brand ?? {}
 
+  /* No `?lang=` on the links of a site already being read in that language:
+     the bare address is the one the reader keeps. */
+  const q = await langQuery(locale)
+
   // Navbar links
   const navLinks = [
     ...(settings?.navbarLinks ?? [])
       .filter((l) => l.visible !== false)
       .map((l) => ({ label: l.label || l.linkId || '', href: `#${l.linkId}` })),
-    { label: locale === 'en' ? 'Articles' : 'المقالات', href: `/${tenant.slug}/articles?lang=${locale}` },
+    { label: locale === 'en' ? 'Articles' : 'المقالات', href: `/${tenant.slug}/articles${q}` },
   ]
 
   const logoText = tenant.name?.[0]?.toUpperCase() || 'V'
@@ -316,7 +320,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
           avatarUrl: mediaUrl(t.avatar),
           rating: t.rating,
         }))}
-        submitHref={`/testimonial/${tenant.slug}${locale === 'en' ? '?lang=en' : ''}`}
+        submitHref={`/testimonial/${tenant.slug}${q}`}
         submitLabel={locale === 'en' ? '+ Add your review' : '+ أضف رأيك'}
         lang={locale}
       />

@@ -54,6 +54,37 @@ export async function pageLocale(asked?: string | null): Promise<'ar' | 'en'> {
 }
 
 /**
+ * The language the platform's own pages are read in.
+ *
+ * The landing page, the blog and the legal pages have no tenant to ask, so
+ * they answer for themselves: Arabic is what this product is written in and
+ * what the people it is sold to read, so it gets the bare address and English
+ * is the one that carries `?lang=en`.
+ *
+ * It used to be the other way round, which put `?lang=ar` on the link the
+ * owner hands out — and quietly broke the Arabic page, whose logo and section
+ * links point at the bare address and so landed the reader in English.
+ */
+export function platformLocale(asked?: string | null): 'ar' | 'en' {
+  return asked === 'en' ? 'en' : 'ar'
+}
+
+/** The `?lang=` a platform address needs: none, unless it is the English one. */
+export const platformLangQuery = (locale: 'ar' | 'en') => (locale === 'en' ? '?lang=en' : '')
+
+/**
+ * The `?lang=` an address on the site being served needs.
+ *
+ * None for the language the bare address already answers in — a portfolio
+ * written in Arabic links on to `/kamal/articles`, not to the same page with a
+ * parameter that says what it was going to say anyway. The middleware strips
+ * the redundant one on its way in; this keeps it from being written at all.
+ */
+export async function langQuery(locale: 'ar' | 'en'): Promise<string> {
+  return (await headers()).get('x-pf-site-lang') === locale ? '' : `?lang=${locale}`
+}
+
+/**
  * Canonical + hreflang for one page.
  *
  * `path` is the path on the platform (/ahmed/project/3). On a custom domain the
@@ -70,17 +101,22 @@ export async function alternatesFor(
     onCustomDomain && slug ? path.replace(new RegExp(`^/${slug}`), '') || '/' : path
   const url = `${origin}${localPath === '/' ? '' : localPath}`
   const sep = localPath.includes('?') ? '&' : '?'
-  const ar = `${url}${sep}lang=ar`
-  const en = `${url}${sep}lang=en`
+  const bare = url || origin
 
-  // Each language is its own page and says so.
-  //
-  // Pointing both languages at the bare URL looked tidy and quietly disabled
-  // the hreflang set: an hreflang annotation is only honoured on a page whose
-  // canonical is itself, and here the Arabic page's canonical named a
-  // different address. So the two versions were declared duplicates of one
-  // page and the alternates were dropped.
-  const canonical = opts?.locale === 'ar' ? ar : opts?.locale === 'en' ? en : url || origin
+  /* The site's own language lives at the bare address — the middleware sends
+     `?lang=<that one>` there — so that is the address to declare for it. The
+     other language carries the parameter.
+
+     Each language is still its own page and says so. Pointing BOTH at the bare
+     URL looked tidy and quietly disabled the hreflang set: an annotation is
+     only honoured on a page whose canonical is itself, so two versions naming
+     one address were declared duplicates and the alternates were dropped. */
+  const site = (await headers()).get('x-pf-site-lang') === 'ar' ? 'ar' : 'en'
+  const at = (l: 'ar' | 'en') => (l === site ? bare : `${url}${sep}lang=${l}`)
+  const ar = at('ar')
+  const en = at('en')
+
+  const canonical = opts?.locale ? at(opts.locale) : bare
 
   return {
     canonical,
@@ -88,7 +124,7 @@ export async function alternatesFor(
       ar,
       en,
       // Which one a search engine should show when it has no better idea.
-      'x-default': url || origin,
+      'x-default': bare,
     },
   }
 }
