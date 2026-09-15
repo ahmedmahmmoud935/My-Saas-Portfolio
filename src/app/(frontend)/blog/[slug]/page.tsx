@@ -4,11 +4,12 @@ import { notFound, permanentRedirect } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { mediaUrl } from '@/lib/portfolio'
-import { livePost } from '@/lib/posts'
-import { alternatesFor, absoluteUrl, plainText, platformLocale } from '@/lib/seo'
+import { livePost, livePosts } from '@/lib/posts'
+import { alternatesFor, absoluteUrl, plainText, platformLocale, platformLangQuery } from '@/lib/seo'
 import { getLandingChrome, landingTokensCss } from '@/lib/landing-look'
 import { LandingNav, LandingFooter } from '@/components/portfolio/LandingChrome'
 import Analytics from '@/components/portfolio/Analytics'
+import { readingMinutes } from '@/lib/reading-time'
 import '../../landing.css'
 
 export const dynamic = 'force-dynamic'
@@ -90,6 +91,8 @@ export default async function BlogPost({ params, searchParams }: Params) {
 
   const cover = mediaUrl(post.cover, 'card')
   const { look, copy: c, analyticsId } = await getLandingChrome(locale)
+  // The three most recent other pieces: posts carry no tags to rank them by.
+  const more = (await livePosts(locale)).filter((p) => p.id !== post.id).slice(0, 3)
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -139,6 +142,32 @@ export default async function BlogPost({ params, searchParams }: Params) {
             tenant articles already are. */}
         {/* eslint-disable-next-line react/no-danger */}
         <div className="blog-body" dangerouslySetInnerHTML={{ __html: post.contentHtml ?? '' }} />
+
+        {/* Somewhere to go from the end of the page. The blog is the one part
+            of this site that can rank for something other than the product's
+            own name, and a piece nothing links to is a piece on its own. */}
+        {more.length > 0 && (
+          <section className="rel">
+            <h2 className="rel-title">{locale === 'en' ? 'More to read' : 'اقرأ كمان'}</h2>
+            <div className="rel-grid">
+              {more.map((m) => (
+                <a className="rel-card" key={m.id} href={`/blog/${m.slug}${platformLangQuery(m.locale)}`}>
+                  {mediaUrl(m.cover, 'card') && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={mediaUrl(m.cover, 'card')!} alt="" loading="lazy" />
+                  )}
+                  <div className="rel-body">
+                    <strong>{m.title}</strong>
+                    <span>
+                      {readingMinutes(m.contentHtml, m.locale)}{' '}
+                      {locale === 'en' ? 'min read' : 'دقيقة قراءة'}
+                    </span>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
       </article>
 
       <LandingFooter look={look} copy={c} locale={locale} />

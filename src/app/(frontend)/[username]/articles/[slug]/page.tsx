@@ -5,7 +5,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { mediaUrl } from '@/lib/portfolio'
 import { alternatesFor, langQuery, pageLocale, plainText } from '@/lib/seo'
-import { isLive } from '@/lib/publish'
+import { isLive, liveWhere } from '@/lib/publish'
 import { readingMinutes } from '@/lib/reading-time'
 import Navbar from '@/components/portfolio/Navbar'
 import PageShell from '@/components/portfolio/PageShell'
@@ -53,6 +53,50 @@ async function load(username: string, slugRaw: string, locale: 'ar' | 'en') {
 
   if (!article || !isLive(article.published, article.publishAt)) return null
   return { tenant, settings: settingsRes.docs[0] ?? null, article }
+}
+
+/** The tags on a piece, compared the way a reader would: case and space blind. */
+const tagsOf = (doc: { tags?: { tag?: string | null }[] | null }): string[] =>
+  (doc.tags ?? []).map((t) => (t.tag ?? '').trim().toLowerCase()).filter(Boolean)
+
+/**
+ * Where to send a reader who reached the end.
+ *
+ * Ranked by the tags two pieces share — that is what tags are for, and until
+ * now they were typed into the editor and used by nothing at all. A blog with
+ * three articles and no tags in common still gets links, because the reader is
+ * at the end of the page either way; the heading says which of the two this
+ * is, rather than promising a relation that isn't there.
+ */
+async function related(
+  payload: Awaited<ReturnType<typeof getPayload>>,
+  tenantId: number,
+  current: { id: number; tags?: { tag?: string | null }[] | null },
+  locale: 'ar' | 'en',
+) {
+  const res = await payload.find({
+    collection: 'articles',
+    where: {
+      and: [{ tenant: { equals: tenantId } }, { id: { not_equals: current.id } }, liveWhere()],
+    },
+    sort: '-createdAt',
+    limit: 24,
+    depth: 1,
+    locale,
+    fallbackLocale: locale === 'ar' ? 'en' : 'ar',
+  })
+  const mine = tagsOf(current)
+  const scored = res.docs.map((d) => ({
+    doc: d,
+    shared: tagsOf(d).filter((t) => mine.includes(t)).length,
+  }))
+  const byTag = scored.filter((s) => s.shared > 0).sort((a, b) => b.shared - a.shared)
+  const rest = scored.filter((s) => s.shared === 0)
+  return {
+    items: [...byTag, ...rest].slice(0, 3).map((s) => s.doc),
+    /** Whether these are actually related, or simply the next thing to read. */
+    related: byTag.length > 0,
+  }
 }
 
 export async function generateMetadata({ params, searchParams }: Params): Promise<Metadata> {
@@ -134,6 +178,8 @@ export default async function ArticlePage({ params, searchParams }: Params) {
   }
   const { tenant, settings, article } = data
   const minutes = readingMinutes(article.contentHtml, locale)
+  const tags = (article.tags ?? []).map((t) => (t.tag ?? '').trim()).filter(Boolean)
+  const more = await related(await getPayload({ config }), tenant.id, article, locale)
   const logo = tenant.name?.[0]?.toUpperCase() || 'V'
   const cover = mediaUrl(article.cover)
 
@@ -177,6 +223,56 @@ export default async function ArticlePage({ params, searchParams }: Params) {
             style={{ lineHeight: 1.9, color: 'var(--text)' }}
             dangerouslySetInnerHTML={{ __html: article.contentHtml || '' }}
           />
+
+          {/* What this piece is about, in the author's own words. Not links:
+              a tag page with two articles on it is a thin page, and a blog
+              this size is better off without a dozen of them. */}
+          {tags.length > 0 && (
+            <div className="art-tags">
+              {tags.map((tag) => (
+                <span className="art-tag" key={tag}>
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* And where to go next. A reader at the end of a page either leaves
+              or is given somewhere to go, and a link from one piece to another
+              is the one kind of link this site can make for itself. */}
+          {more.items.length > 0 && (
+            <section className="rel">
+              <h2 className="rel-title">
+                {more.related
+                  ? locale === 'en'
+                    ? 'Related reading'
+                    : 'مقالات ليها علاقة'
+                  : locale === 'en'
+                    ? 'More to read'
+                    : 'اقرأ كمان'}
+              </h2>
+              <div className="rel-grid">
+                {more.items.map((r) => {
+                  const img = mediaUrl(r.cover, 'card')
+                  return (
+                    <a className="rel-card" key={r.id} href={`/${tenant.slug}/articles/${r.slug}${q}`}>
+                      {img && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={img} alt="" loading="lazy" />
+                      )}
+                      <div className="rel-body">
+                        <strong>{r.title}</strong>
+                        <span>
+                          {readingMinutes(r.contentHtml, locale)}{' '}
+                          {locale === 'en' ? 'min read' : 'دقيقة قراءة'}
+                        </span>
+                      </div>
+                    </a>
+                  )
+                })}
+              </div>
+            </section>
+          )}
         </div>
       </article>
       <Footer logo={logo} name={tenant.name} />

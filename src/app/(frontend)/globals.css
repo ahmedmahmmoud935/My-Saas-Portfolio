@@ -3432,3 +3432,69 @@ html:has(.pf-root) {
   border-radius: 10px;
   background: var(--bg2, rgba(127, 127, 127, 0.12));
 }
+
+/* ── What a piece is about, and what to read after it ────────────────────
+   Shared by a client's articles and the platform's blog, so the colours are
+   taken from whatever text is around them rather than from either one's
+   tokens: both themes, both palettes, one block. */
+.art-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 34px 0 0;
+}
+.art-tag {
+  font-size: 12px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(127, 127, 127, 0.3);
+  opacity: 0.85;
+}
+
+.rel {
+  margin-top: 46px;
+  padding-top: 26px;
+  border-top: 1px solid rgba(127, 127, 127, 0.22);
+}
+.rel-title {
+  font-size: 17px;
+  font-weight: 800;
+  margin: 0 0 16px;
+}
+.rel-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+.rel-card {
+  display: block;
+  border: 1px solid rgba(127, 127, 127, 0.22);
+  border-radius: 12px;
+  overflow: hidden;
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.rel-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent, rgba(127, 127, 127, 0.5));
+}
+.rel-card img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+.rel-body {
+  padding: 12px 14px 14px;
+  display: grid;
+  gap: 5px;
+}
+.rel-body strong {
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 700;
+}
+.rel-body span {
+  font-size: 12px;
+  opacity: 0.65;
+}

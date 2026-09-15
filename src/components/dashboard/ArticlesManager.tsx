@@ -267,6 +267,12 @@ export default function ArticlesManager({
               )}
 
               <label className="lbl">{t('الوسوم (مفصولة بفاصلة)', 'Tags (comma separated)')}</label>
+              <Hint>
+                {t(
+                  'موضوع المقال. بتظهر تحته على الموقع، وبنرشّح بيها «مقالات ليها علاقة» في آخر كل مقال — روابط بين مقالاتك، وده اللي بيفيد في البحث.',
+                  'What the piece is about. Shown under it, and used to pick the related reading at the end of every article — links between your own pieces, which is what search engines read.',
+                )}
+              </Hint>
               <input className="field" value={edit.tags} onChange={(e) => setEdit({ ...edit, tags: e.target.value })} />
             </div>
 
