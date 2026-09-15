@@ -30,6 +30,20 @@ type Item = {
   nofollow: boolean
 }
 
+/**
+ * A label with the length beside it: "٤٥ / ٦٠", green while it fits and amber
+ * once it is over. It used to be a sentence under the field — a whole line
+ * spent saying what two numbers say.
+ */
+const Counted = ({ label, n, max }: { label: string; n: number; max: number }) => (
+  <div className="lbl-row">
+    <label className="lbl">{label}</label>
+    <span className={`lbl-count ${n > max ? 'over' : n > 0 ? 'ok' : ''}`}>
+      {n} / {max}
+    </span>
+  </div>
+)
+
 /** The line under a label that says what the field is actually for. */
 const Hint = ({ children }: { children: React.ReactNode }) => (
   <p className="fld-hint">{children}</p>
@@ -274,9 +288,7 @@ export default function ArticlesManager({
                 )}
               </Hint>
               <input className="field" value={edit.tags} onChange={(e) => setEdit({ ...edit, tags: e.target.value })} />
-            </div>
 
-            <aside className="art-side">
               {/* The one control that decides whether any of this is on the
                   site. It used to be an unlabelled switch in the right half of
                   a two-column row, under the heading "Status" — which reads as
@@ -336,88 +348,37 @@ export default function ArticlesManager({
                 </div>
               )}
 
+              {/* Two switches that decide whether this is for search engines at
+                  all — a publishing decision, so they sit with the publishing
+                  one rather than in the panel you watch while writing. */}
+              <div className="grid-2" style={{ marginTop: 12 }}>
+                <label className="seo-check">
+                  <input
+                    type="checkbox"
+                    checked={edit.noindex}
+                    onChange={(e) => setEdit({ ...edit, noindex: e.target.checked })}
+                  />
+                  <span>{t('امنع الفهرسة (noindex)', 'Hide from search (noindex)')}</span>
+                </label>
+                <label className="seo-check">
+                  <input
+                    type="checkbox"
+                    checked={edit.nofollow}
+                    onChange={(e) => setEdit({ ...edit, nofollow: e.target.checked })}
+                  />
+                  <span>{t('لا تتبع الروابط (nofollow)', "Don't follow links (nofollow)")}</span>
+                </label>
+              </div>
+
               <p className="lbl" style={{ opacity: 0.7 }}>
                 {t(
                   'الرابط والنشر لكل لغة على حدة — بدّل لغة اللوحة عشان تظبط النسخة التانية.',
                   'The address and the publish switch belong to this language — switch the dashboard language to set the other.',
                 )}
               </p>
+            </div>
 
-              {/* ── SEO ────────────────────────────────────────────────────
-                  The headline you write for a reader and the line Google
-                  shows are rarely the same sentence, and there was nowhere
-                  to say so. Empty falls back to the article's own title and
-                  excerpt, which is what happened before these existed. */}
-              <div className="de-group">
-                <div className="de-group-title">{t('محركات البحث', 'Search engines')}</div>
-
-                <label className="lbl">{t('عنوان جوجل', 'Meta title')}</label>
-                <Hint>
-                  {t(
-                    'السطر الأزرق في نتيجة البحث واسم التاب. سيبه فاضي وياخد عنوان المقال.',
-                    'The blue line in the results and the browser tab. Leave it empty to reuse the title.',
-                  )}
-                </Hint>
-                <input
-                  className="field"
-                  value={edit.seoTitle}
-                  placeholder={edit.title || t('نفس عنوان المقال', 'Same as the article title')}
-                  onChange={(e) => setEdit({ ...edit, seoTitle: e.target.value })}
-                />
-                <div className="lbl" style={{ opacity: 0.7 }}>
-                  {(edit.seoTitle || edit.title).length} {t('حرف — الأفضل تحت ٦٠', 'characters — under 60 reads best')}
-                </div>
-
-                <label className="lbl" style={{ marginTop: 10, display: 'block' }}>
-                  {t('وصف جوجل', 'Meta description')}
-                </label>
-                <Hint>
-                  {t(
-                    'السطر الرمادي تحت النتيجة في جوجل — هو اللي بيقنع الناس تدوس. سيبه فاضي وياخد المقتطف.',
-                    'The grey line under the result — what decides the click. Leave it empty to reuse the excerpt.',
-                  )}
-                </Hint>
-                <textarea
-                  className="field"
-                  rows={2}
-                  value={edit.seoDescription}
-                  placeholder={edit.excerpt || t('نفس مقتطف المقال', 'Same as the excerpt')}
-                  onChange={(e) => setEdit({ ...edit, seoDescription: e.target.value })}
-                />
-                <div className="lbl" style={{ opacity: 0.7 }}>
-                  {(edit.seoDescription || edit.excerpt).length}{' '}
-                  {t('حرف — الأفضل بين ١٢٠ و١٦٠', 'characters — 120 to 160 reads best')}
-                </div>
-
-                {/* What the result actually looks like, before publishing. */}
-                <div className="serp" dir="auto">
-                  <div className="serp-url">viralpx.com › {edit.slug || slugify(edit.title) || '…'}</div>
-                  <div className="serp-title">{edit.seoTitle || edit.title || t('عنوان المقال', 'Article title')}</div>
-                  <div className="serp-desc">
-                    {edit.seoDescription || edit.excerpt || t('وصف المقال يظهر هنا.', 'The description appears here.')}
-                  </div>
-                </div>
-
-                <div className="grid-2" style={{ marginTop: 12 }}>
-                  <label className="seo-check">
-                    <input
-                      type="checkbox"
-                      checked={edit.noindex}
-                      onChange={(e) => setEdit({ ...edit, noindex: e.target.checked })}
-                    />
-                    <span>{t('امنع الفهرسة (noindex)', 'Hide from search (noindex)')}</span>
-                  </label>
-                  <label className="seo-check">
-                    <input
-                      type="checkbox"
-                      checked={edit.nofollow}
-                      onChange={(e) => setEdit({ ...edit, nofollow: e.target.checked })}
-                    />
-                    <span>{t('لا تتبع الروابط (nofollow)', "Don't follow links (nofollow)")}</span>
-                  </label>
-                </div>
-              </div>
-
+            <aside className="art-side">
               <SeoPanel
                 html={edit.contentHtml}
                 title={edit.title}
@@ -428,6 +389,50 @@ export default function ArticlesManager({
                 keyphrase={edit.keyphrase}
                 onKeyphrase={(v) => setEdit({ ...edit, keyphrase: v })}
               />
+              {/* ── SEO ────────────────────────────────────────────────────
+                  The headline you write for a reader and the line Google
+                  shows are rarely the same sentence, and there was nowhere
+                  to say so. Empty falls back to the article's own title and
+                  excerpt, which is what happened before these existed. */}
+              <div className="de-group">
+                <div className="de-group-title">{t('محركات البحث', 'Search engines')}</div>
+
+                <Counted
+                  label={t('عنوان جوجل', 'Meta title')}
+                  n={(edit.seoTitle || edit.title).length}
+                  max={60}
+                />
+                <Hint>{t('السطر الأزرق في نتيجة البحث.', 'The blue line in the results.')}</Hint>
+                <input
+                  className="field"
+                  value={edit.seoTitle}
+                  placeholder={edit.title || t('نفس عنوان المقال', 'Same as the article title')}
+                  onChange={(e) => setEdit({ ...edit, seoTitle: e.target.value })}
+                />
+                <Counted
+                  label={t('وصف جوجل', 'Meta description')}
+                  n={(edit.seoDescription || edit.excerpt).length}
+                  max={160}
+                />
+                <Hint>
+                  {t('السطر الرمادي تحته — اللي بيقنع الناس تدوس.', 'The grey line under it — what decides the click.')}
+                </Hint>
+                <textarea
+                  className="field"
+                  rows={3}
+                  value={edit.seoDescription}
+                  placeholder={edit.excerpt || t('نفس مقتطف المقال', 'Same as the excerpt')}
+                  onChange={(e) => setEdit({ ...edit, seoDescription: e.target.value })}
+                />
+                {/* What the result actually looks like, before publishing. */}
+                <div className="serp" dir="auto">
+                  <div className="serp-url">viralpx.com › {edit.slug || slugify(edit.title) || '…'}</div>
+                  <div className="serp-title">{edit.seoTitle || edit.title || t('عنوان المقال', 'Article title')}</div>
+                  <div className="serp-desc">
+                    {edit.seoDescription || edit.excerpt || t('وصف المقال يظهر هنا.', 'The description appears here.')}
+                  </div>
+                </div>
+              </div>
             </aside>
           </div>
         </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useDashLang } from './DashLang'
 import { analyse, type Status } from '@/lib/seo-analysis'
 
@@ -31,6 +31,10 @@ export default function SeoPanel({
   onKeyphrase: (v: string) => void
 }) {
   const { t } = useDashLang()
+  /* The checks that pass are the ones you never need to read. They are kept a
+     click away rather than printed in full, so the panel stays short enough to
+     sit beside the article without a scrollbar of its own. */
+  const [showPassing, setShowPassing] = useState(false)
 
   const result = useMemo(
     () => analyse({ html, title, metaTitle, metaDescription, excerpt, slug, keyphrase }),
@@ -75,13 +79,24 @@ export default function SeoPanel({
       </div>
 
       <ul className="seo-checks">
-        {sorted.map((c) => (
+        {(showPassing ? sorted : sorted.filter((c) => c.status !== 'good')).map((c) => (
           <li key={c.id} className={c.status}>
             <span className="seo-dot" aria-hidden />
             <span>{t(c.ar, c.en)}</span>
           </li>
         ))}
       </ul>
+
+      {counts.good > 0 && (
+        <button type="button" className="seo-more" onClick={() => setShowPassing((v) => !v)}>
+          {showPassing
+            ? t('اخفي الناجح', 'Hide what passed')
+            : `${counts.good} ${t('فحص عدّى ✓', 'checks passed ✓')}`}
+        </button>
+      )}
+      {counts.bad === 0 && counts.warn === 0 && !showPassing && (
+        <p className="seo-clear">{t('مفيش ملاحظات — المقال جاهز.', 'Nothing to fix — this one is ready.')}</p>
+      )}
     </div>
   )
 }

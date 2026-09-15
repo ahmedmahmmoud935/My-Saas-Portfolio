@@ -1637,11 +1637,10 @@ textarea.field {
   margin-bottom: 0;
 }
 .de-group-title {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--sub);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--text);
   margin-bottom: 14px;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--border);
@@ -3405,7 +3404,10 @@ input[type='range']::-moz-range-thumb {
 .art-editor {
   display: grid;
   gap: 22px;
-  grid-template-columns: minmax(0, 1fr) 380px;
+  /* The panel took the narrower half and scrolled; the article's own column
+     can spare the width, and a panel you have to scroll is a panel you stop
+     reading. */
+  grid-template-columns: minmax(0, 1fr) 460px;
   align-items: start;
 }
 .art-main {
@@ -3414,17 +3416,56 @@ input[type='range']::-moz-range-thumb {
 .art-side {
   position: sticky;
   /* Clear of the editor's own bar, which is sticky above it. */
-  top: 74px;
-  max-height: calc(100vh - 96px);
+  top: 66px;
+  /* Room to breathe, and a scrollbar only on a screen too short to hold it. */
+  max-height: calc(100vh - 82px);
   overflow: auto;
   display: grid;
-  gap: 14px;
+  gap: 12px;
   align-content: start;
   padding-inline-end: 4px;
 }
-.art-side .de-group,
-.art-side .seo-panel {
-  margin-top: 0 !important;
+/* Each half of the panel is its own card: on a light background two groups
+   separated by nothing but space read as one long form. */
+.art-side .de-group {
+  margin: 0 !important;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+.art-side .seo-checks {
+  gap: 7px;
+}
+.art-side .seo-score {
+  margin-top: 12px;
+}
+/* Inside a card, a field on the page's own grey is the thing to type in. */
+.art-editor .field {
+  background: var(--bg);
+  border-color: color-mix(in srgb, var(--text) 14%, transparent);
+}
+.art-editor .field:focus {
+  border-color: var(--accent);
+}
+.art-side .serp,
+.art-side .seo-score {
+  background: var(--bg);
+  border-color: color-mix(in srgb, var(--text) 12%, transparent);
+}
+/* The result, at the size it has to be to leave room for everything else. */
+.art-side .serp {
+  padding: 11px 13px;
+  margin-top: 12px;
+}
+.art-side .serp-title {
+  font-size: 16px;
+}
+.art-side .serp-desc {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 /* One column on anything too narrow to hold two, and nothing pinned: a panel
    stuck to a short viewport is a panel in the way. */
@@ -3545,4 +3586,56 @@ input[type='range']::-moz-range-thumb {
 }
 .pub-when .field {
   width: 100%;
+}
+
+/* The passing checks, one click away — and the line that says there are none
+   left to worry about. */
+.seo-more {
+  margin-top: 12px;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--sub);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.seo-more:hover {
+  color: var(--text);
+}
+.seo-clear {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: #22c55e;
+}
+
+/* A label and its length on one line: the sentence that used to say it took a
+   line of its own, under a field that had a hint above it already. */
+.lbl-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+}
+.lbl-row .lbl {
+  margin-top: 0;
+}
+.lbl-count {
+  font-size: 12px;
+  color: var(--sub);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  /* "45 / 60", not "60 / 45": a count over a limit reads left to right even
+     in a right-to-left page. */
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+.lbl-count.ok {
+  color: #22c55e;
+}
+.lbl-count.over {
+  color: #f59e0b;
 }
