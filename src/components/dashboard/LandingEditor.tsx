@@ -83,6 +83,38 @@ const SECTION_GROUPS = [
 
 type SectionId = (typeof SECTION_GROUPS)[number]['items'][number]['id']
 
+/** What each of those groups is called when it is the whole page. */
+const HEADINGS = {
+  Content: {
+    icon: '📝',
+    ar: 'المحتوى',
+    en: 'Content',
+    subAr: 'كلام الصفحة الرئيسية، قسم قسم — بنفس ترتيب ظهورهم للزائر.',
+    subEn: 'What the landing page says, section by section, in the order a visitor reads it.',
+  },
+  Site: {
+    icon: '🌍',
+    ar: 'الموقع',
+    en: 'Site',
+    subAr: 'اللي حوالين الصفحة: الشريط العلوي، الفوتر، الصفحات القانونية، وجوجل.',
+    subEn: 'What sits around the page: the bar on top, the footer, the legal pages, and Google.',
+  },
+  Design: {
+    icon: '🎨',
+    ar: 'التصميم',
+    en: 'Design',
+    subAr: 'ترتيب الأقسام وألوانها وخلفياتها وشكل الكروت.',
+    subEn: 'The order of the sections, their colours and backdrops, and the shape of a card.',
+  },
+  All: {
+    icon: '🌍',
+    ar: 'الصفحة الرئيسية',
+    en: 'Landing page',
+    subAr: 'عدّل نصوص وهوية صفحة الموقع الرئيسية',
+    subEn: 'Edit the marketing landing page copy',
+  },
+} as const
+
 /** The lists of one-line strings, edited as rows in both languages at once. */
 type StrList = 'compareOld' | 'compareNew' | 'audience' | 'pricingIncluded'
 
@@ -324,6 +356,9 @@ export default function LandingEditor({
   subtitle?: string
 }) {
   const shown = groups ? SECTION_GROUPS.filter((g) => groups.includes(g.en)) : SECTION_GROUPS
+  /* Each group is its own page now, so the heading says which one you are on
+     rather than naming the whole editor three times over. */
+  const head = HEADINGS[(groups?.length === 1 ? groups[0] : '') as keyof typeof HEADINGS] ?? HEADINGS.All
   const [f, setF] = useState<Form>(initial)
   const [sec, setSec] = useState<SectionId>(shown[0]?.items[0]?.id ?? 'hero')
   const [busy, setBusy] = useState(false)
@@ -570,33 +605,30 @@ export default function LandingEditor({
   return (
     <div>
       <PageHeader
-        icon={groups?.includes('Design') && groups.length === 1 ? '🎨' : '🌍'}
-        title={title ?? t('الصفحة الرئيسية', 'Landing page')}
-        subtitle={subtitle ?? t('عدّل نصوص وهوية صفحة الموقع الرئيسية', 'Edit the marketing landing page copy')}
+        icon={head.icon}
+        title={title ?? t(head.ar, head.en)}
+        subtitle={subtitle ?? t(head.subAr, head.subEn)}
         actions={<button className="btn btn-primary" onClick={save} disabled={busy}>{busy ? '…' : t('💾 حفظ', '💾 Save')}</button>}
       />
 
-      {/* A column of sections rather than a wall of pills: fifteen of them in
-          one wrapped row meant reading the whole row to find one, and the
-          groups stopped reading as groups. Same shape the client's dashboard
-          has, one level in. */}
+      {/* A row across the top rather than a second sidebar down the side. Two
+          columns of navigation for one page read as a maze; the group is the
+          page you are on now, so all that is left to choose is the section —
+          one line of it, in the order the page itself runs. */}
       <div className="lp-editor">
-        <aside className="lp-side">
-          {shown.map((g) => (
-            <div className="lp-side-group" key={g.en}>
-              <div className="nav-group-title">{t(g.ar, g.en)}</div>
-              {g.items.map((s) => (
-                <button
-                  key={s.id}
-                  className={`lp-side-item ${sec === s.id ? 'active' : ''}`}
-                  onClick={() => setSec(s.id)}
-                >
-                  {t(s.ar, s.en)}
-                </button>
-              ))}
-            </div>
-          ))}
-        </aside>
+        <nav className="lp-tabs">
+          {shown.map((g) =>
+            g.items.map((s) => (
+              <button
+                key={s.id}
+                className={`lp-tab ${sec === s.id ? 'active' : ''}`}
+                onClick={() => setSec(s.id)}
+              >
+                {t(s.ar, s.en)}
+              </button>
+            )),
+          )}
+        </nav>
 
         <div className="panel">
         {sec === 'header' && (

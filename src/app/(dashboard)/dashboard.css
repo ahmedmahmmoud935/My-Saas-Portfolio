@@ -3263,70 +3263,41 @@ input[type='range']::-moz-range-thumb {
    Fifteen sections as pills wrapped into a wall: you read the whole wall to
    find one, and the groups stopped looking like groups. Down the side they
    read as a list — the same shape the client's dashboard has, one level in. */
+/* ── The landing editor ─────────────────────────────────────────────────────
+   One group per page, and the sections of it in a row across the top. It used
+   to carry a second sidebar beside the first: two columns of navigation for
+   one editor, which reads as a maze rather than a shortcut. */
 .lp-editor {
-  display: grid;
-  grid-template-columns: 210px minmax(0, 1fr);
-  gap: 18px;
-  align-items: start;
-}
-.lp-side {
-  position: sticky;
-  top: 16px;
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 10px;
-}
-.lp-side-group + .lp-side-group {
-  margin-top: 14px;
-}
-.lp-side .nav-group-title {
-  margin: 0 8px 6px;
-}
-.lp-side-item {
   display: block;
-  width: 100%;
-  padding: 9px 12px;
-  border: 0;
-  border-radius: 9px;
-  background: none;
+}
+.lp-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.lp-tab {
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-2);
   color: var(--sub);
   font: inherit;
   font-weight: 600;
   font-size: 13.5px;
-  text-align: start;
   cursor: pointer;
-  transition: color 0.15s, background 0.15s;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
 }
-.lp-side-item:hover {
+.lp-tab:hover {
   color: var(--text);
-  background: var(--bg-3);
+  border-color: color-mix(in srgb, var(--text) 22%, transparent);
 }
-.lp-side-item.active {
-  color: var(--accent);
-  background: var(--accent-soft);
-}
-/* Narrow: the list goes back on top, where a column would squeeze the fields. */
-@media (max-width: 900px) {
-  .lp-editor {
-    grid-template-columns: 1fr;
-  }
-  .lp-side {
-    position: static;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .lp-side-group {
-    display: contents;
-  }
-  .lp-side .nav-group-title {
-    flex: 1 0 100%;
-    margin: 6px 4px 2px;
-  }
-  .lp-side-item {
-    width: auto;
-  }
+.lp-tab.active {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
 /* ── Publish row ────────────────────────────────────────────────────────────

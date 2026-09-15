@@ -7,7 +7,8 @@ import type { NavItem } from './dashboard-nav'
  * exactly like every other client's.
  */
 export const OWNER_NAV: NavItem[] = [
-  { id: 'landing', labelAr: 'الصفحة الرئيسية', labelEn: 'Landing page', icon: '' },
+  { id: 'content', labelAr: 'المحتوى', labelEn: 'Content', icon: '' },
+  { id: 'site', labelAr: 'الموقع', labelEn: 'Site', icon: '' },
   { id: 'design', labelAr: 'التصميم', labelEn: 'Design', icon: '' },
   { id: 'blog', labelAr: 'المدوّنة', labelEn: 'Blog', icon: '' },
   { id: 'users', labelAr: 'العملاء', labelEn: 'Clients', icon: '' },
@@ -15,7 +16,8 @@ export const OWNER_NAV: NavItem[] = [
 
 /** Icon ids (see components/dashboard/icons.tsx) for the owner nav. */
 export const OWNER_NAV_ICONS: Record<string, string> = {
-  landing: 'landing',
+  content: 'landing',
+  site: 'globe',
   design: 'palette',
   blog: 'articles',
   users: 'users',

@@ -115,7 +115,7 @@ export default function Sidebar({
           <NavIcon id="external" size={15} />
         </a>
         {isOwner && (
-          <a className="foot-link" href="/owner/landing">
+          <a className="foot-link" href="/owner/content">
             <span>{t('لوحة الإدارة', 'Admin panel')}</span>
             <NavIcon id="gem" size={15} />
           </a>
