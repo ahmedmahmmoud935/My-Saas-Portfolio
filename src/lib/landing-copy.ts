@@ -99,6 +99,15 @@ export const LANDING_COPY = {
     dashSub: 'من غير كود ومن غير ما تستنى حد — تفتح، تعدّل، تحفظ، والموقع بيتغيّر في نفس اللحظة.',
     /** start = الوسائط على اليمين في العربي، end = على الشمال. */
     dashSide: 'start',
+    /* The frame the screenshot sits in: its height, whether the picture fills
+       it or fits inside it, where it is framed when it fills, and where the
+       whole column sits against a list that is usually taller than it. 0 is
+       the shape the picture already has (16:10). */
+    dashHeight: 0,
+    dashFit: 'cover',
+    dashPosX: 50,
+    dashPosY: 50,
+    dashAlign: 'start',
     dash: [
       { t: 'مشاريعك وريلزك', d: 'ارفع شغلك، رتّبه بالسحب، وقسّمه فئات. الريلز بتتعرض 9:16 زي ما اتصوّرت.', imageUrl: '', videoUrl: '', poster: '' },
       { t: 'المظهر والألوان', d: 'ألوانك وخطوطك وشكل الكروت وترتيب الأقسام — وكل تغيير بتشوفه قبل ما تحفظه.', imageUrl: '', videoUrl: '', poster: '' },
@@ -273,6 +282,11 @@ export const LANDING_COPY = {
     dashTitle: 'Everything about your site is set in one place',
     dashSub: 'No code, and no waiting on anyone — open it, change it, save it, and the site changes with you.',
     dashSide: 'start',
+    dashHeight: 0,
+    dashFit: 'cover',
+    dashPosX: 50,
+    dashPosY: 50,
+    dashAlign: 'start',
     dash: [
       { t: 'Your projects and reels', d: 'Upload your work, drag it into order, sort it into categories. Reels play 9:16, the way they were shot.', imageUrl: '', videoUrl: '', poster: '' },
       { t: 'Look and colours', d: 'Your colours, fonts, card styles and section order — and you see each change before you save it.', imageUrl: '', videoUrl: '', poster: '' },

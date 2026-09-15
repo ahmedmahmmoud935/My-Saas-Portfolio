@@ -5,7 +5,7 @@ import PageHeader from './PageHeader'
 import { useDashLang } from './DashLang'
 import MediaUploader from './MediaUploader'
 import SectionBgRows from './SectionBgRows'
-import { ColorInput, Opt } from './controls'
+import { ColorInput, Opt, Slider } from './controls'
 import { saveLanding, type LandingImages, type LandingStyle, type LandingTheme, type LandingTools } from '@/lib/landing-actions'
 import { LANDING_COPY } from '@/lib/landing-copy'
 import { LANDING_BANDS, type LandingOrderItem } from '@/lib/landing-order'
@@ -358,7 +358,7 @@ export default function LandingEditor({
   const setKey = (key: keyof Copy, v: string, loc: 'ar' | 'en') =>
     setF((p) => ({ ...p, [loc]: { ...p[loc], [key]: v } }))
   // For what is not translated — an address, a picture — one edit, both copies.
-  const setKeyBoth = (key: keyof Copy, v: string | string[]) =>
+  const setKeyBoth = (key: keyof Copy, v: string | string[] | number) =>
     setF((p) => ({ ...p, ar: { ...p.ar, [key]: v }, en: { ...p.en, [key]: v } }))
   const setNav = (key: keyof Copy['nav'], v: string, loc: 'ar' | 'en') =>
     setF((p) => ({ ...p, [loc]: { ...p[loc], nav: { ...p[loc].nav, [key]: v } } }))
@@ -852,6 +852,64 @@ export default function LandingEditor({
                 'One line opens at a time — opening one closes the last, and the picture beside it becomes that line’s.',
               )}
             </Note>
+
+            {/* The frame the screenshots sit in. One setting for all of them:
+                they are shots of the same dashboard, and four separate sets of
+                dials would be four chances to make them disagree. */}
+            <Card title={t('إطار الصورة', 'The picture frame')}>
+              <Slider
+                label={t('الارتفاع (٠ = على شكل الصورة)', 'Height (0 = the picture’s own shape)')}
+                value={Number(f.ar.dashHeight ?? 0)}
+                min={0}
+                max={760}
+                suffix={Number(f.ar.dashHeight ?? 0) === 0 ? '' : 'px'}
+                onChange={(v) => setKeyBoth('dashHeight', v)}
+              />
+              <Opt
+                label={t('الصورة جوّه الإطار', 'The picture inside the frame')}
+                value={f.ar.dashFit === 'contain' ? 'contain' : 'cover'}
+                options={[
+                  { value: 'cover', label: t('تملا الإطار', 'Fills the frame') },
+                  { value: 'contain', label: t('تظهر كاملة', 'Shown whole') },
+                ]}
+                onChange={(v) => setKeyBoth('dashFit', v)}
+              />
+              {f.ar.dashFit !== 'contain' && Number(f.ar.dashHeight ?? 0) > 0 && (
+                <>
+                  <Slider
+                    label={t('موضع الصورة — أفقي', 'Framing — across')}
+                    value={Number(f.ar.dashPosX ?? 50)}
+                    min={0}
+                    max={100}
+                    suffix="%"
+                    onChange={(v) => setKeyBoth('dashPosX', v)}
+                  />
+                  <Slider
+                    label={t('موضع الصورة — رأسي', 'Framing — up and down')}
+                    value={Number(f.ar.dashPosY ?? 50)}
+                    min={0}
+                    max={100}
+                    suffix="%"
+                    onChange={(v) => setKeyBoth('dashPosY', v)}
+                  />
+                  <Note>
+                    {t(
+                      'لما الصورة تملا إطار أطول أو أقصر منها بيتقص منها جزء — الزراير دي بتحدّد الجزء اللي يفضل باين.',
+                      'A picture filling a frame of a different shape loses some of itself — these decide which part stays.',
+                    )}
+                  </Note>
+                </>
+              )}
+              <Opt
+                label={t('مكان الصورة جنب القائمة', 'Where the picture sits beside the list')}
+                value={f.ar.dashAlign === 'center' ? 'center' : 'start'}
+                options={[
+                  { value: 'start', label: t('فوق', 'At the top') },
+                  { value: 'center', label: t('في النص', 'Centred') },
+                ]}
+                onChange={(v) => setKeyBoth('dashAlign', v)}
+              />
+            </Card>
 
             {f.ar.dash.map((_, i) => (
               <Card

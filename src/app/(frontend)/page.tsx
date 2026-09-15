@@ -504,7 +504,26 @@ export default async function HomePage({ searchParams }: Params) {
     dashboard: (
       dash.length > 0 && (
               <SectionBg config={sections.dashboard}>
-                <section className={`lp-sec lp-dash-sec side-${c.dashSide === 'end' ? 'end' : 'start'}`} id="dashboard">
+                <section
+                  className={[
+                    'lp-sec lp-dash-sec',
+                    `side-${c.dashSide === 'end' ? 'end' : 'start'}`,
+                    c.dashFit === 'contain' ? 'fit-contain' : '',
+                    c.dashAlign === 'center' ? 'align-center' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                  id="dashboard"
+                  /* The frame's own dials, read by the stylesheet. A height of
+                     zero leaves the picture the shape it came in. */
+                  style={
+                    {
+                      '--dash-h': c.dashHeight ? `${c.dashHeight}px` : 'auto',
+                      '--dash-ratio': c.dashHeight ? 'auto' : '16 / 10',
+                      '--dash-pos': `${c.dashPosX ?? 50}% ${c.dashPosY ?? 50}%`,
+                    } as React.CSSProperties
+                  }
+                >
                   <Head eyebrow={c.dashEyebrow} title={c.dashTitle} sub={c.dashSub} />
                   <DashShowcase items={dash} playLabel={locale === 'en' ? 'Play the video' : 'شغّل الفيديو'} />
                 </section>
