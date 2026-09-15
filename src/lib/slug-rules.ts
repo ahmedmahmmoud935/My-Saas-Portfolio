@@ -22,6 +22,7 @@ export const RESERVED_SLUGS = new Set([
   'owner',
   'reset-password',
   'robots.txt',
+  'set-password',
   'sitemap.xml',
   'testimonial',
   'www',

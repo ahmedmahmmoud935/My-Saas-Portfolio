@@ -1637,13 +1637,26 @@ body {
   text-decoration: underline;
 }
 .tst-add {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
   border: 1px solid var(--accent);
   color: var(--accent);
   border-radius: 12px;
-  padding: 11px 22px;
+  padding: 6px 22px;
   font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
   text-decoration: none;
+}
+
+/* Centred by the numbers still reads high in Arabic: the ink of an alef or a
+   hamza reaches far above the baseline and little below it, while the line box
+   the browser centres reserves room for both. Half that difference, put back
+   as padding, so the label sits where the eye expects it. */
+html[lang='ar'] .tst-add {
+  padding-block: 12px 6px;
 }
 
 /* A review opened on its own, for screens with room for it. */

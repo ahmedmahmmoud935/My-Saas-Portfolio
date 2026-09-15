@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { RESERVED_SLUGS } from '@/lib/slug-rules'
 
 // Hosts that are the app itself (not a client custom domain) → pass through.
 const PRIMARY = new Set(['localhost', '127.0.0.1'])
@@ -213,6 +214,31 @@ export async function middleware(req: NextRequest) {
   const url = req.nextUrl.clone()
   if (url.pathname === `/${tenantSlug}` || url.pathname.startsWith(`/${tenantSlug}/`)) {
     return NextResponse.next({ request: { headers } })
+  }
+
+  /* The review form is the platform's own page, and it already names the
+     portfolio it is collecting a review for. Prefixing it like a section of
+     the site turned /testimonial/<name> into /<name>/testimonial/<name>, which
+     is nothing — so the button under the reviews led to a 404 on every
+     portfolio read at its own address. Whoever the path names, the host
+     decides whose form this is. */
+  if (url.pathname === '/testimonial' || url.pathname.startsWith('/testimonial/')) {
+    url.pathname = `/testimonial/${tenantSlug}`
+    return NextResponse.rewrite(url, { request: { headers } })
+  }
+
+  /* The rest of what the platform answers on — the owner's dashboard, the
+     account pages, the blog, the legal pages — is not a section of anybody's
+     portfolio, and on a portfolio's host it was being prefixed into a path
+     that exists nowhere: /<name>/owner, and a 404 where the dashboard should
+     have been. These have one address, on the platform, and this is the road
+     back to it. */
+  const first = url.pathname.split('/').filter(Boolean)[0] ?? ''
+  if (appHost && RESERVED_SLUGS.has(first)) {
+    return NextResponse.redirect(
+      new URL(`${url.pathname}${url.search}`, `https://${appHost}`),
+      308,
+    )
   }
   url.pathname = url.pathname === '/' ? `/${tenantSlug}` : `/${tenantSlug}${url.pathname}`
   return NextResponse.rewrite(url, { request: { headers } })
