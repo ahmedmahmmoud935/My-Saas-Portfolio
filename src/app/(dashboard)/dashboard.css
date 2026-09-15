@@ -3639,3 +3639,22 @@ input[type='range']::-moz-range-thumb {
 .lbl-count.over {
   color: #f59e0b;
 }
+
+/* Written in one direction, marked up in the other. Long lines wrap rather
+   than pushing a sideways scrollbar under the box, and the tabs that indent
+   the markup keep their width. */
+.art-html {
+  line-height: 1.9;
+  tab-size: 2;
+  overflow-x: hidden;
+  overflow-wrap: break-word;
+  /* Each line finds its own direction from its own first letter: a line of
+     markup reads left to right with its slashes where they belong, and a line
+     of Arabic reads right to left with its full stop at the right end. Forcing
+     one direction on the whole box breaks whichever half it isn't. */
+  unicode-bidi: plaintext;
+}
+.art-side textarea.field {
+  overflow-x: hidden;
+  overflow-wrap: break-word;
+}

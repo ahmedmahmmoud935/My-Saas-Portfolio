@@ -247,10 +247,15 @@ export default function ArticlesManager({
               </div>
 
               {tab === 'write' ? (
+                /* The markup is Latin and the writing is not, and the box was
+                   fixed left-to-right: every Arabic line came out with its
+                   full stop at the wrong end. Each line decides for itself now
+                   (see .art-html) — the direction here is only what an empty
+                   line gets. */
                 <textarea
-                  className="field"
+                  className="field art-html"
                   rows={18}
-                  dir="ltr"
+                  dir={lang === 'en' ? 'ltr' : 'rtl'}
                   value={edit.contentHtml}
                   onChange={(e) => setEdit({ ...edit, contentHtml: e.target.value })}
                   style={{ textAlign: 'start', fontFamily: 'monospace' }}
