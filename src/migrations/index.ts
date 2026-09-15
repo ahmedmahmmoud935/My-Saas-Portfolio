@@ -43,6 +43,7 @@ import * as migration_20260913_020000_expertise_light_dim from './20260913_02000
 import * as migration_20260914_010000_landing_dashboard_section from './20260914_010000_landing_dashboard_section';
 import * as migration_20260914_020000_landing_section_order from './20260914_020000_landing_section_order';
 import * as migration_20260914_030000_team from './20260914_030000_team';
+import * as migration_20260916_010000_publish_at from './20260916_010000_publish_at';
 
 export const migrations = [
   {
@@ -269,5 +270,10 @@ export const migrations = [
     up: migration_20260914_030000_team.up,
     down: migration_20260914_030000_team.down,
     name: '20260914_030000_team'
+  },
+  {
+    up: migration_20260916_010000_publish_at.up,
+    down: migration_20260916_010000_publish_at.down,
+    name: '20260916_010000_publish_at'
   },
 ];

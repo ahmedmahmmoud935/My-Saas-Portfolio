@@ -2,6 +2,7 @@ import React from 'react'
 import { redirect } from 'next/navigation'
 import { getDashboardContext } from '@/lib/dashboard'
 import { mediaUrl } from '@/lib/portfolio'
+import { isLive } from '@/lib/publish'
 import { auditSite, type PageInput } from '@/lib/seo-audit'
 import SeoAudit from '@/components/dashboard/SeoAudit'
 import SeoTools from '@/components/dashboard/SeoTools'
@@ -50,7 +51,7 @@ export default async function SeoPage() {
       metaTitle: a.seo?.title || null,
       html: a.contentHtml ?? null,
       cover: mediaUrl(a.cover, 'card'),
-      published: a.published === true,
+      published: isLive(a.published, a.publishAt),
       noindex: a.seo?.noindex === true,
     })),
     ...projectsRes.docs.map((p) => ({

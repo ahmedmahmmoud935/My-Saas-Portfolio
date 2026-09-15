@@ -3394,3 +3394,155 @@ input[type='range']::-moz-range-thumb {
 .editor-body {
   padding: 8px 0 60px;
 }
+
+/* ── The article editor ──────────────────────────────────────────────────
+   The piece on one side, what the site and a search engine will make of it
+   on the other. The right column stays where it is while the left one is
+   written: a score you have to scroll to is a score nobody looks at. */
+.editor-wide {
+  max-width: 1280px;
+}
+.art-editor {
+  display: grid;
+  gap: 22px;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  align-items: start;
+}
+.art-main {
+  min-width: 0;
+}
+.art-side {
+  position: sticky;
+  /* Clear of the editor's own bar, which is sticky above it. */
+  top: 74px;
+  max-height: calc(100vh - 96px);
+  overflow: auto;
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  padding-inline-end: 4px;
+}
+.art-side .de-group,
+.art-side .seo-panel {
+  margin-top: 0 !important;
+}
+/* One column on anything too narrow to hold two, and nothing pinned: a panel
+   stuck to a short viewport is a panel in the way. */
+@media (max-width: 1080px) {
+  .art-editor {
+    grid-template-columns: 1fr;
+  }
+  .art-side {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+.art-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 18px 0 8px;
+}
+.art-count {
+  margin-inline-start: auto;
+  color: var(--sub);
+  font-size: 12px;
+}
+
+/* The preview: the article as the page will lay it out, inside the editor. */
+.art-prev {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 26px clamp(16px, 4vw, 34px) 34px;
+  background: var(--panel);
+  min-height: 320px;
+}
+.art-prev h1 {
+  font-size: clamp(22px, 3vw, 32px);
+  font-weight: 900;
+  line-height: 1.25;
+  margin: 0 0 8px;
+}
+.art-prev-meta {
+  color: var(--sub);
+  font-size: 12px;
+  margin-bottom: 18px;
+}
+.art-prev-cover {
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 22px;
+}
+
+/* The same typography the article gets on the site, so the preview is a
+   preview and not a nicer version of the page. */
+.art-prev .article-body {
+  line-height: 1.9;
+  color: var(--text);
+}
+.art-prev .article-body h2 {
+  font-size: 1.4em;
+  margin: 1.6em 0 0.5em;
+}
+.art-prev .article-body h3 {
+  font-size: 1.15em;
+  margin: 1.4em 0 0.4em;
+}
+.art-prev .article-body p {
+  margin: 0 0 1.1em;
+}
+.art-prev .article-body ul,
+.art-prev .article-body ol {
+  margin: 0 0 1.1em;
+  padding-inline-start: 1.4em;
+}
+.art-prev .article-body li {
+  margin-bottom: 0.4em;
+}
+.art-prev .article-body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+.art-prev .article-body a {
+  color: var(--accent);
+}
+.art-prev .article-body blockquote {
+  margin: 1.2em 0;
+  padding-inline-start: 14px;
+  border-inline-start: 3px solid var(--accent);
+  color: var(--sub);
+}
+.art-prev .article-body pre {
+  overflow-x: auto;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--bg);
+}
+
+/* What a field is for, under its label — two of them here are near-twins of
+   two others, and the pair that goes to Google is not the pair on the page. */
+.fld-hint {
+  margin: 2px 0 6px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--sub);
+}
+
+/* Waiting for its hour: neither a draft nor on the site. */
+.pub-row.sched {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+.pub-when {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+.pub-when .field {
+  width: 100%;
+}

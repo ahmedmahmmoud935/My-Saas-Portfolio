@@ -4,6 +4,7 @@ import config from '@payload-config'
 import { livePosts } from '@/lib/posts'
 import { tenantUrl } from '@/lib/tenant-url'
 import { settingsLang } from '@/lib/site-lang'
+import { liveWhere } from '@/lib/publish'
 
 export const dynamic = 'force-dynamic'
 
@@ -96,7 +97,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const [articles, projects] = await Promise.all([
         payload.find({
           collection: 'articles',
-          where: { and: [{ tenant: { equals: t.id } }, { published: { equals: true } }] },
+          where: { and: [{ tenant: { equals: t.id } }, liveWhere()] },
           limit: 500,
           depth: 0,
         }),

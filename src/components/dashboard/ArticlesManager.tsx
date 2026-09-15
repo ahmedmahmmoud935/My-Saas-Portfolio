@@ -7,6 +7,8 @@ import MediaUploader from './MediaUploader'
 import { saveDoc, deleteDoc } from '@/lib/collection-actions'
 import { useDashLang } from './DashLang'
 import SeoPanel from './SeoPanel'
+import { isLive, isScheduled } from '@/lib/publish'
+import { readingMinutes } from '@/lib/reading-time'
 
 type Item = {
   id?: number
@@ -16,7 +18,8 @@ type Item = {
   contentHtml: string
   tags: string
   published: boolean
-  readMin: number
+  /** The hour it goes live by itself, when one has been set. */
+  publishAt: string | null
   coverId: number | null
   coverUrl: string | null
   /** What a results page shows, when it should differ from the article. */
@@ -27,8 +30,52 @@ type Item = {
   nofollow: boolean
 }
 
+/** The line under a label that says what the field is actually for. */
+const Hint = ({ children }: { children: React.ReactNode }) => (
+  <p className="fld-hint">{children}</p>
+)
+
 const slugify = (s: string) =>
   s.trim().toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '')
+
+/** An ISO moment as the value a datetime-local input wants (local clock). */
+function toLocalInput(iso: string | null): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+/** And back — the input speaks the author's clock, the database speaks UTC. */
+function fromLocalInput(v: string): string | null {
+  if (!v) return null
+  const d = new Date(v)
+  return Number.isNaN(d.getTime()) ? null : d.toISOString()
+}
+
+const whenText = (iso: string | null, lang: 'ar' | 'en') =>
+  iso
+    ? new Date(iso).toLocaleString(lang === 'en' ? 'en-GB' : 'ar-EG', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      })
+    : ''
+
+/**
+ * The author's own HTML, with anything that would run stripped out.
+ *
+ * The preview renders it inside the dashboard, where a stray <script> pasted
+ * along with the text would run against the session rather than in a page of
+ * its own. The article itself is untouched; this is only what is shown here.
+ */
+function safePreview(html: string): string {
+  return html
+    .replace(/<(script|iframe|object|embed)[\s\S]*?<\/\1>/gi, '')
+    .replace(/<(script|iframe|object|embed)[^>]*\/?>/gi, '')
+    .replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+    .replace(/javascript:/gi, '')
+}
 
 export default function ArticlesManager({
   items,
@@ -44,8 +91,11 @@ export default function ArticlesManager({
 }) {
   const router = useRouter()
   const [edit, setEdit] = useState<Item | null>(null)
-  const { t } = useDashLang()
+  const { t, lang } = useDashLang()
   const [busy, setBusy] = useState(false)
+  /* Writing and reading are two different things to be looking at, and the
+     editor has room for one of them at a time. */
+  const [tab, setTab] = useState<'write' | 'read'>('write')
 
   async function save() {
     if (!edit) return
@@ -59,7 +109,7 @@ export default function ArticlesManager({
       contentHtml: edit.contentHtml,
       tags: edit.tags.split(',').map((x) => x.trim()).filter(Boolean).map((tag) => ({ tag })),
       published: edit.published,
-      readMin: edit.readMin,
+      publishAt: edit.publishAt,
       seo: {
         keyphrase: edit.keyphrase,
         title: edit.seoTitle,
@@ -78,7 +128,11 @@ export default function ArticlesManager({
     router.refresh()
   }
 
-  const blank: Item = { title: '', slug: '', excerpt: '', contentHtml: '', tags: '', published: false, readMin: 3, coverId: null, coverUrl: null, seoTitle: '', seoDescription: '', keyphrase: '', noindex: false, nofollow: false }
+  const blank: Item = { title: '', slug: '', excerpt: '', contentHtml: '', tags: '', published: false, publishAt: null, coverId: null, coverUrl: null, seoTitle: '', seoDescription: '', keyphrase: '', noindex: false, nofollow: false }
+
+  const live = !!edit && isLive(edit.published, edit.publishAt)
+  const waiting = !!edit && isScheduled(edit.published, edit.publishAt)
+  const minutes = edit ? readingMinutes(edit.contentHtml, lang) : 0
 
   return (
     <div>
@@ -91,7 +145,7 @@ export default function ArticlesManager({
           icon="📖"
           title={title ?? t('المقالات', 'Articles')}
           subtitle={subtitle ?? t('مدوّنتك — كل مقال صفحة تساعد على SEO', 'Your blog — each article is an SEO-friendly page')}
-          actions={<button className="btn btn-primary" onClick={() => setEdit(blank)}>+ {t('مقال جديد', 'New article')}</button>}
+          actions={<button className="btn btn-primary" onClick={() => { setTab('write'); setEdit(blank) }}>+ {t('مقال جديد', 'New article')}</button>}
         />
       )}
 
@@ -109,10 +163,18 @@ export default function ArticlesManager({
               </div>
               <div className="pm-body">
                 <strong>{a.title}</strong>
-                <span>{a.published ? t('منشور', 'Published') : t('مسودّة', 'Draft')} · {a.readMin} {t('د', 'min')}</span>
+                <span>
+                  {isLive(a.published, a.publishAt)
+                    ? t('منشور', 'Published')
+                    : isScheduled(a.published, a.publishAt)
+                      ? `${t('مجدول', 'Scheduled')} · ${whenText(a.publishAt, lang)}`
+                      : t('مسودّة', 'Draft')}
+                  {' · '}
+                  {readingMinutes(a.contentHtml, lang)} {t('د', 'min')}
+                </span>
               </div>
               <div className="pm-actions">
-                <button className="icon-btn" onClick={() => setEdit(a)}>✏️</button>
+                <button className="icon-btn" onClick={() => { setTab('write'); setEdit(a) }}>✏️</button>
                 <button className="icon-btn del" onClick={() => remove(a.id!)}>🗑</button>
               </div>
             </div>
@@ -121,7 +183,7 @@ export default function ArticlesManager({
       )}
 
       {edit && (
-        <div className="editor-page">
+        <div className="editor-page editor-wide">
           <div className="editor-bar">
             <button className="btn btn-ghost" onClick={() => setEdit(null)}>
               {t('رجوع', 'Back')}
@@ -131,64 +193,165 @@ export default function ArticlesManager({
               {busy ? '…' : t('💾 حفظ', '💾 Save')}
             </button>
           </div>
-          <div className="editor-body">
+
+          {/* The piece on the left, what the site and Google will make of it on
+              the right — where it stays put while you write, because a score
+              you have to scroll to is a score nobody looks at. */}
+          <div className="editor-body art-editor">
+            <div className="art-main">
               <label className="lbl">{t('العنوان', 'Title')}</label>
+              <Hint>
+                {t(
+                  'اللي بيظهر فوق المقال على موقعك — اكتبه للقارئ.',
+                  'The headline on the article itself — written for the reader.',
+                )}
+              </Hint>
               <input className="field" value={edit.title} onChange={(e) => setEdit({ ...edit, title: e.target.value, slug: edit.slug || slugify(e.target.value) })} />
               <label className="lbl">{t('الـ slug', 'Slug')}</label>
               <input className="field" dir="ltr" value={edit.slug} onChange={(e) => setEdit({ ...edit, slug: e.target.value })} style={{ textAlign: 'start' }} />
-              <p className="lbl" style={{ opacity: 0.7, marginTop: 4 }}>
-                {t(
-                  'الرابط والنشر لكل لغة على حدة — بدّل لغة اللوحة عشان تظبط النسخة التانية.',
-                  'The address and the publish switch belong to this language — switch the dashboard language to set the other.',
-                )}
-              </p>
               <label className="lbl">{t('المقتطف', 'Excerpt')}</label>
+              <Hint>
+                {t(
+                  'السطر اللي تحت العنوان في قائمة مقالات موقعك.',
+                  'The line under the title on your own articles list.',
+                )}
+              </Hint>
               <textarea className="field" rows={2} value={edit.excerpt} onChange={(e) => setEdit({ ...edit, excerpt: e.target.value })} />
               <label className="lbl">{t('الغلاف', 'Cover')}</label>
               <MediaUploader compact previewUrl={edit.coverUrl} onUploaded={(m) => setEdit({ ...edit, coverId: m.id, coverUrl: m.thumbUrl })} />
-              <label className="lbl">{t('المحتوى (HTML)', 'Content (HTML)')}</label>
-              <textarea className="field" rows={8} dir="ltr" value={edit.contentHtml} onChange={(e) => setEdit({ ...edit, contentHtml: e.target.value })} style={{ textAlign: 'start', fontFamily: 'monospace' }} />
-              <label className="lbl">{t('الوسوم (مفصولة بفاصلة)', 'Tags (comma separated)')}</label>
-              <input className="field" value={edit.tags} onChange={(e) => setEdit({ ...edit, tags: e.target.value })} />
-              <div>
-                <label className="lbl">{t('دقائق القراءة', 'Read minutes')}</label>
-                <input className="field" type="number" value={edit.readMin} onChange={(e) => setEdit({ ...edit, readMin: Number(e.target.value) })} />
+
+              <div className="art-tabs">
+                <button className={`pill ${tab === 'write' ? 'active' : ''}`} onClick={() => setTab('write')}>
+                  {t('المحتوى (HTML)', 'Content (HTML)')}
+                </button>
+                <button className={`pill ${tab === 'read' ? 'active' : ''}`} onClick={() => setTab('read')}>
+                  {t('👁 معاينة', '👁 Preview')}
+                </button>
+                <span className="art-count">
+                  {minutes} {t('دقيقة قراءة', 'min read')}
+                </span>
               </div>
 
+              {tab === 'write' ? (
+                <textarea
+                  className="field"
+                  rows={18}
+                  dir="ltr"
+                  value={edit.contentHtml}
+                  onChange={(e) => setEdit({ ...edit, contentHtml: e.target.value })}
+                  style={{ textAlign: 'start', fontFamily: 'monospace' }}
+                />
+              ) : (
+                <div className="art-prev" dir={lang === 'en' ? 'ltr' : 'rtl'}>
+                  <h1>{edit.title || t('عنوان المقال', 'Article title')}</h1>
+                  <div className="art-prev-meta">
+                    {new Date().toLocaleDateString(lang === 'en' ? 'en-GB' : 'ar-EG')}
+                    {minutes ? ` · ${minutes} ${t('دقيقة قراءة', 'min read')}` : ''}
+                  </div>
+                  {edit.coverUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img className="art-prev-cover" src={edit.coverUrl} alt="" />
+                  )}
+                  {edit.contentHtml.trim() ? (
+                    <div
+                      className="article-body"
+                      // eslint-disable-next-line react/no-danger
+                      dangerouslySetInnerHTML={{ __html: safePreview(edit.contentHtml) }}
+                    />
+                  ) : (
+                    <p style={{ color: 'var(--sub)' }}>
+                      {t('لسه مفيش محتوى — اكتب في تبويب المحتوى وهيظهر هنا.', 'Nothing written yet — the content tab fills this in.')}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <label className="lbl">{t('الوسوم (مفصولة بفاصلة)', 'Tags (comma separated)')}</label>
+              <input className="field" value={edit.tags} onChange={(e) => setEdit({ ...edit, tags: e.target.value })} />
+            </div>
+
+            <aside className="art-side">
               {/* The one control that decides whether any of this is on the
                   site. It used to be an unlabelled switch in the right half of
                   a two-column row, under the heading "Status" — which reads as
                   a thing being reported, not a thing you press. A whole draft
                   sat unpublished because its author could not find it. */}
-              <div className={`pub-row ${edit.published ? 'live' : ''}`}>
+              <div className={`pub-row ${live ? 'live' : ''} ${waiting ? 'sched' : ''}`}>
                 <div className="pub-state">
-                  <strong>{edit.published ? t('منشور', 'Published') : t('مسودّة', 'Draft')}</strong>
+                  <strong>
+                    {live ? t('منشور', 'Published') : waiting ? t('مجدول', 'Scheduled') : t('مسودّة', 'Draft')}
+                  </strong>
                   <span>
-                    {edit.published
+                    {live
                       ? t('ظاهر على الموقع', 'Visible on the site')
-                      : t('مش ظاهر على الموقع لحد ما تنشره', 'Not on the site until you publish it')}
+                      : waiting
+                        ? `${t('هينشر', 'Goes live')} ${whenText(edit.publishAt, lang)}`
+                        : t('مش ظاهر على الموقع لحد ما تنشره', 'Not on the site until you publish it')}
                   </span>
                 </div>
                 <button
                   type="button"
-                  className={`btn ${edit.published ? '' : 'btn-primary'}`}
-                  onClick={() => setEdit({ ...edit, published: !edit.published })}
+                  className={`btn ${live ? '' : 'btn-primary'}`}
+                  onClick={() =>
+                    setEdit(
+                      live
+                        ? { ...edit, published: false, publishAt: null }
+                        : { ...edit, published: true, publishAt: null },
+                    )
+                  }
                 >
-                  {edit.published
-                    ? t('رجّعه مسودّة', 'Back to draft')
-                    : t('انشر المقال', 'Publish')}
+                  {live ? t('رجّعه مسودّة', 'Back to draft') : t('انشر دلوقتي', 'Publish now')}
                 </button>
               </div>
+
+              {/* Or at an hour of your choosing. Written in the evening, read
+                  in the morning — and nobody should have to be awake for it. */}
+              {!live && (
+                <div className="pub-when">
+                  <label className="lbl">{t('أو انشره في وقت تحدده', 'Or set the hour it goes live')}</label>
+                  <input
+                    className="field"
+                    type="datetime-local"
+                    dir="ltr"
+                    value={toLocalInput(edit.publishAt)}
+                    onChange={(e) => setEdit({ ...edit, published: false, publishAt: fromLocalInput(e.target.value) })}
+                  />
+                  {edit.publishAt && (
+                    <button className="btn btn-ghost btn-sm" onClick={() => setEdit({ ...edit, publishAt: null })}>
+                      {t('ألغِ الجدولة', 'Cancel the schedule')}
+                    </button>
+                  )}
+                  <p className="lbl" style={{ opacity: 0.7, marginTop: 6 }}>
+                    {t(
+                      'بتوقيت جهازك. المقال بيظهر لوحده في الوقت ده من غير ما تعمل حاجة.',
+                      "Your device's clock. It appears by itself at that time, with nothing left to press.",
+                    )}
+                  </p>
+                </div>
+              )}
+
+              <p className="lbl" style={{ opacity: 0.7 }}>
+                {t(
+                  'الرابط والنشر لكل لغة على حدة — بدّل لغة اللوحة عشان تظبط النسخة التانية.',
+                  'The address and the publish switch belong to this language — switch the dashboard language to set the other.',
+                )}
+              </p>
 
               {/* ── SEO ────────────────────────────────────────────────────
                   The headline you write for a reader and the line Google
                   shows are rarely the same sentence, and there was nowhere
                   to say so. Empty falls back to the article's own title and
                   excerpt, which is what happened before these existed. */}
-              <div className="de-group" style={{ marginTop: 18 }}>
+              <div className="de-group">
                 <div className="de-group-title">{t('محركات البحث', 'Search engines')}</div>
 
                 <label className="lbl">{t('عنوان جوجل', 'Meta title')}</label>
+                <Hint>
+                  {t(
+                    'السطر الأزرق في نتيجة البحث واسم التاب. سيبه فاضي وياخد عنوان المقال.',
+                    'The blue line in the results and the browser tab. Leave it empty to reuse the title.',
+                  )}
+                </Hint>
                 <input
                   className="field"
                   value={edit.seoTitle}
@@ -202,6 +365,12 @@ export default function ArticlesManager({
                 <label className="lbl" style={{ marginTop: 10, display: 'block' }}>
                   {t('وصف جوجل', 'Meta description')}
                 </label>
+                <Hint>
+                  {t(
+                    'السطر الرمادي تحت النتيجة في جوجل — هو اللي بيقنع الناس تدوس. سيبه فاضي وياخد المقتطف.',
+                    'The grey line under the result — what decides the click. Leave it empty to reuse the excerpt.',
+                  )}
+                </Hint>
                 <textarea
                   className="field"
                   rows={2}
@@ -253,6 +422,7 @@ export default function ArticlesManager({
                 keyphrase={edit.keyphrase}
                 onKeyphrase={(v) => setEdit({ ...edit, keyphrase: v })}
               />
+            </aside>
           </div>
         </div>
       )}

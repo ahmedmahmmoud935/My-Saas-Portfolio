@@ -1,6 +1,7 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { Media } from '@/payload-types'
+import { isLive } from '@/lib/publish'
 
 /**
  * The platform's own writing, and which language a reader gets.
@@ -41,6 +42,7 @@ type PerLocale<T> = { ar?: T | null; en?: T | null }
 type RawPost = Record<string, unknown> & {
   id: number
   published?: PerLocale<boolean>
+  publishAt?: PerLocale<string>
   createdAt: string
   updatedAt: string
 }
@@ -57,9 +59,12 @@ const pick = <T,>(v: unknown, loc: 'ar' | 'en'): T | null => {
 /** Which language of this post to show someone who asked for `want`. */
 function shownLocale(p: RawPost, want: 'ar' | 'en'): 'ar' | 'en' | null {
   const pub = p.published ?? {}
-  if (pub[want] === true) return want
+  const at = p.publishAt ?? {}
+  // Live means published, or scheduled for an hour that has passed — asked per
+  // language, because each half of a piece is published on its own.
+  if (isLive(pub[want], at[want])) return want
   const other = want === 'ar' ? 'en' : 'ar'
-  if (pub[other] === true) return other
+  if (isLive(pub[other], at[other])) return other
   return null
 }
 

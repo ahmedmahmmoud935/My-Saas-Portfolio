@@ -3387,3 +3387,48 @@ html:has(.pf-root) {
 .mod-embed.themed > div {
   background: transparent;
 }
+
+/* ── The body of an article ──────────────────────────────────────────────
+   Written as HTML by its author and rendered with nothing but the browser's
+   defaults until now: headings that shouted, paragraphs with no room to
+   breathe, and links that looked like every other word. The same rules are
+   mirrored in the dashboard's preview, so what is previewed is the page. */
+.article-body h2 {
+  font-size: 1.4em;
+  margin: 1.6em 0 0.5em;
+}
+.article-body h3 {
+  font-size: 1.15em;
+  margin: 1.4em 0 0.4em;
+}
+.article-body p {
+  margin: 0 0 1.1em;
+}
+.article-body ul,
+.article-body ol {
+  margin: 0 0 1.1em;
+  padding-inline-start: 1.4em;
+}
+.article-body li {
+  margin-bottom: 0.4em;
+}
+.article-body img {
+  height: auto;
+  border-radius: 10px;
+  margin: 1.2em 0;
+}
+.article-body a {
+  color: var(--accent);
+}
+.article-body blockquote {
+  margin: 1.2em 0;
+  padding-inline-start: 14px;
+  border-inline-start: 3px solid var(--accent);
+  color: var(--sub);
+}
+.article-body pre {
+  overflow-x: auto;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--bg2, rgba(127, 127, 127, 0.12));
+}

@@ -67,6 +67,19 @@ export const Posts: CollectionConfig = {
     { name: 'cover', type: 'upload', relationTo: 'media' },
     { name: 'contentHtml', type: 'textarea', localized: true },
     { name: 'published', type: 'checkbox', localized: true, defaultValue: false },
+    {
+      /* The hour it goes live. Nothing flips the switch when it arrives: the
+         queries ask "published, or scheduled for a moment that has passed", so
+         a piece appears by itself with no job to run. */
+      name: 'publishAt',
+      type: 'date',
+      localized: true,
+      admin: {
+        position: 'sidebar',
+        date: { pickerAppearance: 'dayAndTime' },
+        description: 'Goes live by itself at this time.',
+      },
+    },
     { name: 'readMin', type: 'number', defaultValue: 3 },
     {
       name: 'seo',

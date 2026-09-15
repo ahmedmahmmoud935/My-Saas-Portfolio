@@ -23,7 +23,7 @@ export default async function ArticlesPage() {
     contentHtml: a.contentHtml ?? '',
     tags: (a.tags ?? []).map((t) => t.tag || '').filter(Boolean).join(', '),
     published: a.published === true,
-    readMin: a.readMin ?? 0,
+    publishAt: a.publishAt ?? null,
     coverId: (a.cover && typeof a.cover === 'object' ? a.cover.id : (a.cover as number)) ?? null,
     coverUrl: mediaUrl(a.cover, 'thumb'),
     keyphrase: a.seo?.keyphrase ?? '',

@@ -31,7 +31,7 @@ export default async function OwnerBlogPage() {
     contentHtml: p.contentHtml ?? '',
     tags: '',
     published: p.published === true,
-    readMin: p.readMin ?? 0,
+    publishAt: p.publishAt ?? null,
     coverId: (p.cover && typeof p.cover === 'object' ? p.cover.id : (p.cover as number)) ?? null,
     coverUrl: mediaUrl(p.cover, 'thumb'),
     keyphrase: p.seo?.keyphrase ?? '',

@@ -417,6 +417,10 @@ export interface Article {
     | null;
   published?: boolean | null;
   /**
+   * Goes live by itself at this time.
+   */
+  publishAt?: string | null;
+  /**
    * What a search engine shows, when it should differ from the article itself.
    */
   seo?: {
@@ -445,6 +449,10 @@ export interface Post {
   cover?: (number | null) | Media;
   contentHtml?: string | null;
   published?: boolean | null;
+  /**
+   * Goes live by itself at this time.
+   */
+  publishAt?: string | null;
   readMin?: number | null;
   seo?: {
     keyphrase?: string | null;
@@ -1328,6 +1336,7 @@ export interface ArticlesSelect<T extends boolean = true> {
         id?: T;
       };
   published?: T;
+  publishAt?: T;
   seo?:
     | T
     | {
@@ -1352,6 +1361,7 @@ export interface PostsSelect<T extends boolean = true> {
   cover?: T;
   contentHtml?: T;
   published?: T;
+  publishAt?: T;
   readMin?: T;
   seo?:
     | T

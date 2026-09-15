@@ -5,6 +5,8 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { mediaUrl } from '@/lib/portfolio'
 import { alternatesFor, langQuery, pageLocale, plainText } from '@/lib/seo'
+import { isLive } from '@/lib/publish'
+import { readingMinutes } from '@/lib/reading-time'
 import Navbar from '@/components/portfolio/Navbar'
 import PageShell from '@/components/portfolio/PageShell'
 import Footer from '@/components/portfolio/Footer'
@@ -49,7 +51,7 @@ async function load(username: string, slugRaw: string, locale: 'ar' | 'en') {
   let article = articleRes.docs[0]
   if (!article) article = (await bySlug(other)).docs[0]
 
-  if (!article || article.published !== true) return null
+  if (!article || !isLive(article.published, article.publishAt)) return null
   return { tenant, settings: settingsRes.docs[0] ?? null, article }
 }
 
@@ -131,6 +133,7 @@ export default async function ArticlePage({ params, searchParams }: Params) {
     notFound()
   }
   const { tenant, settings, article } = data
+  const minutes = readingMinutes(article.contentHtml, locale)
   const logo = tenant.name?.[0]?.toUpperCase() || 'V'
   const cover = mediaUrl(article.cover)
 
@@ -163,7 +166,7 @@ export default async function ArticlePage({ params, searchParams }: Params) {
         <div className="container" style={{ maxWidth: 760 }}>
           <h1 style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 900, lineHeight: 1.2 }}>{article.title}</h1>
           <div style={{ color: 'var(--sub)', fontSize: 13, marginBottom: 20 }}>
-            {new Date(article.createdAt).toLocaleDateString(locale === 'en' ? 'en-GB' : 'ar')} {article.readMin ? `· ${article.readMin} ${locale === 'en' ? 'min read' : 'دقيقة'}` : ''}
+            {new Date(article.createdAt).toLocaleDateString(locale === 'en' ? 'en-GB' : 'ar')}{minutes ? ` · ${minutes} ${locale === 'en' ? 'min read' : 'دقيقة قراءة'}` : ''}
           </div>
           {cover && (
             // eslint-disable-next-line @next/next/no-img-element

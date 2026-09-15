@@ -5,6 +5,8 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { mediaUrl } from '@/lib/portfolio'
 import { alternatesFor, langQuery, pageLocale } from '@/lib/seo'
+import { liveWhere } from '@/lib/publish'
+import { readingMinutes } from '@/lib/reading-time'
 import Navbar from '@/components/portfolio/Navbar'
 import PageShell from '@/components/portfolio/PageShell'
 import Footer from '@/components/portfolio/Footer'
@@ -20,7 +22,7 @@ async function load(username: string, locale: 'ar' | 'en') {
     payload.find({ collection: 'site-settings', where: { tenant: { equals: tenant.id } }, limit: 1, depth: 0, locale, fallbackLocale: locale === 'ar' ? 'en' : 'ar' }),
     payload.find({
       collection: 'articles',
-      where: { and: [{ tenant: { equals: tenant.id } }, { published: { equals: true } }] },
+      where: { and: [{ tenant: { equals: tenant.id } }, liveWhere()] },
       sort: '-createdAt',
       limit: 100,
       depth: 1,
@@ -93,7 +95,10 @@ export default async function ArticlesListPage({ params, searchParams }: Params)
                     <h3 style={{ margin: '0 0 8px', fontSize: 18 }}>{a.title}</h3>
                     {a.excerpt && <p style={{ color: 'var(--sub)', fontSize: 14, margin: 0 }}>{a.excerpt}</p>}
                     <div style={{ color: 'var(--accent)', fontSize: 12, marginTop: 10 }}>
-                      {a.readMin ? `${a.readMin} دقيقة قراءة` : ''}
+                      {(() => {
+                        const min = readingMinutes(a.contentHtml, locale)
+                        return min ? (locale === 'en' ? `${min} min read` : `${min} دقيقة قراءة`) : ''
+                      })()}
                     </div>
                   </div>
                 </a>
