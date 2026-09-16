@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import PageHeader from './PageHeader'
 import { useDashLang } from './DashLang'
 import MediaUploader from './MediaUploader'
 import SectionBgRows from './SectionBgRows'
+import LandingPreview from './LandingPreview'
 import { ColorInput, Opt, Slider } from './controls'
 import { saveLanding, type LandingImages, type LandingStyle, type LandingTheme, type LandingTools } from '@/lib/landing-actions'
 import { LANDING_COPY } from '@/lib/landing-copy'
@@ -82,6 +83,47 @@ const SECTION_GROUPS = [
 ] as const
 
 type SectionId = (typeof SECTION_GROUPS)[number]['items'][number]['id']
+
+/**
+ * Where each section sits on the page, for the preview beside the editor: the
+ * id its band carries, or one of the page's two ends.
+ */
+const SPOT: Record<SectionId, string> = {
+  hero: 'top',
+  compare: 'compare',
+  panel: 'panel',
+  features: 'features',
+  dash: 'dashboard',
+  audience: 'audience',
+  how: 'how',
+  showcase: 'showcase',
+  pricing: 'pricing',
+  testimonials: 'testimonials',
+  faq: 'faq',
+  cta: 'cta',
+  order: 'top',
+  style: 'top',
+  cards: 'features',
+  images: 'top',
+  backgrounds: 'top',
+  header: 'top',
+  footer: 'bottom',
+  legal: 'bottom',
+  tools: 'top',
+}
+
+/** The repeated things a section holds — cards, steps, plans, questions. */
+type ItemKey = 'features' | 'how' | 'faqs' | 'testimonials' | 'dash' | 'plans'
+
+/** One entry in a section's outline: a group of its fields, or one of its items. */
+type Pane = { id: string; label: string; mark?: string; item?: { key: ItemKey; i: number } }
+
+/** A section as a short list: what comes before its items, the items, and after. */
+type Outline = {
+  before: Pane[]
+  items?: { key: ItemKey; panes: Pane[]; add: string; noun: string }
+  after?: Pane[]
+}
 
 /** What each of those groups is called when it is the whole page. */
 const HEADINGS = {
@@ -361,6 +403,14 @@ export default function LandingEditor({
   const head = HEADINGS[(groups?.length === 1 ? groups[0] : '') as keyof typeof HEADINGS] ?? HEADINGS.All
   const [f, setF] = useState<Form>(initial)
   const [sec, setSec] = useState<SectionId>(shown[0]?.items[0]?.id ?? 'hero')
+  /* Which part of the section is open. One at a time: a section used to be
+     every one of its fields and cards stacked in a column, and changing the
+     fourth card meant scrolling past the first three to find it. */
+  const [pane, setPane] = useState('')
+  const [showPreview, setShowPreview] = useState(false)
+  const [version, setVersion] = useState(0)
+  const [savedJson, setSavedJson] = useState(() => JSON.stringify(initial))
+  const dirty = useMemo(() => JSON.stringify(f) !== savedJson, [f, savedJson])
   const [busy, setBusy] = useState(false)
   const [light, setLight] = useState(false)
   const [toast, setToast] = useState(false)
@@ -437,18 +487,6 @@ export default function LandingEditor({
         p[loc].plans.map((x, k) => (k === i ? { ...x, feats: x.feats.filter((_, m) => m !== j) } : x))
       return { ...p, ar: { ...p.ar, plans: patch('ar') }, en: { ...p.en, plans: patch('en') } }
     })
-  const addPlan = () =>
-    setF((p) => {
-      const blank = { name: '', badge: '', price: '', per: '', note: '', feats: [''], cta: '', url: '', hi: false, color: '' }
-      return { ...p, ar: { ...p.ar, plans: [...p.ar.plans, blank] }, en: { ...p.en, plans: [...p.en.plans, blank] } }
-    })
-  const removePlan = (i: number) =>
-    setF((p) => ({
-      ...p,
-      ar: { ...p.ar, plans: p.ar.plans.filter((_, j) => j !== i) },
-      en: { ...p.en, plans: p.en.plans.filter((_, j) => j !== i) },
-    }))
-
   /* Footer link groups. Both languages are kept in step by index — the same
      link written twice, not two different footers. */
   const setGroupTitle = (g: number, v: string, loc: 'ar' | 'en') =>
@@ -519,23 +557,6 @@ export default function LandingEditor({
         (p[loc][arr] as unknown as Record<string, string>[]).map((x, j) => (j === i ? { ...x, [field]: v } : x))
       return { ...p, ar: { ...p.ar, [arr]: patch('ar') }, en: { ...p.en, [arr]: patch('en') } }
     })
-  const addRow = (arr: 'faqs' | 'testimonials' | 'dash') =>
-    setF((p) => {
-      const blank =
-        arr === 'faqs'
-          ? { q: '', a: '' }
-          : arr === 'dash'
-            ? { t: '', d: '', imageUrl: '', videoUrl: '', poster: '' }
-            : { name: '', role: '', quote: '', photoUrl: '', url: '' }
-      const grow = (loc: 'ar' | 'en') => [...(p[loc][arr] as unknown as object[]), blank]
-      return { ...p, ar: { ...p.ar, [arr]: grow('ar') }, en: { ...p.en, [arr]: grow('en') } }
-    })
-  const removeRow = (arr: 'faqs' | 'testimonials' | 'dash', i: number) =>
-    setF((p) => {
-      const cut = (loc: 'ar' | 'en') => (p[loc][arr] as unknown as object[]).filter((_, j) => j !== i)
-      return { ...p, ar: { ...p.ar, [arr]: cut('ar') }, en: { ...p.en, [arr]: cut('en') } }
-    })
-
   // String lists: one line at an index, and whole lines added or removed in both.
   const setList = (key: StrList, i: number, v: string, loc: 'ar' | 'en') =>
     setF((p) => ({
@@ -594,13 +615,233 @@ export default function LandingEditor({
     />
   )
 
+  /* ── Items: added, moved, copied and removed in both languages at once, so
+     the Arabic and English lists never drift out of step by index. ───────── */
+  const mutateBoth = (key: ItemKey, fn: (arr: unknown[]) => unknown[]) =>
+    setF((p) => ({
+      ...p,
+      ar: { ...p.ar, [key]: fn(p.ar[key] as unknown[]) },
+      en: { ...p.en, [key]: fn(p.en[key] as unknown[]) },
+    }))
+  const blankItem = (key: ItemKey, len: number): unknown => {
+    switch (key) {
+      case 'features':
+        return { icon: '✨', iconUrl: '', bgUrl: '', t: '', d: '' }
+      case 'how':
+        return { n: String(len + 1), iconUrl: '', t: '', d: '' }
+      case 'faqs':
+        return { q: '', a: '' }
+      case 'testimonials':
+        return { name: '', role: '', quote: '', photoUrl: '', url: '' }
+      case 'dash':
+        return { t: '', d: '', imageUrl: '', videoUrl: '', poster: '' }
+      case 'plans':
+        return { name: '', badge: '', price: '', per: '', note: '', feats: [''], cta: '', url: '', hi: false, color: '' }
+    }
+  }
+  const addItem = (key: ItemKey) => {
+    const len = (f.ar[key] as unknown[]).length
+    mutateBoth(key, (arr) => [...arr, blankItem(key, len)])
+    setPane(`${key}:${len}`)
+  }
+  const moveItem = (key: ItemKey, i: number, dir: -1 | 1) => {
+    const j = i + dir
+    if (j < 0 || j >= (f.ar[key] as unknown[]).length) return
+    mutateBoth(key, (arr) => {
+      const next = [...arr]
+      ;[next[i], next[j]] = [next[j], next[i]]
+      return next
+    })
+    // The selection follows the item, not the slot it left.
+    setPane(`${key}:${j}`)
+  }
+  const copyItem = (key: ItemKey, i: number) => {
+    mutateBoth(key, (arr) => [...arr.slice(0, i + 1), JSON.parse(JSON.stringify(arr[i])), ...arr.slice(i + 1)])
+    setPane(`${key}:${i + 1}`)
+  }
+  const removeItem = (key: ItemKey, i: number, noun: string) => {
+    if (!confirm(t(`حذف ${noun} ده؟`, `Remove this ${noun}?`))) return
+    const len = (f.ar[key] as unknown[]).length
+    mutateBoth(key, (arr) => arr.filter((_, j) => j !== i))
+    setPane(len > 1 ? `${key}:${Math.max(0, i - 1)}` : '')
+  }
+
+  /* ── Each content section as a short list of what it holds. ──────────── */
+  const headPane: Pane = { id: 'head', label: t('عنوان القسم', 'Section heading'), mark: 'Aa' }
+  const items = (
+    key: ItemKey,
+    label: (i: number) => string | undefined,
+    mark?: (i: number) => string | undefined,
+  ): Pane[] =>
+    (f.ar[key] as unknown[]).map((_, i) => ({
+      id: `${key}:${i}`,
+      label: (label(i) ?? '').trim() || `#${i + 1}`,
+      mark: mark?.(i),
+      item: { key, i },
+    }))
+
+  const outlines: Partial<Record<SectionId, Outline>> = {
+    hero: {
+      before: [
+        { id: 'text', label: t('النصوص', 'The words'), mark: 'Aa' },
+        { id: 'size', label: t('حجم العنوان وتباعده', 'Headline size and spacing'), mark: '↕' },
+        { id: 'buttons', label: t('الأزرار', 'The buttons'), mark: '▭' },
+      ],
+    },
+    compare: {
+      before: [
+        headPane,
+        { id: 'old', label: f.ar.compareOldTitle || t('العمود الأحمر', 'The red column'), mark: '✕' },
+        { id: 'new', label: f.ar.compareNewTitle || t('عمود ViralPX', 'The ViralPX column'), mark: '✓' },
+        { id: 'link', label: t('الرابط تحت الكروت', 'The link under the cards'), mark: '↗' },
+      ],
+    },
+    panel: {
+      before: [
+        headPane,
+        { id: 'video', label: t('الفيديو والغلاف', 'Video and poster'), mark: '▶' },
+        { id: 'button', label: t('الزر تحت الفيديو', 'The button under it'), mark: '▭' },
+        { id: 'mock', label: t('الرسمة الافتراضية', 'The default drawing'), mark: '▦' },
+      ],
+    },
+    features: {
+      before: [headPane],
+      items: {
+        key: 'features',
+        panes: items('features', (i) => f.ar.features[i]?.t, (i) => (f.ar.features[i]?.iconUrl ? '🖼' : f.ar.features[i]?.icon)),
+        add: t('ميزة جديدة', 'Add a feature'),
+        noun: t('الكارت', 'card'),
+      },
+    },
+    dash: {
+      before: [headPane, { id: 'frame', label: t('إطار الصورة', 'The picture frame'), mark: '▣' }],
+      items: {
+        key: 'dash',
+        panes: items('dash', (i) => f.ar.dash[i]?.t, (i) => (f.ar.dash[i]?.videoUrl ? '▶' : f.ar.dash[i]?.imageUrl ? '🖼' : '·')),
+        add: t('سطر جديد', 'Add a line'),
+        noun: t('السطر', 'line'),
+      },
+    },
+    audience: {
+      before: [headPane, { id: 'list', label: t('التخصصات', 'Who it is for'), mark: '☰' }],
+    },
+    how: {
+      before: [headPane],
+      items: {
+        key: 'how',
+        panes: items('how', (i) => f.ar.how[i]?.t, (i) => (f.ar.how[i]?.iconUrl ? '🖼' : f.ar.how[i]?.n)),
+        add: t('خطوة جديدة', 'Add a step'),
+        noun: t('الخطوة', 'step'),
+      },
+      after: [{ id: 'button', label: t('الزر تحت الخطوات', 'The button under them'), mark: '▭' }],
+    },
+    showcase: {
+      before: [
+        headPane,
+        { id: 'sites', label: t('البورتفوليوهات اللي بتظهر', 'Which portfolios show'), mark: '☑' },
+        { id: 'metrics', label: t('شريط الأرقام', 'The numbers bar'), mark: '#' },
+      ],
+    },
+    pricing: {
+      before: [headPane],
+      items: {
+        key: 'plans',
+        panes: items('plans', (i) => f.ar.plans[i]?.name, (i) => (f.ar.plans[i]?.hi ? '★' : '$')),
+        add: t('خطة جديدة', 'Add a plan'),
+        noun: t('الخطة', 'plan'),
+      },
+      after: [{ id: 'included', label: t('الشريط تحت الكروت', 'The band under the cards'), mark: '☰' }],
+    },
+    testimonials: {
+      before: [headPane],
+      items: {
+        key: 'testimonials',
+        panes: items('testimonials', (i) => f.ar.testimonials[i]?.name, () => '❝'),
+        add: t('رأي جديد', 'Add a testimonial'),
+        noun: t('الرأي', 'testimonial'),
+      },
+    },
+    faq: {
+      before: [headPane],
+      items: {
+        key: 'faqs',
+        panes: items('faqs', (i) => f.ar.faqs[i]?.q, () => '?'),
+        add: t('سؤال جديد', 'Add a question'),
+        noun: t('السؤال', 'question'),
+      },
+    },
+  }
+
+  const outline = outlines[sec]
+  const panes: Pane[] = outline
+    ? [...outline.before, ...(outline.items?.panes ?? []), ...(outline.after ?? [])]
+    : []
+  // The open part, or the first one when what was open has gone (a removed item).
+  const current = panes.find((p) => p.id === pane) ?? panes[0]
+  const cur = current?.id ?? ''
+  const at = current?.item?.i ?? -1
+
+  const secLabel = (() => {
+    for (const g of SECTION_GROUPS) for (const it of g.items) if (it.id === sec) return t(it.ar, it.en)
+    return ''
+  })()
+
+  const row = (p: Pane) => (
+    <button
+      key={p.id}
+      className={`lx-row${p.id === cur ? ' on' : ''}${p.item ? ' is-item' : ''}`}
+      onClick={() => setPane(p.id)}
+    >
+      <span className="lx-mark">{p.mark || '·'}</span>
+      <span className="lx-label">{p.label}</span>
+    </button>
+  )
+
+  const openSection = (id: SectionId) => {
+    setSec(id)
+    setPane('')
+  }
+
+  /* The preview is opened on a wide screen and left for the reader to open on
+     a narrower one, where it would take the room the fields need. */
+  useEffect(() => {
+    setShowPreview(window.matchMedia('(min-width: 1500px)').matches)
+  }, [])
+
   async function save() {
+    if (busy) return
     setBusy(true)
     await saveLanding(f.ar, f.en, f.theme, f.images, f.sectionBg, f.style, f.tools, f.order)
     setBusy(false)
+    setSavedJson(JSON.stringify(f))
+    setVersion((v) => v + 1)
     setToast(true)
     setTimeout(() => setToast(false), 1800)
   }
+
+  /* ⌘S / Ctrl+S saves, and leaving with unsaved edits asks first — the three
+     pages share one form, and the sidebar is a link that reloads. */
+  const saveRef = React.useRef(save)
+  saveRef.current = save
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault()
+        void saveRef.current()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+  useEffect(() => {
+    if (!dirty) return
+    const onLeave = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', onLeave)
+    return () => window.removeEventListener('beforeunload', onLeave)
+  }, [dirty])
 
   return (
     <div>
@@ -608,7 +849,14 @@ export default function LandingEditor({
         icon={head.icon}
         title={title ?? t(head.ar, head.en)}
         subtitle={subtitle ?? t(head.subAr, head.subEn)}
-        actions={<button className="btn btn-primary" onClick={save} disabled={busy}>{busy ? '…' : t('💾 حفظ', '💾 Save')}</button>}
+        actions={
+          <div className="lx-save">
+            {dirty && <span className="lx-dirty">{t('تعديلات مش محفوظة', 'Unsaved changes')}</span>}
+            <button className="btn btn-primary" onClick={save} disabled={busy || !dirty} title="⌘S">
+              {busy ? '…' : dirty ? t('💾 حفظ', '💾 Save') : t('✓ محفوظ', '✓ Saved')}
+            </button>
+          </div>
+        }
       />
 
       {/* A row across the top rather than a second sidebar down the side. Two
@@ -622,7 +870,7 @@ export default function LandingEditor({
               <button
                 key={s.id}
                 className={`lp-tab ${sec === s.id ? 'active' : ''}`}
-                onClick={() => setSec(s.id)}
+                onClick={() => openSection(s.id)}
               >
                 {t(s.ar, s.en)}
               </button>
@@ -630,7 +878,69 @@ export default function LandingEditor({
           )}
         </nav>
 
-        <div className="panel">
+        {/* The section as a short list, the one part of it that is open, and
+            the page it ends up on. What used to be a column of every field and
+            every card is now three things side by side, none of them long. */}
+        <div className={`lx${outline ? '' : ' lx-flat'}${showPreview ? ' lx-with-pv' : ''}`}>
+          {outline && (
+            <aside className="lx-outline">
+              {outline.before.map(row)}
+              {outline.items && (
+                <div className="lx-items">
+                  <div className="lx-items-title">
+                    {t('العناصر', 'Items')} <span>{outline.items.panes.length}</span>
+                  </div>
+                  {outline.items.panes.map(row)}
+                  <button className="lx-add" onClick={() => addItem(outline.items!.key)}>
+                    + {outline.items.add}
+                  </button>
+                </div>
+              )}
+              {outline.after?.map(row)}
+            </aside>
+          )}
+
+          <section className="lx-editor">
+            <header className="lx-head">
+              <div className="lx-head-title">
+                {current && <span>{secLabel}</span>}
+                <strong>{current?.label ?? secLabel}</strong>
+              </div>
+              <div className="lx-head-actions">
+                {current?.item && outline?.items && (
+                  <>
+                    <button className="lx-icon" title={t('لفوق', 'Move up')} disabled={at === 0} onClick={() => moveItem(current.item!.key, at, -1)}>
+                      ▲
+                    </button>
+                    <button
+                      className="lx-icon"
+                      title={t('لتحت', 'Move down')}
+                      disabled={at === outline.items.panes.length - 1}
+                      onClick={() => moveItem(current.item!.key, at, 1)}
+                    >
+                      ▼
+                    </button>
+                    <button className="lx-icon" title={t('نسخة منه', 'Duplicate')} onClick={() => copyItem(current.item!.key, at)}>
+                      ⧉
+                    </button>
+                    <button
+                      className="lx-icon danger"
+                      title={t('حذف', 'Remove')}
+                      onClick={() => removeItem(current.item!.key, at, outline.items!.noun)}
+                    >
+                      🗑
+                    </button>
+                  </>
+                )}
+                {!showPreview && (
+                  <button className="btn btn-ghost btn-sm" onClick={() => setShowPreview(true)}>
+                    👁 {t('معاينة', 'Preview')}
+                  </button>
+                )}
+              </div>
+            </header>
+
+            <div className="panel lx-body">
         {sec === 'header' && (
           <>
             <Field label={t('رابط: المميزات', 'Nav: Features')} ar={f.ar.nav.features} en={f.en.nav.features} onAr={(v) => setNav('features', v, 'ar')} onEn={(v) => setNav('features', v, 'en')} />
@@ -656,7 +966,8 @@ export default function LandingEditor({
           </>
         )}
 
-        {sec === 'hero' && (
+        {/* ── Hero ─────────────────────────────────────────────────────── */}
+        {sec === 'hero' && cur === 'text' && (
           <>
             {scalar('heroEyebrow', t('البادج', 'Badge'))}
             {scalar('heroTitle', t('العنوان', 'Title'), true)}
@@ -681,26 +992,34 @@ export default function LandingEditor({
                 'Press Enter inside a heading to break the line where you want it. Without one, the page wraps on its own.',
               )}
             </Note>
-
-            <div className="grid-2" style={{ marginBottom: 14 }}>
-              {(['ar', 'en'] as const).map((loc) => (
-                <div key={loc}>
-                  <div className="lbl" style={{ marginBottom: 6 }}>
-                    {loc === 'ar' ? t('حجم العنوان (عربي)', 'Title size (Arabic)') : t('حجم العنوان (إنجليزي)', 'Title size (English)')}: {f[loc].heroScale ?? 100}%
-                  </div>
-                  <input type="range" min={60} max={150} step={5} value={f[loc].heroScale ?? 100} onChange={(e) => setNum('heroScale', Number(e.target.value), loc)} style={{ width: '100%' }} />
-
-                  <div className="lbl" style={{ margin: '12px 0 6px' }}>
-                    {loc === 'ar' ? t('تباعد السطور (عربي)', 'Line spacing (Arabic)') : t('تباعد السطور (إنجليزي)', 'Line spacing (English)')}: {f[loc].heroLeading ?? 100}%
-                  </div>
-                  <input type="range" min={70} max={160} step={5} value={f[loc].heroLeading ?? 100} onChange={(e) => setNum('heroLeading', Number(e.target.value), loc)} style={{ width: '100%' }} />
-                </div>
-              ))}
-            </div>
-
             {scalar('heroSub', t('الوصف', 'Subtitle'), true)}
+            {scalar('heroNote', t('السطر الصغير تحت الأزرار', 'Small line under the buttons'))}
+          </>
+        )}
+
+        {sec === 'hero' && cur === 'size' && (
+          <div className="grid-2">
+            {(['ar', 'en'] as const).map((loc) => (
+              <div key={loc}>
+                <div className="lbl" style={{ marginBottom: 6 }}>
+                  {loc === 'ar' ? t('حجم العنوان (عربي)', 'Title size (Arabic)') : t('حجم العنوان (إنجليزي)', 'Title size (English)')}: {f[loc].heroScale ?? 100}%
+                </div>
+                <input type="range" min={60} max={150} step={5} value={f[loc].heroScale ?? 100} onChange={(e) => setNum('heroScale', Number(e.target.value), loc)} style={{ width: '100%' }} />
+
+                <div className="lbl" style={{ margin: '14px 0 6px' }}>
+                  {loc === 'ar' ? t('تباعد السطور (عربي)', 'Line spacing (Arabic)') : t('تباعد السطور (إنجليزي)', 'Line spacing (English)')}: {f[loc].heroLeading ?? 100}%
+                </div>
+                <input type="range" min={70} max={160} step={5} value={f[loc].heroLeading ?? 100} onChange={(e) => setNum('heroLeading', Number(e.target.value), loc)} style={{ width: '100%' }} />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {sec === 'hero' && cur === 'buttons' && (
+          <>
             {scalar('heroBtn1', t('الزر الأساسي', 'Main button'))}
             {link('heroBtn1Url', t('رابط الزر الأساسي', 'Main button link'))}
+            <div className="lx-sep" />
             {scalar('heroBtn2', t('الزر الثانوي', 'Second button'))}
             {link(
               'heroBtn2Url',
@@ -710,167 +1029,196 @@ export default function LandingEditor({
                 'Leave it empty and it opens the first portfolio in the showcase on its own.',
               ),
             )}
-            {scalar('heroNote', t('السطر الصغير تحت الأزرار', 'Small line under the buttons'))}
           </>
         )}
 
-        {sec === 'compare' && (
+        {/* ── Comparison ───────────────────────────────────────────────── */}
+        {sec === 'compare' && cur === 'head' && (
           <>
             {scalar('compareEyebrow', t('العنوان الصغير', 'Eyebrow'))}
             {scalar('compareTitle', t('عنوان القسم', 'Section title'), true)}
             {scalar('compareSub', t('الوصف', 'Description'), true)}
-
-            <Card title={t('العمود الأحمر', 'The red column')}>
-              {scalar('compareOldTitle', t('عنوان العمود', 'Column title'))}
-              {list('compareOld', t('النقاط', 'Points'))}
-            </Card>
-
-            <Card title={t('عمود ViralPX', 'The ViralPX column')}>
-              {scalar('compareNewTitle', t('عنوان العمود', 'Column title'))}
-              {list('compareNew', t('النقاط', 'Points'))}
-            </Card>
-
-            {scalar('compareLink', t('الرابط تحت الكروت', 'Link under the cards'))}
+          </>
+        )}
+        {sec === 'compare' && cur === 'old' && (
+          <>
+            {scalar('compareOldTitle', t('عنوان العمود', 'Column title'))}
+            {list('compareOld', t('النقاط', 'Points'))}
+          </>
+        )}
+        {sec === 'compare' && cur === 'new' && (
+          <>
+            {scalar('compareNewTitle', t('عنوان العمود', 'Column title'))}
+            {list('compareNew', t('النقاط', 'Points'))}
+          </>
+        )}
+        {sec === 'compare' && cur === 'link' && (
+          <>
+            {scalar('compareLink', t('نص الرابط', 'Link text'))}
             {link('compareLinkUrl', t('وجهة الرابط', 'Where it goes'))}
           </>
         )}
 
-        {sec === 'panel' && (
+        {/* ── Explainer video ──────────────────────────────────────────── */}
+        {sec === 'panel' && cur === 'head' && (
           <>
             {scalar('panelEyebrow', t('العنوان الصغير', 'Eyebrow'))}
             {scalar('panelHeading', t('عنوان القسم', 'Section title'), true)}
             {scalar('panelSub', t('الوصف', 'Description'), true)}
             {scalar('panelTitle', t('عنوان شريط الإطار', 'Frame bar title'))}
+          </>
+        )}
+        {sec === 'panel' && cur === 'video' && (
+          <>
+            <Note>
+              {t(
+                'الفيديو مش بيشتغل لوحده — الزائر بيشوف صورة الغلاف وزرار تشغيل، والفيديو بيتحمّل بس لما يدوس. الأفضل ترفعه على يوتيوب (Unlisted) وتحط اللينك، عشان الجودة بتتظبط على سرعة نت الزائر.',
+                'The video never plays on its own — visitors see the poster and a play button, and the player loads only when they press it. YouTube (Unlisted) is the better host: it adapts the quality to the visitor’s connection.',
+              )}
+            </Note>
+            <Field
+              label={t('لينك الفيديو (يوتيوب / فيميو)', 'Video link (YouTube / Vimeo)')}
+              ar={f.ar.panelVideo}
+              en={f.en.panelVideo}
+              onAr={(v) => setKey('panelVideo', v, 'ar')}
+              onEn={(v) => setKey('panelVideo', v, 'en')}
+            />
+            <Note style={{ margin: '-4px 0 16px' }}>
+              {t(
+                'لكل لغة لينك لوحدها، عشان الترجمة محروقة على الفيديو. لو لغة لينكها فاضي، بيظهر فيها الملف المرفوع تحت — أو الرسمة لو مفيش.',
+                'One link per language, because the subtitles are burned in. A language with no link shows the uploaded file below — or the drawing if there is none.',
+              )}
+            </Note>
+            <Field
+              label={t('مدة الفيديو (زي 1:30)', 'Running time (like 1:30)')}
+              ar={f.ar.panelDuration}
+              en={f.en.panelDuration}
+              onAr={(v) => setKey('panelDuration', v, 'ar')}
+              onEn={(v) => setKey('panelDuration', v, 'en')}
+            />
 
-            <Card title={t('الفيديو', 'The video')}>
-              <Note>
-                {t(
-                  'الفيديو مش بيشتغل لوحده — الزائر بيشوف صورة الغلاف وزرار تشغيل، والفيديو بيتحمّل بس لما يدوس. الأفضل ترفعه على يوتيوب (Unlisted) وتحط اللينك، عشان الجودة بتتظبط على سرعة نت الزائر.',
-                  'The video never plays on its own — visitors see the poster and a play button, and the player loads only when they press it. YouTube (Unlisted) is the better host: it adapts the quality to the visitor’s connection.',
-                )}
-              </Note>
-              <Field
-                label={t('لينك الفيديو (يوتيوب / فيميو)', 'Video link (YouTube / Vimeo)')}
-                ar={f.ar.panelVideo}
-                en={f.en.panelVideo}
-                onAr={(v) => setKey('panelVideo', v, 'ar')}
-                onEn={(v) => setKey('panelVideo', v, 'en')}
-              />
-              <Note style={{ margin: '-4px 0 16px' }}>
-                {t(
-                  'لكل لغة لينك لوحدها، عشان الترجمة محروقة على الفيديو. لو لغة لينكها فاضي، بيظهر فيها الملف المرفوع تحت — أو الرسمة لو مفيش.',
-                  'One link per language, because the subtitles are burned in. A language with no link shows the uploaded file below — or the drawing if there is none.',
-                )}
-              </Note>
-
-              <label className="lbl" style={{ display: 'block' }}>
-                {t('أو ارفع ملف (فيديو أو صورة)', 'Or upload a file (video or image)')}
-              </label>
-              <MediaUploader
-                big
-                accept="image/*,video/*"
-                aspect="16 / 10"
-                previewUrl={f.images.panelUrl}
-                onUploaded={(m) =>
-                  setImages({
-                    panelId: m.id,
-                    panelUrl: m.url ?? m.thumbUrl,
-                    panelKind: m.mimeType?.startsWith('video/') ? 'video' : 'image',
-                  })
-                }
-                onRemove={
-                  f.images.panelUrl
-                    ? () => setImages({ panelId: null, panelUrl: null, panelKind: null })
-                    : undefined
-                }
-              />
-
-              <label className="lbl" style={{ display: 'block', marginTop: 18 }}>
-                {t('صورة الغلاف', 'Poster image')}
-              </label>
-              <Note style={{ margin: '0 0 8px' }}>
-                {t(
-                  'لقطة من موقع حقيقي جاهز، مش لوحة تحكم فاضية. من غيرها: يوتيوب بياخد صورته، والملف بيعرض أول لقطة منه.',
-                  'A shot of a real, finished site — not an empty dashboard. Without one, YouTube uses its own still and a file shows its first frame.',
-                )}
-              </Note>
-              <MediaUploader
-                compact
-                accept="image/*"
-                previewUrl={f.ar.panelPoster || null}
-                onUploaded={(m) => setKeyBoth('panelPoster', m.url ?? m.thumbUrl ?? '')}
-                onRemove={f.ar.panelPoster ? () => setKeyBoth('panelPoster', '') : undefined}
-              />
-
-              <div style={{ marginTop: 16 }}>
-                <Field
-                  label={t('مدة الفيديو (زي 1:30)', 'Running time (like 1:30)')}
-                  ar={f.ar.panelDuration}
-                  en={f.en.panelDuration}
-                  onAr={(v) => setKey('panelDuration', v, 'ar')}
-                  onEn={(v) => setKey('panelDuration', v, 'en')}
+            <div className="grid-2 lx-media">
+              <div>
+                <label className="lbl" style={{ display: 'block' }}>
+                  {t('أو ارفع ملف (فيديو أو صورة)', 'Or upload a file (video or image)')}
+                </label>
+                <MediaUploader
+                  big
+                  accept="image/*,video/*"
+                  aspect="16 / 10"
+                  previewUrl={f.images.panelUrl}
+                  onUploaded={(m) =>
+                    setImages({
+                      panelId: m.id,
+                      panelUrl: m.url ?? m.thumbUrl,
+                      panelKind: m.mimeType?.startsWith('video/') ? 'video' : 'image',
+                    })
+                  }
+                  onRemove={
+                    f.images.panelUrl
+                      ? () => setImages({ panelId: null, panelUrl: null, panelKind: null })
+                      : undefined
+                  }
                 />
               </div>
-            </Card>
-
-            {scalar('panelBtn', t('الزر تحت الفيديو', 'Button under the video'))}
+              <div>
+                <label className="lbl" style={{ display: 'block' }}>
+                  {t('صورة الغلاف', 'Poster image')}
+                </label>
+                <MediaUploader
+                  big
+                  accept="image/*"
+                  aspect="16 / 10"
+                  previewUrl={f.ar.panelPoster || null}
+                  onUploaded={(m) => setKeyBoth('panelPoster', m.url ?? m.thumbUrl ?? '')}
+                  onRemove={f.ar.panelPoster ? () => setKeyBoth('panelPoster', '') : undefined}
+                />
+                <Note style={{ margin: '8px 0 0' }}>
+                  {t(
+                    'لقطة من موقع حقيقي جاهز، مش لوحة تحكم فاضية. من غيرها: يوتيوب بياخد صورته، والملف بيعرض أول لقطة منه.',
+                    'A shot of a real, finished site — not an empty dashboard. Without one, YouTube uses its own still and a file shows its first frame.',
+                  )}
+                </Note>
+              </div>
+            </div>
+          </>
+        )}
+        {sec === 'panel' && cur === 'button' && (
+          <>
+            {scalar('panelBtn', t('نص الزر', 'Button text'))}
             {link('panelBtnUrl', t('وجهة الزر', 'Where it goes'))}
             {scalar('panelNote', t('السطر الصغير تحت الزر', 'Small line under the button'), true)}
-
-            <Card title={t('الرسمة الافتراضية', 'The default drawing')}>
-              <Note>
-                {t(
-                  'دي كلمات رسمة لوحة التحكم اللي بتظهر لحد ما تحط فيديو أو صورة.',
-                  'The words of the drawn dashboard, shown until a video or image is set.',
-                )}
-              </Note>
-              <Field label={t('اسم اللوحة', 'Panel name')} ar={f.ar.mock.panel} en={f.en.mock.panel} onAr={(v) => setMockName(v, 'ar')} onEn={(v) => setMockName(v, 'en')} />
-              <ListField label={t('عناصر القائمة', 'Sidebar items')} ar={f.ar.mock.items} en={f.en.mock.items} onAr={(i, v) => setMockList('items', i, v, 'ar')} onEn={(i, v) => setMockList('items', i, v, 'en')} />
-              <ListField label={t('الدوائر', 'Circles')} ar={f.ar.mock.circles} en={f.en.mock.circles} onAr={(i, v) => setMockList('circles', i, v, 'ar')} onEn={(i, v) => setMockList('circles', i, v, 'en')} />
-              <ListField label={t('الكروت', 'Cards')} ar={f.ar.mock.cards} en={f.en.mock.cards} onAr={(i, v) => setMockList('cards', i, v, 'ar')} onEn={(i, v) => setMockList('cards', i, v, 'en')} />
-            </Card>
+          </>
+        )}
+        {sec === 'panel' && cur === 'mock' && (
+          <>
+            <Note>
+              {t(
+                'دي كلمات رسمة لوحة التحكم اللي بتظهر لحد ما تحط فيديو أو صورة.',
+                'The words of the drawn dashboard, shown until a video or image is set.',
+              )}
+            </Note>
+            <Field label={t('اسم اللوحة', 'Panel name')} ar={f.ar.mock.panel} en={f.en.mock.panel} onAr={(v) => setMockName(v, 'ar')} onEn={(v) => setMockName(v, 'en')} />
+            <ListField label={t('عناصر القائمة', 'Sidebar items')} ar={f.ar.mock.items} en={f.en.mock.items} onAr={(i, v) => setMockList('items', i, v, 'ar')} onEn={(i, v) => setMockList('items', i, v, 'en')} />
+            <ListField label={t('الدوائر', 'Circles')} ar={f.ar.mock.circles} en={f.en.mock.circles} onAr={(i, v) => setMockList('circles', i, v, 'ar')} onEn={(i, v) => setMockList('circles', i, v, 'en')} />
+            <ListField label={t('الكروت', 'Cards')} ar={f.ar.mock.cards} en={f.en.mock.cards} onAr={(i, v) => setMockList('cards', i, v, 'ar')} onEn={(i, v) => setMockList('cards', i, v, 'en')} />
           </>
         )}
 
-        {sec === 'features' && (
+        {/* ── Features ─────────────────────────────────────────────────── */}
+        {sec === 'features' && cur === 'head' && (
           <>
             {scalar('featuresEyebrow', t('العنوان الصغير', 'Eyebrow'))}
             {scalar('featuresTitle', t('عنوان القسم', 'Section title'), true)}
             {scalar('featuresSub', t('الوصف', 'Description'), true)}
-
-            {f.ar.features.map((_, i) => (
-              <Card key={i} title={`#${i + 1}`}>
-                <IconInput label={t('الأيقونة', 'Icon')} value={f.ar.features[i].icon} url={f.ar.features[i].iconUrl} onChange={(v) => setArrBoth('features', i, 'icon', v)} onUrl={(v) => setArrBoth('features', i, 'iconUrl', v)} />
-
-                <label className="lbl" style={{ display: 'block' }}>{t('خلفية الكارت', 'Card background')}</label>
-                <Note style={{ margin: '0 0 8px' }}>
-                  {t(
-                    'اختيارية. الصورة بتتحط تحت طبقة خفيفة عشان الكلام يفضل مقروء.',
-                    'Optional. It sits under a light veil so the words stay readable.',
-                  )}
-                </Note>
+          </>
+        )}
+        {sec === 'features' && current?.item && f.ar.features[at] && (
+          <>
+            <Field label={t('العنوان', 'Title')} ar={f.ar.features[at].t} en={f.en.features[at]?.t ?? ''} onAr={(v) => setArr('features', at, 't', v, 'ar')} onEn={(v) => setArr('features', at, 't', v, 'en')} />
+            <Field label={t('الوصف', 'Description')} ar={f.ar.features[at].d} en={f.en.features[at]?.d ?? ''} onAr={(v) => setArr('features', at, 'd', v, 'ar')} onEn={(v) => setArr('features', at, 'd', v, 'en')} multiline rows={3} />
+            <div className="grid-2 lx-media">
+              <div>
+                <IconInput label={t('الأيقونة', 'Icon')} value={f.ar.features[at].icon} url={f.ar.features[at].iconUrl} onChange={(v) => setArrBoth('features', at, 'icon', v)} onUrl={(v) => setArrBoth('features', at, 'iconUrl', v)} />
+              </div>
+              <div>
+                <label className="lbl" style={{ display: 'block' }}>{t('خلفية الكارت (اختيارية)', 'Card background (optional)')}</label>
                 <MediaUploader
                   compact
                   accept="image/*"
-                  previewUrl={f.ar.features[i].bgUrl || null}
-                  onUploaded={(m) => setArrBoth('features', i, 'bgUrl', m.url ?? m.thumbUrl ?? '')}
-                  onRemove={f.ar.features[i].bgUrl ? () => setArrBoth('features', i, 'bgUrl', '') : undefined}
+                  previewUrl={f.ar.features[at].bgUrl || null}
+                  onUploaded={(m) => setArrBoth('features', at, 'bgUrl', m.url ?? m.thumbUrl ?? '')}
+                  onRemove={f.ar.features[at].bgUrl ? () => setArrBoth('features', at, 'bgUrl', '') : undefined}
                 />
-                <Field label={t('العنوان', 'Title')} ar={f.ar.features[i].t} en={f.en.features[i].t} onAr={(v) => setArr('features', i, 't', v, 'ar')} onEn={(v) => setArr('features', i, 't', v, 'en')} />
-                <Field label={t('الوصف', 'Description')} ar={f.ar.features[i].d} en={f.en.features[i].d} onAr={(v) => setArr('features', i, 'd', v, 'ar')} onEn={(v) => setArr('features', i, 'd', v, 'en')} multiline />
-              </Card>
-            ))}
+                <Note style={{ margin: '8px 0 0' }}>
+                  {t('بتتحط تحت طبقة خفيفة عشان الكلام يفضل مقروء.', 'It sits under a light veil so the words stay readable.')}
+                </Note>
+              </div>
+            </div>
           </>
         )}
 
-        {sec === 'dash' && (
+        {/* ── Dashboard tour ───────────────────────────────────────────── */}
+        {sec === 'dash' && cur === 'head' && (
           <>
             {scalar('dashEyebrow', t('العنوان الصغير', 'Eyebrow'))}
             {scalar('dashTitle', t('عنوان القسم', 'Section title'), true)}
             {scalar('dashSub', t('الوصف', 'Description'), true)}
-
+            <Note style={{ margin: '6px 0 0' }}>
+              {t(
+                'كل سطر في القسم بيتفتح لوحده — لما الزائر يفتح واحد، اللي قبله بيتقفل والصورة أو الفيديو جنبه بيتغيّر للي فتحه.',
+                'One line opens at a time — opening one closes the last, and the picture beside it becomes that line’s.',
+              )}
+            </Note>
+          </>
+        )}
+        {/* The frame the screenshots sit in. One setting for all of them: they
+            are shots of the same dashboard, and four separate sets of dials
+            would be four chances to make them disagree. */}
+        {sec === 'dash' && cur === 'frame' && (
+          <>
             <Opt
-              label={t('مكان الصورة', 'Which side the picture sits on')}
+              label={t('الصورة يمين ولا شمال', 'Which side the picture sits on')}
               value={f.ar.dashSide === 'end' ? 'end' : 'start'}
               options={[
                 { value: 'start', label: t('يمين (بداية السطر)', 'Start of the line') },
@@ -878,36 +1226,35 @@ export default function LandingEditor({
               ]}
               onChange={(v) => setKeyBoth('dashSide', v)}
             />
-            <Note style={{ margin: '6px 0 18px' }}>
-              {t(
-                'كل سطر هنا بيتفتح لوحده — لما الزائر يفتح واحد، اللي قبله بيتقفل والصورة أو الفيديو جنبه بيتغيّر للي فتحه.',
-                'One line opens at a time — opening one closes the last, and the picture beside it becomes that line’s.',
-              )}
-            </Note>
-
-            {/* The frame the screenshots sit in. One setting for all of them:
-                they are shots of the same dashboard, and four separate sets of
-                dials would be four chances to make them disagree. */}
-            <Card title={t('إطار الصورة', 'The picture frame')}>
-              <Slider
-                label={t('الارتفاع (٠ = على شكل الصورة)', 'Height (0 = the picture’s own shape)')}
-                value={Number(f.ar.dashHeight ?? 0)}
-                min={0}
-                max={760}
-                suffix={Number(f.ar.dashHeight ?? 0) === 0 ? '' : 'px'}
-                onChange={(v) => setKeyBoth('dashHeight', v)}
-              />
-              <Opt
-                label={t('الصورة جوّه الإطار', 'The picture inside the frame')}
-                value={f.ar.dashFit === 'contain' ? 'contain' : 'cover'}
-                options={[
-                  { value: 'cover', label: t('تملا الإطار', 'Fills the frame') },
-                  { value: 'contain', label: t('تظهر كاملة', 'Shown whole') },
-                ]}
-                onChange={(v) => setKeyBoth('dashFit', v)}
-              />
-              {f.ar.dashFit !== 'contain' && Number(f.ar.dashHeight ?? 0) > 0 && (
-                <>
+            <Opt
+              label={t('مكانها جنب القائمة', 'Where it sits beside the list')}
+              value={f.ar.dashAlign === 'center' ? 'center' : 'start'}
+              options={[
+                { value: 'start', label: t('فوق', 'At the top') },
+                { value: 'center', label: t('في النص', 'Centred') },
+              ]}
+              onChange={(v) => setKeyBoth('dashAlign', v)}
+            />
+            <Slider
+              label={t('الارتفاع (٠ = على شكل الصورة)', 'Height (0 = the picture’s own shape)')}
+              value={Number(f.ar.dashHeight ?? 0)}
+              min={0}
+              max={760}
+              suffix={Number(f.ar.dashHeight ?? 0) === 0 ? '' : 'px'}
+              onChange={(v) => setKeyBoth('dashHeight', v)}
+            />
+            <Opt
+              label={t('الصورة جوّه الإطار', 'The picture inside the frame')}
+              value={f.ar.dashFit === 'contain' ? 'contain' : 'cover'}
+              options={[
+                { value: 'cover', label: t('تملا الإطار', 'Fills the frame') },
+                { value: 'contain', label: t('تظهر كاملة', 'Shown whole') },
+              ]}
+              onChange={(v) => setKeyBoth('dashFit', v)}
+            />
+            {f.ar.dashFit !== 'contain' && Number(f.ar.dashHeight ?? 0) > 0 && (
+              <>
+                <div className="grid-2">
                   <Slider
                     label={t('موضع الصورة — أفقي', 'Framing — across')}
                     value={Number(f.ar.dashPosX ?? 50)}
@@ -924,95 +1271,72 @@ export default function LandingEditor({
                     suffix="%"
                     onChange={(v) => setKeyBoth('dashPosY', v)}
                   />
-                  <Note>
-                    {t(
-                      'لما الصورة تملا إطار أطول أو أقصر منها بيتقص منها جزء — الزراير دي بتحدّد الجزء اللي يفضل باين.',
-                      'A picture filling a frame of a different shape loses some of itself — these decide which part stays.',
-                    )}
-                  </Note>
-                </>
-              )}
-              <Opt
-                label={t('مكان الصورة جنب القائمة', 'Where the picture sits beside the list')}
-                value={f.ar.dashAlign === 'center' ? 'center' : 'start'}
-                options={[
-                  { value: 'start', label: t('فوق', 'At the top') },
-                  { value: 'center', label: t('في النص', 'Centred') },
-                ]}
-                onChange={(v) => setKeyBoth('dashAlign', v)}
-              />
-            </Card>
-
-            {f.ar.dash.map((_, i) => (
-              <Card
-                key={i}
-                title={`#${i + 1}`}
-                action={
-                  <button className="btn btn-sm" onClick={() => removeRow('dash', i)}>
-                    {t('حذف', 'Remove')}
-                  </button>
-                }
-              >
-                <Field label={t('العنوان', 'Title')} ar={f.ar.dash[i]?.t ?? ''} en={f.en.dash[i]?.t ?? ''} onAr={(v) => setArr('dash', i, 't', v, 'ar')} onEn={(v) => setArr('dash', i, 't', v, 'en')} />
-                <Field label={t('الوصف', 'Description')} ar={f.ar.dash[i]?.d ?? ''} en={f.en.dash[i]?.d ?? ''} onAr={(v) => setArr('dash', i, 'd', v, 'ar')} onEn={(v) => setArr('dash', i, 'd', v, 'en')} multiline />
-
-                <label className="lbl" style={{ display: 'block' }}>{t('صورة', 'Image')}</label>
-                <Note style={{ margin: '0 0 8px' }}>
+                </div>
+                <Note>
                   {t(
-                    'لقطة من لوحة التحكم بتوضّح السطر ده. لو حطيت لينك فيديو تحت، الفيديو بيكسب.',
-                    'A shot of the dashboard showing this line. A video link below wins over it.',
+                    'لما الصورة تملا إطار أطول أو أقصر منها بيتقص منها جزء — دول بيحدّدوا الجزء اللي يفضل باين.',
+                    'A picture filling a frame of a different shape loses some of itself — these decide which part stays.',
                   )}
                 </Note>
+              </>
+            )}
+          </>
+        )}
+        {sec === 'dash' && current?.item && f.ar.dash[at] && (
+          <>
+            <Field label={t('العنوان', 'Title')} ar={f.ar.dash[at]?.t ?? ''} en={f.en.dash[at]?.t ?? ''} onAr={(v) => setArr('dash', at, 't', v, 'ar')} onEn={(v) => setArr('dash', at, 't', v, 'en')} />
+            <Field label={t('الوصف', 'Description')} ar={f.ar.dash[at]?.d ?? ''} en={f.en.dash[at]?.d ?? ''} onAr={(v) => setArr('dash', at, 'd', v, 'ar')} onEn={(v) => setArr('dash', at, 'd', v, 'en')} multiline rows={3} />
+
+            <div className="grid-2 lx-media">
+              <div>
+                <label className="lbl" style={{ display: 'block' }}>{t('الصورة', 'Image')}</label>
                 <MediaUploader
                   big
                   accept="image/*"
                   aspect="16 / 10"
-                  previewUrl={f.ar.dash[i]?.imageUrl || null}
-                  onUploaded={(m) => setArrBoth('dash', i, 'imageUrl', m.url ?? m.thumbUrl ?? '')}
-                  onRemove={f.ar.dash[i]?.imageUrl ? () => setArrBoth('dash', i, 'imageUrl', '') : undefined}
+                  previewUrl={f.ar.dash[at]?.imageUrl || null}
+                  onUploaded={(m) => setArrBoth('dash', at, 'imageUrl', m.url ?? m.thumbUrl ?? '')}
+                  onRemove={f.ar.dash[at]?.imageUrl ? () => setArrBoth('dash', at, 'imageUrl', '') : undefined}
                 />
-
-                <label className="lbl" style={{ display: 'block', marginTop: 16 }}>
-                  {t('أو لينك فيديو', 'Or a video link')}
-                </label>
+                <Note style={{ margin: '8px 0 0' }}>
+                  {t('لقطة من لوحة التحكم بتوضّح السطر ده.', 'A shot of the dashboard showing this line.')}
+                </Note>
+              </div>
+              <div>
+                <label className="lbl" style={{ display: 'block' }}>{t('أو لينك فيديو', 'Or a video link')}</label>
                 <input
                   className="field"
                   dir="ltr"
                   placeholder="https://youtube.com/watch?v=…"
-                  value={f.ar.dash[i]?.videoUrl ?? ''}
-                  onChange={(e) => setArrBoth('dash', i, 'videoUrl', e.target.value)}
+                  value={f.ar.dash[at]?.videoUrl ?? ''}
+                  onChange={(e) => setArrBoth('dash', at, 'videoUrl', e.target.value)}
                   style={{ textAlign: 'start' }}
                 />
-
-                <label className="lbl" style={{ display: 'block', marginTop: 16 }}>
-                  {t('غلاف الفيديو', 'Video poster')}
-                </label>
-                <Note style={{ margin: '0 0 8px' }}>
-                  {t(
-                    'الصورة اللي بتظهر قبل ما الزائر يدوس تشغيل. من غيرها بتتستخدم الصورة اللي فوق.',
-                    'What shows before the visitor presses play. Without one, the image above is used.',
-                  )}
+                <Note style={{ margin: '8px 0 12px' }}>
+                  {t('لو فيه لينك، الفيديو بيكسب الصورة.', 'A video link wins over the image.')}
                 </Note>
+                <label className="lbl" style={{ display: 'block' }}>{t('غلاف الفيديو', 'Video poster')}</label>
                 <MediaUploader
                   compact
                   accept="image/*"
-                  previewUrl={f.ar.dash[i]?.poster || null}
-                  onUploaded={(m) => setArrBoth('dash', i, 'poster', m.url ?? m.thumbUrl ?? '')}
-                  onRemove={f.ar.dash[i]?.poster ? () => setArrBoth('dash', i, 'poster', '') : undefined}
+                  previewUrl={f.ar.dash[at]?.poster || null}
+                  onUploaded={(m) => setArrBoth('dash', at, 'poster', m.url ?? m.thumbUrl ?? '')}
+                  onRemove={f.ar.dash[at]?.poster ? () => setArrBoth('dash', at, 'poster', '') : undefined}
                 />
-              </Card>
-            ))}
-
-            <button className="btn" onClick={() => addRow('dash')}>
-              + {t('سطر جديد', 'Add a line')}
-            </button>
+              </div>
+            </div>
           </>
         )}
 
-        {sec === 'audience' && (
+        {/* ── Who it is for ────────────────────────────────────────────── */}
+        {sec === 'audience' && cur === 'head' && (
           <>
             {scalar('audienceEyebrow', t('العنوان الصغير', 'Eyebrow'))}
             {scalar('audienceTitle', t('عنوان القسم', 'Section title'), true)}
+          </>
+        )}
+        {sec === 'audience' && cur === 'list' && (
+          <>
             {list('audience', t('التخصصات', 'Who it is for'))}
             <Note>
               {t('امسح كل السطور عشان القسم يختفي من الصفحة.', 'Remove every line to take the section off the page.')}
@@ -1020,157 +1344,162 @@ export default function LandingEditor({
           </>
         )}
 
-        {sec === 'how' && (
+        {/* ── Steps ────────────────────────────────────────────────────── */}
+        {sec === 'how' && cur === 'head' && (
           <>
             {scalar('howEyebrow', t('العنوان الصغير', 'Eyebrow'))}
             {scalar('howTitle', t('عنوان القسم', 'Section title'), true)}
-
-            {f.ar.how.map((_, i) => (
-              <Card key={i} title={`#${i + 1}`}>
-                <IconInput label={t('العلامة (رقم أو صورة)', 'Marker (number or image)')} value={f.ar.how[i].n} url={f.ar.how[i].iconUrl} onChange={(v) => setArrBoth('how', i, 'n', v)} onUrl={(v) => setArrBoth('how', i, 'iconUrl', v)} />
-                <Field label={t('العنوان', 'Title')} ar={f.ar.how[i].t} en={f.en.how[i].t} onAr={(v) => setArr('how', i, 't', v, 'ar')} onEn={(v) => setArr('how', i, 't', v, 'en')} />
-                <Field label={t('الوصف', 'Description')} ar={f.ar.how[i].d} en={f.en.how[i].d} onAr={(v) => setArr('how', i, 'd', v, 'ar')} onEn={(v) => setArr('how', i, 'd', v, 'en')} multiline />
-              </Card>
-            ))}
-
-            {scalar('howBtn', t('الزر تحت الخطوات', 'Button under the steps'))}
+          </>
+        )}
+        {sec === 'how' && current?.item && f.ar.how[at] && (
+          <>
+            <Field label={t('العنوان', 'Title')} ar={f.ar.how[at].t} en={f.en.how[at]?.t ?? ''} onAr={(v) => setArr('how', at, 't', v, 'ar')} onEn={(v) => setArr('how', at, 't', v, 'en')} />
+            <Field label={t('الوصف', 'Description')} ar={f.ar.how[at].d} en={f.en.how[at]?.d ?? ''} onAr={(v) => setArr('how', at, 'd', v, 'ar')} onEn={(v) => setArr('how', at, 'd', v, 'en')} multiline rows={3} />
+            <IconInput label={t('العلامة (رقم أو صورة)', 'Marker (number or image)')} value={f.ar.how[at].n} url={f.ar.how[at].iconUrl} onChange={(v) => setArrBoth('how', at, 'n', v)} onUrl={(v) => setArrBoth('how', at, 'iconUrl', v)} />
+          </>
+        )}
+        {sec === 'how' && cur === 'button' && (
+          <>
+            {scalar('howBtn', t('نص الزر', 'Button text'))}
             {link('howBtnUrl', t('وجهة الزر', 'Where it goes'))}
           </>
         )}
 
-        {sec === 'showcase' && (
+        {/* ── Showcase ─────────────────────────────────────────────────── */}
+        {sec === 'showcase' && cur === 'head' && (
           <>
             {scalar('showcaseEyebrow', t('العنوان الصغير', 'Eyebrow'))}
             {scalar('showcaseTitle', t('عنوان القسم', 'Section title'), true)}
             {scalar('showcaseSub', t('الوصف', 'Description'), true)}
             {scalar('visit', t('زرار الكارت', 'Card button'))}
             {scalar('showcaseEmpty', t('النص لو مفيش أمثلة', 'Text when there are none'))}
-
-            <Card title={t('البورتفوليوهات اللي بتظهر', 'Which portfolios show')}>
-              <Note>
-                {t(
-                  'بتظهر أحدث ٦. شيل العلامة من أي حساب تجريبي أو مش جاهز — بيختفي، واللي بعده بياخد مكانه.',
-                  'The newest six show. Untick a test or unfinished account to take it off; the next one takes its place.',
-                )}
-              </Note>
+          </>
+        )}
+        {sec === 'showcase' && cur === 'sites' && (
+          <>
+            <Note>
+              {t(
+                'بتظهر أحدث ٦. شيل العلامة من أي حساب تجريبي أو مش جاهز — بيختفي، واللي بعده بياخد مكانه.',
+                'The newest six show. Untick a test or unfinished account to take it off; the next one takes its place.',
+              )}
+            </Note>
+            <div className="lx-checks">
               {f.tenants.map((tn) => (
-                <label key={tn.slug} className="lbl" style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <label key={tn.slug} className="lx-check">
                   <input
                     type="checkbox"
                     checked={!(f.ar.showcaseHidden ?? []).includes(tn.slug)}
                     onChange={(e) => toggleHidden(tn.slug, e.target.checked)}
                   />
-                  {tn.name} <span style={{ opacity: 0.6 }} dir="ltr">/{tn.slug}</span>
+                  <span>{tn.name}</span>
+                  <small dir="ltr">/{tn.slug}</small>
                 </label>
               ))}
-            </Card>
-
-            <Card title={t('شريط الأرقام', 'The numbers bar')}>
-              <Note>
-                {t(
-                  'الأرقام نفسها بتتحسب من قاعدة البيانات، والشريط بيظهر لما يبقى عندك ١٢ بورتفوليو — دي الكلمات اللي تحتها.',
-                  'The numbers are counted from the database, and the bar appears at twelve portfolios. These are the words under them.',
-                )}
-              </Note>
-              <Field label={t('البورتفوليوهات', 'Portfolios')} ar={f.ar.metricsLabels.sites} en={f.en.metricsLabels.sites} onAr={(v) => setMetric('sites', v, 'ar')} onEn={(v) => setMetric('sites', v, 'en')} />
-              <Field label={t('المشاريع', 'Projects')} ar={f.ar.metricsLabels.projects} en={f.en.metricsLabels.projects} onAr={(v) => setMetric('projects', v, 'ar')} onEn={(v) => setMetric('projects', v, 'en')} />
-              <Field label={t('الزيارات', 'Visits')} ar={f.ar.metricsLabels.visits} en={f.en.metricsLabels.visits} onAr={(v) => setMetric('visits', v, 'ar')} onEn={(v) => setMetric('visits', v, 'en')} />
-            </Card>
+            </div>
+          </>
+        )}
+        {sec === 'showcase' && cur === 'metrics' && (
+          <>
+            <Note>
+              {t(
+                'الأرقام نفسها بتتحسب من قاعدة البيانات، والشريط بيظهر لما يبقى عندك ١٢ بورتفوليو — دي الكلمات اللي تحتها.',
+                'The numbers are counted from the database, and the bar appears at twelve portfolios. These are the words under them.',
+              )}
+            </Note>
+            <Field label={t('البورتفوليوهات', 'Portfolios')} ar={f.ar.metricsLabels.sites} en={f.en.metricsLabels.sites} onAr={(v) => setMetric('sites', v, 'ar')} onEn={(v) => setMetric('sites', v, 'en')} />
+            <Field label={t('المشاريع', 'Projects')} ar={f.ar.metricsLabels.projects} en={f.en.metricsLabels.projects} onAr={(v) => setMetric('projects', v, 'ar')} onEn={(v) => setMetric('projects', v, 'en')} />
+            <Field label={t('الزيارات', 'Visits')} ar={f.ar.metricsLabels.visits} en={f.en.metricsLabels.visits} onAr={(v) => setMetric('visits', v, 'ar')} onEn={(v) => setMetric('visits', v, 'en')} />
           </>
         )}
 
-        {sec === 'pricing' && (
+        {/* ── Pricing ──────────────────────────────────────────────────── */}
+        {sec === 'pricing' && cur === 'head' && (
           <>
             {scalar('pricingEyebrow', t('العنوان الصغير', 'Eyebrow'))}
             {scalar('pricingTitle', t('عنوان القسم', 'Section title'), true)}
             {scalar('pricingSub', t('الوصف', 'Description'), true)}
+            {scalar('pricingNote', t('السطر الأخير تحت الأسعار', 'Closing line under the prices'))}
+          </>
+        )}
+        {sec === 'pricing' && current?.item && f.ar.plans[at] && (
+          <>
+            <Field label={t('الاسم', 'Name')} ar={f.ar.plans[at]?.name ?? ''} en={f.en.plans[at]?.name ?? ''} onAr={(v) => setPlan(at, 'name', v, 'ar')} onEn={(v) => setPlan(at, 'name', v, 'en')} />
+            <div className="lx-row-2">
+              <Field label={t('السعر', 'Price')} ar={f.ar.plans[at]?.price ?? ''} en={f.en.plans[at]?.price ?? ''} onAr={(v) => setPlan(at, 'price', v, 'ar')} onEn={(v) => setPlan(at, 'price', v, 'en')} />
+              <Field label={t('المدة', 'Per')} ar={f.ar.plans[at]?.per ?? ''} en={f.en.plans[at]?.per ?? ''} onAr={(v) => setPlan(at, 'per', v, 'ar')} onEn={(v) => setPlan(at, 'per', v, 'en')} />
+            </div>
+            <div className="lx-row-2">
+              <Field label={t('البادج (اختياري)', 'Badge (optional)')} ar={f.ar.plans[at]?.badge ?? ''} en={f.en.plans[at]?.badge ?? ''} onAr={(v) => setPlan(at, 'badge', v, 'ar')} onEn={(v) => setPlan(at, 'badge', v, 'en')} />
+              <Field label={t('سطر تحت السعر', 'Line under the price')} ar={f.ar.plans[at]?.note ?? ''} en={f.en.plans[at]?.note ?? ''} onAr={(v) => setPlan(at, 'note', v, 'ar')} onEn={(v) => setPlan(at, 'note', v, 'en')} />
+            </div>
 
-            {f.ar.plans.map((_, i) => (
-              <Card
-                key={i}
-                title={`${t('خطة', 'Plan')} #${i + 1}`}
-                action={
-                  <button className="btn btn-sm" onClick={() => removePlan(i)}>
-                    {t('حذف الخطة', 'Remove plan')}
-                  </button>
-                }
-              >
-                <Field label={t('الاسم', 'Name')} ar={f.ar.plans[i]?.name ?? ''} en={f.en.plans[i]?.name ?? ''} onAr={(v) => setPlan(i, 'name', v, 'ar')} onEn={(v) => setPlan(i, 'name', v, 'en')} />
-                <Field label={t('البادج (اختياري)', 'Badge (optional)')} ar={f.ar.plans[i]?.badge ?? ''} en={f.en.plans[i]?.badge ?? ''} onAr={(v) => setPlan(i, 'badge', v, 'ar')} onEn={(v) => setPlan(i, 'badge', v, 'en')} />
-                <Field label={t('السعر', 'Price')} ar={f.ar.plans[i]?.price ?? ''} en={f.en.plans[i]?.price ?? ''} onAr={(v) => setPlan(i, 'price', v, 'ar')} onEn={(v) => setPlan(i, 'price', v, 'en')} />
-                <Field label={t('المدة', 'Per')} ar={f.ar.plans[i]?.per ?? ''} en={f.en.plans[i]?.per ?? ''} onAr={(v) => setPlan(i, 'per', v, 'ar')} onEn={(v) => setPlan(i, 'per', v, 'en')} />
-                <Field label={t('سطر تحت السعر', 'Line under the price')} ar={f.ar.plans[i]?.note ?? ''} en={f.en.plans[i]?.note ?? ''} onAr={(v) => setPlan(i, 'note', v, 'ar')} onEn={(v) => setPlan(i, 'note', v, 'en')} />
-                <Field label={t('نص الزر', 'Button text')} ar={f.ar.plans[i]?.cta ?? ''} en={f.en.plans[i]?.cta ?? ''} onAr={(v) => setPlan(i, 'cta', v, 'ar')} onEn={(v) => setPlan(i, 'cta', v, 'en')} />
-                <LinkField
-                  label={t('وجهة زر الخطة', 'Where the plan button goes')}
-                  value={f.ar.plans[i]?.url ?? ''}
-                  onChange={(v) => setPlanBoth(i, 'url', v)}
-                  tenants={f.tenants}
-                />
-
-                <div className="grid-2" style={{ alignItems: 'end', marginBottom: 14 }}>
-                  <ColorInput
-                    label={t('لون الخطة', 'Plan colour')}
-                    value={f.ar.plans[i]?.color || f.theme.accent}
-                    onChange={(v) => setPlanBoth(i, 'color', v)}
-                  />
-                  <div>
-                    <label className="lbl" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <input
-                        type="checkbox"
-                        checked={f.ar.plans[i]?.hi === true}
-                        onChange={(e) => setPlanBoth(i, 'hi', e.target.checked)}
-                      />
-                      {t('الخطة المميّزة', 'Highlighted plan')}
-                    </label>
-                    {f.ar.plans[i]?.color && (
-                      <button className="btn btn-sm" style={{ marginTop: 8 }} onClick={() => setPlanBoth(i, 'color', '')}>
-                        {t('رجّع لون الصفحة', 'Back to the page colour')}
-                      </button>
-                    )}
-                  </div>
-                </div>
-                <Note style={{ margin: '-6px 0 14px' }}>
-                  {t(
-                    'اللون بيغيّر كل حاجة جوّه الكارت — الاسم والعلامات والإطار والزرار. ولون نص الزرار بيتحسب لوحده عشان يفضل مقروء.',
-                    'The colour repaints everything inside the card — the name, the ticks, the border, the button. The button label is worked out from it, so it stays readable.',
-                  )}
-                </Note>
-
-                <label className="lbl" style={{ display: 'block', marginBottom: 8 }}>{t('النقاط', 'Points')}</label>
-                {(f.ar.plans[i]?.feats ?? []).map((_, j) => (
-                  <div className="grid-2" key={j} style={{ marginBottom: 8, gridTemplateColumns: '1fr 1fr auto', gap: 10 }}>
-                    <input className="field" value={f.ar.plans[i]?.feats[j] ?? ''} onChange={(e) => setFeat(i, j, e.target.value, 'ar')} />
-                    <input className="field" dir="ltr" style={{ textAlign: 'start' }} value={f.en.plans[i]?.feats[j] ?? ''} onChange={(e) => setFeat(i, j, e.target.value, 'en')} />
-                    <button className="btn btn-sm" onClick={() => removeFeat(i, j)}>✕</button>
-                  </div>
-                ))}
-                <button className="btn btn-sm" onClick={() => addFeat(i)}>
-                  + {t('نقطة', 'Point')}
-                </button>
-              </Card>
+            <label className="lbl" style={{ display: 'block', margin: '6px 0 8px' }}>{t('النقاط', 'Points')}</label>
+            {(f.ar.plans[at]?.feats ?? []).map((_, j) => (
+              <div className="grid-2" key={j} style={{ marginBottom: 8, gridTemplateColumns: '1fr 1fr auto', gap: 10 }}>
+                <input className="field" value={f.ar.plans[at]?.feats[j] ?? ''} onChange={(e) => setFeat(at, j, e.target.value, 'ar')} />
+                <input className="field" dir="ltr" style={{ textAlign: 'start' }} value={f.en.plans[at]?.feats[j] ?? ''} onChange={(e) => setFeat(at, j, e.target.value, 'en')} />
+                <button className="btn btn-sm" onClick={() => removeFeat(at, j)}>✕</button>
+              </div>
             ))}
-
-            <button className="btn" onClick={addPlan} style={{ marginBottom: 20 }}>
-              + {t('خطة جديدة', 'Add a plan')}
+            <button className="btn btn-sm" onClick={() => addFeat(at)} style={{ marginBottom: 18 }}>
+              + {t('نقطة', 'Point')}
             </button>
 
-            <Card title={t('الشريط تحت الكروت', 'The band under the cards')}>
-              <Note>
-                {t(
-                  'اللي موجود في كل الخطط، مكتوب مرة واحدة بدل ما يتكرر في كل كارت.',
-                  'What every plan has, said once instead of repeated in each card.',
-                )}
-              </Note>
-              {scalar('pricingIncludedTitle', t('عنوان الشريط', 'Band title'))}
-              {list('pricingIncluded', t('العناصر', 'Items'))}
-            </Card>
+            <div className="lx-sep" />
+            <Field label={t('نص الزر', 'Button text')} ar={f.ar.plans[at]?.cta ?? ''} en={f.en.plans[at]?.cta ?? ''} onAr={(v) => setPlan(at, 'cta', v, 'ar')} onEn={(v) => setPlan(at, 'cta', v, 'en')} />
+            <LinkField
+              label={t('وجهة الزر', 'Where the button goes')}
+              value={f.ar.plans[at]?.url ?? ''}
+              onChange={(v) => setPlanBoth(at, 'url', v)}
+              tenants={f.tenants}
+            />
 
-            {scalar('pricingNote', t('السطر الأخير', 'Closing line'))}
+            <div className="lx-sep" />
+            <div className="grid-2" style={{ alignItems: 'end' }}>
+              <ColorInput
+                label={t('لون الخطة', 'Plan colour')}
+                value={f.ar.plans[at]?.color || f.theme.accent}
+                onChange={(v) => setPlanBoth(at, 'color', v)}
+              />
+              <div>
+                <label className="lbl" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input
+                    type="checkbox"
+                    checked={f.ar.plans[at]?.hi === true}
+                    onChange={(e) => setPlanBoth(at, 'hi', e.target.checked)}
+                  />
+                  {t('الخطة المميّزة', 'Highlighted plan')}
+                </label>
+                {f.ar.plans[at]?.color && (
+                  <button className="btn btn-sm" style={{ marginTop: 8 }} onClick={() => setPlanBoth(at, 'color', '')}>
+                    {t('رجّع لون الصفحة', 'Back to the page colour')}
+                  </button>
+                )}
+              </div>
+            </div>
+            <Note style={{ margin: '10px 0 0' }}>
+              {t(
+                'اللون بيغيّر كل حاجة جوّه الكارت — الاسم والعلامات والإطار والزرار. ولون نص الزرار بيتحسب لوحده عشان يفضل مقروء.',
+                'The colour repaints everything inside the card — the name, the ticks, the border, the button. The button label is worked out from it, so it stays readable.',
+              )}
+            </Note>
+          </>
+        )}
+        {sec === 'pricing' && cur === 'included' && (
+          <>
+            <Note>
+              {t(
+                'اللي موجود في كل الخطط، مكتوب مرة واحدة بدل ما يتكرر في كل كارت.',
+                'What every plan has, said once instead of repeated in each card.',
+              )}
+            </Note>
+            {scalar('pricingIncludedTitle', t('عنوان الشريط', 'Band title'))}
+            {list('pricingIncluded', t('العناصر', 'Items'))}
           </>
         )}
 
-        {sec === 'testimonials' && (
+        {/* ── Testimonials ─────────────────────────────────────────────── */}
+        {sec === 'testimonials' && cur === 'head' && (
           <>
             {scalar('testimonialsEyebrow', t('العنوان الصغير', 'Eyebrow'))}
             {scalar('testimonialsTitle', t('عنوان القسم', 'Section title'), true)}
@@ -1180,74 +1509,51 @@ export default function LandingEditor({
                 'The section stays off the page until there is at least one. Real ones only — one genuine quote beats three made-up ones.',
               )}
             </Note>
-
-            {f.ar.testimonials.map((_, i) => (
-              <Card
-                key={i}
-                title={`#${i + 1}`}
-                action={
-                  <button className="btn btn-sm" onClick={() => removeRow('testimonials', i)}>
-                    {t('حذف', 'Remove')}
-                  </button>
-                }
-              >
-                <label className="lbl" style={{ display: 'block' }}>{t('الصورة', 'Photo')}</label>
-                <MediaUploader
-                  compact
-                  accept="image/*"
-                  previewUrl={f.ar.testimonials[i]?.photoUrl || null}
-                  onUploaded={(m) => setArrBoth('testimonials', i, 'photoUrl', m.thumbUrl ?? m.url ?? '')}
-                  onRemove={f.ar.testimonials[i]?.photoUrl ? () => setArrBoth('testimonials', i, 'photoUrl', '') : undefined}
-                />
-                <div style={{ marginTop: 12 }}>
-                  <Field label={t('الاسم', 'Name')} ar={f.ar.testimonials[i]?.name ?? ''} en={f.en.testimonials[i]?.name ?? ''} onAr={(v) => setArr('testimonials', i, 'name', v, 'ar')} onEn={(v) => setArr('testimonials', i, 'name', v, 'en')} />
-                </div>
-                <Field label={t('التخصص', 'Role')} ar={f.ar.testimonials[i]?.role ?? ''} en={f.en.testimonials[i]?.role ?? ''} onAr={(v) => setArr('testimonials', i, 'role', v, 'ar')} onEn={(v) => setArr('testimonials', i, 'role', v, 'en')} />
-                <Field label={t('الرأي', 'Quote')} ar={f.ar.testimonials[i]?.quote ?? ''} en={f.en.testimonials[i]?.quote ?? ''} onAr={(v) => setArr('testimonials', i, 'quote', v, 'ar')} onEn={(v) => setArr('testimonials', i, 'quote', v, 'en')} multiline rows={3} />
-                <label className="lbl" style={{ display: 'block' }}>{t('لينك البورتفوليو بتاعه', 'Their portfolio link')}</label>
-                <input
-                  className="field"
-                  dir="ltr"
-                  placeholder="https://viralpx.com/…"
-                  value={f.ar.testimonials[i]?.url ?? ''}
-                  onChange={(e) => setArrBoth('testimonials', i, 'url', e.target.value)}
-                  style={{ textAlign: 'start' }}
-                />
-              </Card>
-            ))}
-
-            <button className="btn" onClick={() => addRow('testimonials')}>
-              + {t('رأي جديد', 'Add a testimonial')}
-            </button>
+          </>
+        )}
+        {sec === 'testimonials' && current?.item && f.ar.testimonials[at] && (
+          <>
+            <div className="lx-person">
+              <MediaUploader
+                compact
+                accept="image/*"
+                previewUrl={f.ar.testimonials[at]?.photoUrl || null}
+                onUploaded={(m) => setArrBoth('testimonials', at, 'photoUrl', m.thumbUrl ?? m.url ?? '')}
+                onRemove={f.ar.testimonials[at]?.photoUrl ? () => setArrBoth('testimonials', at, 'photoUrl', '') : undefined}
+              />
+              <div style={{ minWidth: 0 }}>
+                <Field label={t('الاسم', 'Name')} ar={f.ar.testimonials[at]?.name ?? ''} en={f.en.testimonials[at]?.name ?? ''} onAr={(v) => setArr('testimonials', at, 'name', v, 'ar')} onEn={(v) => setArr('testimonials', at, 'name', v, 'en')} />
+                <Field label={t('التخصص', 'Role')} ar={f.ar.testimonials[at]?.role ?? ''} en={f.en.testimonials[at]?.role ?? ''} onAr={(v) => setArr('testimonials', at, 'role', v, 'ar')} onEn={(v) => setArr('testimonials', at, 'role', v, 'en')} />
+              </div>
+            </div>
+            <Field label={t('الرأي', 'Quote')} ar={f.ar.testimonials[at]?.quote ?? ''} en={f.en.testimonials[at]?.quote ?? ''} onAr={(v) => setArr('testimonials', at, 'quote', v, 'ar')} onEn={(v) => setArr('testimonials', at, 'quote', v, 'en')} multiline rows={4} />
+            <label className="lbl" style={{ display: 'block' }}>{t('لينك البورتفوليو بتاعه', 'Their portfolio link')}</label>
+            <input
+              className="field"
+              dir="ltr"
+              placeholder="https://viralpx.com/…"
+              value={f.ar.testimonials[at]?.url ?? ''}
+              onChange={(e) => setArrBoth('testimonials', at, 'url', e.target.value)}
+              style={{ textAlign: 'start' }}
+            />
           </>
         )}
 
-        {sec === 'faq' && (
+        {/* ── FAQ ──────────────────────────────────────────────────────── */}
+        {sec === 'faq' && cur === 'head' && (
           <>
             {scalar('faqEyebrow', t('العنوان الصغير', 'Eyebrow'))}
             {scalar('faqTitle', t('عنوان القسم', 'Section title'), true)}
-
-            {f.ar.faqs.map((_, i) => (
-              <Card
-                key={i}
-                title={`#${i + 1}`}
-                action={
-                  <button className="btn btn-sm" onClick={() => removeRow('faqs', i)}>
-                    {t('حذف', 'Remove')}
-                  </button>
-                }
-              >
-                <Field label={t('السؤال', 'Question')} ar={f.ar.faqs[i]?.q ?? ''} en={f.en.faqs[i]?.q ?? ''} onAr={(v) => setArr('faqs', i, 'q', v, 'ar')} onEn={(v) => setArr('faqs', i, 'q', v, 'en')} />
-                <Field label={t('الإجابة', 'Answer')} ar={f.ar.faqs[i]?.a ?? ''} en={f.en.faqs[i]?.a ?? ''} onAr={(v) => setArr('faqs', i, 'a', v, 'ar')} onEn={(v) => setArr('faqs', i, 'a', v, 'en')} multiline />
-              </Card>
-            ))}
-
-            <button className="btn" onClick={() => addRow('faqs')}>
-              + {t('سؤال جديد', 'Add a question')}
-            </button>
+          </>
+        )}
+        {sec === 'faq' && current?.item && f.ar.faqs[at] && (
+          <>
+            <Field label={t('السؤال', 'Question')} ar={f.ar.faqs[at]?.q ?? ''} en={f.en.faqs[at]?.q ?? ''} onAr={(v) => setArr('faqs', at, 'q', v, 'ar')} onEn={(v) => setArr('faqs', at, 'q', v, 'en')} />
+            <Field label={t('الإجابة', 'Answer')} ar={f.ar.faqs[at]?.a ?? ''} en={f.en.faqs[at]?.a ?? ''} onAr={(v) => setArr('faqs', at, 'a', v, 'ar')} onEn={(v) => setArr('faqs', at, 'a', v, 'en')} multiline rows={5} />
           </>
         )}
 
+        {/* ── Call to action ───────────────────────────────────────────── */}
         {sec === 'cta' && (
           <>
             {scalar('ctaTitle', t('العنوان', 'Title'), true)}
@@ -1542,6 +1848,12 @@ export default function LandingEditor({
             </Note>
           </>
         )}
+            </div>
+          </section>
+
+          {showPreview && (
+            <LandingPreview spot={SPOT[sec]} version={version} onClose={() => setShowPreview(false)} />
+          )}
         </div>
       </div>
 

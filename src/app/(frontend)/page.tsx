@@ -99,7 +99,7 @@ async function getLanding(locale: 'ar' | 'en') {
 // Touches the DB → render per-request.
 export const dynamic = 'force-dynamic'
 
-type Params = { searchParams?: Promise<{ lang?: string }> }
+type Params = { searchParams?: Promise<{ lang?: string; preview?: string }> }
 
 const SITE = process.env.NEXT_PUBLIC_SERVER_URL || ''
 
@@ -256,8 +256,12 @@ function Head({ eyebrow, title, sub }: { eyebrow?: string; title: string; sub?: 
 }
 
 export default async function HomePage({ searchParams }: Params) {
-  const { lang } = (await searchParams) ?? {}
+  const { lang, preview } = (await searchParams) ?? {}
   const locale = platformLocale(lang)
+  /* The dashboard shows this page beside the editor. Those views are the
+     owner looking at their own work, not visitors, and counting them would
+     fill the analytics with one person. */
+  const isPreview = preview === '1'
   const { copy, look, sections, tools, order } = await getLanding(locale)
   const c = copy as (typeof LANDING_COPY)['ar']
   const q = locale === 'en' ? '?lang=en' : ''
@@ -743,7 +747,7 @@ export default async function HomePage({ searchParams }: Params) {
     ),
     cta: (
       <SectionBg config={sections.cta}>
-              <section className="lp-cta">
+              <section className="lp-cta" id="cta">
                 <div className="lp-cta-inner">
                   <h2 className="lp-h2">{c.ctaTitle}</h2>
                   <p>{c.ctaSub}</p>
@@ -768,7 +772,7 @@ export default async function HomePage({ searchParams }: Params) {
       {/* eslint-disable-next-line react/no-danger */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
 
-      <Analytics id={tools?.analyticsId} />
+      {!isPreview && <Analytics id={tools?.analyticsId} />}
       <SectionBg config={sections.header}>
         <LandingNav
           look={look}

@@ -3629,3 +3629,393 @@ input[type='range']::-moz-range-thumb {
   overflow-x: hidden;
   overflow-wrap: break-word;
 }
+
+/* ── The landing workspace ──────────────────────────────────────────────────
+   A section as a short list, the one part of it that is open, and the page it
+   ends up on. It replaced a single column holding every field and every card
+   of a section, where changing the fourth card meant scrolling past the first
+   three — and past the section's own heading — to reach it. */
+.lx {
+  display: grid;
+  gap: 16px;
+  align-items: start;
+  grid-template-columns: 250px minmax(0, 1fr);
+}
+.lx.lx-with-pv {
+  grid-template-columns: 250px minmax(0, 1fr) minmax(380px, 36%);
+}
+.lx.lx-flat {
+  grid-template-columns: minmax(0, 1fr);
+}
+.lx.lx-flat.lx-with-pv {
+  grid-template-columns: minmax(0, 1fr) minmax(380px, 36%);
+}
+
+/* The list. Pinned while the open part is edited, so moving to the next card
+   is one click from wherever you are. */
+.lx-outline {
+  position: sticky;
+  top: 16px;
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  display: grid;
+  gap: 2px;
+  padding: 8px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+.lx-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 13.5px;
+  text-align: start;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.lx-row:hover {
+  background: var(--bg-3);
+}
+.lx-row.on {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  color: var(--accent);
+  font-weight: 700;
+}
+.lx-mark {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--bg-3);
+  color: var(--sub);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  overflow: hidden;
+}
+.lx-row.on .lx-mark {
+  background: var(--accent);
+  color: #fff;
+}
+.lx-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lx-items {
+  display: grid;
+  gap: 2px;
+  margin: 8px 0;
+  padding: 8px 0;
+  border-block: 1px solid var(--border);
+}
+.lx-items-title {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 10px 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--sub);
+}
+.lx-items-title span {
+  font-variant-numeric: tabular-nums;
+}
+.lx-add {
+  margin-top: 4px;
+  padding: 9px 10px;
+  border: 1px dashed color-mix(in srgb, var(--text) 22%, transparent);
+  border-radius: 10px;
+  background: none;
+  color: var(--sub);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.lx-add:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* The open part: its name, what can be done to it, and its fields. */
+.lx-editor {
+  min-width: 0;
+}
+.lx-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  min-height: 40px;
+}
+.lx-head-title {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+.lx-head-title span {
+  font-size: 12px;
+  color: var(--sub);
+}
+.lx-head-title strong {
+  font-size: 17px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lx-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+.lx-icon {
+  width: 34px;
+  height: 34px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--bg-2);
+  color: var(--text);
+  font-size: 13px;
+  text-decoration: none;
+  cursor: pointer;
+}
+.lx-icon:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--text) 30%, transparent);
+}
+.lx-icon:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.lx-icon.danger:hover {
+  border-color: var(--danger);
+}
+.lx-body {
+  padding: 20px 22px 22px;
+}
+.lx-body .field {
+  background: var(--bg);
+  border-color: color-mix(in srgb, var(--text) 13%, transparent);
+}
+.lx-body .field:focus {
+  border-color: var(--accent);
+}
+.lx-sep {
+  height: 1px;
+  margin: 8px 0 18px;
+  background: var(--border);
+}
+.lx-media {
+  margin-top: 8px;
+  gap: 18px;
+  align-items: start;
+}
+/* Two short bilingual fields on one line: price and period, badge and note. */
+.lx-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.lx-person {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+.lx-checks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+.lx-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  cursor: pointer;
+  font-size: 13.5px;
+}
+.lx-check small {
+  margin-inline-start: auto;
+  color: var(--sub);
+}
+
+/* Saved or not, said next to the button that changes it. */
+.lx-save {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.lx-dirty {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: #f59e0b;
+}
+.lx-dirty::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* The page, in a frame beside it. */
+.lx-pv {
+  position: sticky;
+  top: 16px;
+  height: calc(100vh - 32px);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg-2);
+  overflow: hidden;
+}
+.lx-pv-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.lx-pv-note {
+  margin-inline-start: auto;
+  font-size: 11.5px;
+  color: var(--sub);
+  white-space: nowrap;
+}
+.lx-pv-bar .lx-icon {
+  width: 30px;
+  height: 30px;
+}
+.lx-seg {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 9px;
+  background: var(--bg-3);
+}
+.lx-seg button {
+  min-width: 32px;
+  height: 26px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--sub);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.lx-seg button.on {
+  background: var(--bg-2);
+  color: var(--text);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+/* Laid out left to right whatever the dashboard's direction: the frame is
+   scaled from its top-left corner and has to start there. */
+.lx-pv-box {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  direction: ltr;
+  background: var(--bg);
+}
+.lx-pv-box iframe {
+  display: block;
+  border: 0;
+  transform-origin: top left;
+  background: #fff;
+}
+.lx-pv-missing {
+  position: absolute;
+  inset: auto 12px 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.78);
+  color: #fff;
+  font-size: 12.5px;
+  line-height: 1.6;
+  direction: rtl;
+  text-align: start;
+}
+:root:not([data-mode='light']) .lx-pv-missing {
+  background: rgba(255, 255, 255, 0.92);
+  color: #111;
+}
+
+/* Narrower screens: the preview becomes a panel over the page when opened,
+   and below that the list sits above the fields instead of beside them. */
+@media (max-width: 1499px) {
+  .lx.lx-with-pv {
+    grid-template-columns: 250px minmax(0, 1fr);
+  }
+  .lx.lx-flat.lx-with-pv {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .lx-pv {
+    position: fixed;
+    z-index: 40;
+    inset-block: 16px;
+    inset-inline-end: 16px;
+    top: 16px;
+    width: min(520px, calc(100vw - 32px));
+    height: auto;
+    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+  }
+}
+@media (max-width: 900px) {
+  .lx,
+  .lx.lx-with-pv {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .lx-outline {
+    position: static;
+    max-height: none;
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 6px;
+  }
+  .lx-items {
+    display: contents;
+  }
+  .lx-items-title {
+    display: none;
+  }
+  .lx-row,
+  .lx-add {
+    width: auto;
+    flex: 0 0 auto;
+    max-width: 220px;
+    margin: 0;
+  }
+  .lx-row-2,
+  .lx-person {
+    grid-template-columns: 1fr;
+  }
+  .lx-body {
+    padding: 16px;
+  }
+}
