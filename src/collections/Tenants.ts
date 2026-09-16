@@ -49,7 +49,8 @@ export const Tenants: CollectionConfig = {
     {
       name: 'storageLimitMb',
       type: 'number',
-      defaultValue: 500,
+      // A gigabyte: forty-odd reels, or hundreds of pictures. See lib/quota.
+      defaultValue: 1024,
       label: 'Storage limit (MB)',
     },
     {

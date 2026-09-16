@@ -2,6 +2,7 @@ import React from 'react'
 import { redirect } from 'next/navigation'
 import { getDashboardContext } from '@/lib/dashboard'
 import UsersManager from '@/components/dashboard/UsersManager'
+import { DEFAULT_STORAGE_MB } from '@/lib/quota'
 
 export const dynamic = 'force-dynamic'
 
@@ -28,7 +29,7 @@ export default async function UsersPage() {
     name: t.name,
     slug: t.slug,
     domain: t.domain ?? '',
-    storageLimitMb: t.storageLimitMb ?? 500,
+    storageLimitMb: t.storageLimitMb ?? DEFAULT_STORAGE_MB,
     storageUsedMb: t.storageUsedMb ?? 0,
     suspended: Boolean((t as { suspended?: boolean }).suspended),
     userId: userByTenant.get(t.id)?.id ?? null,

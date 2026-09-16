@@ -7,6 +7,7 @@ import NavIcon from './icons'
 import ModulesEditor, { MODULE_ADD_BUTTONS, blankModule } from './ModulesEditor'
 import { saveProject } from '@/lib/project-actions'
 import { uploadFile } from '@/lib/upload-client'
+import { QUOTA_FULL, quotaFullText } from '@/lib/quota'
 import { biEmpty, editModuleToInput, emptyBi, type Bi, type EditModule } from '@/lib/project-types'
 import BiText from './BiText'
 import { useDashLang } from './DashLang'
@@ -77,8 +78,8 @@ export default function ProjectPageBuilder({
             ? { type, mobileCols: 1, items: results.map((r) => ({ id: r.id, url: r.thumbUrl })) }
             : { type, items: results.map((r) => ({ id: r.id, url: r.thumbUrl })) }
       setModules([...p.modules, mod])
-    } catch {
-      alert(t('فشل الرفع', 'Upload failed'))
+    } catch (e) {
+      alert((e as Error)?.message === QUOTA_FULL ? quotaFullText(t) : t('فشل الرفع', 'Upload failed'))
     }
   }
 

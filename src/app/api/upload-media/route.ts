@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getDashboardContext } from '@/lib/dashboard'
 import { storeUpload } from '@/lib/media-upload'
 import { isVideoQuality, VIDEO_QUALITY_DEFAULT } from '@/lib/video-quality'
+import { QUOTA_FULL } from '@/lib/quota'
 
 /**
  * Media upload endpoint for the dashboard.
@@ -30,6 +31,11 @@ export async function POST(req: Request) {
     const media = await storeUpload(ctx, file, isVideoQuality(q) ? q : VIDEO_QUALITY_DEFAULT)
     return NextResponse.json(media)
   } catch (e) {
+    /* Out of room is an answer, not a failure: its own status and code, so the
+       dashboard can say what to do about it instead of "try again". */
+    if (String((e as Error)?.message ?? '').includes(QUOTA_FULL)) {
+      return NextResponse.json({ error: QUOTA_FULL }, { status: 413 })
+    }
     console.error('[upload-media] failed:', (e as Error).message)
     return NextResponse.json({ error: (e as Error).message || 'upload-failed' }, { status: 500 })
   }

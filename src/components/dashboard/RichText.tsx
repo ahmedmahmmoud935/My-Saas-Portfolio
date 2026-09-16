@@ -6,6 +6,7 @@ import HtmlEmbed from '@/components/shared/HtmlEmbed'
 import { isEmbeddablePage, looksLikeDocument, looksLikeHtml } from '@/lib/html-embed'
 import { PASTE_GUIDE_AR, PASTE_GUIDE_EN } from '@/lib/paste-guide'
 import { uploadFile } from '@/lib/upload-client'
+import { QUOTA_FULL, quotaFullText } from '@/lib/quota'
 
 /**
  * A small WYSIWYG field: formatting toolbar over a contentEditable, with a
@@ -114,6 +115,9 @@ export default function RichText({
       const escaped = (alt || '').replace(/"/g, '&quot;')
       document.execCommand('insertHTML', false, `<img src="${src}" alt="${escaped}" loading="lazy" />`)
       if (box.current) onChange(box.current.innerHTML)
+    } catch (e) {
+      // A picture that could not be kept is said out loud, not dropped.
+      alert((e as Error)?.message === QUOTA_FULL ? quotaFullText(t) : t('فشل رفع الصورة', 'The picture did not upload'))
     } finally {
       setUploading(false)
       if (file.current) file.current.value = ''

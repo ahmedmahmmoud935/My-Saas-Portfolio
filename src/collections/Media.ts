@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { assertRoom } from '../lib/quota-server'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -37,6 +38,19 @@ export const Media: CollectionConfig = {
     read: () => true, // public portfolios need public media
   },
   hooks: {
+    /* The one door every file comes through — the dashboard's uploader, a
+       project's page, a Behance import, a visitor's review photo — so the
+       allowance is checked here rather than at each of them. The platform's
+       own dashboard passes `skipQuota`: the owner's uploads are the owner's
+       storage to spend. */
+    beforeChange: [
+      async ({ req, data, operation, context }) => {
+        if (operation !== 'create' || context?.skipQuota) return data
+        const size = (req.file?.size as number | undefined) ?? (data?.filesize as number | undefined) ?? 0
+        await assertRoom(req.payload, data?.tenant, size)
+        return data
+      },
+    ],
     afterChange: [
       async ({ doc, previousDoc, operation, req }) => {
         if (operation !== 'create') return

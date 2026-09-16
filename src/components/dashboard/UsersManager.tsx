@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import PageHeader from './PageHeader'
 import { createClient, updateTenant, resendActivation, setSuspended, deleteClient, setClientEmail } from '@/lib/owner-actions'
 import { useDashLang } from './DashLang'
+import { DEFAULT_STORAGE_MB } from '@/lib/quota'
 
 type Client = {
   id: number
@@ -27,7 +28,7 @@ export default function UsersManager({ clients }: { clients: Client[] }) {
   const { t } = useDashLang()
   const [busy, setBusy] = useState(false)
   const [creating, setCreating] = useState(false)
-  const [nc, setNc] = useState({ name: '', slug: '', email: '', storageLimitMb: 500 })
+  const [nc, setNc] = useState({ name: '', slug: '', email: '', storageLimitMb: DEFAULT_STORAGE_MB })
 
   async function create() {
     if (!nc.name || !nc.slug || !nc.email) {
@@ -43,7 +44,7 @@ export default function UsersManager({ clients }: { clients: Client[] }) {
     try {
       await createClient(nc)
       setCreating(false)
-      setNc({ name: '', slug: '', email: '', storageLimitMb: 500 })
+      setNc({ name: '', slug: '', email: '', storageLimitMb: DEFAULT_STORAGE_MB })
       alert(t('تم الإنشاء ✓ اتبعت للعميل رابط لتعيين كلمة السر', 'Created ✓ a set-password link was emailed to the client'))
       router.refresh()
     } catch {

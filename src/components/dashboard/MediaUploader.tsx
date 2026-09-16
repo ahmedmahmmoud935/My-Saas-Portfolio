@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useDashLang } from './DashLang'
 import { isStaleDeployment } from '@/lib/action-error'
 import { uploadFile, type UploadPhase } from '@/lib/upload-client'
+import { QUOTA_FULL, quotaFullText } from '@/lib/quota'
 import {
   VIDEO_QUALITY_DEFAULT,
   VIDEO_QUALITY_OPTIONS,
@@ -133,7 +134,9 @@ export default function MediaUploader({
       // pulling the page out from under it is how uploads used to "kick you
       // out". Say what happened and let the picker be clicked again.
       const msg = err instanceof Error ? err.message : ''
-      if (msg === 'unauthorized') {
+      if (msg === QUOTA_FULL) {
+        setError({ text: quotaFullText(t), reload: false })
+      } else if (msg === 'unauthorized') {
         setError({
           text: t('انتهت الجلسة. سجّل الدخول تاني في تبويب جديد وبعدين جرّب.', 'Session expired. Sign in again in a new tab, then retry.'),
           reload: true,

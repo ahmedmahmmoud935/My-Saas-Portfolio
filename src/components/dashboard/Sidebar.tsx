@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { tenantUrl } from '@/lib/tenant-url'
+import { quotaState } from '@/lib/quota'
 import { usePathname, useRouter } from 'next/navigation'
 import { DASHBOARD_NAV_GROUPS } from '@/lib/dashboard-nav'
 import { useDashLang } from './DashLang'
@@ -104,7 +105,7 @@ export default function Sidebar({
         <div className="who">
           {t('مسجّل كـ', 'Signed in as')} <b>{userName}</b>
         </div>
-        <div className="storage-bar">
+        <div className={`storage-bar ${quotaState(storageUsed, storageLimit)}`}>
           <span style={{ width: `${pct}%` }} />
         </div>
         <div className="who" style={{ fontSize: 12 }}>

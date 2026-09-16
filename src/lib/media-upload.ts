@@ -1,5 +1,6 @@
 import type { getDashboardContext } from './dashboard'
 import { compressVideo } from './transcode'
+import { assertRoom } from './quota-server'
 import { VIDEO_QUALITY_DEFAULT, type VideoQuality } from './video-quality'
 
 import type { VideoReport } from './project-types'
@@ -27,6 +28,11 @@ export async function storeUpload(
   file: File,
   quality: VideoQuality = VIDEO_QUALITY_DEFAULT,
 ): Promise<UploadedMedia> {
+  // No room at all: say so before minutes of compressing a video that
+  // could never be kept. Whether this particular file fits is only known
+  // once it has been compressed, and the collection checks that.
+  if (!ctx.user.isOwner) await assertRoom(ctx.payload, ctx.tenantId, 1)
+
   let buf: Buffer = Buffer.from(await file.arrayBuffer())
   let mimetype = file.type
   let name = file.name
@@ -52,6 +58,7 @@ export async function storeUpload(
     collection: 'media',
     data: { tenant: ctx.tenantId, alt: name },
     file: { data: buf as Buffer<ArrayBuffer>, mimetype, name, size: buf.length },
+    context: { skipQuota: ctx.user.isOwner === true },
   })
   const sizes = (media as { sizes?: { thumb?: { url?: string }; card?: { url?: string } } }).sizes
   return {
