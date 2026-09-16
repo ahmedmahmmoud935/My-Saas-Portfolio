@@ -5,7 +5,7 @@ import { tenantUrl } from '@/lib/tenant-url'
 import { cleanSlug, slugProblem, slugProblemText } from '@/lib/slug-rules'
 import { useRouter } from 'next/navigation'
 import PageHeader from './PageHeader'
-import { createClient, updateTenant, resendActivation, setSuspended, deleteClient } from '@/lib/owner-actions'
+import { createClient, updateTenant, resendActivation, setSuspended, deleteClient, setClientEmail } from '@/lib/owner-actions'
 import { useDashLang } from './DashLang'
 
 type Client = {
@@ -51,12 +51,29 @@ export default function UsersManager({ clients }: { clients: Client[] }) {
     }
   }
 
-  async function saveQuota(c: Client, storageLimitMb: number, domain: string, slug: string) {
+  async function saveQuota(c: Client, storageLimitMb: number, domain: string, slug: string, email: string) {
     const next = cleanSlug(slug)
     const problem = slugProblem(next)
     if (problem) {
       alert(slugProblemText(problem, t('ar', 'en') === 'ar'))
       return
+    }
+    const mail = email.trim().toLowerCase()
+    const mailChanged = !!c.userId && mail !== (c.email ?? '').toLowerCase()
+    if (mailChanged && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(mail)) {
+      alert(t('الإيميل ده مش مكتوب صح', 'That email address is not well formed'))
+      return
+    }
+    /* The email is how the client signs in, so changing it changes what they
+       type at the login page tomorrow — worth a question, and worth saying. */
+    if (mailChanged) {
+      const ok = confirm(
+        t(
+          `تغيير إيميل «${c.name}» من\n${c.email}\nإلى\n${mail}؟\n\nالعميل هيدخل بالإيميل الجديد من دلوقتي، وكلمة السر زي ما هي.`,
+          `Change «${c.name}»'s email from\n${c.email}\nto\n${mail}?\n\nThey sign in with the new one from now on; the password stays the same.`,
+        ),
+      )
+      if (!ok) return
     }
     /* Renaming is the one change here that alters an address people already
        have, so it is the one that asks first — and says what happens to the
@@ -80,6 +97,35 @@ export default function UsersManager({ clients }: { clients: Client[] }) {
           : t('مش قادر أحفظ — راجع الاسم', 'Could not save — check the name'),
       )
       return
+    }
+    if (mailChanged && c.userId) {
+      try {
+        await setClientEmail(c.userId, mail)
+      } catch (e) {
+        const code = (e as Error)?.message?.replace('email:', '')
+        alert(
+          code === 'taken'
+            ? t('الإيميل ده مستخدم في حساب تاني', 'Another account already uses that email')
+            : code === 'invalid'
+              ? t('الإيميل ده مش مكتوب صح', 'That email address is not well formed')
+              : t('الباقي اتحفظ، بس الإيميل متغيّرش', 'Everything else saved, but the email did not change'),
+        )
+        router.refresh()
+        return
+      }
+      /* A new address nobody has used yet: offer the link there, so the
+         client learns about the change from the change itself. */
+      if (
+        confirm(
+          t(
+            `الإيميل اتغيّر ✓\nتبعت رابط تعيين كلمة السر على ${mail}؟`,
+            `Email changed ✓\nSend a set-password link to ${mail}?`,
+          ),
+        )
+      ) {
+        await resendActivation(mail)
+        alert(t('تم إرسال الرابط ✓', 'Link sent ✓'))
+      }
     }
     router.refresh()
   }
@@ -165,7 +211,7 @@ function ClientRow({
   onDelete,
 }: {
   c: Client
-  onSaveQuota: (c: Client, limit: number, domain: string, slug: string) => void
+  onSaveQuota: (c: Client, limit: number, domain: string, slug: string, email: string) => void
   onPassword: () => void
   onSuspend: () => void
   onDelete: () => void
@@ -174,6 +220,7 @@ function ClientRow({
   const { t } = useDashLang()
   const [domain, setDomain] = useState(c.domain)
   const [slug, setSlug] = useState(c.slug)
+  const [email, setEmail] = useState(c.email)
   const pct = Math.min(100, Math.round((c.storageUsedMb / Math.max(1, limit)) * 100))
   return (
     <div className="panel" style={c.suspended ? { opacity: 0.7, borderColor: 'var(--danger)' } : undefined}>
@@ -206,12 +253,26 @@ function ClientRow({
           <input className="field" dir="ltr" value={domain} onChange={(e) => setDomain(e.target.value)} style={{ textAlign: 'start' }} />
         </div>
       </div>
-      <div style={{ marginTop: 10 }}>
-        <label className="lbl">{t('حد التخزين (MB)', 'Storage limit (MB)')}</label>
-        <input className="field" type="number" value={limit} onChange={(e) => setLimit(Number(e.target.value))} />
+      <div className="grid-2" style={{ marginTop: 10 }}>
+        <div>
+          <label className="lbl">{t('الإيميل (بيدخل بيه)', 'Email (their login)')}</label>
+          <input
+            className="field"
+            type="email"
+            dir="ltr"
+            value={email}
+            disabled={!c.userId}
+            onChange={(e) => setEmail(e.target.value)}
+            style={{ textAlign: 'start' }}
+          />
+        </div>
+        <div>
+          <label className="lbl">{t('حد التخزين (MB)', 'Storage limit (MB)')}</label>
+          <input className="field" type="number" value={limit} onChange={(e) => setLimit(Number(e.target.value))} />
+        </div>
       </div>
       <div style={{ display: 'flex', gap: 8, marginTop: 10, justifyContent: 'flex-start', flexWrap: 'wrap' }}>
-        <button className="btn btn-primary" onClick={() => onSaveQuota(c, limit, domain, slug)}>{t('💾 حفظ', '💾 Save')}</button>
+        <button className="btn btn-primary" onClick={() => onSaveQuota(c, limit, domain, slug, email)}>{t('💾 حفظ', '💾 Save')}</button>
         <button className="btn btn-ghost" onClick={onPassword} disabled={!c.userId}>{t('📧 إرسال رابط كلمة السر', '📧 Send password link')}</button>
         <button className="btn btn-ghost" onClick={onSuspend}>{c.suspended ? t('▶ تفعيل', '▶ Enable') : t('⏸ تعطيل', '⏸ Suspend')}</button>
         <button className="btn btn-danger" onClick={onDelete} style={{ marginInlineStart: 'auto' }}>{t('🗑 حذف', '🗑 Delete')}</button>

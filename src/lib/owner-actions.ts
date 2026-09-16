@@ -131,3 +131,35 @@ export async function setClientPassword(userId: number, password: string) {
   await ctx.payload.update({ collection: 'users', id: userId, data: { password } })
   return { ok: true }
 }
+
+/**
+ * A client's login address, changed from the admin.
+ *
+ * The address is how they sign in, so the new one is checked before anything
+ * is written: shaped like an email, and not already someone else's — Payload
+ * would refuse a duplicate anyway, but with an error nobody could act on.
+ *
+ * Only a client's: an owner's own login is not something to be edited from a
+ * row in a list.
+ */
+export async function setClientEmail(userId: number, email: string) {
+  const ctx = await ownerCtx()
+  const next = email.trim().toLowerCase()
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(next)) throw new Error('email:invalid')
+
+  const user = await ctx.payload.findByID({ collection: 'users', id: userId, depth: 0 })
+  if (!user) throw new Error('email:missing')
+  if (user.isOwner) throw new Error('email:owner')
+  if ((user.email ?? '').toLowerCase() === next) return { ok: true, changed: false }
+
+  const taken = await ctx.payload.find({
+    collection: 'users',
+    where: { email: { equals: next } },
+    limit: 1,
+    depth: 0,
+  })
+  if (taken.docs.length) throw new Error('email:taken')
+
+  await ctx.payload.update({ collection: 'users', id: userId, data: { email: next } })
+  return { ok: true, changed: true }
+}
