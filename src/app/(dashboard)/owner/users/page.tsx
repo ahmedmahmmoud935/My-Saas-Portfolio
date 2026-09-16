@@ -33,6 +33,8 @@ export default async function UsersPage() {
     suspended: Boolean((t as { suspended?: boolean }).suspended),
     userId: userByTenant.get(t.id)?.id ?? null,
     email: userByTenant.get(t.id)?.email ?? '',
+    // The owner's own portfolio is one of these rows, and its login is theirs.
+    self: userByTenant.get(t.id)?.id === ctx.user.id,
   }))
 
   return <UsersManager clients={clients} />

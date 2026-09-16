@@ -18,6 +18,8 @@ type Client = {
   suspended: boolean
   userId: number | null
   email: string
+  /** This row's login is the signed-in owner's own. */
+  self?: boolean
 }
 
 export default function UsersManager({ clients }: { clients: Client[] }) {
@@ -66,7 +68,15 @@ export default function UsersManager({ clients }: { clients: Client[] }) {
     }
     /* The email is how the client signs in, so changing it changes what they
        type at the login page tomorrow — worth a question, and worth saying. */
-    if (mailChanged) {
+    if (mailChanged && c.self) {
+      const ok = confirm(
+        t(
+          `ده الإيميل اللي انت بتدخل بيه اللوحة.\nتغييره من\n${c.email}\nإلى\n${mail}؟\n\nمن المرة الجاية هتدخل بالإيميل الجديد ونفس كلمة السر — اتأكد إنه مكتوب صح.`,
+          `This is the email you sign in to the admin with.\nChange it from\n${c.email}\nto\n${mail}?\n\nNext time you sign in with the new one and the same password — make sure it is right.`,
+        ),
+      )
+      if (!ok) return
+    } else if (mailChanged) {
       const ok = confirm(
         t(
           `تغيير إيميل «${c.name}» من\n${c.email}\nإلى\n${mail}؟\n\nالعميل هيدخل بالإيميل الجديد من دلوقتي، وكلمة السر زي ما هي.`,
@@ -99,16 +109,35 @@ export default function UsersManager({ clients }: { clients: Client[] }) {
       return
     }
     if (mailChanged && c.userId) {
+      let self = false
       try {
-        await setClientEmail(c.userId, mail)
+        self = (await setClientEmail(c.userId, mail)).self
       } catch (e) {
+        /* Say which reason it was: the one message for all of them left the
+           owner looking at "it didn't change" with no idea why. */
         const code = (e as Error)?.message?.replace('email:', '')
-        alert(
+        const why =
           code === 'taken'
-            ? t('الإيميل ده مستخدم في حساب تاني', 'Another account already uses that email')
+            ? t('الإيميل ده مستخدم في حساب تاني.', 'Another account already uses that email.')
             : code === 'invalid'
-              ? t('الإيميل ده مش مكتوب صح', 'That email address is not well formed')
-              : t('الباقي اتحفظ، بس الإيميل متغيّرش', 'Everything else saved, but the email did not change'),
+              ? t('الإيميل ده مش مكتوب صح.', 'That email address is not well formed.')
+              : code === 'owner'
+                ? t('ده حساب مالك تاني — إيميله مش بيتغيّر من هنا.', 'That is another owner’s account — its email is not changed from here.')
+                : code === 'missing'
+                  ? t('الحساب ده مش موجود.', 'That account no longer exists.')
+                  : t('حصل خطأ غير متوقّع.', 'Something unexpected went wrong.')
+        alert(`${t('الباقي اتحفظ، بس الإيميل متغيّرش:', 'Everything else saved, but the email did not change:')}\n${why}`)
+        router.refresh()
+        return
+      }
+      /* Your own login: you already have a password, so there is no link to
+         send — only the address to use next time. */
+      if (self) {
+        alert(
+          t(
+            `إيميلك اتغيّر ✓\nمن دلوقتي بتدخل بـ ${mail} ونفس كلمة السر.`,
+            `Your email changed ✓\nFrom now on you sign in with ${mail} and the same password.`,
+          ),
         )
         router.refresh()
         return

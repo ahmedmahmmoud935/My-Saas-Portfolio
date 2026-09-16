@@ -139,8 +139,9 @@ export async function setClientPassword(userId: number, password: string) {
  * is written: shaped like an email, and not already someone else's — Payload
  * would refuse a duplicate anyway, but with an error nobody could act on.
  *
- * Only a client's: an owner's own login is not something to be edited from a
- * row in a list.
+ * A client's, or the owner's own — the owner's portfolio is a row in this list
+ * like any other, and its login is theirs to change. Another owner's is not:
+ * that is someone else's way in.
  */
 export async function setClientEmail(userId: number, email: string) {
   const ctx = await ownerCtx()
@@ -149,8 +150,9 @@ export async function setClientEmail(userId: number, email: string) {
 
   const user = await ctx.payload.findByID({ collection: 'users', id: userId, depth: 0 })
   if (!user) throw new Error('email:missing')
-  if (user.isOwner) throw new Error('email:owner')
-  if ((user.email ?? '').toLowerCase() === next) return { ok: true, changed: false }
+  const self = user.id === ctx.user.id
+  if (user.isOwner && !self) throw new Error('email:owner')
+  if ((user.email ?? '').toLowerCase() === next) return { ok: true, changed: false, self }
 
   const taken = await ctx.payload.find({
     collection: 'users',
@@ -161,5 +163,5 @@ export async function setClientEmail(userId: number, email: string) {
   if (taken.docs.length) throw new Error('email:taken')
 
   await ctx.payload.update({ collection: 'users', id: userId, data: { email: next } })
-  return { ok: true, changed: true }
+  return { ok: true, changed: true, self }
 }
