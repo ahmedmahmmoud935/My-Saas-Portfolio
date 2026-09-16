@@ -2,7 +2,9 @@ import React from 'react'
 import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { LANDING_COPY, mergeCopy, resolveLink } from '@/lib/landing-copy'
+import { LANDING_COPY, mergeCopy, resolveLink, type ShowcaseLook } from '@/lib/landing-copy'
+import { orderShowcase, showcasePictures } from '@/lib/showcase'
+import { frameStyle } from '@/lib/frame-style'
 import { resolveVideoUrl } from '@/lib/video'
 import { mediaUrl } from '@/lib/portfolio'
 import SectionBg, { type SectionBgConfig } from '@/components/portfolio/SectionBg'
@@ -149,6 +151,8 @@ type ShowcaseItem = {
   title: string | null
   avatarUrl: string | null
   coverUrl: string | null
+  /** How the picture is framed in its card, set by hand in the dashboard. */
+  frame: { zoom: number; x: number; y: number }
 }
 
 /**
@@ -163,50 +167,41 @@ type ShowcaseItem = {
  * so hiding a test account lets the next real portfolio take its place rather
  * than leaving one card fewer.
  */
-async function getShowcase(hidden: string[]): Promise<ShowcaseItem[]> {
+async function getShowcase(
+  hidden: string[],
+  order: string[] | undefined,
+  look: Record<string, ShowcaseLook> | undefined,
+): Promise<ShowcaseItem[]> {
   try {
     const payload = await getPayload({ config })
+    // Everyone on show, so the owner's order can reach past the newest six.
     const res = await payload.find({
       collection: 'tenants',
-      limit: 6,
+      limit: 200,
       depth: 0,
       sort: '-createdAt',
       where: hidden.length ? { slug: { not_in: hidden } } : undefined,
     })
-    const tenants = res.docs
+    const tenants = orderShowcase(res.docs, order).slice(0, 6)
     if (!tenants.length) return []
-
-    const settings = await payload.find({
-      collection: 'site-settings',
-      where: { tenant: { in: tenants.map((t) => t.id) } },
-      limit: tenants.length,
-      depth: 1,
-    })
-    const byTenant = new Map<number, (typeof settings.docs)[number]>()
-    for (const doc of settings.docs) {
-      const owner = doc.tenant
-      const id = typeof owner === 'object' ? owner?.id : owner
-      if (typeof id === 'number') byTenant.set(id, doc)
-    }
+    const pics = await showcasePictures(payload, tenants.map((t) => t.id))
 
     return tenants.map((t) => {
-      const st = byTenant.get(t.id)
-      const brand = (st?.brand ?? {}) as Record<string, unknown>
-      const hero = ((st?.content as Record<string, unknown>)?.hero ?? {}) as Record<string, unknown>
+      const p = pics.get(t.id)
+      const own = look?.[t.slug]
       return {
         name: t.name,
         slug: t.slug,
         url: tenantUrl(t.slug, t.domain),
-        title: (hero.title as string) || null,
-        // Whichever picture of themselves they have set, in the order a person
-        // would expect to be recognised by.
-        avatarUrl:
-          mediaUrl((brand.avatar as never) ?? null, 'thumb') ||
-          mediaUrl((brand.photo as never) ?? null, 'thumb') ||
-          mediaUrl((brand.brandLogo as never) ?? null, 'thumb'),
-        coverUrl:
-          mediaUrl((brand.heroCover as never) ?? null, 'card') ||
-          mediaUrl((brand.photo as never) ?? null, 'card'),
+        title: p?.title ?? null,
+        // A picture the owner chose wins over the one the portfolio supplies.
+        avatarUrl: own?.imageUrl || p?.avatarUrl || null,
+        coverUrl: own?.imageUrl || p?.coverUrl || null,
+        frame: {
+          zoom: own?.zoom ?? 100,
+          x: own?.x ?? 50,
+          y: own?.y ?? 50,
+        },
       }
     })
   } catch {
@@ -265,7 +260,7 @@ export default async function HomePage({ searchParams }: Params) {
   const { copy, look, sections, tools, order } = await getLanding(locale)
   const c = copy as (typeof LANDING_COPY)['ar']
   const q = locale === 'en' ? '?lang=en' : ''
-  const [showcase, stats] = await Promise.all([getShowcase(c.showcaseHidden ?? []), getStats()])
+  const [showcase, stats] = await Promise.all([getShowcase(c.showcaseHidden ?? [], c.showcaseOrder, c.showcaseLook), getStats()])
   const n = new Intl.NumberFormat(locale === 'en' ? 'en' : 'ar-EG')
   // Every "start" button on the page asks for the same thing, so they all go
   // to the same place — one the owner sets, for as long as sign-up lives
@@ -622,6 +617,7 @@ export default async function HomePage({ searchParams }: Params) {
                             <img
                               src={(showcaseStyle === 'cover' ? s.coverUrl : s.avatarUrl) as string}
                               alt={s.name}
+                              style={frameStyle(s.frame)}
                             />
                           ) : (
                             // No picture set — the initial, as before.

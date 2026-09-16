@@ -6,6 +6,10 @@ import { useDashLang } from './DashLang'
 import MediaUploader from './MediaUploader'
 import SectionBgRows from './SectionBgRows'
 import LandingPreview from './LandingPreview'
+import { orderShowcase } from '@/lib/showcase-order'
+import { frameStyle } from '@/lib/frame-style'
+import type { ShowcaseLook } from '@/lib/landing-copy'
+import type { ShowcaseTenant } from '@/lib/landing-actions'
 import { ColorInput, Opt, Slider } from './controls'
 import { saveLanding, type LandingImages, type LandingStyle, type LandingTheme, type LandingTools } from '@/lib/landing-actions'
 import { LANDING_COPY } from '@/lib/landing-copy'
@@ -29,7 +33,7 @@ type Form = {
   tools: LandingTools
   sectionBg: SectionBgForm[]
   order: LandingOrderItem[]
-  tenants: { slug: string; name: string }[]
+  tenants: ShowcaseTenant[]
 }
 
 /**
@@ -336,7 +340,7 @@ function LinkField({
   label: string
   value: string
   onChange: (v: string) => void
-  tenants: { slug: string; name: string }[]
+  tenants: ShowcaseTenant[]
   hint?: string
 }) {
   const { t } = useDashLang()
@@ -588,6 +592,26 @@ export default function LandingEditor({
       ...p,
       [loc]: { ...p[loc], legal: p[loc].legal.map((x, j) => (j === i ? { ...x, [field]: v } : x)) },
     }))
+
+  /* ── Showcase: who appears, in what order, and how each picture is framed.
+     Shared by both languages — a portfolio is the same portfolio in either. */
+  const [openSite, setOpenSite] = useState<string | null>(null)
+  const sites = orderShowcase(f.tenants, f.ar.showcaseOrder)
+  const moveSite = (slug: string, dir: -1 | 1) => {
+    const slugs = sites.map((x) => x.slug)
+    const i = slugs.indexOf(slug)
+    const j = i + dir
+    if (i < 0 || j < 0 || j >= slugs.length) return
+    ;[slugs[i], slugs[j]] = [slugs[j], slugs[i]]
+    setKeyBoth('showcaseOrder', slugs)
+  }
+  const setLook = (slug: string, patch: Partial<ShowcaseLook> | null) =>
+    setF((p) => {
+      const all = { ...(p.ar.showcaseLook ?? {}) }
+      if (patch === null) delete all[slug]
+      else all[slug] = { ...(all[slug] ?? {}), ...patch }
+      return { ...p, ar: { ...p.ar, showcaseLook: all }, en: { ...p.en, showcaseLook: all } }
+    })
 
   const toggleHidden = (slug: string, show: boolean) => {
     const now = f.ar.showcaseHidden ?? []
@@ -1379,22 +1403,91 @@ export default function LandingEditor({
           <>
             <Note>
               {t(
-                'بتظهر أحدث ٦. شيل العلامة من أي حساب تجريبي أو مش جاهز — بيختفي، واللي بعده بياخد مكانه.',
-                'The newest six show. Untick a test or unfinished account to take it off; the next one takes its place.',
+                'الترتيب هنا هو ترتيبهم على الصفحة، وبيظهر أول ٦ من اللي عليهم علامة. دوس على أي واحد عشان تظبط صورته — تكبّرها أو تحرّكها أو ترفع صورة مكانها.',
+                'The order here is their order on the page; the first six ticked ones show. Open any of them to frame its picture — zoom it, move it, or upload one in its place.',
               )}
             </Note>
-            <div className="lx-checks">
-              {f.tenants.map((tn) => (
-                <label key={tn.slug} className="lx-check">
-                  <input
-                    type="checkbox"
-                    checked={!(f.ar.showcaseHidden ?? []).includes(tn.slug)}
-                    onChange={(e) => toggleHidden(tn.slug, e.target.checked)}
-                  />
-                  <span>{tn.name}</span>
-                  <small dir="ltr">/{tn.slug}</small>
-                </label>
-              ))}
+            <div className="sc-list">
+              {sites.map((tn, i) => {
+                const shown = !(f.ar.showcaseHidden ?? []).includes(tn.slug)
+                const lk = f.ar.showcaseLook?.[tn.slug] ?? {}
+                const cover = f.style.showcase === 'cover'
+                const pic = lk.imageUrl || (cover ? tn.coverUrl : tn.avatarUrl)
+                const place = shown ? sites.slice(0, i + 1).filter((x) => !(f.ar.showcaseHidden ?? []).includes(x.slug)).length : 0
+                const open = openSite === tn.slug
+                return (
+                  <div className={`sc-item${open ? ' open' : ''}${shown ? '' : ' off'}`} key={tn.slug}>
+                    <div className="sc-row">
+                      <div className="sc-move">
+                        <button className="lx-icon" disabled={i === 0} onClick={() => moveSite(tn.slug, -1)} title={t('لفوق', 'Up')}>
+                          ▲
+                        </button>
+                        <button className="lx-icon" disabled={i === sites.length - 1} onClick={() => moveSite(tn.slug, 1)} title={t('لتحت', 'Down')}>
+                          ▼
+                        </button>
+                      </div>
+                      <span className={`sc-thumb${cover ? ' wide' : ''}`}>
+                        {pic ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={pic} alt="" style={frameStyle(lk)} />
+                        ) : (
+                          <b>{tn.name?.[0]?.toUpperCase() || '·'}</b>
+                        )}
+                      </span>
+                      <button className="sc-name" onClick={() => setOpenSite(open ? null : tn.slug)}>
+                        <strong>{tn.name}</strong>
+                        <small dir="ltr">/{tn.slug}</small>
+                      </button>
+                      <span className={`sc-place${place > 0 && place <= 6 ? ' on' : ''}`}>
+                        {!shown ? t('مخفي', 'Hidden') : place <= 6 ? `#${place}` : t('خارج أول ٦', 'Past the six')}
+                      </span>
+                      <label className="sc-toggle" title={t('يظهر على الصفحة', 'On the page')}>
+                        <input type="checkbox" checked={shown} onChange={(e) => toggleHidden(tn.slug, e.target.checked)} />
+                      </label>
+                      <button className="lx-icon" onClick={() => setOpenSite(open ? null : tn.slug)} title={t('ظبط الصورة', 'Frame the picture')}>
+                        {open ? '▴' : '✎'}
+                      </button>
+                    </div>
+
+                    {open && (
+                      <div className="sc-edit">
+                        {/* The card as it will look, at its real shape. */}
+                        <div className={`sc-stage${cover ? ' wide' : ''}`}>
+                          <span className="sc-frame">
+                            {pic ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={pic} alt="" style={frameStyle(lk)} />
+                            ) : (
+                              <b>{tn.name?.[0]?.toUpperCase() || '·'}</b>
+                            )}
+                          </span>
+                          <small>{cover ? t('شكل الكارت: غلاف عريض', 'Card shape: wide cover') : t('شكل الكارت: صورة شخصية', 'Card shape: portrait')}</small>
+                        </div>
+                        <div className="sc-dials">
+                          <Slider label={t('التكبير', 'Zoom')} value={lk.zoom ?? 100} min={100} max={300} suffix="%" onChange={(v) => setLook(tn.slug, { zoom: v })} />
+                          <Slider label={t('أفقي', 'Across')} value={lk.x ?? 50} min={0} max={100} suffix="%" onChange={(v) => setLook(tn.slug, { x: v })} />
+                          <Slider label={t('رأسي', 'Up and down')} value={lk.y ?? 50} min={0} max={100} suffix="%" onChange={(v) => setLook(tn.slug, { y: v })} />
+                          <label className="lbl" style={{ display: 'block', marginTop: 4 }}>
+                            {t('صورة مكان صورته (اختياري)', 'A picture in place of theirs (optional)')}
+                          </label>
+                          <MediaUploader
+                            compact
+                            accept="image/*"
+                            previewUrl={lk.imageUrl || null}
+                            onUploaded={(m) => setLook(tn.slug, { imageUrl: m.url ?? m.thumbUrl ?? '' })}
+                            onRemove={lk.imageUrl ? () => setLook(tn.slug, { imageUrl: '' }) : undefined}
+                          />
+                          {(lk.imageUrl || lk.zoom || lk.x !== undefined || lk.y !== undefined) && (
+                            <button className="btn btn-sm" style={{ marginTop: 10 }} onClick={() => setLook(tn.slug, null)}>
+                              {t('رجّع صورته الأصلية', 'Back to their own picture')}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </>
         )}

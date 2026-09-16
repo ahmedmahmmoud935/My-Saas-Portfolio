@@ -5,6 +5,7 @@ import { LANDING_COPY, mergeCopy } from './landing-copy'
 import { mediaUrl } from './portfolio'
 import type { SectionBgForm } from './design-types'
 import { resolveLandingOrder, type LandingOrderItem } from './landing-order'
+import { showcasePictures } from './showcase'
 
 type Copy = (typeof LANDING_COPY)['ar']
 
@@ -86,6 +87,9 @@ const DEFAULT_LANDING_STYLE: LandingStyle = {
   fontLatin: 'montserrat',
 }
 
+/** A portfolio as the showcase editor sees it: who, and the pictures it supplies. */
+export type ShowcaseTenant = { slug: string; name: string; avatarUrl: string | null; coverUrl: string | null }
+
 async function ownerCtx() {
   const ctx = await getDashboardContext()
   if (!ctx || !ctx.user.isOwner) throw new Error('forbidden')
@@ -104,10 +108,12 @@ export async function getLandingForm(): Promise<{
   /** Which bands the page shows, and in what order. */
   order: LandingOrderItem[]
   /** Every portfolio, so the showcase tab can take any of them off the page. */
-  tenants: { slug: string; name: string }[]
+  tenants: ShowcaseTenant[]
 }> {
   const ctx = await ownerCtx()
   const tenants = await ctx.payload.find({ collection: 'tenants', limit: 200, depth: 0, sort: '-createdAt' })
+  // The pictures the showcase would use, so the editor frames the same ones.
+  const pics = await showcasePictures(ctx.payload, tenants.docs.map((t) => t.id))
   const g = (await ctx.payload.findGlobal({ slug: 'landing', locale: 'all', depth: 1 })) as {
     content?: { ar?: Partial<Copy>; en?: Partial<Copy> }
     theme?: Partial<LandingTheme>
@@ -170,7 +176,10 @@ export async function getLandingForm(): Promise<{
       posY: (r.posY as number) ?? 50,
     })),
     order: resolveLandingOrder(g.sectionOrder),
-    tenants: tenants.docs.map((t) => ({ slug: t.slug, name: t.name })),
+    tenants: tenants.docs.map((t) => {
+      const p = pics.get(t.id)
+      return { slug: t.slug, name: t.name, avatarUrl: p?.avatarUrl ?? null, coverUrl: p?.coverUrl ?? null }
+    }),
   }
 }
 

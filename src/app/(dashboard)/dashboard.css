@@ -4075,3 +4075,148 @@ input[type='range']::-moz-range-thumb {
     grid-template-columns: 1fr;
   }
 }
+
+/* ── The showcase list: order, visibility, and each picture's framing ──── */
+.sc-list {
+  display: grid;
+  gap: 8px;
+}
+.sc-item {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  overflow: hidden;
+}
+.sc-item.open {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.sc-item.off .sc-thumb,
+.sc-item.off .sc-name {
+  opacity: 0.45;
+}
+.sc-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+}
+.sc-move {
+  display: grid;
+  gap: 2px;
+}
+.sc-move .lx-icon {
+  width: 26px;
+  height: 18px;
+  font-size: 9px;
+  border-radius: 5px;
+}
+.sc-thumb {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: var(--bg-3);
+  color: var(--sub);
+}
+.sc-thumb.wide {
+  width: 64px;
+  height: 40px;
+  border-radius: 8px;
+}
+.sc-thumb img,
+.sc-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.sc-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.sc-name strong {
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sc-name small {
+  color: var(--sub);
+  font-size: 12px;
+  text-align: start;
+}
+.sc-place {
+  font-size: 11.5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--bg-3);
+  color: var(--sub);
+  white-space: nowrap;
+}
+.sc-place.on {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+}
+.sc-toggle input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.sc-edit {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 20px;
+  padding: 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-2);
+}
+.sc-stage {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 10px;
+}
+.sc-stage small {
+  color: var(--sub);
+  font-size: 11.5px;
+}
+/* The same shapes the landing card uses: round, or a wide cover. */
+.sc-frame {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: var(--bg-3);
+  box-shadow: 0 0 0 3px var(--bg-2), 0 0 0 4px color-mix(in srgb, var(--accent) 55%, transparent);
+  font-size: 42px;
+  color: var(--sub);
+}
+.sc-stage.wide .sc-frame {
+  width: 210px;
+  height: 132px;
+  border-radius: 12px;
+}
+@media (max-width: 900px) {
+  .sc-edit {
+    grid-template-columns: 1fr;
+  }
+  .sc-place {
+    display: none;
+  }
+}

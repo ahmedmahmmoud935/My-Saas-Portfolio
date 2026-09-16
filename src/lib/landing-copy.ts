@@ -25,6 +25,14 @@ export type LandingDashItem = {
   poster: string
 }
 
+/**
+ * How one portfolio's picture sits in its showcase card: a picture of the
+ * owner's choosing in place of the one the portfolio supplies, and how far it
+ * is zoomed and where. Every field is optional — a portfolio nobody has
+ * touched shows its own picture, centred, as before.
+ */
+export type ShowcaseLook = { imageUrl?: string; zoom?: number; x?: number; y?: number }
+
 /** One of the pages the footer links to under its legal heading. */
 export type LandingLegalPage = { slug: string; title: string; body: string }
 
@@ -134,6 +142,10 @@ export const LANDING_COPY = {
     // Portfolios kept off the page — a test account, an unfinished one. Three
     // real examples sell better than five with placeholders among them.
     showcaseHidden: [] as string[],
+    /* The order portfolios appear in, by username; anyone not listed follows,
+       newest first. And each one's picture, framed by hand. */
+    showcaseOrder: [] as string[],
+    showcaseLook: {} as Record<string, ShowcaseLook>,
     compareEyebrow: 'الفرق',
     compareTitle: 'العميل بيحكم عليك من أول 5 ثواني',
     compareSub: 'لينك الدرايف بيقول إنك بتجرّب. الموقع باسمك بيقول إنك محترف.',
@@ -311,6 +323,8 @@ export const LANDING_COPY = {
     showcaseEmpty: 'Coming soon — the first portfolios are on the way.',
     visit: 'Visit the site',
     showcaseHidden: [] as string[],
+    showcaseOrder: [] as string[],
+    showcaseLook: {} as Record<string, ShowcaseLook>,
     compareEyebrow: 'The difference',
     compareTitle: 'Clients judge you in the first 5 seconds',
     compareSub: 'A Drive link says you are still trying things out. A site in your name says you are a professional.',
