@@ -139,5 +139,8 @@ export function tenantCssVars(settings: SiteSetting | null): Record<string, stri
     '--bg2-light': c.bg2Light || '#f3f5f8',
     '--text-light': c.textLight || '#0c0f16',
     '--sub-light': c.subtextLight || '#495265',
+    // Only when chosen: unset, the headings keep inheriting the text colour.
+    ...(c.heading ? { '--heading-dark': c.heading } : {}),
+    ...(c.headingLight ? { '--heading-light': c.headingLight } : {}),
   }
 }

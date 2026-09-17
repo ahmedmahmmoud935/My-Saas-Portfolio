@@ -142,6 +142,9 @@ export type DesignForm = {
     bg2Light: string
     textLight: string
     subtextLight: string
+    /** Main headings; empty = the text colour. */
+    heading: string
+    headingLight: string
   }
   background: BgForm
   backgroundLight: BgForm
@@ -330,6 +333,8 @@ export const emptyDesign = (): DesignForm => ({
     bg2Light: '#F3F5F8',
     textLight: '#0C0F16',
     subtextLight: '#495265',
+    heading: '',
+    headingLight: '',
   },
   background: emptyBg(),
   backgroundLight: emptyBg(),

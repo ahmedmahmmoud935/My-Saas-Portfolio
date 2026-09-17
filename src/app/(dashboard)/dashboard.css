@@ -4826,3 +4826,205 @@ input[type='range']::-moz-range-thumb {
   background: rgba(0, 0, 0, 0.35);
   color: #fff;
 }
+
+/* ── Theme colours: steps beside a small page painted in them ── */
+.hx-wide {
+  grid-template-columns: minmax(0, 1fr);
+}
+.tc-sets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.tc-set {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  padding: 9px 10px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.tc-set.on {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+.tc-dots {
+  display: flex;
+  flex: none;
+}
+.tc-dots i {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(127, 127, 127, 0.35);
+}
+.tc-dots i + i {
+  margin-inline-start: -5px;
+}
+.tc-list {
+  gap: 6px;
+}
+.tc-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-3);
+}
+.tc-row input[type='color'] {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: none;
+  cursor: pointer;
+}
+.tc-txt {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.tc-txt b {
+  font-size: 13.5px;
+  color: var(--text);
+}
+.tc-txt small {
+  font-size: 11.5px;
+  color: var(--sub);
+}
+.tc-hex {
+  flex: none;
+  width: 84px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--bg-2);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  font-family: ui-monospace, monospace;
+  text-transform: uppercase;
+}
+.tc-same {
+  flex: none;
+  max-width: 130px;
+  padding: 6px 8px;
+  border: 1px dashed var(--border);
+  border-radius: 7px;
+  background: none;
+  color: var(--sub);
+  font: inherit;
+  font-size: 11.5px;
+  line-height: 1.35;
+  cursor: pointer;
+}
+.tc-same:hover,
+.tc-clear:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.tc-clear {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: none;
+  color: var(--sub);
+  cursor: pointer;
+}
+/* The small page */
+.tp {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  font-size: 13px;
+}
+.tp-dim {
+  position: absolute;
+  inset: 0;
+}
+.tp-in {
+  position: relative;
+  padding: 16px 22px 24px;
+}
+.tp-nav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+  margin-bottom: 34px;
+}
+.tp-nav b {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  margin-inline-end: auto;
+}
+.tp-hero {
+  margin-bottom: 36px;
+}
+.tp-h1 {
+  font-size: clamp(26px, 3.4vw, 40px);
+  font-weight: 900;
+  line-height: 1.2;
+}
+.tp-hero p {
+  margin: 8px 0 16px;
+  max-width: 420px;
+  line-height: 1.6;
+}
+.tp-btn {
+  display: inline-block;
+  padding: 8px 18px;
+  border-radius: 9px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 12.5px;
+}
+.tp-h2 {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+.tp-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.tp-card {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px;
+  border-radius: 10px;
+}
+.tp-card i {
+  height: 54px;
+  border-radius: 7px;
+  margin-bottom: 5px;
+}
+.tp-card b {
+  font-size: 12.5px;
+}
+.tp-card small {
+  font-size: 11px;
+}
+.hx-wide .hx-steps {
+  width: 100%;
+  max-width: 400px;
+}

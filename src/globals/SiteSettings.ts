@@ -229,12 +229,16 @@ export const SiteSettings: CollectionConfig = {
                 { name: 'bg2', type: 'text', defaultValue: '#111111' },
                 { name: 'text', type: 'text', defaultValue: '#FFFFFF' },
                 { name: 'subtext', type: 'text', defaultValue: '#999999' },
+                // Main headings (the name in the hero, section titles). Empty =
+                // the text colour.
+                { name: 'heading', type: 'text' },
                 // Light-mode palette (used when the visitor picks light mode).
                 { name: 'accentLight', type: 'text', defaultValue: '#F97316' },
                 { name: 'bgLight', type: 'text', defaultValue: '#FFFFFF' },
                 { name: 'bg2Light', type: 'text', defaultValue: '#F3F5F8' },
                 { name: 'textLight', type: 'text', defaultValue: '#0C0F16' },
                 { name: 'subtextLight', type: 'text', defaultValue: '#495265' },
+                { name: 'headingLight', type: 'text' },
               ],
             },
             // Page background, one per theme. `background` is the dark theme's

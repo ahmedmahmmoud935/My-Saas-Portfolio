@@ -678,11 +678,13 @@ export interface SiteSetting {
     bg2?: string | null;
     text?: string | null;
     subtext?: string | null;
+    heading?: string | null;
     accentLight?: string | null;
     bgLight?: string | null;
     bg2Light?: string | null;
     textLight?: string | null;
     subtextLight?: string | null;
+    headingLight?: string | null;
   };
   background?: {
     type?: ('solid' | 'gradient' | 'animated' | 'image') | null;
@@ -1608,11 +1610,13 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         bg2?: T;
         text?: T;
         subtext?: T;
+        heading?: T;
         accentLight?: T;
         bgLight?: T;
         bg2Light?: T;
         textLight?: T;
         subtextLight?: T;
+        headingLight?: T;
       };
   background?:
     | T

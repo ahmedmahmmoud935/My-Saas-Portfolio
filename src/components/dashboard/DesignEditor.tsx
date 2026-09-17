@@ -6,7 +6,7 @@ import MediaUploader from './MediaUploader'
 import LayoutPicker from './LayoutPicker'
 import NavIcon from './icons'
 import SectionBgRows from './SectionBgRows'
-import { ColorInput, Group, Opt, Slider } from './controls'
+import { Group, Opt } from './controls'
 import { saveDesign } from '@/lib/design-actions'
 import { saveFailureText } from '@/lib/action-error'
 import { useDashLang } from './DashLang'
@@ -187,11 +187,98 @@ const SECTION_STYLE_KEY: Record<Exclude<TopTab, 'theme'>, keyof DesignForm['styl
   contact: 'contact',
 }
 
-/* A row of option buttons (radio group). */
+/** Arabic names for the ready-made colour sets. */
+const SET_NAMES: Record<string, string> = {
+  Midnight: 'كحلي', Ember: 'جمري', Ocean: 'محيط', Forest: 'غابة', Plum: 'برقوقي', Mono: 'أبيض وأسود',
+  Aurora: 'شفق', Sunset: 'غروب', Lagoon: 'بحيرة', Nebula: 'سديم', Ink: 'حبر', Ash: 'رمادي',
+  Espresso: 'قهوة', Harbour: 'ميناء', Salt: 'ملح', Paper: 'ورق', Fog: 'ضباب', Mist: 'شبورة',
+  Sage: 'ميرمية', Blush: 'وردي', Cream: 'كريمي',
+}
+
+const THEME_STEPS = [
+  { id: 'colors', ar: 'الألوان', en: 'Colours' },
+  { id: 'page', ar: 'الخلفية', en: 'Background' },
+  { id: 'sections', ar: 'الأقسام', en: 'Sections' },
+] as const
+type ThemeStep = (typeof THEME_STEPS)[number]['id']
+
+type ThemeColors = { accent: string; bg: string; bg2: string; text: string; sub: string; heading: string }
+
+/** A small page in this theme's colours, so each colour is seen where it goes. */
+function ThemePreview({ col, bg, dark, tr }: { col: ThemeColors; bg: BgForm; dark: boolean; tr: (ar: string, en: string) => string }) {
+  const stops = [bg.color1, bg.color2, bg.color3].filter(Boolean)
+  const page: React.CSSProperties =
+    bg.type === 'image' && bg.imageUrl
+      ? { backgroundImage: `url(${bg.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+      : (bg.type === 'gradient' || bg.type === 'animated') && bg.color1
+        ? { backgroundImage: `linear-gradient(135deg, ${(bg.type === 'gradient' ? stops.slice(0, 2) : stops).join(', ')})` }
+        : { background: (bg.type === 'solid' && bg.color1) || col.bg }
+  const heading = col.heading || col.text
+  return (
+    <div className="tp" style={{ ...page, color: col.text, backgroundColor: col.bg }}>
+      {bg.type === 'image' && bg.imageUrl && (
+        <div className="tp-dim" style={{ background: dark ? '#000' : '#fff', opacity: bg.dim / 100 }} />
+      )}
+      <div className="tp-in">
+        <div className="tp-nav">
+          <b style={{ background: col.accent }} />
+          <span style={{ color: col.sub }}>{tr('أعمالي', 'Work')}</span>
+          <span style={{ color: col.sub }}>{tr('عنّي', 'About')}</span>
+          <span style={{ color: col.sub }}>{tr('تواصل', 'Contact')}</span>
+        </div>
+        <div className="tp-hero">
+          <div className="tp-h1" style={{ color: heading }}>
+            {tr('اسمك ', 'Your ')}
+            <span style={{ color: col.accent }}>{tr('هنا', 'name')}</span>
+          </div>
+          <p style={{ color: col.sub }}>{tr('مصمم جرافيك بيحوّل الأفكار لصور بتتفهم من أول نظرة.', 'A designer who turns ideas into pictures that read at a glance.')}</p>
+          <span className="tp-btn" style={{ background: col.accent }}>{tr('تواصل معايا', 'Get in touch')}</span>
+        </div>
+        <div className="tp-h2" style={{ color: heading }}>{tr('أعمالي', 'My work')}</div>
+        <div className="tp-cards">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="tp-card" style={{ background: col.bg2 }}>
+              <i style={{ background: `color-mix(in srgb, ${col.accent} 30%, ${col.bg2})` }} />
+              <b style={{ color: col.text }}>{tr(`مشروع ${i + 1}`, `Project ${i + 1}`)}</b>
+              <small style={{ color: col.sub }}>{tr('هوية بصرية', 'Branding')}</small>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/** One colour, with where it shows on the site under its name. */
+function ColorRow({ label, hint, value, onChange, reset }: { label: string; hint: string; value: string; onChange: (v: string) => void; reset?: { label: string; start: string; onClick: () => void } }) {
+  return (
+    <div className="tc-row">
+      {/* Unset, it shows the colour actually in use. */}
+      <input type="color" value={value || reset?.start || '#000000'} onChange={(e) => onChange(e.target.value)} aria-label={label} />
+      <div className="tc-txt">
+        <b>{label}</b>
+        <small>{hint}</small>
+      </div>
+      {reset && !value ? (
+        <button type="button" className="tc-same" onClick={() => onChange(reset.start || '#888888')}>
+          {reset.label}
+        </button>
+      ) : (
+        <input className="tc-hex" value={value} dir="ltr" spellCheck={false} placeholder="#000000" onChange={(e) => onChange(e.target.value)} />
+      )}
+      {reset && value && (
+        <button type="button" className="tc-clear" title={reset.label} onClick={reset.onClick}>
+          ↺
+        </button>
+      )}
+    </div>
+  )
+}
+
 /**
  * Everything that belongs to one theme: its palette, the page background, and
- * any per-section backdrops. Rendered twice — once for light, once for dark —
- * so the two can be styled completely independently.
+ * any per-section backdrops — a step at a time, beside a page painted in it.
+ * Rendered for light and for dark, so the two are styled independently.
  */
 function ThemePanel({
   mode,
@@ -200,6 +287,8 @@ function ThemePanel({
   setColors,
   setBgFor,
   setSectionBg,
+  save,
+  busy,
 }: {
   mode: 'light' | 'dark'
   f: DesignForm
@@ -207,159 +296,220 @@ function ThemePanel({
   setColors: (p: Partial<DesignForm['colors']>) => void
   setBgFor: (mode: 'dark' | 'light', p: Partial<BgForm>) => void
   setSectionBg: (rows: SectionBgForm[]) => void
+  save: () => void
+  busy: boolean
 }) {
+  const [step, setStep] = useState<ThemeStep>('colors')
   const dark = mode === 'dark'
   const bg = dark ? f.background : f.backgroundLight
   const setBg = (p: Partial<BgForm>) => setBgFor(mode, p)
   const palettes = dark ? DARK_PALETTES : LIGHT_PALETTES
 
   // Colour keys differ between the two halves of the palette.
-  const c = dark
-    ? { accent: 'accent', bg: 'bg', bg2: 'bg2', text: 'text', sub: 'subtext' }
-    : { accent: 'accentLight', bg: 'bgLight', bg2: 'bg2Light', text: 'textLight', sub: 'subtextLight' }
-  const cv = (k: string) => (f.colors as unknown as Record<string, string>)[k] || ''
-
-  // One list, shared by both themes. Keeping a separate set per theme meant
-  // setting the same picture twice and remembering to change both; the only
-  // thing that actually differed was the colour of the veil over it, and CSS
-  // already flips that.
-  const rows = f.sectionBg
+  const k = dark
+    ? { accent: 'accent', bg: 'bg', bg2: 'bg2', text: 'text', sub: 'subtext', heading: 'heading' }
+    : { accent: 'accentLight', bg: 'bgLight', bg2: 'bg2Light', text: 'textLight', sub: 'subtextLight', heading: 'headingLight' }
+  const cv = (key: string) => (f.colors as unknown as Record<string, string | null>)[key] || ''
+  const setC = (key: string, v: string) => setColors({ [key]: v } as Partial<DesignForm['colors']>)
+  const col: ThemeColors = { accent: cv(k.accent), bg: cv(k.bg), bg2: cv(k.bg2), text: cv(k.text), sub: cv(k.sub), heading: cv(k.heading) }
 
   const suggestions =
     bg.type === 'animated' ? ANIMATED_SUGGESTIONS : bg.type === 'gradient' ? GRADIENT_SUGGESTIONS : []
+  const wide = step === 'sections'
 
   return (
-    <>
-      <Group title={dark ? tr('🌙 ألوان الثيم الداكن', '🌙 Dark palette') : tr('☀️ ألوان الثيم الفاتح', '☀️ Light palette')}>
-        <div className="palette-row">
-          {palettes.map((p) => (
-            <button
-              key={p.name}
-              className="palette-chip"
-              onClick={() =>
-                setColors({
-                  [c.accent]: p.accent,
-                  [c.bg]: p.bg,
-                  [c.bg2]: p.bg2,
-                  [c.text]: p.text,
-                  [c.sub]: p.subtext,
-                } as Partial<DesignForm['colors']>)
-              }
-            >
-              <span className="palette-swatch">
-                <i style={{ background: p.accent }} />
-                <i style={{ background: p.bg }} />
-                <i style={{ background: p.bg2 }} />
-              </span>
-              {p.name}
+    <div className={`hx${wide ? ' hx-wide' : ''}`}>
+      <div className="panel hx-side">
+        <div className="hx-steps">
+          {THEME_STEPS.map((s, i) => (
+            <button key={s.id} type="button" className={step === s.id ? 'on' : ''} onClick={() => setStep(s.id)}>
+              <span className="hx-num">{i + 1}</span>
+              {tr(s.ar, s.en)}
             </button>
           ))}
         </div>
-        <div style={{ marginTop: 14 }} />
-        <div className="de-colors">
-          <ColorInput label={tr('المميّز', 'Accent')} value={cv(c.accent)} onChange={(v) => setColors({ [c.accent]: v } as Partial<DesignForm['colors']>)} />
-          <ColorInput label={tr('الخلفية', 'Background')} value={cv(c.bg)} onChange={(v) => setColors({ [c.bg]: v } as Partial<DesignForm['colors']>)} />
-          <ColorInput label={tr('خلفية الكروت', 'Cards')} value={cv(c.bg2)} onChange={(v) => setColors({ [c.bg2]: v } as Partial<DesignForm['colors']>)} />
-          <ColorInput label={tr('النص', 'Text')} value={cv(c.text)} onChange={(v) => setColors({ [c.text]: v } as Partial<DesignForm['colors']>)} />
-          <ColorInput label={tr('النص الخافت', 'Muted')} value={cv(c.sub)} onChange={(v) => setColors({ [c.sub]: v } as Partial<DesignForm['colors']>)} />
-        </div>
-      </Group>
 
-      <Group title={tr('خلفية الصفحة', 'Page background')}>
-        <Opt
-          label={tr('النوع', 'Type')}
-          value={bg.type}
-          options={[
-            { value: 'solid', label: tr('لون', 'Solid') },
-            { value: 'gradient', label: tr('تدرّج', 'Gradient') },
-            { value: 'animated', label: tr('تدرّج متحرك', 'Animated') },
-            { value: 'image', label: tr('صورة', 'Image') },
-          ]}
-          onChange={(v) => setBg({ type: v })}
-        />
-
-        {bg.type === 'solid' && (
+        {step === 'colors' && (
           <>
-            <div className="bg-suggestions">
-              {SOLID_SUGGESTIONS.map((s) => (
-                <button key={s.name} className="bg-sugg" onClick={() => setBg({ color1: dark ? s.dark : s.light })}>
-                  <span className="bg-sugg-swatch" style={{ background: dark ? s.dark : s.light }} />
-                  {s.name}
-                </button>
-              ))}
+            <p className="hx-lead">
+              {dark
+                ? tr('ألوان موقعك لما الزائر يختار الثيم الداكن. ابدأ بمجموعة جاهزة وعدّل عليها.', 'Your site’s colours in the dark theme. Start from a set, then adjust.')
+                : tr('ألوان موقعك لما الزائر يختار الثيم الفاتح. ابدأ بمجموعة جاهزة وعدّل عليها.', 'Your site’s colours in the light theme. Start from a set, then adjust.')}
+            </p>
+            <div className="hx-block">
+              <div className="hx-label">{tr('مجموعات جاهزة', 'Ready-made sets')}</div>
+              <div className="tc-sets">
+                {palettes.map((p) => {
+                  const on = col.accent.toLowerCase() === p.accent.toLowerCase() && col.bg.toLowerCase() === p.bg.toLowerCase()
+                  return (
+                    <button
+                      key={p.name}
+                      type="button"
+                      className={`tc-set${on ? ' on' : ''}`}
+                      style={{ background: p.bg, color: p.text }}
+                      onClick={() =>
+                        setColors({
+                          [k.accent]: p.accent,
+                          [k.bg]: p.bg,
+                          [k.bg2]: p.bg2,
+                          [k.text]: p.text,
+                          [k.sub]: p.subtext,
+                          [k.heading]: '',
+                        } as Partial<DesignForm['colors']>)
+                      }
+                    >
+                      <span className="tc-dots">
+                        <i style={{ background: p.accent }} />
+                        <i style={{ background: p.bg2 }} />
+                      </span>
+                      {tr(SET_NAMES[p.name] ?? p.name, p.name)}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
-            <ColorInput label={tr('اللون', 'Colour')} value={bg.color1} onChange={(v) => setBg({ color1: v })} />
-          </>
-        )}
-
-        {(bg.type === 'gradient' || bg.type === 'animated') && (
-          <>
-            <div className="bg-suggestions">
-              {suggestions.map((s) => {
-                const cols = dark ? s.dark : s.light
-                return (
-                  <button
-                    key={s.name}
-                    className="bg-sugg"
-                    onClick={() => setBg({ color1: cols[0], color2: cols[1], color3: cols[2] || '' })}
-                  >
-                    <span
-                      className="bg-sugg-swatch"
-                      style={{ background: `linear-gradient(135deg, ${cols.join(', ')})` }}
-                    />
-                    {s.name}
-                  </button>
-                )
-              })}
-            </div>
-            <div className="de-colors">
-              <ColorInput label={tr('لون 1', 'Colour 1')} value={bg.color1} onChange={(v) => setBg({ color1: v })} />
-              <ColorInput label={tr('لون 2', 'Colour 2')} value={bg.color2} onChange={(v) => setBg({ color2: v })} />
-              {bg.type === 'animated' && (
-                <ColorInput label={tr('لون 3', 'Colour 3')} value={bg.color3} onChange={(v) => setBg({ color3: v })} />
-              )}
-            </div>
-            <div
-              className="bg-preview"
-              style={{
-                background: `linear-gradient(135deg, ${[bg.color1, bg.color2, bg.color3].filter(Boolean).join(', ') || 'transparent'})`,
-              }}
-            />
-          </>
-        )}
-
-        {bg.type === 'image' && (
-          // Image beside its settings: stacked, the preview pushed the controls
-          // so far down you couldn't see what you were adjusting.
-          <div className="bg-image-row">
-            <MediaUploader
-              big
-              dim={bg.dim}
-              previewUrl={bg.imageUrl}
-              label={tr('صورة الخلفية', 'Background image')}
-              onUploaded={(m) => setBg({ imageId: m.id, imageUrl: m.url ?? m.thumbUrl })}
-              onRemove={() => setBg({ imageId: null, imageUrl: null })}
-            />
-            <div>
-              <Opt
-                label={tr('السلوك عند التمرير', 'Scroll behaviour')}
-                value={bg.imageFixed ? 'fixed' : 'scroll'}
-                options={[
-                  { value: 'fixed', label: tr('ثابتة (بارالاكس)', 'Fixed (parallax)') },
-                  { value: 'scroll', label: tr('تتحرك مع الصفحة', 'Scrolls with page') },
-                ]}
-                onChange={(v) => setBg({ imageFixed: v === 'fixed' })}
+            <div className="hx-block tc-list">
+              <div className="hx-label">{tr('الألوان بالتفصيل', 'Each colour')}</div>
+              <ColorRow label={tr('اللون المميّز', 'Accent')} hint={tr('الأزرار والروابط وجزء من اسمك', 'Buttons, links, part of your name')} value={col.accent} onChange={(v) => setC(k.accent, v)} />
+              <ColorRow
+                label={tr('العناوين', 'Headings')}
+                hint={tr('اسمك وعناوين الأقسام', 'Your name and section titles')}
+                value={col.heading}
+                onChange={(v) => setC(k.heading, v)}
+                reset={{ label: tr('زي لون النص — اختار لون', 'Same as text — pick one'), start: col.text, onClick: () => setC(k.heading, '') }}
               />
-              <Slider label={tr('التعتيم', 'Dim')} value={bg.dim} min={0} max={100} suffix="%" onChange={(v) => setBg({ dim: v })} />
+              <ColorRow label={tr('النص', 'Text')} hint={tr('الكلام العادي', 'Body text')} value={col.text} onChange={(v) => setC(k.text, v)} />
+              <ColorRow label={tr('النص الخافت', 'Muted text')} hint={tr('الأوصاف والتفاصيل الصغيرة', 'Descriptions and small details')} value={col.sub} onChange={(v) => setC(k.sub, v)} />
+              <ColorRow label={tr('الخلفية', 'Background')} hint={tr('لون الصفحة', 'The page colour')} value={col.bg} onChange={(v) => setC(k.bg, v)} />
+              <ColorRow label={tr('الكروت', 'Cards')} hint={tr('خلفية كروت المشاريع والخدمات', 'Behind project and service cards')} value={col.bg2} onChange={(v) => setC(k.bg2, v)} />
             </div>
-          </div>
+          </>
         )}
-      </Group>
 
-      <Group title={tr('خلفيات الأقسام', 'Section backgrounds')}>
-        <SectionBgRows rows={rows} sections={BG_SECTIONS} tr={tr} onChange={setSectionBg} />
-      </Group>
-    </>
+        {step === 'page' && (
+          <>
+            <p className="hx-lead">{tr('اللي بيبان ورا الموقع كله. سيبها «لون واحد» علشان تاخد لون الخلفية من الألوان.', 'What sits behind the whole site. Leave it on “one colour” to use the background colour.')}</p>
+            <div className="hx-block">
+              <Opt
+                label={tr('النوع', 'Type')}
+                value={bg.type}
+                options={[
+                  { value: 'solid', label: tr('لون واحد', 'One colour') },
+                  { value: 'gradient', label: tr('تدرّج', 'Gradient') },
+                  { value: 'animated', label: tr('تدرّج متحرّك', 'Moving gradient') },
+                  { value: 'image', label: tr('صورة', 'Image') },
+                ]}
+                onChange={(v) => setBg({ type: v })}
+              />
+            </div>
+
+            {bg.type === 'solid' && (
+              <div className="hx-block">
+                <div className="hx-label">
+                  {tr('اللون', 'Colour')}
+                  <small>{bg.color1 ? tr('لون مختلف عن «الخلفية» في الألوان.', 'A colour other than the palette’s background.') : tr('بياخد «الخلفية» من خطوة الألوان.', 'Uses the background from the colours step.')}</small>
+                </div>
+                <div className="bg-suggestions">
+                  {SOLID_SUGGESTIONS.map((s) => (
+                    <button key={s.name} type="button" className="bg-sugg" onClick={() => setBg({ color1: dark ? s.dark : s.light })}>
+                      <span className="bg-sugg-swatch" style={{ background: dark ? s.dark : s.light }} />
+                      {tr(SET_NAMES[s.name] ?? s.name, s.name)}
+                    </button>
+                  ))}
+                </div>
+                <ColorRow
+                  label={tr('لون الصفحة', 'Page colour')}
+                  hint={tr('ورا كل الأقسام', 'Behind every section')}
+                  value={bg.color1}
+                  onChange={(v) => setBg({ color1: v })}
+                  reset={{ label: tr('زي الألوان — اختار لون', 'Same as palette — pick one'), start: col.bg, onClick: () => setBg({ color1: '' }) }}
+                />
+              </div>
+            )}
+
+            {(bg.type === 'gradient' || bg.type === 'animated') && (
+              <div className="hx-block">
+                <div className="hx-label">{tr('اختار تدرّج', 'Pick a blend')}</div>
+                <div className="bg-suggestions">
+                  {suggestions.map((s) => {
+                    const cols = dark ? s.dark : s.light
+                    return (
+                      <button key={s.name} type="button" className="bg-sugg" onClick={() => setBg({ color1: cols[0], color2: cols[1], color3: cols[2] || '' })}>
+                        <span className="bg-sugg-swatch" style={{ background: `linear-gradient(135deg, ${cols.join(', ')})` }} />
+                        {tr(SET_NAMES[s.name] ?? s.name, s.name)}
+                      </button>
+                    )
+                  })}
+                </div>
+                <div className="hx-label">{tr('أو اختار الألوان بنفسك', 'Or set the colours yourself')}</div>
+                <ColorRow label={tr('اللون الأول', 'First colour')} hint="" value={bg.color1} onChange={(v) => setBg({ color1: v })} />
+                <ColorRow label={tr('اللون التاني', 'Second colour')} hint="" value={bg.color2} onChange={(v) => setBg({ color2: v })} />
+                {bg.type === 'animated' && (
+                  <ColorRow label={tr('اللون التالت', 'Third colour')} hint="" value={bg.color3} onChange={(v) => setBg({ color3: v })} />
+                )}
+              </div>
+            )}
+
+            {bg.type === 'image' && (
+              <div className="hx-block">
+                <MediaUploader
+                  big
+                  dim={bg.dim}
+                  previewUrl={bg.imageUrl}
+                  label={tr('ارفع صورة الخلفية', 'Upload a background image')}
+                  onUploaded={(m) => setBg({ imageId: m.id, imageUrl: m.url ?? m.thumbUrl })}
+                  onRemove={() => setBg({ imageId: null, imageUrl: null })}
+                />
+                <Opt
+                  label={tr('لما الزائر ينزل في الصفحة', 'When the visitor scrolls')}
+                  value={bg.imageFixed ? 'fixed' : 'scroll'}
+                  options={[
+                    { value: 'fixed', label: tr('الصورة ثابتة', 'Picture stays put') },
+                    { value: 'scroll', label: tr('بتتحرك مع الصفحة', 'Moves with the page') },
+                  ]}
+                  onChange={(v) => setBg({ imageFixed: v === 'fixed' })}
+                />
+                <Range label={tr('تعتيم الصورة', 'Dim the picture')} value={bg.dim} min={0} max={100} shown={`${bg.dim}%`} onChange={(v) => setBg({ dim: v })} />
+              </div>
+            )}
+          </>
+        )}
+
+        {step === 'sections' && (
+          <>
+            <p className="hx-lead">{tr('لو عايز قسم معيّن بخلفية مختلفة عن باقي الصفحة: لون، صورة، أو فيديو.', 'Give one section a background of its own: a colour, a picture or a video.')}</p>
+            <div className="hx-block">
+              <SectionBgRows rows={f.sectionBg} sections={BG_SECTIONS} tr={tr} onChange={setSectionBg} />
+            </div>
+          </>
+        )}
+
+        <div className="hx-foot">
+          {step !== 'sections' ? (
+            <button type="button" className="btn btn-ghost btn-sm" onClick={() => setStep(step === 'colors' ? 'page' : 'sections')}>
+              {tr('الخطوة الجاية ←', 'Next step →')}
+            </button>
+          ) : (
+            <span />
+          )}
+          <button className="btn btn-primary btn-sm" onClick={save} disabled={busy}>
+            {busy ? '…' : tr('حفظ', 'Save')}
+          </button>
+        </div>
+      </div>
+
+      {!wide && (
+        <div className="panel hx-stage">
+          <div className="hx-stage-head">
+            <span className="lbl">{tr('معاينة', 'Preview')}</span>
+            <span className="cover-hint">
+              {dark ? tr('الثيم الداكن — ومش بيتنشر غير لما تحفظ.', 'Dark theme — nothing is published until you save.') : tr('الثيم الفاتح — ومش بيتنشر غير لما تحفظ.', 'Light theme — nothing is published until you save.')}
+            </span>
+          </div>
+          <ThemePreview col={col} bg={bg} dark={dark} tr={tr} />
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -454,19 +604,22 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
             ))}
           </div>
 
-          <div className="panel">
-            {(sub === 'light' || sub === 'dark') && (
-              <ThemePanel
-                mode={sub}
-                f={f}
-                tr={tr}
-                setColors={setColors}
-                setBgFor={setBgFor}
-                setSectionBg={setSectionBg}
-              />
-            )}
+          {(sub === 'light' || sub === 'dark') && (
+            <ThemePanel
+              key={sub}
+              mode={sub}
+              f={f}
+              tr={tr}
+              setColors={setColors}
+              setBgFor={setBgFor}
+              setSectionBg={setSectionBg}
+              save={save}
+              busy={busy}
+            />
+          )}
 
-            {sub === 'general' && (
+          {sub === 'general' && (
+          <div className="panel">
               <>
                 <Group title={tr('شعار الموقع', 'Site logo')}>
                   {/* The mark in the navbar. There was no way to set it at all
@@ -518,8 +671,8 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
                   </div>
                 </Group>
               </>
-            )}
           </div>
+          )}
         </>
       )}
 
