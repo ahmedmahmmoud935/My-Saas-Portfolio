@@ -44,26 +44,40 @@ const HERO_GRADIENTS: { id: string; label: string; css: string }[] = [
 
 const clampPct = (v: number) => Math.max(0, Math.min(100, v))
 
-/** A scaled, live preview of the hero cover (layout + image/gradient + position + overlay). */
-function CoverPreview({ f }: { f: DesignForm }) {
+/** The hero as it will look: layout, background, focus, veil, text size and place. */
+function CoverPreview({ f, theme }: { f: DesignForm; theme: 'dark' | 'light' }) {
   const g = f.heroCover.gradient
   const usingGradient = g !== 'none'
   const gradCss = HERO_GRADIENTS.find((x) => x.id === g)?.css
   const variant = f.style.hero || 'split'
+  const c = f.heroCover
   const bgStyle: React.CSSProperties = usingGradient
     ? { background: gradCss }
     : f.heroCoverUrl
       ? {
           backgroundImage: `url(${f.heroCoverUrl})`,
-          backgroundSize: f.heroCover.size === 'contain' ? 'contain' : 'cover',
-          backgroundPosition: `${f.heroCover.posX}% ${f.heroCover.posY}%`,
+          backgroundSize: c.size === 'contain' ? 'contain' : 'cover',
+          backgroundPosition: `${c.posX}% ${c.posY}%`,
           backgroundRepeat: 'no-repeat',
         }
-      : { background: 'var(--bg-3)' }
+      : {}
+  const light = theme === 'light'
+  const veil = (light ? c.overlayLight : c.overlay) || 0
+  // A desk screen is 16:9; the section takes `height` of it.
+  const ratio = `16 / ${(9 * c.height) / 100}`
   return (
-    <div className={`cvp cvp-${variant}`}>
+    <div
+      className={`cvp cvp-${variant}${light ? ' cvp-light' : ''}`}
+      data-ha={c.align !== 'auto' ? c.align : undefined}
+      data-va={c.valign !== 'auto' ? c.valign : undefined}
+      style={{
+        aspectRatio: ratio,
+        ['--t' as string]: c.titleScale / 100,
+        ['--d' as string]: c.descScale / 100,
+      }}
+    >
       <div className="cvp-bg" style={bgStyle} />
-      <div className="cvp-overlay" style={{ opacity: (f.heroCover.overlay || 0) / 100 }} />
+      <div className="cvp-overlay" style={{ opacity: veil / 100, background: light ? '#fff' : '#000' }} />
       <div className="cvp-content">
         <span className="cvp-name" />
         <span className="cvp-name cvp-name-2" />
@@ -73,6 +87,55 @@ function CoverPreview({ f }: { f: DesignForm }) {
     </div>
   )
 }
+
+/** The whole picture, uncropped: a click marks the point that must stay in view. */
+function FocusPicker({ url, x, y, onChange }: { url: string; x: number; y: number; onChange: (x: number, y: number) => void }) {
+  const pick = (e: React.PointerEvent<HTMLDivElement>) => {
+    const r = e.currentTarget.getBoundingClientRect()
+    onChange(
+      Math.round(clampPct(((e.clientX - r.left) / r.width) * 100)),
+      Math.round(clampPct(((e.clientY - r.top) / r.height) * 100)),
+    )
+  }
+  return (
+    <div
+      className="hx-focus"
+      onPointerDown={(e) => {
+        e.currentTarget.setPointerCapture(e.pointerId)
+        pick(e)
+      }}
+      onPointerMove={(e) => {
+        if (e.buttons) pick(e)
+      }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={url} alt="" draggable={false} />
+      <span className="hx-dot" style={{ left: `${x}%`, top: `${y}%` }} />
+    </div>
+  )
+}
+
+/** A slider whose value is said in words next to its name. */
+function Range({ label, value, min, max, shown, onChange }: { label: string; value: number; min: number; max: number; shown: string; onChange: (v: number) => void }) {
+  return (
+    <label className="hx-range">
+      <span className="hx-range-top">
+        <span>{label}</span>
+        <b>{shown}</b>
+      </span>
+      <input type="range" min={min} max={max} value={value} onChange={(e) => onChange(Number(e.target.value))} />
+    </label>
+  )
+}
+
+const HERO_STEPS = [
+  { id: 'layout', ar: 'الشكل', en: 'Layout' },
+  { id: 'cover', ar: 'الخلفية', en: 'Background' },
+  { id: 'text', ar: 'الكلام', en: 'Text' },
+] as const
+type HeroStep = (typeof HERO_STEPS)[number]['id']
+const V_POS = ['top', 'center', 'bottom'] as const
+const H_POS = ['start', 'center', 'end'] as const
 
 // Top-level tabs: the shared Theme, then one tab per page section.
 const TOP_TABS = [
@@ -291,6 +354,8 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
   const [f, setF] = useState<DesignForm>(initial)
   const [tab, setTab] = useState<TopTab>('theme')
   const [sub, setSub] = useState<ThemeSub>('dark')
+  const [heroStep, setHeroStep] = useState<HeroStep>('layout')
+  const [pvTheme, setPvTheme] = useState<'dark' | 'light'>('dark')
   const [busy, setBusy] = useState(false)
   const { t: tr } = useDashLang()
   const [toast, setToast] = useState(false)
@@ -447,109 +512,173 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
 
       {/* ═══ HERO SECTION TAB ═══ */}
       {tab === 'hero' && (
-        <div className="cover-tab">
-          {/* The preview leads, at the width the hero actually has. Beside a
-              column of controls it was a thumbnail of a full-width section —
-              too small to judge the thing every control below it changes. */}
-          <div className="panel cover-stage">
-            <div className="cover-stage-head">
-              <span className="lbl">{tr('معاينة حيّة', 'Live preview')}</span>
-              <span className="cover-hint">{tr('شكل القسم الرئيسي بعد الحفظ.', 'How the hero looks after saving.')}</span>
+        /* The settings in one column beside the preview, a step at a time.
+           Four columns of every setting under the preview meant scrolling away
+           from the thing each control changes, and no clue where to start. */
+        <div className="hx">
+          <div className="panel hx-side">
+            <div className="hx-steps">
+              {HERO_STEPS.map((s, i) => (
+                <button key={s.id} type="button" className={heroStep === s.id ? 'on' : ''} onClick={() => setHeroStep(s.id)}>
+                  <span className="hx-num">{i + 1}</span>
+                  {tr(s.ar, s.en)}
+                </button>
+              ))}
             </div>
-            <CoverPreview f={f} />
-          </div>
 
-          {/* Grouped by the question each answers, rather than one long column
-              in the order the fields happened to be added. */}
-          <div className="cover-groups">
-            <Group title={tr('التخطيط', 'Layout')}>
-              {sectionLayout('hero', tr('تخطيط القسم الرئيسي', 'Hero layout'))}
-            </Group>
+            {heroStep === 'layout' && (
+              <>
+                <p className="hx-lead">{tr('اختار شكل أول جزء بيشوفه الزائر.', 'Pick how the first screen a visitor sees is laid out.')}</p>
+                <div className="hx-layouts">{sectionLayout('hero', '')}</div>
+              </>
+            )}
 
-            <Group title={tr('الغلاف', 'Cover')}>
-              <div className="lbl">{tr('المصدر', 'Source')}</div>
-              <div className="seg2">
-                <button type="button" className={!usingGradient ? 'active' : ''} onClick={() => setCover({ gradient: 'none' })}>
-                  {tr('صورة', 'Image')}
-                </button>
-                <button type="button" className={usingGradient ? 'active' : ''} onClick={() => setCover({ gradient: f.heroCover.gradient !== 'none' ? f.heroCover.gradient : 'aurora' })}>
-                  {tr('تدرّج لوني', 'Gradient')}
-                </button>
-              </div>
-
-              {usingGradient ? (
-                <div className="hgp" style={{ marginTop: 12 }}>
-                  {HERO_GRADIENTS.filter((g) => g.id !== 'none').map((g) => (
-                    <button key={g.id} type="button" className={`hgp-swatch ${f.heroCover.gradient === g.id ? 'active' : ''}`} style={{ background: g.css }} onClick={() => setCover({ gradient: g.id })} title={g.label} />
-                  ))}
+            {heroStep === 'cover' && (
+              <>
+                <p className="hx-lead">{tr('الخلفية اللي ورا اسمك: صورة أو ألوان متدرّجة.', 'What sits behind your name: a picture or a colour blend.')}</p>
+                <div className="seg2">
+                  <button type="button" className={!usingGradient ? 'active' : ''} onClick={() => setCover({ gradient: 'none' })}>
+                    {tr('🖼 صورة', '🖼 Image')}
+                  </button>
+                  <button type="button" className={usingGradient ? 'active' : ''} onClick={() => setCover({ gradient: f.heroCover.gradient !== 'none' ? f.heroCover.gradient : 'aurora' })}>
+                    {tr('🎨 ألوان متدرّجة', '🎨 Gradient')}
+                  </button>
                 </div>
-              ) : (
-                <div className="cover-image-row">
-                  <div>
-                    <MediaUploader previewUrl={f.heroCoverUrl} onUploaded={(m) => set({ heroCoverId: m.id, heroCoverUrl: m.thumbUrl })} />
-                    {f.heroCoverUrl && (
-                      <button type="button" className="btn btn-danger btn-sm" style={{ marginTop: 8 }} onClick={() => set({ heroCoverId: null, heroCoverUrl: null })}>
-                        {tr('حذف الصورة', 'Remove image')}
-                      </button>
-                    )}
+
+                {usingGradient ? (
+                  <div className="hx-block">
+                    <div className="hx-label">{tr('اختار التدرّج', 'Pick a blend')}</div>
+                    <div className="hgp">
+                      {HERO_GRADIENTS.filter((g) => g.id !== 'none').map((g) => (
+                        <button key={g.id} type="button" className={`hgp-swatch ${f.heroCover.gradient === g.id ? 'active' : ''}`} style={{ background: g.css }} onClick={() => setCover({ gradient: g.id })} title={g.label} />
+                      ))}
+                    </div>
                   </div>
-                  <div>
-                    <Opt label={tr('ملء الإطار', 'Fit')} value={f.heroCover.size} options={['cover', 'contain']} onChange={(v) => setCover({ size: v })} />
-                    <div className="lbl">{tr('موضع الصورة', 'Image position')}</div>
-                    <div className="pos-pad">
-                      <button type="button" onClick={() => setCover({ posY: clampPct(f.heroCover.posY - 5) })} aria-label="up">↑</button>
-                      <div className="pos-pad-row">
-                        <button type="button" onClick={() => setCover({ posX: clampPct(f.heroCover.posX - 5) })} aria-label="left">←</button>
-                        <button type="button" className="pos-center" onClick={() => setCover({ posX: 50, posY: 50 })}>
-                          {f.heroCover.posX}% · {f.heroCover.posY}%
-                        </button>
-                        <button type="button" onClick={() => setCover({ posX: clampPct(f.heroCover.posX + 5) })} aria-label="right">→</button>
+                ) : !f.heroCoverUrl ? (
+                  <div className="hx-block">
+                    <MediaUploader key="none" label={tr('ارفع صورة الخلفية', 'Upload a cover image')} onUploaded={(m) => set({ heroCoverId: m.id, heroCoverUrl: m.thumbUrl })} />
+                  </div>
+                ) : (
+                  <>
+                    <div className="hx-block">
+                      <div className="hx-label">
+                        {tr('دوس على أهم جزء في الصورة', 'Click the part of the picture that matters most')}
+                        <small>{tr('زي وشّك — علشان يفضل ظاهر لما الصورة تتقص', 'like a face — it stays in view when the picture is cropped')}</small>
                       </div>
-                      <button type="button" onClick={() => setCover({ posY: clampPct(f.heroCover.posY + 5) })} aria-label="down">↓</button>
+                      <FocusPicker
+                        url={f.heroCoverUrl}
+                        x={f.heroCover.posX}
+                        y={f.heroCover.posY}
+                        onChange={(posX, posY) => setCover({ posX, posY })}
+                      />
+                      <div className="hx-row">
+                        <MediaUploader key={f.heroCoverUrl} compact label={tr('غيّر الصورة', 'Replace image')} onUploaded={(m) => set({ heroCoverId: m.id, heroCoverUrl: m.thumbUrl })} />
+                        <button type="button" className="btn btn-ghost btn-sm" onClick={() => set({ heroCoverId: null, heroCoverUrl: null })}>
+                          {tr('شيل الصورة', 'Remove')}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="hx-block">
+                      <Opt
+                        label={tr('الصورة تظهر إزاي؟', 'How the picture fits')}
+                        value={f.heroCover.size}
+                        options={[
+                          { value: 'cover', label: tr('تملا المساحة (بتتقص)', 'Fill the space (crops)') },
+                          { value: 'contain', label: tr('كاملة من غير قص', 'Whole, uncropped') },
+                        ]}
+                        onChange={(v) => setCover({ size: v })}
+                      />
+                    </div>
+                  </>
+                )}
+
+                <div className="hx-block">
+                  <div className="hx-label">
+                    {tr('تعتيم الخلفية', 'Dim the background')}
+                    <small>{tr('علشان الكلام يبان فوق الصورة. المعاينة بتوريك الثيم اللي بتعدّله.', 'So the text reads over the picture. The preview follows the theme you adjust.')}</small>
+                  </div>
+                  <Range label={tr('🌙 في الثيم الداكن', '🌙 Dark theme')} value={f.heroCover.overlay} min={0} max={100} shown={`${f.heroCover.overlay}%`} onChange={(v) => { setPvTheme('dark'); setCover({ overlay: v }) }} />
+                  <Range label={tr('☀️ في الثيم الفاتح', '☀️ Light theme')} value={f.heroCover.overlayLight} min={0} max={100} shown={`${f.heroCover.overlayLight}%`} onChange={(v) => { setPvTheme('light'); setCover({ overlayLight: v }) }} />
+                </div>
+              </>
+            )}
+
+            {heroStep === 'text' && (
+              <>
+                <p className="hx-lead">{tr('حجم الكلام ومكانه، وطول القسم.', 'How big the text is, where it sits, and how tall the section is.')}</p>
+                <div className="hx-block">
+                  <div className="hx-label">{tr('مكان الكلام', 'Where the text sits')}</div>
+                  <div className="hx-place">
+                    <div className="hx-grid" role="radiogroup">
+                      {V_POS.map((v) =>
+                        H_POS.map((h) => {
+                          const on = f.heroCover.valign === v && f.heroCover.align === h
+                          return (
+                            <button
+                              key={`${v}-${h}`}
+                              type="button"
+                              role="radio"
+                              aria-checked={on}
+                              className={on ? 'on' : ''}
+                              onClick={() => setCover({ valign: v, align: h })}
+                            >
+                              <span />
+                            </button>
+                          )
+                        }),
+                      )}
+                    </div>
+                    <div>
+                      <button
+                        type="button"
+                        className={`pill ${f.heroCover.align === 'auto' && f.heroCover.valign === 'auto' ? 'active' : ''}`}
+                        onClick={() => setCover({ align: 'auto', valign: 'auto' })}
+                      >
+                        {tr('تلقائي حسب الشكل', 'Automatic')}
+                      </button>
+                      <p className="hx-note">{tr('أو دوس على المربع اللي عايز الكلام فيه.', 'Or click the square you want the text in.')}</p>
                     </div>
                   </div>
                 </div>
+                <div className="hx-block">
+                  <Range label={tr('حجم العنوان', 'Heading size')} value={f.heroCover.titleScale} min={50} max={160} shown={`${f.heroCover.titleScale}%`} onChange={(v) => setCover({ titleScale: v })} />
+                  <Range label={tr('حجم الوصف', 'Description size')} value={f.heroCover.descScale} min={50} max={200} shown={`${f.heroCover.descScale}%`} onChange={(v) => setCover({ descScale: v })} />
+                  <Range
+                    label={tr('طول القسم', 'Section height')}
+                    value={f.heroCover.height}
+                    min={40}
+                    max={100}
+                    shown={f.heroCover.height >= 100 ? tr('الشاشة كلها', 'Full screen') : tr(`${f.heroCover.height}% من الشاشة`, `${f.heroCover.height}% of the screen`)}
+                    onChange={(v) => setCover({ height: v })}
+                  />
+                </div>
+              </>
+            )}
+
+            <div className="hx-foot">
+              {heroStep !== 'text' ? (
+                <button type="button" className="btn btn-ghost btn-sm" onClick={() => setHeroStep(heroStep === 'layout' ? 'cover' : 'text')}>
+                  {tr('الخطوة الجاية ←', 'Next step →')}
+                </button>
+              ) : (
+                <span />
               )}
-            </Group>
+              <button className="btn btn-primary btn-sm" onClick={save} disabled={busy}>
+                {busy ? '…' : tr('حفظ', 'Save')}
+              </button>
+            </div>
+          </div>
 
-            <Group title={tr('الطبقة فوق الغلاف', 'Veil over the cover')}>
-              {/* One strength for both themes painted black over a light page,
-                  which reads as a stain rather than as help for the headline. */}
-              <Slider label={tr('على الثيم الداكن (سوداء)', 'On the dark theme (black)')} value={f.heroCover.overlay} min={0} max={100} suffix="%" onChange={(v) => setCover({ overlay: v })} />
-              <Slider label={tr('على الثيم الفاتح (بيضاء)', 'On the light theme (white)')} value={f.heroCover.overlayLight} min={0} max={100} suffix="%" onChange={(v) => setCover({ overlayLight: v })} />
-            </Group>
-
-            <Group title={tr('النص والمساحة', 'Text & size')}>
-              <Slider label={tr('ارتفاع القسم', 'Section height')} value={f.heroCover.height} min={40} max={100} suffix="vh" onChange={(v) => setCover({ height: v })} />
-              {/* A proportion, not a size in pixels: each layout sizes its own
-                  heading, and this scales whichever one is selected. */}
-              <Slider label={tr('حجم العنوان', 'Heading size')} value={f.heroCover.titleScale} min={50} max={160} suffix="%" onChange={(v) => setCover({ titleScale: v })} />
-              {/* The description already takes its size from the heading; this
-                  nudges it on top of that, so the block keeps its proportions. */}
-              <Slider label={tr('حجم الوصف', 'Description size')} value={f.heroCover.descScale} min={50} max={200} suffix="%" onChange={(v) => setCover({ descScale: v })} />
-              <Opt
-                label={tr('مكان النص أفقيًا', 'Text position ↔')}
-                value={f.heroCover.align}
-                options={[
-                  { value: 'auto', label: tr('حسب التخطيط', 'Layout default') },
-                  { value: 'start', label: tr('البداية', 'Start') },
-                  { value: 'center', label: tr('المنتصف', 'Centre') },
-                  { value: 'end', label: tr('النهاية', 'End') },
-                ]}
-                onChange={(v) => setCover({ align: v })}
-              />
-              <Opt
-                label={tr('مكان النص رأسيًا', 'Text position ↕')}
-                value={f.heroCover.valign}
-                options={[
-                  { value: 'auto', label: tr('حسب التخطيط', 'Layout default') },
-                  { value: 'top', label: tr('أعلى', 'Top') },
-                  { value: 'center', label: tr('المنتصف', 'Middle') },
-                  { value: 'bottom', label: tr('أسفل', 'Bottom') },
-                ]}
-                onChange={(v) => setCover({ valign: v })}
-              />
-            </Group>
+          <div className="panel hx-stage">
+            <div className="hx-stage-head">
+              <span className="lbl">{tr('معاينة', 'Preview')}</span>
+              <span className="cover-hint">{tr('بتتغيّر وانت بتعدّل — ومش بتتنشر غير لما تحفظ.', 'Changes as you edit — nothing is published until you save.')}</span>
+              <div className="lx-seg">
+                <button type="button" className={pvTheme === 'dark' ? 'on' : ''} onClick={() => setPvTheme('dark')} title={tr('داكن', 'Dark')}>🌙</button>
+                <button type="button" className={pvTheme === 'light' ? 'on' : ''} onClick={() => setPvTheme('light')} title={tr('فاتح', 'Light')}>☀️</button>
+              </div>
+            </div>
+            <CoverPreview f={f} theme={pvTheme} />
           </div>
         </div>
       )}

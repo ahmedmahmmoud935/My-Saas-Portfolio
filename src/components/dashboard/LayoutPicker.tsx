@@ -1,4 +1,5 @@
 import React from 'react'
+import { useDashLang } from './DashLang'
 
 // Mini wireframe previews for the layout pickers (matches the original dashboard).
 const A = '#f97316' // accent bar
@@ -205,6 +206,33 @@ export const WIREFRAMES: Record<string, React.ReactNode> = {
   ),
 }
 
+/** What each layout is called on the page — its id was shown as-is before. */
+const NAMES: Record<string, [string, string]> = {
+  'hero-centered': ['في النص', 'Centred'],
+  'hero-split': ['كلام وصورة', 'Text & image'],
+  'hero-panel': ['لوحة', 'Panel'],
+  'hero-massive': ['عنوان ضخم', 'Big title'],
+  'hero-cover-full': ['صورة بعرض الشاشة', 'Full-bleed image'],
+  'hero-minimal': ['بسيط', 'Minimal'],
+  'about-classic': ['كلاسيك', 'Classic'],
+  'about-visual': ['صورة كبيرة', 'Big image'],
+  'about-simple': ['بسيط', 'Simple'],
+  'projects-grid': ['شبكة', 'Grid'],
+  'projects-masonry': ['متداخل', 'Masonry'],
+  'projects-list': ['قائمة', 'List'],
+  'expertise-grid': ['شبكة', 'Grid'],
+  'expertise-stack': ['تحت بعض', 'Stacked'],
+  'contact-classic': ['كلاسيك', 'Classic'],
+  'contact-split': ['جزئين', 'Split'],
+  'skills-tags': ['وسوم', 'Tags'],
+  'skills-inline': ['في سطر', 'Inline'],
+  'skills-bars': ['أشرطة', 'Bars'],
+  'tools-classic': ['كلاسيك', 'Classic'],
+  'tools-compact': ['مضغوط', 'Compact'],
+  'exp-classic': ['كلاسيك', 'Classic'],
+  'exp-timeline': ['خط زمني', 'Timeline'],
+}
+
 export default function LayoutPicker({
   section,
   label,
@@ -218,9 +246,10 @@ export default function LayoutPicker({
   options: readonly string[]
   onChange: (v: string) => void
 }) {
+  const { t } = useDashLang()
   return (
     <div className="lp-field">
-      <div className="lp-label">{label}</div>
+      {label && <div className="lp-label">{label}</div>}
       <div className="lp-grid">
         {options.map((o) => {
           const active = value === o
@@ -232,7 +261,7 @@ export default function LayoutPicker({
               onClick={() => onChange(o)}
             >
               {WIREFRAMES[`${section}-${o}`] ?? <div style={{ height: 74 }} />}
-              <span className="lp-name">{o}</span>
+              <span className="lp-name">{NAMES[`${section}-${o}`] ? t(...NAMES[`${section}-${o}`]) : o}</span>
             </button>
           )
         })}
