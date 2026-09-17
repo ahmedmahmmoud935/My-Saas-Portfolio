@@ -21,6 +21,9 @@ import { Team } from './collections/Team'
 import { Achievements } from './collections/Achievements'
 import { Visits } from './collections/Visits'
 import { Imports } from './collections/Imports'
+import { Notices } from './collections/Notices'
+import { Feedback } from './collections/Feedback'
+import { Attachments } from './collections/Attachments'
 import { SiteSettings } from './globals/SiteSettings'
 import { Landing } from './globals/Landing'
 
@@ -62,6 +65,9 @@ export default buildConfig({
     Visits,
     Imports,
     SiteSettings,
+    Notices,
+    Feedback,
+    Attachments,
   ],
   globals: [Landing],
   editor: lexicalEditor(),
@@ -107,6 +113,17 @@ export default buildConfig({
       ? [
           s3Storage({
             collections: {
+              // Suggestion files: same bucket, their own folder, public
+              // addresses under random names.
+              attachments: {
+                prefix: 'attachments',
+                ...(cdnBase
+                  ? {
+                      generateFileURL: ({ filename, prefix }) =>
+                        `${cdnBase}/${prefix ?? 'attachments'}/${encodeURIComponent(filename)}`,
+                    }
+                  : {}),
+              },
               media: {
                 prefix: MEDIA_PREFIX,
                 // With a public CDN in front of the bucket, hand out its URLs

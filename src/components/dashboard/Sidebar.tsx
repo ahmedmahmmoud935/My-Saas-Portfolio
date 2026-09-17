@@ -22,12 +22,15 @@ export default function Sidebar({
   storageUsed,
   storageLimit,
   isOwner = false,
+  unread = 0,
 }: {
   userName: string
   tenantSlug: string
   storageUsed: number
   storageLimit: number
   isOwner?: boolean
+  /** Messages from the platform not yet opened. */
+  unread?: number
 }) {
   const pathname = usePathname()
   const router = useRouter()
@@ -91,6 +94,7 @@ export default function Sidebar({
               return (
                 <a key={item.id} href={href} className={`nav-item ${active ? 'active' : ''}`}>
                   <span>{t(item.labelAr, item.labelEn)}</span>
+                  {item.id === 'inbox' && unread > 0 && <b className="nav-count">{unread}</b>}
                   <span className="ic">
                     <NavIcon id={item.id} />
                   </span>

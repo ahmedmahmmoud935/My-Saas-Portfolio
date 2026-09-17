@@ -296,6 +296,26 @@ const PATHS: Record<string, React.ReactNode> = {
       {P('M19 14l.7 2.1L22 17l-2.3.9L19 20l-.7-2.1L16 17l2.3-.9L19 14z')}
     </>
   ),
+  // A bell: messages from the platform.
+  inbox: (
+    <>
+      {P('M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9')}
+      {P('M13.73 21a2 2 0 0 1-3.46 0')}
+    </>
+  ),
+  messages: (
+    <>
+      {P('M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9')}
+      {P('M13.73 21a2 2 0 0 1-3.46 0')}
+    </>
+  ),
+  // A speech bubble with a spark: suggestions.
+  feedback: (
+    <>
+      {P('M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z')}
+      {P('M12 7v4M12 14h.01')}
+    </>
+  ),
 }
 
 export default function NavIcon({ id, size = 20 }: { id: string; size?: number }) {

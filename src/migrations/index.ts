@@ -45,6 +45,7 @@ import * as migration_20260914_020000_landing_section_order from './20260914_020
 import * as migration_20260914_030000_team from './20260914_030000_team';
 import * as migration_20260916_010000_publish_at from './20260916_010000_publish_at';
 import * as migration_20260917_010000_storage_default from './20260917_010000_storage_default';
+import * as migration_20260917_020000_notices_feedback from './20260917_020000_notices_feedback';
 
 export const migrations = [
   {
@@ -281,5 +282,10 @@ export const migrations = [
     up: migration_20260917_010000_storage_default.up,
     down: migration_20260917_010000_storage_default.down,
     name: '20260917_010000_storage_default'
+  },
+  {
+    up: migration_20260917_020000_notices_feedback.up,
+    down: migration_20260917_020000_notices_feedback.down,
+    name: '20260917_020000_notices_feedback'
   },
 ];

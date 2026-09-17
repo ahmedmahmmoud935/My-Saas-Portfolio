@@ -13,13 +13,15 @@ export default async function OwnerLayout({ children }: { children: React.ReactN
   const ctx = await getDashboardContext()
   if (!ctx) redirect('/login')
   if (!ctx.user.isOwner) redirect('/dashboard')
+  // Suggestions nobody has opened yet, counted beside their menu entry.
+  const fresh = await ctx.payload.count({ collection: 'feedback', where: { status: { equals: 'new' } } })
 
   return (
     <DashLangProvider>
       <InstallApp label="ثبّت لوحة الإدارة على شاشتك" />
       <div className="dash">
         <main className="dash-main">{children}</main>
-        <OwnerSidebar userName={ctx.user.name || ctx.user.email} />
+        <OwnerSidebar userName={ctx.user.name || ctx.user.email} newFeedback={fresh.totalDocs} />
       </div>
     </DashLangProvider>
   )

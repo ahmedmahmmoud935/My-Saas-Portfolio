@@ -12,6 +12,8 @@ export const OWNER_NAV: NavItem[] = [
   { id: 'design', labelAr: 'التصميم', labelEn: 'Design', icon: '' },
   { id: 'blog', labelAr: 'المدوّنة', labelEn: 'Blog', icon: '' },
   { id: 'users', labelAr: 'العملاء', labelEn: 'Clients', icon: '' },
+  { id: 'messages', labelAr: 'الرسائل', labelEn: 'Messages', icon: '' },
+  { id: 'feedback', labelAr: 'المقترحات', labelEn: 'Suggestions', icon: '' },
 ]
 
 /** Icon ids (see components/dashboard/icons.tsx) for the owner nav. */
@@ -21,4 +23,6 @@ export const OWNER_NAV_ICONS: Record<string, string> = {
   design: 'palette',
   blog: 'articles',
   users: 'users',
+  messages: 'messages',
+  feedback: 'feedback',
 }

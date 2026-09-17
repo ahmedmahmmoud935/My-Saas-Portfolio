@@ -81,6 +81,9 @@ export interface Config {
     visits: Visit;
     imports: Import;
     'site-settings': SiteSetting;
+    notices: Notice;
+    feedback: Feedback;
+    attachments: Attachment;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -102,6 +105,9 @@ export interface Config {
     visits: VisitsSelect<false> | VisitsSelect<true>;
     imports: ImportsSelect<false> | ImportsSelect<true>;
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
+    notices: NoticesSelect<false> | NoticesSelect<true>;
+    feedback: FeedbackSelect<false> | FeedbackSelect<true>;
+    attachments: AttachmentsSelect<false> | AttachmentsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -1002,6 +1008,60 @@ export interface SiteSetting {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notices".
+ */
+export interface Notice {
+  id: number;
+  title: string;
+  body: string;
+  tone?: ('info' | 'success' | 'warning') | null;
+  audience?: ('all' | 'one') | null;
+  tenant?: (number | null) | Tenant;
+  link?: string | null;
+  readBy?: (number | Tenant)[] | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "feedback".
+ */
+export interface Feedback {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  author?: (number | null) | User;
+  kind?: ('idea' | 'problem' | 'question') | null;
+  subject: string;
+  body: string;
+  attachments?: (number | Attachment)[] | null;
+  status?: ('new' | 'seen' | 'planned' | 'done') | null;
+  reply?: string | null;
+  repliedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "attachments".
+ */
+export interface Attachment {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  original?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -1079,6 +1139,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'site-settings';
         value: number | SiteSetting;
+      } | null)
+    | ({
+        relationTo: 'notices';
+        value: number | Notice;
+      } | null)
+    | ({
+        relationTo: 'feedback';
+        value: number | Feedback;
+      } | null)
+    | ({
+        relationTo: 'attachments';
+        value: number | Attachment;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1833,6 +1905,57 @@ export interface SiteSettingsSelect<T extends boolean = true> {
       };
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notices_select".
+ */
+export interface NoticesSelect<T extends boolean = true> {
+  title?: T;
+  body?: T;
+  tone?: T;
+  audience?: T;
+  tenant?: T;
+  link?: T;
+  readBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "feedback_select".
+ */
+export interface FeedbackSelect<T extends boolean = true> {
+  tenant?: T;
+  author?: T;
+  kind?: T;
+  subject?: T;
+  body?: T;
+  attachments?: T;
+  status?: T;
+  reply?: T;
+  repliedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "attachments_select".
+ */
+export interface AttachmentsSelect<T extends boolean = true> {
+  tenant?: T;
+  original?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

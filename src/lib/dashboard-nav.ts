@@ -44,6 +44,15 @@ export const DASHBOARD_NAV_GROUPS: NavGroup[] = [
       { id: 'seo', labelAr: 'فحص الموقع', labelEn: 'Site check', icon: '🔎' },
     ],
   },
+  {
+    // Talking to the platform: what it tells you, and what you tell it.
+    ar: 'الدعم',
+    en: 'Support',
+    items: [
+      { id: 'inbox', labelAr: 'الرسائل', labelEn: 'Messages', icon: '🔔' },
+      { id: 'feedback', labelAr: 'اقتراحاتي', labelEn: 'Suggestions', icon: '💬' },
+    ],
+  },
 ]
 
 /** The same tabs as one list, for anything that just needs to look an id up. */

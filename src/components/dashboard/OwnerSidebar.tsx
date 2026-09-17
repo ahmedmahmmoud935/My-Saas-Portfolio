@@ -18,7 +18,7 @@ function applyMode(mode: Mode) {
  * job: this one runs ViralPX (the marketing page, the client list), while
  * /dashboard edits a single portfolio.
  */
-export default function OwnerSidebar({ userName }: { userName: string }) {
+export default function OwnerSidebar({ userName, newFeedback = 0 }: { userName: string; newFeedback?: number }) {
   const pathname = usePathname()
   const router = useRouter()
   const { lang, setLang, t } = useDashLang()
@@ -69,6 +69,7 @@ export default function OwnerSidebar({ userName }: { userName: string }) {
           return (
             <a key={item.id} href={href} className={`nav-item ${pathname === href ? 'active' : ''}`}>
               <span>{t(item.labelAr, item.labelEn)}</span>
+              {item.id === 'feedback' && newFeedback > 0 && <b className="nav-count">{newFeedback}</b>}
               <span className="ic">
                 <NavIcon id={OWNER_NAV_ICONS[item.id] || item.id} />
               </span>
