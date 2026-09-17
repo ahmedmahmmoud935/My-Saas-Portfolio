@@ -60,9 +60,15 @@ export async function sendFeedback(
         },
       })
       ids.push(doc.id)
-    } catch {
+    } catch (e) {
       await undo()
-      return { ok: false, code: 'bad-file', file: f.name }
+      /* Only the file itself is the client's to fix. Anything else — the
+         database, the bucket — is ours, and telling them their picture is
+         broken sends them off replacing a file that was fine all along. */
+      const msg = e instanceof Error ? e.message : ''
+      const theirs = /file|image|pdf|mime|type|size|corrupt|invalid/i.test(msg) && !/column|relation|database|connect|credential|access denied|s3|bucket/i.test(msg)
+      console.error('[feedback attachment]', f.name, msg)
+      return { ok: false, code: theirs ? 'bad-file' : 'server', file: f.name }
     }
   }
 

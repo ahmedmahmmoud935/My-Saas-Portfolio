@@ -242,6 +242,9 @@ export const LANDING_COPY = {
     seoDescription:
       'حوّل مشاريعك وريلزك ومقالاتك لموقع بورتفوليو احترافي على دومينك الخاص — بالعربي والإنجليزي، من غير كود. جرّبه شهر كامل مجانًا.',
     rights: 'كل الحقوق محفوظة',
+    // The two buttons that float over the page. Empty = that button is off.
+    waNumber: '',
+    phone: '',
   },
   en: {
     nav: { features: 'Features', how: 'How it works', showcase: 'Showcase', compare: 'Why us', pricing: 'Pricing', faq: 'FAQ' },
@@ -411,6 +414,8 @@ export const LANDING_COPY = {
     seoDescription:
       'Turn your projects, reels and articles into a professional portfolio site on your own domain — Arabic and English, no code. Try it free for a month.',
     rights: 'All rights reserved',
+    waNumber: '',
+    phone: '',
   },
 }
 

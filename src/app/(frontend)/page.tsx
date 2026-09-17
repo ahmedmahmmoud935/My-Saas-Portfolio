@@ -16,6 +16,7 @@ import { LandingNav, LandingFooter } from '@/components/portfolio/LandingChrome'
 import { DEFAULT_LOOK, landingTokensCss, onAccent, setOnly, type LandingLook } from '@/lib/landing-look'
 import { tenantUrl } from '@/lib/tenant-url'
 import { resolveLandingOrder } from '@/lib/landing-order'
+import ContactFabs from '@/components/portfolio/ContactFabs'
 import { platformLocale } from '@/lib/seo'
 import './landing.css'
 
@@ -788,6 +789,16 @@ export default async function HomePage({ searchParams }: Params) {
       <SectionBg config={sections.footer}>
         <LandingFooter look={look} copy={c} locale={locale} atHome />
       </SectionBg>
+
+      <ContactFabs
+        whatsapp={c.waNumber}
+        phone={c.phone}
+        labels={
+          locale === 'en'
+            ? { whatsapp: 'Message us on WhatsApp', call: 'Call us' }
+            : { whatsapp: 'كلّمنا على واتساب', call: 'اتصل بينا' }
+        }
+      />
 
       <style>{landingTokensCss(look)}</style>
     </div>

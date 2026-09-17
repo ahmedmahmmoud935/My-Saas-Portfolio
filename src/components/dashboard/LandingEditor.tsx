@@ -1661,6 +1661,36 @@ export default function LandingEditor({
             {scalar('footerNote', t('سطر تعريفي', 'A line about the product'), true)}
             {scalar('rights', t('حقوق النشر', 'Copyright text'))}
 
+            {/* Numbers, not words: one field each, written to both languages. */}
+            <div className="grid-2" style={{ marginBottom: 12 }}>
+              <div>
+                <label className="lbl" style={{ display: 'block' }}>{t('رقم واتساب', 'WhatsApp number')}</label>
+                <input
+                  className="field"
+                  dir="ltr"
+                  placeholder="+20 100 000 0000"
+                  value={String(f.ar.waNumber ?? '')}
+                  onChange={(e) => setKeyBoth('waNumber', e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="lbl" style={{ display: 'block' }}>{t('رقم التليفون', 'Phone number')}</label>
+                <input
+                  className="field"
+                  dir="ltr"
+                  placeholder="+20 100 000 0000"
+                  value={String(f.ar.phone ?? '')}
+                  onChange={(e) => setKeyBoth('phone', e.target.value)}
+                />
+              </div>
+            </div>
+            <Note style={{ margin: '0 0 14px' }}>
+              {t(
+                'الرقمين دول بيظهروا كزرارين عايمين في كل صفحات الموقع: واحد بيفتح واتساب، وواحد بيتصل. سيب الخانة فاضية علشان تخفي الزرار.',
+                'These two show as floating buttons on every page: one opens WhatsApp, one dials. Leave a field empty to hide that button.',
+              )}
+            </Note>
+
             <Note style={{ margin: '4px 0 14px' }}>
               {t(
                 'الروابط في أعمدة. الرابط اللي بيبدأ بـ # بينقل لقسم في نفس الصفحة (زي #pricing)، وأي حاجة تانية بتتفتح كرابط كامل. رابط المدوّنة بيتحط لوحده في أول عمود، وروابط الصفحات القانونية في عمود لوحدها.',

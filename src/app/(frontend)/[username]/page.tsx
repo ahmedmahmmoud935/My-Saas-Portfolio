@@ -18,6 +18,7 @@ import Team from '@/components/portfolio/Team'
 import Contact from '@/components/portfolio/Contact'
 import Footer from '@/components/portfolio/Footer'
 import TrackVisit from '@/components/portfolio/TrackVisit'
+import ContactFabs from '@/components/portfolio/ContactFabs'
 import MobileBar from '@/components/portfolio/MobileBar'
 import InstallApp from '@/components/portfolio/InstallApp'
 import SectionBg from '@/components/portfolio/SectionBg'
@@ -493,17 +494,18 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
       ))}
       <Footer logo={logoText} name={content.hero?.name || tenant.name} />
 
-      {settings?.social?.whatsapp && (
-        <a
-          className="wa-float"
-          href={`https://wa.me/${settings.social.whatsapp.replace(/[^0-9]/g, '')}`}
-          target="_blank"
-          rel="noreferrer"
-          aria-label="WhatsApp"
-        >
-          💬
-        </a>
-      )}
+      {/* The phone bar owns the bottom of a small screen where it is on, so
+          the two buttons step aside there rather than sit on top of it. */}
+      <ContactFabs
+        whatsapp={settings?.social?.whatsapp}
+        phone={content.contact?.phone}
+        hideOnPhone={settings?.mobileBar?.enabled !== false && (settings?.mobileBar?.buttons ?? []).length > 0}
+        labels={
+          locale === 'en'
+            ? { whatsapp: 'Message on WhatsApp', call: 'Call' }
+            : { whatsapp: 'كلّمني على واتساب', call: 'اتصل بيا' }
+        }
+      />
 
       {settings?.mobileBar?.enabled !== false && (
         <MobileBar

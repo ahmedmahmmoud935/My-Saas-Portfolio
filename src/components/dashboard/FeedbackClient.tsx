@@ -109,9 +109,11 @@ export default function FeedbackClient({ items }: { items: FeedbackRow[] }) {
               ? t(`أقصى عدد ${FEEDBACK_LIMITS.maxFiles} ملفات.`, `Up to ${FEEDBACK_LIMITS.maxFiles} files.`)
               : code === 'empty'
                 ? t('اكتب عنوان وتفاصيل.', 'Add a subject and the details.')
-                : code === 'unauthorized'
-                  ? t('انتهت الجلسة — سجّل دخول تاني.', 'Your session ended — sign in again.')
-                  : t('ماتبعتش — جرّب تاني.', 'It did not send — please try again.'),
+                : code === 'server'
+                  ? t('المشكلة عندنا مش في ملفك — الاقتراح ماتبعتش. جرّب تاني بعد شوية.', 'The fault is ours, not your file — nothing was sent. Please try again shortly.')
+                  : code === 'unauthorized'
+                    ? t('انتهت الجلسة — سجّل دخول تاني.', 'Your session ended — sign in again.')
+                    : t('ماتبعتش — جرّب تاني.', 'It did not send — please try again.'),
     })
   }
 
