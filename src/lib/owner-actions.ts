@@ -5,6 +5,8 @@ import { getDashboardContext } from './dashboard'
 import { sendActivation } from './activation'
 import { recordSlugRedirect } from './record-redirect'
 import { cleanSlug, slugProblem } from './slug-rules'
+import { seedStarter } from './starter'
+import { isStarterField, type StarterField } from './starter-fields'
 
 /**
  * What an action says when it declines. Returned rather than thrown: a
@@ -25,6 +27,8 @@ export async function createClient(input: {
   slug: string
   email: string
   storageLimitMb: number
+  /** Which starting texts the portfolio is given. */
+  field?: StarterField
 }) {
   const ctx = await ownerCtx()
   const tenant = await ctx.payload.create({
@@ -42,6 +46,14 @@ export async function createClient(input: {
       tenants: [{ tenant: tenant.id }],
     },
   })
+  /* A portfolio that opens with something in it: texts for their line of
+     work, in both languages, ready to rewrite. Never fatal — a client with an
+     empty page is still a client. */
+  try {
+    await seedStarter(ctx.payload, tenant.id, isStarterField(input.field) ? input.field : 'general', input.name)
+  } catch (e) {
+    console.error('[createClient] starter content failed:', e)
+  }
   // Email the client a set-password link + 6-digit code (proves email ownership).
   await sendActivation(ctx.payload, { id: user.id, email: input.email })
   return { ok: true, id: tenant.id }

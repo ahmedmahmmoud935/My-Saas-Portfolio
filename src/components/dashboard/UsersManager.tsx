@@ -8,6 +8,7 @@ import PageHeader from './PageHeader'
 import { createClient, updateTenant, resendActivation, setSuspended, deleteClient, setClientEmail } from '@/lib/owner-actions'
 import { useDashLang } from './DashLang'
 import { DEFAULT_STORAGE_MB } from '@/lib/quota'
+import { STARTER_FIELDS, type StarterField } from '@/lib/starter-fields'
 
 type Client = {
   id: number
@@ -28,7 +29,7 @@ export default function UsersManager({ clients }: { clients: Client[] }) {
   const { t } = useDashLang()
   const [busy, setBusy] = useState(false)
   const [creating, setCreating] = useState(false)
-  const [nc, setNc] = useState({ name: '', slug: '', email: '', storageLimitMb: DEFAULT_STORAGE_MB })
+  const [nc, setNc] = useState({ name: '', slug: '', email: '', storageLimitMb: DEFAULT_STORAGE_MB, field: 'designer' as StarterField })
 
   async function create() {
     if (!nc.name || !nc.slug || !nc.email) {
@@ -44,7 +45,7 @@ export default function UsersManager({ clients }: { clients: Client[] }) {
     try {
       await createClient(nc)
       setCreating(false)
-      setNc({ name: '', slug: '', email: '', storageLimitMb: DEFAULT_STORAGE_MB })
+      setNc({ name: '', slug: '', email: '', storageLimitMb: DEFAULT_STORAGE_MB, field: 'designer' })
       alert(t('تم الإنشاء ✓ اتبعت للعميل رابط لتعيين كلمة السر', 'Created ✓ a set-password link was emailed to the client'))
       router.refresh()
     } catch {
@@ -221,6 +222,20 @@ export default function UsersManager({ clients }: { clients: Client[] }) {
               <input className="field" dir="ltr" value={nc.email} onChange={(e) => setNc({ ...nc, email: e.target.value })} style={{ textAlign: 'start' }} />
               <p className="lbl" style={{ color: 'var(--sub)', marginTop: 4 }}>
                 {t('هيوصل للعميل رابط على إيميله لتعيين كلمة السر بنفسه.', 'The client gets an email link to set their own password.')}
+              </p>
+              <label className="lbl">{t('مجاله (للقالب)', 'Their field (for the starter)')}</label>
+              <div className="opt-opts" style={{ marginBottom: 4 }}>
+                {STARTER_FIELDS.map((f) => (
+                  <button key={f.id} type="button" className={`pill ${nc.field === f.id ? 'active' : ''}`} onClick={() => setNc({ ...nc, field: f.id })}>
+                    {t(f.ar, f.en)}
+                  </button>
+                ))}
+              </div>
+              <p className="lbl" style={{ color: 'var(--sub)', marginTop: 4 }}>
+                {t(
+                  'موقعه هيفتح بنصوص جاهزة لمجاله (عربي وإنجليزي): المقدمة، نبذة، خدمات، مهارات، وأدوات — وهو يعدّلها. من غير آراء أو أرقام أو مشاريع وهمية.',
+                  'Their site opens with ready texts for their field, in both languages — intro, about, services, skills and tools — for them to rewrite. No invented reviews, numbers or projects.',
+                )}
               </p>
               <label className="lbl">{t('حد التخزين (MB)', 'Storage limit (MB)')}</label>
               <input className="field" type="number" value={nc.storageLimitMb} onChange={(e) => setNc({ ...nc, storageLimitMb: Number(e.target.value) })} />
