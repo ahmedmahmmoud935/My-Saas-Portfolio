@@ -9,6 +9,7 @@ export default async function DesignPage() {
   const ctx = await getDashboardContext()
   if (!ctx) redirect('/login')
   const settings = await getTenantSettings(ctx)
+  const tenant = await ctx.payload.findByID({ collection: 'tenants', id: ctx.tenantId, depth: 0 })
 
   const d = emptyDesign()
   const s = settings as unknown as Record<string, Record<string, unknown>>
@@ -61,5 +62,5 @@ export default async function DesignPage() {
     brandLogoUrl: mediaUrl((s.brand?.brandLogo as never) ?? null, 'thumb'),
   }
 
-  return <DesignEditor initial={form} />
+  return <DesignEditor initial={form} sitePath={`/${tenant.slug}`} />
 }

@@ -55,8 +55,7 @@ html[data-theme='light'] .pf-root {
   --border: color-mix(in srgb, var(--text-light, #0c0f16) 14%, transparent) !important;
   --accent: var(--accent-light, var(--accent-base, #f97316)) !important;
 }
-/* The heading colour picked for the light theme, if any. */
-html[data-theme='light'] .pf-root .hero-name,
+/* The section-title colour picked for the light theme, if any. */
 html[data-theme='light'] .pf-root .section-title {
   color: var(--heading-light, inherit);
 }
@@ -439,7 +438,6 @@ html[data-theme='light'] .pf-root .hero-overlay {
   margin: 0 0 11px;
 }
 .hero-name {
-  color: var(--heading-dark, inherit);
   font-family: var(--font-display);
   font-size: var(--hero-title);
   font-weight: 900;

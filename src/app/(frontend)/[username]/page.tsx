@@ -34,7 +34,7 @@ import {
 
 type Params = {
   params: Promise<{ username: string }>
-  searchParams?: Promise<{ lang?: string }>
+  searchParams?: Promise<{ lang?: string; preview?: string }>
 }
 
 const splitTags = (s?: string | null): string[] =>
@@ -57,9 +57,11 @@ export async function generateViewport({ params }: Params): Promise<Viewport> {
 
 export async function generateMetadata({ params, searchParams }: Params): Promise<Metadata> {
   const { username } = await params
-  const { lang } = (await searchParams) ?? {}
+  const { lang, preview } = (await searchParams) ?? {}
   const data = await getPortfolio(username)
   if (!data) return { title: 'Not found' }
+  // The dashboard's framed copy is not a page of its own.
+  if (preview === '1') return { title: data.tenant.name, robots: { index: false, follow: false } }
   const heroName = data.settings?.content?.hero?.name || data.tenant.name
   const heroTitle = data.settings?.content?.hero?.title || ''
   // The tab and the search result read the hero, which is written as a design
@@ -111,7 +113,9 @@ export async function generateMetadata({ params, searchParams }: Params): Promis
 
 export default async function PortfolioPage({ params, searchParams }: Params) {
   const { username } = await params
-  const { lang } = (await searchParams) ?? {}
+  const { lang, preview } = (await searchParams) ?? {}
+  // Framed in the dashboard: not a visit, and not for Google Analytics.
+  const isPreview = preview === '1'
   const locale = await pageLocale(lang)
   const data = await getPortfolio(username, locale)
   if (!data) notFound()
@@ -438,9 +442,9 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
           )}
         </div>
       )}
-      <Analytics id={settings?.seoTools?.analyticsId} />
+      {!isPreview && <Analytics id={settings?.seoTools?.analyticsId} />}
       <MotionFx anim={st.anim || 'fade-up'} cursor={st.cursor || 'default'} />
-      <TrackVisit tenant={tenant.id} page="home" />
+      {!isPreview && <TrackVisit tenant={tenant.id} page="home" />}
       <InstallApp
         label={
           locale === 'en'

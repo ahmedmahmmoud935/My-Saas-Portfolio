@@ -26,11 +26,22 @@ export default function LandingPreview({
   spot,
   version,
   onClose,
+  path = '/',
+  apply,
+  theme,
+  note,
 }: {
   spot: PreviewSpot
   /** Bumped after a save, which is when the page has something new to show. */
   version: number
-  onClose: () => void
+  onClose?: () => void
+  /** The page to show. A portfolio is framed at its own path. */
+  path?: string
+  /** Paints unsaved changes onto the framed page, on load and whenever it changes. */
+  apply?: (doc: Document) => void
+  /** Which theme the framed page is shown in, when the editor chooses it. */
+  theme?: { value: 'dark' | 'light'; onChange: (v: 'dark' | 'light') => void }
+  note?: string
 }) {
   const { t } = useDashLang()
   const [lang, setLang] = useState<'ar' | 'en'>('ar')
@@ -41,6 +52,8 @@ export default function LandingPreview({
   const frame = useRef<HTMLIFrameElement>(null)
   const spotRef = useRef(spot)
   spotRef.current = spot
+  const applyRef = useRef(apply)
+  applyRef.current = apply
 
   const pageW = device === 'desk' ? DESK : PHONE
   const scale = Math.min(1, boxW / pageW)
@@ -84,8 +97,18 @@ export default function LandingPreview({
     go()
   }, [spot, go])
 
-  const src = `/?preview=1${lang === 'en' ? '&lang=en' : ''}&v=${version}`
-  const live = lang === 'en' ? '/?lang=en' : '/'
+  const paint = useCallback(() => {
+    const doc = frame.current?.contentDocument
+    if (doc && applyRef.current) applyRef.current(doc)
+  }, [])
+  useEffect(() => {
+    paint()
+  }, [apply, paint])
+
+  // A portfolio may be written in English first, so its language is always
+  // named; the address drops whichever one is its default.
+  const src = `${path}?preview=1${lang === 'en' ? '&lang=en' : path === '/' ? '' : '&lang=ar'}&v=${version}`
+  const live = path === '/' ? (lang === 'en' ? '/?lang=en' : '/') : `${path}?lang=${lang}`
 
   return (
     <aside className="lx-pv">
@@ -106,13 +129,25 @@ export default function LandingPreview({
             EN
           </button>
         </div>
-        <span className="lx-pv-note">{t('بتتحدّث بعد الحفظ', 'Updates when you save')}</span>
+        {theme && (
+          <div className="lx-seg">
+            <button className={theme.value === 'dark' ? 'on' : ''} onClick={() => theme.onChange('dark')} title={t('داكن', 'Dark')}>
+              🌙
+            </button>
+            <button className={theme.value === 'light' ? 'on' : ''} onClick={() => theme.onChange('light')} title={t('فاتح', 'Light')}>
+              ☀️
+            </button>
+          </div>
+        )}
+        <span className="lx-pv-note">{note ?? t('بتتحدّث بعد الحفظ', 'Updates when you save')}</span>
         <a className="lx-icon" href={live} target="_blank" rel="noreferrer" title={t('افتح الصفحة', 'Open the page')}>
           ↗
         </a>
-        <button className="lx-icon" onClick={onClose} title={t('اقفل المعاينة', 'Close the preview')}>
-          ✕
-        </button>
+        {onClose && (
+          <button className="lx-icon" onClick={onClose} title={t('اقفل المعاينة', 'Close the preview')}>
+            ✕
+          </button>
+        )}
       </div>
 
       <div className="lx-pv-box" ref={box}>
@@ -123,6 +158,7 @@ export default function LandingPreview({
           title={t('معاينة الصفحة', 'Page preview')}
           onLoad={() => {
             // Layout settles a beat after load — fonts, images with no size yet.
+            paint()
             go()
             setTimeout(go, 350)
           }}

@@ -188,7 +188,11 @@ export async function middleware(req: NextRequest) {
     const renamed = slug ? (map.slugs ?? {})[slug] : null
     const owner = renamed ?? (slug && (map.live ?? []).includes(slug) ? slug : null)
     const host = owner ? (map.hosts ?? {})[owner] : null
-    if (slug && owner && host) {
+    /* Except the dashboard's preview, framed from the platform: sent to the
+       portfolio's host it would be another origin, which the dashboard can
+       frame but not paint unsaved changes into. It is marked noindex. */
+    const framed = req.nextUrl.searchParams.get('preview') === '1'
+    if (slug && owner && host && !framed) {
       const rest = req.nextUrl.pathname.slice(slug.length + 1)
       return NextResponse.redirect(
         new URL(`${rest || '/'}${cleanSearch(req, siteLang(owner, map))}`, `https://${host}`),

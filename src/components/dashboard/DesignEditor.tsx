@@ -1,6 +1,9 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
+import LandingPreview from './LandingPreview'
+import { tenantCssVars } from '@/lib/tenant-vars'
+import { pageBackground } from '@/lib/background'
 import PageHeader from './PageHeader'
 import MediaUploader from './MediaUploader'
 import LayoutPicker from './LayoutPicker'
@@ -57,49 +60,6 @@ const gradientCss = (id: string) =>
   [...LIGHT_GRADIENTS, ...DARK_GRADIENTS].find((g) => g.id === id)?.css ?? OLD_GRADIENTS[id]
 
 const clampPct = (v: number) => Math.max(0, Math.min(100, v))
-
-/** The hero as it will look: layout, background, focus, veil, text size and place. */
-function CoverPreview({ f, theme }: { f: DesignForm; theme: 'dark' | 'light' }) {
-  const usingGradient = f.heroCover.gradient !== 'none'
-  const light = theme === 'light'
-  const gradCss = gradientCss(light ? f.heroCover.gradient : f.heroCover.gradientDark || f.heroCover.gradient)
-  const variant = f.style.hero || 'split'
-  const c = f.heroCover
-  const bgStyle: React.CSSProperties = usingGradient
-    ? { background: gradCss }
-    : f.heroCoverUrl
-      ? {
-          backgroundImage: `url(${f.heroCoverUrl})`,
-          backgroundSize: c.size === 'contain' ? 'contain' : 'cover',
-          backgroundPosition: `${c.posX}% ${c.posY}%`,
-          backgroundRepeat: 'no-repeat',
-        }
-      : {}
-  const veil = (light ? c.overlayLight : c.overlay) || 0
-  // A desk screen is 16:9; the section takes `height` of it.
-  const ratio = `16 / ${(9 * c.height) / 100}`
-  return (
-    <div
-      className={`cvp cvp-${variant}${light ? ' cvp-light' : ''}`}
-      data-ha={c.align !== 'auto' ? c.align : undefined}
-      data-va={c.valign !== 'auto' ? c.valign : undefined}
-      style={{
-        aspectRatio: ratio,
-        ['--t' as string]: c.titleScale / 100,
-        ['--d' as string]: c.descScale / 100,
-      }}
-    >
-      <div className="cvp-bg" style={bgStyle} />
-      <div className="cvp-overlay" style={{ opacity: veil / 100, background: light ? '#fff' : '#000' }} />
-      <div className="cvp-content">
-        <span className="cvp-name" />
-        <span className="cvp-name cvp-name-2" />
-        <span className="cvp-sub" />
-        <span className="cvp-btn" />
-      </div>
-    </div>
-  )
-}
 
 /** The whole picture, uncropped: a click marks the point that must stay in view. */
 function FocusPicker({ url, x, y, onChange }: { url: string; x: number; y: number; onChange: (x: number, y: number) => void }) {
@@ -175,6 +135,17 @@ const THEME_SUBS = [
 
 type ThemeSub = (typeof THEME_SUBS)[number]['id']
 
+// Where each section tab's section sits on the page.
+const SECTION_SPOT: Record<string, string> = {
+  about: 'about',
+  projects: 'projects',
+  expertise: 'expertise',
+  exp: 'experience',
+  tools: 'tools',
+  skills: 'skills',
+  contact: 'contact',
+}
+
 // Which style-key each section tab drives.
 const SECTION_STYLE_KEY: Record<Exclude<TopTab, 'theme'>, keyof DesignForm['style']> = {
   hero: 'hero',
@@ -204,51 +175,6 @@ type ThemeStep = (typeof THEME_STEPS)[number]['id']
 
 type ThemeColors = { accent: string; bg: string; bg2: string; text: string; sub: string; heading: string }
 
-/** A small page in this theme's colours, so each colour is seen where it goes. */
-function ThemePreview({ col, bg, dark, tr }: { col: ThemeColors; bg: BgForm; dark: boolean; tr: (ar: string, en: string) => string }) {
-  const stops = [bg.color1, bg.color2, bg.color3].filter(Boolean)
-  const page: React.CSSProperties =
-    bg.type === 'image' && bg.imageUrl
-      ? { backgroundImage: `url(${bg.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-      : (bg.type === 'gradient' || bg.type === 'animated') && bg.color1
-        ? { backgroundImage: `linear-gradient(135deg, ${(bg.type === 'gradient' ? stops.slice(0, 2) : stops).join(', ')})` }
-        : { background: (bg.type === 'solid' && bg.color1) || col.bg }
-  const heading = col.heading || col.text
-  return (
-    <div className="tp" style={{ ...page, color: col.text, backgroundColor: col.bg }}>
-      {bg.type === 'image' && bg.imageUrl && (
-        <div className="tp-dim" style={{ background: dark ? '#000' : '#fff', opacity: bg.dim / 100 }} />
-      )}
-      <div className="tp-in">
-        <div className="tp-nav">
-          <b style={{ background: col.accent }} />
-          <span style={{ color: col.sub }}>{tr('أعمالي', 'Work')}</span>
-          <span style={{ color: col.sub }}>{tr('عنّي', 'About')}</span>
-          <span style={{ color: col.sub }}>{tr('تواصل', 'Contact')}</span>
-        </div>
-        <div className="tp-hero">
-          <div className="tp-h1" style={{ color: heading }}>
-            {tr('اسمك ', 'Your ')}
-            <span style={{ color: col.accent }}>{tr('هنا', 'name')}</span>
-          </div>
-          <p style={{ color: col.sub }}>{tr('مصمم جرافيك بيحوّل الأفكار لصور بتتفهم من أول نظرة.', 'A designer who turns ideas into pictures that read at a glance.')}</p>
-          <span className="tp-btn" style={{ background: col.accent }}>{tr('تواصل معايا', 'Get in touch')}</span>
-        </div>
-        <div className="tp-h2" style={{ color: heading }}>{tr('أعمالي', 'My work')}</div>
-        <div className="tp-cards">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="tp-card" style={{ background: col.bg2 }}>
-              <i style={{ background: `color-mix(in srgb, ${col.accent} 30%, ${col.bg2})` }} />
-              <b style={{ color: col.text }}>{tr(`مشروع ${i + 1}`, `Project ${i + 1}`)}</b>
-              <small style={{ color: col.sub }}>{tr('هوية بصرية', 'Branding')}</small>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
 /** One colour, with where it shows on the site under its name. */
 function ColorRow({ label, hint, value, onChange, reset }: { label: string; hint: string; value: string; onChange: (v: string) => void; reset?: { label: string; start: string; onClick: () => void } }) {
   return (
@@ -276,6 +202,209 @@ function ColorRow({ label, hint, value, onChange, reset }: { label: string; hint
 }
 
 /**
+ * Paint the unsaved form onto the framed portfolio: the same variables and
+ * attributes the page is rendered with, so colours, fonts, spacing and the
+ * backdrop change as they are edited. A different layout, or a picture that
+ * isn't on the page yet, needs the save that reloads it.
+ */
+function applyDesign(doc: Document, f: DesignForm, theme: 'dark' | 'light') {
+  doc.documentElement.dataset.theme = theme
+  const root = doc.querySelector<HTMLElement>('.pf-root')
+  if (!root) return
+  root.style.removeProperty('--heading-dark')
+  root.style.removeProperty('--heading-light')
+  for (const [k, v] of Object.entries(tenantCssVars({ colors: f.colors } as never))) root.style.setProperty(k, v)
+  root.dataset.fontAr = f.style.fontAr
+  root.dataset.fontLatin = f.style.fontLatin
+  root.dataset.anim = f.style.anim
+  root.dataset.cursor = f.style.cursor
+  root.dataset.card = f.components.card
+  root.dataset.navbar = f.components.navbar
+  root.dataset.btn = f.components.button
+  root.dir = f.style.direction === 'ltr' || f.style.direction === 'rtl' ? f.style.direction : root.lang === 'en' ? 'ltr' : 'rtl'
+
+  root.querySelectorAll(':scope > .pf-bg-layer').forEach((el) => el.remove())
+  for (const [b, light] of [
+    [f.background, false],
+    [f.backgroundLight, true],
+  ] as const) {
+    const look = pageBackground(b)
+    if (!look) continue
+    const layer = doc.createElement('div')
+    layer.className = `pf-bg-layer ${light ? 'for-light' : 'for-dark'}${look.animated ? ' animated' : ''}${look.scrolls ? ' scrolls' : ''}`
+    Object.assign(layer.style, look.style)
+    if (b.type === 'image' && b.imageUrl) {
+      const dim = doc.createElement('span')
+      dim.className = `pf-bg-dim${light ? ' light' : ''}`
+      dim.style.opacity = String(b.dim / 100)
+      layer.appendChild(dim)
+    }
+    root.prepend(layer)
+  }
+
+  const hero = doc.getElementById('hero')
+  if (hero) {
+    const c = f.heroCover
+    hero.style.setProperty('--hero-h', `${c.height}vh`)
+    hero.style.setProperty('--hero-title-scale', String(c.titleScale / 100))
+    hero.style.setProperty('--hero-desc-scale', String(c.descScale / 100))
+    hero.style.setProperty('--hero-veil-dark', String(c.overlay / 100))
+    hero.style.setProperty('--hero-veil-light', String(c.overlayLight / 100))
+    if (c.align !== 'auto') hero.dataset.ha = c.align
+    else delete hero.dataset.ha
+    if (c.valign !== 'auto') hero.dataset.va = c.valign
+    else delete hero.dataset.va
+    hero.querySelectorAll<HTMLImageElement>('img.hero-bg').forEach((img) => {
+      img.style.objectPosition = `${c.posX}% ${c.posY}%`
+      img.style.objectFit = c.size
+    })
+    if (c.gradient !== 'none') {
+      hero.querySelector('.hg-on-light')?.setAttribute('class', `hero-bg hero-grad hg-${c.gradient} hg-on-light`)
+      hero.querySelector('.hg-on-dark')?.setAttribute('class', `hero-bg hero-grad hg-${c.gradientDark || c.gradient} hg-on-dark`)
+    }
+  }
+}
+
+/** The general settings, a step at a time. */
+const GENERAL_STEPS = [
+  { id: 'logo', ar: 'الشعار', en: 'Logo' },
+  { id: 'look', ar: 'الشكل', en: 'Look' },
+  { id: 'fonts', ar: 'الخطوط', en: 'Fonts' },
+  { id: 'motion', ar: 'الحركة', en: 'Motion' },
+] as const
+type GeneralStep = (typeof GENERAL_STEPS)[number]['id']
+
+type T = (ar: string, en: string) => string
+const opts = (tr: T, list: [string, string, string][]) => list.map(([value, ar, en]) => ({ value, label: tr(ar, en) }))
+
+/** A side panel: numbered steps, the step's controls, then next and save. */
+function StepPanel<S extends string>({
+  steps,
+  step,
+  setStep,
+  save,
+  busy,
+  tr,
+  children,
+}: {
+  steps: readonly { id: S; ar: string; en: string }[]
+  step: S
+  setStep: (s: S) => void
+  save: () => void
+  busy: boolean
+  tr: T
+  children: React.ReactNode
+}) {
+  const i = steps.findIndex((s) => s.id === step)
+  const next = steps[i + 1]
+  return (
+    <div className="panel hx-side">
+      {steps.length > 1 && (
+        <div className="hx-steps" style={{ gridTemplateColumns: `repeat(${steps.length}, 1fr)` }}>
+          {steps.map((s, n) => (
+            <button key={s.id} type="button" className={step === s.id ? 'on' : ''} onClick={() => setStep(s.id)}>
+              <span className="hx-num">{n + 1}</span>
+              {tr(s.ar, s.en)}
+            </button>
+          ))}
+        </div>
+      )}
+      {children}
+      <div className="hx-foot">
+        {next ? (
+          <button type="button" className="btn btn-ghost btn-sm" onClick={() => setStep(next.id)}>
+            {tr('الخطوة الجاية ←', 'Next step →')}
+          </button>
+        ) : (
+          <span />
+        )}
+        <button className="btn btn-primary btn-sm" onClick={save} disabled={busy}>
+          {busy ? '…' : tr('حفظ', 'Save')}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function GeneralPanel({
+  f,
+  tr,
+  set,
+  setStyle,
+  setComp,
+  save,
+  busy,
+  preview,
+}: {
+  f: DesignForm
+  tr: T
+  set: (p: Partial<DesignForm>) => void
+  setStyle: (p: Partial<DesignForm['style']>) => void
+  setComp: (p: Partial<DesignForm['components']>) => void
+  save: () => void
+  busy: boolean
+  preview: React.ReactNode
+}) {
+  const [step, setStep] = useState<GeneralStep>('logo')
+  return (
+    <div className="hx">
+      <StepPanel steps={GENERAL_STEPS} step={step} setStep={setStep} save={save} busy={busy} tr={tr}>
+        {step === 'logo' && (
+          <>
+            <p className="hx-lead">{tr('العلامة اللي في أول الشريط العلوي. من غيرها بيظهر أول حرف من اسمك.', 'The mark at the start of the navbar. Without one, the first letter of your name shows.')}</p>
+            <div className="hx-block">
+              <MediaUploader
+                key={f.brandLogoUrl ?? 'none'}
+                big
+                previewUrl={f.brandLogoUrl}
+                label={tr('ارفع الشعار', 'Upload logo')}
+                onUploaded={(u) => set({ brandLogoId: u.id, brandLogoUrl: u.thumbUrl })}
+                onRemove={() => set({ brandLogoId: null, brandLogoUrl: null })}
+              />
+              <p className="hx-note">{tr('الأفضل صورة PNG بخلفية شفافة. بيظهر في المعاينة بعد الحفظ.', 'A PNG with a transparent background works best. It shows in the preview after saving.')}</p>
+            </div>
+          </>
+        )}
+
+        {step === 'look' && (
+          <>
+            <p className="hx-lead">{tr('شكل الكروت والشريط العلوي والأزرار في كل الموقع.', 'How cards, the navbar and buttons look across the site.')}</p>
+            <div className="hx-block">
+              <Opt label={tr('الكروت', 'Cards')} value={f.components.card} options={opts(tr, [['solid', 'مصمتة', 'Solid'], ['glass', 'زجاجية', 'Glass'], ['outline', 'بإطار بس', 'Outline']])} onChange={(v) => setComp({ card: v })} />
+              <Opt label={tr('الشريط العلوي', 'Navbar')} value={f.components.navbar} options={opts(tr, [['blur', 'شفاف مغبّش', 'Blurred'], ['solid', 'مصمت', 'Solid'], ['transparent', 'شفاف', 'Transparent']])} onChange={(v) => setComp({ navbar: v })} />
+              <Opt label={tr('الأزرار', 'Buttons')} value={f.components.button} options={opts(tr, [['rounded', 'حواف ناعمة', 'Rounded'], ['sharp', 'حواف حادة', 'Sharp'], ['pill', 'بيضاوية', 'Pill']])} onChange={(v) => setComp({ button: v })} />
+            </div>
+          </>
+        )}
+
+        {step === 'fonts' && (
+          <>
+            <p className="hx-lead">{tr('خط للكلام العربي، وخط للإنجليزي والعناوين اللاتينية.', 'One font for Arabic, one for English and Latin headings.')}</p>
+            <div className="hx-block">
+              <Opt label={tr('الخط العربي', 'Arabic font')} value={f.style.fontAr} options={FONT_AR_OPTIONS} onChange={(v) => setStyle({ fontAr: v })} />
+              <Opt label={tr('الخط الإنجليزي', 'Latin font')} value={f.style.fontLatin} options={FONT_LATIN_OPTIONS} onChange={(v) => setStyle({ fontLatin: v })} />
+            </div>
+          </>
+        )}
+
+        {step === 'motion' && (
+          <>
+            <p className="hx-lead">{tr('إزاي الأقسام بتظهر وانت بتنزل، وشكل الماوس، واتجاه الصفحة.', 'How sections appear on scroll, the cursor, and the page direction.')}</p>
+            <div className="hx-block">
+              <Opt label={tr('ظهور الأقسام', 'Section entrance')} value={f.style.anim} options={opts(tr, [['fade-up', 'تظهر وتطلع لفوق', 'Fade up'], ['fade', 'تظهر بهدوء', 'Fade'], ['none', 'من غير حركة', 'None']])} onChange={(v) => setStyle({ anim: v })} />
+              <Opt label={tr('الماوس', 'Cursor')} value={f.style.cursor} options={opts(tr, [['default', 'العادي', 'Default'], ['dot-ring', 'نقطة ودايرة', 'Dot & ring']])} onChange={(v) => setStyle({ cursor: v })} />
+              <Opt label={tr('اتجاه الصفحة', 'Direction')} value={f.style.direction} options={opts(tr, [['auto', 'حسب اللغة', 'By language'], ['rtl', 'من اليمين', 'Right to left'], ['ltr', 'من الشمال', 'Left to right']])} onChange={(v) => setStyle({ direction: v })} />
+              <p className="hx-note">{tr('الحركة بتبان على الموقع وانت بتنزل فيه، مش في المعاينة الثابتة.', 'Motion shows on the site as you scroll, not in the still preview.')}</p>
+            </div>
+          </>
+        )}
+      </StepPanel>
+      {preview}
+    </div>
+  )
+}
+
+/**
  * Everything that belongs to one theme: its palette, the page background, and
  * any per-section backdrops — a step at a time, beside a page painted in it.
  * Rendered for light and for dark, so the two are styled independently.
@@ -289,6 +418,7 @@ function ThemePanel({
   setSectionBg,
   save,
   busy,
+  preview,
 }: {
   mode: 'light' | 'dark'
   f: DesignForm
@@ -298,6 +428,7 @@ function ThemePanel({
   setSectionBg: (rows: SectionBgForm[]) => void
   save: () => void
   busy: boolean
+  preview: React.ReactNode
 }) {
   const [step, setStep] = useState<ThemeStep>('colors')
   const dark = mode === 'dark'
@@ -372,8 +503,8 @@ function ThemePanel({
               <div className="hx-label">{tr('الألوان بالتفصيل', 'Each colour')}</div>
               <ColorRow label={tr('اللون المميّز', 'Accent')} hint={tr('الأزرار والروابط وجزء من اسمك', 'Buttons, links, part of your name')} value={col.accent} onChange={(v) => setC(k.accent, v)} />
               <ColorRow
-                label={tr('العناوين', 'Headings')}
-                hint={tr('اسمك وعناوين الأقسام', 'Your name and section titles')}
+                label={tr('عناوين الأقسام', 'Section titles')}
+                hint={tr('زي «أعمالي» و«عن النفس» — مش عنوان القسم الرئيسي', 'Like “My work” and “About” — not the hero heading')}
                 value={col.heading}
                 onChange={(v) => setC(k.heading, v)}
                 reset={{ label: tr('زي لون النص — اختار لون', 'Same as text — pick one'), start: col.text, onClick: () => setC(k.heading, '') }}
@@ -498,28 +629,20 @@ function ThemePanel({
         </div>
       </div>
 
-      {!wide && (
-        <div className="panel hx-stage">
-          <div className="hx-stage-head">
-            <span className="lbl">{tr('معاينة', 'Preview')}</span>
-            <span className="cover-hint">
-              {dark ? tr('الثيم الداكن — ومش بيتنشر غير لما تحفظ.', 'Dark theme — nothing is published until you save.') : tr('الثيم الفاتح — ومش بيتنشر غير لما تحفظ.', 'Light theme — nothing is published until you save.')}
-            </span>
-          </div>
-          <ThemePreview col={col} bg={bg} dark={dark} tr={tr} />
-        </div>
-      )}
+      {!wide && preview}
     </div>
   )
 }
 
-export default function DesignEditor({ initial }: { initial: DesignForm }) {
+export default function DesignEditor({ initial, sitePath }: { initial: DesignForm; sitePath: string }) {
   const [f, setF] = useState<DesignForm>(initial)
   const [tab, setTab] = useState<TopTab>('theme')
   const [sub, setSub] = useState<ThemeSub>('dark')
   const [heroStep, setHeroStep] = useState<HeroStep>('layout')
   const [pvTheme, setPvTheme] = useState<'dark' | 'light'>('dark')
   const [busy, setBusy] = useState(false)
+  // Bumped by a save, which reloads the framed page with what was saved.
+  const [version, setVersion] = useState(0)
   const { t: tr } = useDashLang()
   const [toast, setToast] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -542,6 +665,7 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
     try {
       const r = await saveDesign(f)
       if (!r.ok) return setError(saveFailureText(r, tr))
+      setVersion((v) => v + 1)
       setToast(true)
       setTimeout(() => setToast(false), 1800)
     } catch (e) {
@@ -554,6 +678,27 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
   }
 
   const usingGradient = f.heroCover.gradient !== 'none'
+
+  // On a theme's own tab the preview shows that theme; elsewhere, the one picked.
+  const onThemeTab = tab === 'theme' && (sub === 'light' || sub === 'dark')
+  const shownTheme: 'dark' | 'light' = onThemeTab ? (sub as 'dark' | 'light') : pvTheme
+  const apply = useCallback((doc: Document) => applyDesign(doc, f, shownTheme), [f, shownTheme])
+  const preview = (spot: string) => (
+    <LandingPreview
+      spot={spot}
+      version={version}
+      path={sitePath}
+      apply={apply}
+      theme={{
+        value: shownTheme,
+        onChange: (v) => {
+          setPvTheme(v)
+          if (onThemeTab) setSub(v)
+        },
+      }}
+      note={tr('الألوان بتتغيّر فورًا — الأشكال والصور بعد الحفظ', 'Colours change live — layouts and pictures after saving')}
+    />
+  )
 
   // The layout picker that leads every section tab.
   const sectionLayout = (id: Exclude<TopTab, 'theme'>, label: string) => {
@@ -615,63 +760,12 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
               setSectionBg={setSectionBg}
               save={save}
               busy={busy}
+              preview={preview('top')}
             />
           )}
 
           {sub === 'general' && (
-          <div className="panel">
-              <>
-                <Group title={tr('شعار الموقع', 'Site logo')}>
-                  {/* The mark in the navbar. There was no way to set it at all
-                      before — the site showed the first letter of the name and
-                      that was that. */}
-                  <div className="logo-row">
-                    <MediaUploader
-                      big
-                      previewUrl={f.brandLogoUrl}
-                      label={tr('ارفع الشعار', 'Upload logo')}
-                      onUploaded={(u) => set({ brandLogoId: u.id, brandLogoUrl: u.thumbUrl })}
-                    />
-                    <div className="logo-note">
-                      <p>
-                        {tr(
-                          'بيظهر في الشريط العلوي. من غيره بيظهر أول حرف من اسمك.',
-                          'Shown in the navbar. Without one, the first letter of your name is used.',
-                        )}
-                      </p>
-                      {f.brandLogoUrl && (
-                        <button
-                          type="button"
-                          className="btn btn-ghost btn-sm"
-                          onClick={() => set({ brandLogoId: null, brandLogoUrl: null })}
-                        >
-                          {tr('حذف الشعار', 'Remove logo')}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </Group>
-
-                <Group title={tr('المكوّنات', 'Components')}>
-                  <div className="de-grid">
-                    <Opt label={tr('شكل الكروت', 'Card style')} value={f.components.card} options={COMPONENT_OPTIONS.card} onChange={(v) => setComp({ card: v })} />
-                    <Opt label={tr('الشريط العلوي', 'Navbar')} value={f.components.navbar} options={COMPONENT_OPTIONS.navbar} onChange={(v) => setComp({ navbar: v })} />
-                    <Opt label={tr('الأزرار', 'Buttons')} value={f.components.button} options={COMPONENT_OPTIONS.button} onChange={(v) => setComp({ button: v })} />
-                  </div>
-                </Group>
-                <Group title={tr('الخطوط', 'Fonts')}>
-                  <Opt label={tr('الخط العربي', 'Arabic font')} value={f.style.fontAr} options={FONT_AR_OPTIONS} onChange={(v) => setStyle({ fontAr: v })} />
-                  <Opt label={tr('الخط اللاتيني (العناوين)', 'Latin font (headings)')} value={f.style.fontLatin} options={FONT_LATIN_OPTIONS} onChange={(v) => setStyle({ fontLatin: v })} />
-                </Group>
-                <Group title={tr('الحركة', 'Motion')}>
-                  <div className="de-grid">
-                    <Opt label={tr('الحركات', 'Animations')} value={f.style.anim} options={ANIM_OPTIONS} onChange={(v) => setStyle({ anim: v })} />
-                    <Opt label={tr('المؤشر', 'Cursor')} value={f.style.cursor} options={CURSOR_OPTIONS} onChange={(v) => setStyle({ cursor: v })} />
-                    <Opt label={tr('الاتجاه', 'Direction')} value={f.style.direction} options={DIRECTION_OPTIONS} onChange={(v) => setStyle({ direction: v })} />
-                  </div>
-                </Group>
-              </>
-          </div>
+            <GeneralPanel f={f} tr={tr} set={set} setStyle={setStyle} setComp={setComp} save={save} busy={busy} preview={preview('top')} />
           )}
         </>
       )}
@@ -857,23 +951,14 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
             </div>
           </div>
 
-          <div className="panel hx-stage">
-            <div className="hx-stage-head">
-              <span className="lbl">{tr('معاينة', 'Preview')}</span>
-              <span className="cover-hint">{tr('بتتغيّر وانت بتعدّل — ومش بتتنشر غير لما تحفظ.', 'Changes as you edit — nothing is published until you save.')}</span>
-              <div className="lx-seg">
-                <button type="button" className={pvTheme === 'dark' ? 'on' : ''} onClick={() => setPvTheme('dark')} title={tr('داكن', 'Dark')}>🌙</button>
-                <button type="button" className={pvTheme === 'light' ? 'on' : ''} onClick={() => setPvTheme('light')} title={tr('فاتح', 'Light')}>☀️</button>
-              </div>
-            </div>
-            <CoverPreview f={f} theme={pvTheme} />
-          </div>
+          {preview('hero')}
         </div>
       )}
 
       {/* ═══ OTHER SECTION TABS (layout only, for now) ═══ */}
       {tab !== 'theme' && tab !== 'hero' && (
-        <div className="panel">
+        <div className="hx">
+        <StepPanel steps={[{ id: 'layout', ar: 'الشكل', en: 'Layout' }]} step="layout" setStep={() => {}} save={save} busy={busy} tr={tr}>
           {tab === 'about' && sectionLayout('about', tr('تخطيط قسم «عن النفس»', 'About layout'))}
           {tab === 'projects' && sectionLayout('projects', tr('تخطيط قسم المشاريع', 'Projects layout'))}
           {tab === 'expertise' && sectionLayout('expertise', tr('تخطيط قسم الخدمات', 'Services layout'))}
@@ -881,9 +966,11 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
           {tab === 'tools' && sectionLayout('tools', tr('تخطيط قسم الأدوات', 'Tools layout'))}
           {tab === 'skills' && sectionLayout('skills', tr('تخطيط قسم المهارات', 'Skills layout'))}
           {tab === 'contact' && sectionLayout('contact', tr('تخطيط قسم التواصل', 'Contact layout'))}
-          <p className="cover-hint" style={{ marginTop: 14 }}>
-            {tr('اختر تخطيطًا لهذا القسم — التغيير يظهر على موقعك بعد الحفظ.', 'Pick a layout for this section — it shows on your site after saving.')}
+          <p className="hx-note">
+            {tr('اختار شكل القسم واحفظ — المعاينة بتتحدّث بعد الحفظ.', 'Pick a layout and save — the preview updates after saving.')}
           </p>
+        </StepPanel>
+        {preview(SECTION_SPOT[tab])}
         </div>
       )}
 
