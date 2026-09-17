@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { useDashLang } from './DashLang'
 import { saveSeoTools } from '@/lib/seo-tools-actions'
+import { saveFailureText } from '@/lib/action-error'
 
 /**
  * Connecting Google's own tools.
@@ -32,11 +33,12 @@ export default function SeoTools({
     setBusy(true)
     setError(null)
     try {
-      await saveSeoTools({ searchConsole: sc, analyticsId: ga })
+      const r = await saveSeoTools({ searchConsole: sc, analyticsId: ga })
+      if (!r.ok) return setError(saveFailureText(r, t))
       setSaved(true)
       setTimeout(() => setSaved(false), 1800)
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e))
+      setError(saveFailureText(e, t))
     } finally {
       setBusy(false)
     }

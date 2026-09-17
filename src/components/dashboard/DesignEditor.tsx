@@ -8,6 +8,7 @@ import NavIcon from './icons'
 import SectionBgRows from './SectionBgRows'
 import { ColorInput, Group, Opt, Slider } from './controls'
 import { saveDesign } from '@/lib/design-actions'
+import { saveFailureText } from '@/lib/action-error'
 import { useDashLang } from './DashLang'
 import {
   LAYOUT_OPTIONS,
@@ -311,13 +312,14 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
     setBusy(true)
     setError(null)
     try {
-      await saveDesign(f)
+      const r = await saveDesign(f)
+      if (!r.ok) return setError(saveFailureText(r, tr))
       setToast(true)
       setTimeout(() => setToast(false), 1800)
     } catch (e) {
       // Without this the button sat on "…" for ever and the failure was
       // invisible — which is exactly how a rejected field looked.
-      setError(e instanceof Error ? e.message : String(e))
+      setError(saveFailureText(e, tr))
     } finally {
       setBusy(false)
     }
