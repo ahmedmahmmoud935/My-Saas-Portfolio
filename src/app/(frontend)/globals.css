@@ -1338,22 +1338,18 @@ html:has(.story-viewer) {
 }
 
 /* ─── WhatsApp float (desktop) ───────────────────────────────────────────── */
-.fabs {
-  position: fixed;
-  inset-inline-end: 22px;
-  bottom: 22px;
-  z-index: 60;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+/* One in each bottom corner, in physical sides: a call button that swaps
+   corners with the language would move under the reader. */
 .fab {
+  position: fixed;
+  bottom: 22px;
   width: 54px;
   height: 54px;
   border-radius: 50%;
   display: grid;
   place-items: center;
   color: #fff;
+  z-index: 60;
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.32);
   transition:
     transform 0.15s ease,
@@ -1366,22 +1362,27 @@ html:has(.story-viewer) {
 /* WhatsApp's own green: on a button carrying their mark, any other colour
    reads as an imitation. */
 .fab-wa {
+  right: 22px;
   background: #25d366;
 }
 .fab-call {
+  left: 22px;
   background: var(--accent, #f97316);
 }
 @media (max-width: 820px) {
-  .fabs {
-    inset-inline-end: 16px;
-    bottom: 16px;
-  }
   .fab {
+    bottom: 16px;
     width: 48px;
     height: 48px;
   }
+  .fab-wa {
+    right: 14px;
+  }
+  .fab-call {
+    left: 14px;
+  }
   /* Where a phone bar is pinned to the bottom, these would sit on top of it. */
-  .fabs-desk {
+  .fab-desk {
     display: none;
   }
 }

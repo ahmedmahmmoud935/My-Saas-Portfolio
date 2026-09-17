@@ -11,6 +11,10 @@ import React from 'react'
  *
  * The WhatsApp mark is the official glyph, because a made-up speech bubble
  * makes a reader hesitate over what happens when they tap it.
+ *
+ * One in each bottom corner rather than a stack in one of them: stacked, the
+ * upper button sits where nothing else on a page ever does, and the lower one
+ * is the only one a thumb finds.
  */
 
 /** Digits only: a number gets written +20 10, (010) and 0020 in equal measure. */
@@ -32,10 +36,11 @@ export default function ContactFabs({
   const tel = phone ? digits(phone) : ''
   if (!wa && !tel) return null
 
+  const off = hideOnPhone ? ' fab-desk' : ''
   return (
-    <div className={`fabs${hideOnPhone ? ' fabs-desk' : ''}`}>
+    <>
       {tel && (
-        <a className="fab fab-call" href={`tel:+${tel}`} aria-label={labels.call} title={labels.call}>
+        <a className={`fab fab-call${off}`} href={`tel:+${tel}`} aria-label={labels.call} title={labels.call}>
           <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden focusable="false">
             <path
               fill="currentColor"
@@ -46,7 +51,7 @@ export default function ContactFabs({
       )}
       {wa && (
         <a
-          className="fab fab-wa"
+          className={`fab fab-wa${off}`}
           href={`https://wa.me/${wa}`}
           target="_blank"
           rel="noreferrer"
@@ -62,6 +67,6 @@ export default function ContactFabs({
           </svg>
         </a>
       )}
-    </div>
+    </>
   )
 }
