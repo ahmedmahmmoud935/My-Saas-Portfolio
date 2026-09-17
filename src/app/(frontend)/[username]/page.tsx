@@ -156,6 +156,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
         variant={settings?.style?.hero || 'split'}
         coverSize={settings?.heroCover?.size || 'cover'}
         gradient={settings?.heroCover?.gradient || 'none'}
+        gradientDark={settings?.heroCover?.gradientDark || ''}
         posX={settings?.heroCover?.posX ?? 50}
         posY={settings?.heroCover?.posY ?? 50}
       />

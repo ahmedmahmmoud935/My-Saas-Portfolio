@@ -73,6 +73,7 @@ export async function saveDesign(form: DesignForm): Promise<{ ok: true } | SaveR
           align: form.heroCover.align,
           valign: form.heroCover.valign,
           gradient: form.heroCover.gradient,
+          gradientDark: form.heroCover.gradientDark || null,
         },
         brand: {
           photo: brandRel(currentBrand.photo) as number | null,

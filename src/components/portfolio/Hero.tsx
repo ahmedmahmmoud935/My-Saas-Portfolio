@@ -47,6 +47,7 @@ export default function Hero({
   variant = 'split',
   coverSize = 'cover',
   gradient = 'none',
+  gradientDark = '',
   posX = 50,
   posY = 50,
 }: {
@@ -66,6 +67,7 @@ export default function Hero({
   variant?: string
   coverSize?: string
   gradient?: string
+  gradientDark?: string
   posX?: number
   posY?: number
 }) {
@@ -101,7 +103,9 @@ export default function Hero({
     >
       {showGradient && (
         <>
-          <div className={`hero-bg hero-grad hg-${gradient}`} aria-hidden />
+          {/* One per theme; CSS shows the one the visitor is looking at. */}
+          <div className={`hero-bg hero-grad hg-${gradient} hg-on-light`} aria-hidden />
+          <div className={`hero-bg hero-grad hg-${gradientDark || gradient} hg-on-dark`} aria-hidden />
           <div className="hero-overlay" />
         </>
       )}

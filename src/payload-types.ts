@@ -667,6 +667,10 @@ export interface SiteSetting {
      * Cover gradient preset id (used when there's no image).
      */
     gradient?: string | null;
+    /**
+     * Gradient preset for the dark theme. Empty = same as gradient.
+     */
+    gradientDark?: string | null;
   };
   colors?: {
     accent?: string | null;
@@ -1594,6 +1598,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         align?: T;
         valign?: T;
         gradient?: T;
+        gradientDark?: T;
       };
   colors?:
     | T

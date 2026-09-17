@@ -180,7 +180,10 @@ export type DesignForm = {
     align: string
     /** auto | top | center | bottom */
     valign: string
+    /** Gradient preset on the light theme; 'none' means the cover is a picture. */
     gradient: string
+    /** …and on the dark theme. Empty = the light one. */
+    gradientDark: string
   }
   heroCoverId: number | null
   /** The mark shown in the navbar. Without one the site falls back to the
@@ -348,7 +351,7 @@ export const emptyDesign = (): DesignForm => ({
     anim: 'fade-up',
   },
   components: { card: 'solid', navbar: 'blur', button: 'rounded' },
-  heroCover: { size: 'cover', posX: 50, posY: 50, overlay: 45, overlayLight: 25, height: 82, titleScale: 100, descScale: 100, align: 'auto', valign: 'auto', gradient: 'none' },
+  heroCover: { size: 'cover', posX: 50, posY: 50, overlay: 45, overlayLight: 25, height: 82, titleScale: 100, descScale: 100, align: 'auto', valign: 'auto', gradient: 'none', gradientDark: '' },
   heroCoverId: null,
   brandLogoId: null,
   brandLogoUrl: null,

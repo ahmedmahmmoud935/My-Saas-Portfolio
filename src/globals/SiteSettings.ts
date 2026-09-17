@@ -206,6 +206,11 @@ export const SiteSettings: CollectionConfig = {
                   defaultValue: 'none',
                   admin: { description: "Cover gradient preset id (used when there's no image)." },
                 },
+                {
+                  name: 'gradientDark',
+                  type: 'text',
+                  admin: { description: 'Gradient preset for the dark theme. Empty = same as gradient.' },
+                },
               ],
             },
           ],

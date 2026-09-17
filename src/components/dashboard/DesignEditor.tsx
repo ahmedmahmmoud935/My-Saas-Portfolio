@@ -29,26 +29,40 @@ import {
   type DesignForm,
 } from '@/lib/design-types'
 
-// Cover gradient presets (swatch previews; the hero renders richer, animated,
-// theme-aware versions of the same ids). Shown when there's no cover image.
-const HERO_GRADIENTS: { id: string; label: string; css: string }[] = [
-  { id: 'none', label: 'بدون', css: '' },
-  { id: 'aurora', label: 'Aurora', css: 'linear-gradient(135deg,#0ea5e9,#8b5cf6)' },
-  { id: 'sunset', label: 'Sunset', css: 'linear-gradient(135deg,#f97316,#ec4899)' },
-  { id: 'ocean', label: 'Ocean', css: 'linear-gradient(135deg,#2563eb,#06b6d4)' },
-  { id: 'candy', label: 'Candy', css: 'linear-gradient(135deg,#ec4899,#8b5cf6)' },
-  { id: 'mint', label: 'Mint', css: 'linear-gradient(135deg,#10b981,#14b8a6)' },
-  { id: 'ember', label: 'Ember', css: 'linear-gradient(135deg,#ef4444,#f59e0b)' },
-  { id: 'dusk', label: 'Dusk', css: 'linear-gradient(135deg,#6366f1,#ec4899)' },
+// Cover gradients, a set per theme: soft ones that dark text reads on, deep
+// ones that white text reads on. The site animates the same ids slowly.
+const LIGHT_GRADIENTS = [
+  { id: 'peach', ar: 'خوخي', en: 'Peach', css: 'linear-gradient(120deg,#ffe4d2,#fcd5e5,#fff1c9)' },
+  { id: 'sky', ar: 'سماوي', en: 'Sky', css: 'linear-gradient(120deg,#d6e8ff,#dff4fb,#e8e2ff)' },
+  { id: 'fresh', ar: 'نعناعي', en: 'Mint', css: 'linear-gradient(120deg,#d3f5e4,#d2f3f0,#e6f6d6)' },
+  { id: 'lilac', ar: 'ليلكي', en: 'Lilac', css: 'linear-gradient(120deg,#ebe4ff,#fbe1ef,#dfe6ff)' },
 ]
+const DARK_GRADIENTS = [
+  { id: 'midnight', ar: 'كحلي', en: 'Midnight', css: 'linear-gradient(120deg,#0b1026,#17245c,#2a1f5c)' },
+  { id: 'embers', ar: 'جمري', en: 'Embers', css: 'linear-gradient(120deg,#140806,#5a1d0c,#7a2e0e)' },
+  { id: 'forest', ar: 'غابة', en: 'Forest', css: 'linear-gradient(120deg,#03140f,#0b3b2e,#0d3440)' },
+  { id: 'nebula', ar: 'بنفسجي', en: 'Nebula', css: 'linear-gradient(120deg,#120b2b,#3b1560,#5c1540)' },
+]
+// Ids from before the per-theme sets, still drawn for the sites that use them.
+const OLD_GRADIENTS: Record<string, string> = {
+  aurora: 'linear-gradient(135deg,#0ea5e9,#8b5cf6)',
+  sunset: 'linear-gradient(135deg,#f97316,#ec4899)',
+  ocean: 'linear-gradient(135deg,#2563eb,#06b6d4)',
+  candy: 'linear-gradient(135deg,#ec4899,#8b5cf6)',
+  mint: 'linear-gradient(135deg,#10b981,#14b8a6)',
+  ember: 'linear-gradient(135deg,#ef4444,#f59e0b)',
+  dusk: 'linear-gradient(135deg,#6366f1,#ec4899)',
+}
+const gradientCss = (id: string) =>
+  [...LIGHT_GRADIENTS, ...DARK_GRADIENTS].find((g) => g.id === id)?.css ?? OLD_GRADIENTS[id]
 
 const clampPct = (v: number) => Math.max(0, Math.min(100, v))
 
 /** The hero as it will look: layout, background, focus, veil, text size and place. */
 function CoverPreview({ f, theme }: { f: DesignForm; theme: 'dark' | 'light' }) {
-  const g = f.heroCover.gradient
-  const usingGradient = g !== 'none'
-  const gradCss = HERO_GRADIENTS.find((x) => x.id === g)?.css
+  const usingGradient = f.heroCover.gradient !== 'none'
+  const light = theme === 'light'
+  const gradCss = gradientCss(light ? f.heroCover.gradient : f.heroCover.gradientDark || f.heroCover.gradient)
   const variant = f.style.hero || 'split'
   const c = f.heroCover
   const bgStyle: React.CSSProperties = usingGradient
@@ -61,7 +75,6 @@ function CoverPreview({ f, theme }: { f: DesignForm; theme: 'dark' | 'light' }) 
           backgroundRepeat: 'no-repeat',
         }
       : {}
-  const light = theme === 'light'
   const veil = (light ? c.overlayLight : c.overlay) || 0
   // A desk screen is 16:9; the section takes `height` of it.
   const ratio = `16 / ${(9 * c.height) / 100}`
@@ -540,19 +553,41 @@ export default function DesignEditor({ initial }: { initial: DesignForm }) {
                   <button type="button" className={!usingGradient ? 'active' : ''} onClick={() => setCover({ gradient: 'none' })}>
                     {tr('🖼 صورة', '🖼 Image')}
                   </button>
-                  <button type="button" className={usingGradient ? 'active' : ''} onClick={() => setCover({ gradient: f.heroCover.gradient !== 'none' ? f.heroCover.gradient : 'aurora' })}>
+                  <button type="button" className={usingGradient ? 'active' : ''} onClick={() => {
+                      if (!usingGradient) setCover({ gradient: 'peach', gradientDark: f.heroCover.gradientDark || 'midnight' })
+                    }}>
                     {tr('🎨 ألوان متدرّجة', '🎨 Gradient')}
                   </button>
                 </div>
 
                 {usingGradient ? (
                   <div className="hx-block">
-                    <div className="hx-label">{tr('اختار التدرّج', 'Pick a blend')}</div>
-                    <div className="hgp">
-                      {HERO_GRADIENTS.filter((g) => g.id !== 'none').map((g) => (
-                        <button key={g.id} type="button" className={`hgp-swatch ${f.heroCover.gradient === g.id ? 'active' : ''}`} style={{ background: g.css }} onClick={() => setCover({ gradient: g.id })} title={g.label} />
-                      ))}
-                    </div>
+                    {(
+                      [
+                        { key: 'gradient', list: LIGHT_GRADIENTS, theme: 'light', title: tr('☀️ للثيم الفاتح', '☀️ Light theme') },
+                        { key: 'gradientDark', list: DARK_GRADIENTS, theme: 'dark', title: tr('🌙 للثيم الغامق', '🌙 Dark theme') },
+                      ] as const
+                    ).map((set) => (
+                      <div key={set.key}>
+                        <div className="hx-label">{set.title}</div>
+                        <div className="hgp hx-grads">
+                          {set.list.map((g) => (
+                            <button
+                              key={g.id}
+                              type="button"
+                              className={`hgp-swatch ${f.heroCover[set.key] === g.id ? 'active' : ''}`}
+                              style={{ background: g.css }}
+                              onClick={() => {
+                                setPvTheme(set.theme)
+                                setCover({ [set.key]: g.id })
+                              }}
+                            >
+                              <span>{tr(g.ar, g.en)}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ) : !f.heroCoverUrl ? (
                   <div className="hx-block">

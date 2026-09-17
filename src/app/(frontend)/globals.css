@@ -866,6 +866,37 @@ html[data-theme='light'] .hero-split .hero-bg {
 .hg-dusk {
   background-image: linear-gradient(120deg, #6366f1, #8b5cf6, #ec4899, #6366f1);
 }
+/* The set offered now: four soft ones for the light theme, four deep ones for
+   the dark theme — dark text reads on the first, white text on the second.
+   The vivid ones above stay for sites that picked them before. */
+.hg-peach {
+  background-image: linear-gradient(120deg, #ffe4d2, #fcd5e5, #fff1c9, #ffe4d2);
+}
+.hg-sky {
+  background-image: linear-gradient(120deg, #d6e8ff, #dff4fb, #e8e2ff, #d6e8ff);
+}
+.hg-fresh {
+  background-image: linear-gradient(120deg, #d3f5e4, #d2f3f0, #e6f6d6, #d3f5e4);
+}
+.hg-lilac {
+  background-image: linear-gradient(120deg, #ebe4ff, #fbe1ef, #dfe6ff, #ebe4ff);
+}
+.hg-midnight {
+  background-image: linear-gradient(120deg, #0b1026, #17245c, #2a1f5c, #0b1026);
+}
+.hg-embers {
+  background-image: linear-gradient(120deg, #140806, #5a1d0c, #7a2e0e, #140806);
+}
+.hg-forest {
+  background-image: linear-gradient(120deg, #03140f, #0b3b2e, #0d3440, #03140f);
+}
+.hg-nebula {
+  background-image: linear-gradient(120deg, #120b2b, #3b1560, #5c1540, #120b2b);
+}
+html[data-theme='light'] .hg-on-dark,
+html:not([data-theme='light']) .hg-on-light {
+  display: none;
+}
 @media (prefers-reduced-motion: reduce) {
   .hero-grad {
     animation: none;
