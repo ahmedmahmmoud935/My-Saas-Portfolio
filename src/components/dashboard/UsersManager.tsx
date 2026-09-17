@@ -98,25 +98,27 @@ export default function UsersManager({ clients }: { clients: Client[] }) {
       )
       if (!ok) return
     }
-    try {
-      await updateTenant(c.id, { storageLimitMb, domain: domain || null, slug: next })
-    } catch (e) {
-      const code = (e as Error)?.message?.replace('slug:', '')
+    /* Refusals come back as values: a thrown message is replaced with a
+       generic one in production, and the owner was told "unexpected error"
+       for a name that was simply taken. */
+    const saved = await updateTenant(c.id, { storageLimitMb, domain: domain || null, slug: next }).catch(() => null)
+    if (!saved || !saved.ok) {
+      const code = saved && !saved.ok ? saved.code : ''
       alert(
         code === 'taken'
           ? t('الاسم ده مستخدم مع عميل تاني', 'Another client already has that name')
-          : t('مش قادر أحفظ — راجع الاسم', 'Could not save — check the name'),
+          : code
+            ? slugProblemText(code as Parameters<typeof slugProblemText>[0], t('ar', 'en') === 'ar')
+            : t('مش قادر أحفظ — جرّب تاني', 'Could not save — try again'),
       )
       return
     }
     if (mailChanged && c.userId) {
-      let self = false
-      try {
-        self = (await setClientEmail(c.userId, mail)).self
-      } catch (e) {
+      const res = await setClientEmail(c.userId, mail).catch(() => null)
+      if (!res || !res.ok) {
         /* Say which reason it was: the one message for all of them left the
            owner looking at "it didn't change" with no idea why. */
-        const code = (e as Error)?.message?.replace('email:', '')
+        const code = res && !res.ok ? res.code : ''
         const why =
           code === 'taken'
             ? t('الإيميل ده مستخدم في حساب تاني.', 'Another account already uses that email.')
@@ -126,11 +128,12 @@ export default function UsersManager({ clients }: { clients: Client[] }) {
                 ? t('ده حساب مالك تاني — إيميله مش بيتغيّر من هنا.', 'That is another owner’s account — its email is not changed from here.')
                 : code === 'missing'
                   ? t('الحساب ده مش موجود.', 'That account no longer exists.')
-                  : t('حصل خطأ غير متوقّع.', 'Something unexpected went wrong.')
+                  : t('حصل خطأ غير متوقّع — جرّب تاني.', 'Something unexpected went wrong — try again.')
         alert(`${t('الباقي اتحفظ، بس الإيميل متغيّرش:', 'Everything else saved, but the email did not change:')}\n${why}`)
         router.refresh()
         return
       }
+      const self = res.self
       /* Your own login: you already have a password, so there is no link to
          send — only the address to use next time. */
       if (self) {

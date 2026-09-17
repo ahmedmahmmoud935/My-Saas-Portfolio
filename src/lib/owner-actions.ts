@@ -6,6 +6,14 @@ import { sendActivation } from './activation'
 import { recordSlugRedirect } from './record-redirect'
 import { cleanSlug, slugProblem } from './slug-rules'
 
+/**
+ * What an action says when it declines. Returned rather than thrown: a
+ * production build replaces a thrown error's message with a generic one before
+ * it reaches the browser, so a coded throw arrived as "something went wrong"
+ * and the dashboard could never say which thing it was.
+ */
+export type Refusal = { ok: false; code: string }
+
 async function ownerCtx() {
   const ctx = await getDashboardContext()
   if (!ctx || !ctx.user.isOwner) throw new Error('forbidden')
@@ -51,7 +59,7 @@ export async function resendActivation(email: string) {
 export async function updateTenant(
   id: number,
   data: { storageLimitMb?: number; domain?: string | null; slug?: string },
-) {
+): Promise<{ ok: true } | Refusal> {
   const ctx = await ownerCtx()
   const { slug, ...rest } = data
 
@@ -62,7 +70,7 @@ export async function updateTenant(
   if (slug !== undefined) {
     const next = cleanSlug(slug)
     const problem = slugProblem(next)
-    if (problem) throw new Error(`slug:${problem}`)
+    if (problem) return { ok: false, code: problem }
 
     const before = await ctx.payload.findByID({ collection: 'tenants', id, depth: 0 })
     if (before.slug !== next) {
@@ -72,7 +80,7 @@ export async function updateTenant(
         limit: 1,
         depth: 0,
       })
-      if (taken.docs.length) throw new Error('slug:taken')
+      if (taken.docs.length) return { ok: false, code: 'taken' }
 
       await ctx.payload.update({ collection: 'tenants', id, data: { slug: next } })
       await recordSlugRedirect({
@@ -143,15 +151,18 @@ export async function setClientPassword(userId: number, password: string) {
  * like any other, and its login is theirs to change. Another owner's is not:
  * that is someone else's way in.
  */
-export async function setClientEmail(userId: number, email: string) {
+export async function setClientEmail(
+  userId: number,
+  email: string,
+): Promise<{ ok: true; changed: boolean; self: boolean } | Refusal> {
   const ctx = await ownerCtx()
   const next = email.trim().toLowerCase()
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(next)) throw new Error('email:invalid')
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(next)) return { ok: false, code: 'invalid' }
 
-  const user = await ctx.payload.findByID({ collection: 'users', id: userId, depth: 0 })
-  if (!user) throw new Error('email:missing')
+  const user = await ctx.payload.findByID({ collection: 'users', id: userId, depth: 0 }).catch(() => null)
+  if (!user) return { ok: false, code: 'missing' }
   const self = user.id === ctx.user.id
-  if (user.isOwner && !self) throw new Error('email:owner')
+  if (user.isOwner && !self) return { ok: false, code: 'owner' }
   if ((user.email ?? '').toLowerCase() === next) return { ok: true, changed: false, self }
 
   const taken = await ctx.payload.find({
@@ -160,7 +171,7 @@ export async function setClientEmail(userId: number, email: string) {
     limit: 1,
     depth: 0,
   })
-  if (taken.docs.length) throw new Error('email:taken')
+  if (taken.docs.length) return { ok: false, code: 'taken' }
 
   await ctx.payload.update({ collection: 'users', id: userId, data: { email: next } })
   return { ok: true, changed: true, self }
