@@ -99,6 +99,11 @@ export default function ProjectsGrid({
     setPlayer({ reels, start })
   }
 
+  /* Nothing to show yet — a new portfolio, or one between projects. The
+     heading alone reads as a page that failed to load, so the section steps
+     out, the way every other empty section on the page already does. */
+  if (projects.length === 0 && !(highlights && highlights.length > 0)) return null
+
 
   return (
     <section className="section" id="projects">

@@ -27,7 +27,21 @@ export async function POST(req: Request) {
       depth: 0,
       locale: 'ar',
     })
-    const to = (s.docs[0]?.content as { contact?: { email?: string } })?.contact?.email
+    let to = (s.docs[0]?.content as { contact?: { email?: string } })?.contact?.email
+    /* No public address set: the message still goes to the portfolio's owner,
+       at the address they sign in with. A contact form that refuses to send
+       is a lost client, and the login address is never printed on the page
+       for this — only used to deliver. */
+    if (!to) {
+      const owner = await payload.find({
+        collection: 'users',
+        where: { 'tenants.tenant': { equals: tenant } },
+        limit: 1,
+        depth: 0,
+        overrideAccess: true,
+      })
+      to = owner.docs[0]?.email
+    }
     if (!to) return Response.json({ ok: false, error: 'no recipient configured' }, { status: 400 })
 
     const key = process.env.RESEND_API_KEY
