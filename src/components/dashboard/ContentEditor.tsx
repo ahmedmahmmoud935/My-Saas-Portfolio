@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { saveFailureText } from '@/lib/action-error'
 import { portfolioTitle } from '@/lib/title'
 import { lightDim } from '@/lib/content-types'
 import PageHeader from './PageHeader'
@@ -211,12 +212,27 @@ function ArrayCard({
   )
 }
 
-export default function ContentEditor({ initial }: { initial: ContentForm }) {
+export default function ContentEditor({
+  initial,
+  onSaved,
+  onSection,
+}: {
+  initial: ContentForm
+  /** Told after a save, so the preview beside it can reload. */
+  onSaved?: () => void
+  /** Told which section is open, so the preview can go to it. */
+  onSection?: (sec: keyof ContentForm) => void
+}) {
   const [f, setF] = useState<ContentForm>(initial)
-  const [sec, setSec] = useState<keyof ContentForm>('hero')
+  const [sec, setSecState] = useState<keyof ContentForm>('hero')
+  const setSec = (s: keyof ContentForm) => {
+    setSecState(s)
+    onSection?.(s)
+  }
   const [busy, setBusy] = useState(false)
   const { t } = useDashLang()
   const [toast, setToast] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const patch = (p: Partial<ContentForm>) => setF((prev) => ({ ...prev, ...p }))
   const setEx = (i: number, p: Partial<ExpertiseItem>) =>
@@ -229,8 +245,16 @@ export default function ContentEditor({ initial }: { initial: ContentForm }) {
 
   async function save() {
     setBusy(true)
-    await saveContent(f)
-    setBusy(false)
+    setError(null)
+    try {
+      const r = await saveContent(f)
+      if (!r.ok) return setError(saveFailureText(r, t))
+    } catch (e) {
+      return setError(saveFailureText(e, t))
+    } finally {
+      setBusy(false)
+    }
+    onSaved?.()
     setToast(true)
     setTimeout(() => setToast(false), 1800)
   }
@@ -445,6 +469,12 @@ export default function ContentEditor({ initial }: { initial: ContentForm }) {
       </div>
 
       {toast && <div className="toast">{t('تم الحفظ ✓', 'Saved ✓')}</div>}
+      {error && (
+        <div className="toast toast-error" onClick={() => setError(null)}>
+          {t('الحفظ فشل: ', 'Save failed: ')}
+          {error}
+        </div>
+      )}
     </div>
   )
 }

@@ -4867,3 +4867,29 @@ input[type='range']::-moz-range-thumb {
     height: 62vh;
   }
 }
+
+/* ── Content hub with the framed portfolio beside it ── */
+.cx-main {
+  min-width: 0;
+}
+.hub-pv-open {
+  margin-inline-start: auto;
+}
+@media (min-width: 1300px) {
+  .cx.cx-with-pv {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 440px);
+    gap: 18px;
+    align-items: start;
+  }
+  /* In its column — narrower screens keep the landing editor's floating panel. */
+  .cx .lx-pv {
+    position: sticky;
+    inset: auto;
+    top: 16px;
+    z-index: auto;
+    width: auto;
+    height: calc(100vh - 32px);
+    box-shadow: none;
+  }
+}
