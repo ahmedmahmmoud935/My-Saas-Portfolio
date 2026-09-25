@@ -423,6 +423,7 @@ export default async function HomePage({ searchParams }: Params) {
                       title={c.panelTitle}
                       duration={c.panelDuration}
                       playLabel={locale === 'en' ? 'Play the video' : 'شغّل الفيديو'}
+                    closeLabel={locale === 'en' ? 'Close the video' : 'اقفل الفيديو'}
                     />
                   ) : media?.type === 'image' ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -536,7 +537,8 @@ export default async function HomePage({ searchParams }: Params) {
                   }
                 >
                   <Head eyebrow={c.dashEyebrow} title={c.dashTitle} sub={c.dashSub} />
-                  <DashShowcase items={dash} playLabel={locale === 'en' ? 'Play the video' : 'شغّل الفيديو'} />
+                  <DashShowcase items={dash} playLabel={locale === 'en' ? 'Play the video' : 'شغّل الفيديو'}
+                    closeLabel={locale === 'en' ? 'Close the video' : 'اقفل الفيديو'} />
                 </section>
               </SectionBg>
             )

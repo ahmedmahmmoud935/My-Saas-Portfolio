@@ -786,3 +786,17 @@ span.lp-video-blank { background: radial-gradient(70% 90% at 50% 40%, color-mix(
   color: color-mix(in srgb, var(--lp-text) 82%, var(--lp-sub)); }
 .blog-body img { max-width: 100%; height: auto; border-radius: 12px; }
 .blog-body :where(pre, table) { overflow-x: auto; max-width: 100%; }
+
+/* ── A video opened over the page ─────────────────────────────────────── */
+.vlb { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center;
+  padding: clamp(14px, 4vw, 48px); background: rgba(3, 6, 15, 0.86);
+  backdrop-filter: blur(6px); animation: vlbIn 0.18s ease-out; }
+.vlb-box { position: relative; width: min(1120px, 100%); }
+.vlb-media { display: block; width: 100%; aspect-ratio: 16 / 9; height: auto; border: 0;
+  border-radius: 16px; background: #000; box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55); }
+.vlb-close { position: absolute; top: -48px; inset-inline-end: 0; width: 38px; height: 38px;
+  border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.25); background: rgba(255, 255, 255, 0.08);
+  color: #fff; font-size: 16px; cursor: pointer; }
+.vlb-close:hover { background: rgba(255, 255, 255, 0.18); }
+@keyframes vlbIn { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .vlb { animation: none; } }

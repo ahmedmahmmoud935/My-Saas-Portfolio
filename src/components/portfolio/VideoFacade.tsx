@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import VideoLightbox, { youTubePoster } from './VideoLightbox'
 
 /**
  * The explainer video, loaded only when someone asks for it.
@@ -18,6 +19,7 @@ export default function VideoFacade({
   title,
   duration,
   playLabel,
+  closeLabel,
 }: {
   kind: 'file' | 'iframe'
   src: string
@@ -25,24 +27,15 @@ export default function VideoFacade({
   title: string
   duration?: string
   playLabel: string
+  closeLabel: string
 }) {
+  // The press opens the player over the page; the picture stays where it was.
   const [playing, setPlaying] = useState(false)
-
-  if (playing) {
-    return kind === 'file' ? (
-      <video className="lp-mock-media" src={src} poster={poster ?? undefined} controls autoPlay playsInline />
-    ) : (
-      <iframe
-        className="lp-mock-media"
-        src={`${src}${src.includes('?') ? '&' : '?'}autoplay=1&rel=0`}
-        title={title}
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-        allowFullScreen
-      />
-    )
-  }
+  poster = poster || (kind === 'iframe' ? youTubePoster(src) : null)
 
   return (
+    <>
+    {playing && <VideoLightbox kind={kind} src={src} title={title} closeLabel={closeLabel} onClose={() => setPlaying(false)} />}
     <button type="button" className="lp-video" onClick={() => setPlaying(true)} aria-label={playLabel}>
       {poster ? (
         // eslint-disable-next-line @next/next/no-img-element
@@ -67,5 +60,6 @@ export default function VideoFacade({
       </span>
       {duration && <span className="lp-video-time">{duration}</span>}
     </button>
+    </>
   )
 }

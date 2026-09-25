@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { resolveVideoUrl } from '@/lib/video'
+import VideoLightbox, { youTubePoster } from './VideoLightbox'
 import type { LandingDashItem } from '@/lib/landing-copy'
 
 /**
@@ -15,20 +16,24 @@ import type { LandingDashItem } from '@/lib/landing-copy'
  *
  * The media is not loaded until its line is opened, and a video waits for a
  * press: four autoplaying clips in a section nobody scrolled to yet is the
- * whole page's weight spent on the part being skimmed.
+ * whole page's weight spent on the part being skimmed. The press opens it over
+ * the page, at a size worth watching, rather than in the frame beside the list.
  */
 export default function DashShowcase({
   items,
   playLabel,
+  closeLabel,
 }: {
   items: LandingDashItem[]
   playLabel: string
+  closeLabel: string
 }) {
   const [open, setOpen] = useState(0)
   const [playing, setPlaying] = useState<number | null>(null)
   const current = items[open]
   const link = resolveVideoUrl(current?.videoUrl)
-  const poster = current?.poster || current?.imageUrl || null
+  // No poster uploaded for a YouTube clip: YouTube's own still of it.
+  const poster = current?.poster || current?.imageUrl || (link?.kind === 'iframe' ? youTubePoster(link.url) : null)
 
   return (
     <div className="lp-dash">
@@ -60,7 +65,6 @@ export default function DashShowcase({
                     item={it}
                     link={link}
                     poster={poster}
-                    playing={playing === i}
                     onPlay={() => setPlaying(i)}
                     playLabel={playLabel}
                   />
@@ -77,12 +81,15 @@ export default function DashShowcase({
             item={current}
             link={link}
             poster={poster}
-            playing={playing === open}
             onPlay={() => setPlaying(open)}
             playLabel={playLabel}
           />
         )}
       </div>
+
+      {playing !== null && link && (
+        <VideoLightbox kind={link.kind} src={link.url} title={items[playing]?.t ?? ''} closeLabel={closeLabel} onClose={() => setPlaying(null)} />
+      )}
     </div>
   )
 }
@@ -91,31 +98,16 @@ function Media({
   item,
   link,
   poster,
-  playing,
   onPlay,
   playLabel,
 }: {
   item: LandingDashItem
   link: ReturnType<typeof resolveVideoUrl>
   poster: string | null
-  playing: boolean
   onPlay: () => void
   playLabel: string
 }) {
   if (link) {
-    if (playing) {
-      return link.kind === 'file' ? (
-        <video className="lp-dash-frame" src={link.url} controls autoPlay playsInline />
-      ) : (
-        <iframe
-          className="lp-dash-frame"
-          src={`${link.url}${link.url.includes('?') ? '&' : '?'}autoplay=1&rel=0`}
-          title={item.t}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-          allowFullScreen
-        />
-      )
-    }
     return (
       <button type="button" className="lp-dash-frame lp-dash-play" onClick={onPlay} aria-label={playLabel}>
         {poster ? (
