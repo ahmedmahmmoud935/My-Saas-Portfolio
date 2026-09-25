@@ -3998,6 +3998,10 @@ input[type='range']::-moz-range-thumb {
 .sc-frame img {
   width: 100%;
   height: 100%;
+  /* As on the page: without these the picture keeps its own proportions and
+     crops itself, and the two stop agreeing. */
+  min-width: 0;
+  min-height: 0;
   object-fit: cover;
   display: block;
 }

@@ -403,21 +403,10 @@ iframe.lp-mock-media { border: 0; }
   /* The padding pulls the row out to the section's edges and back, so the
      first card lines up with the heading and the last one can still reach the
      middle of the screen. */
-  padding: 4px 0; margin: 0 -4px; scroll-padding-inline: 4px;
-  /* The names above are the control now, so the bar under the row is noise. */
-  scrollbar-width: none; }
-.lp-rail::-webkit-scrollbar { display: none; }
-
-/* One name per portfolio. A scrollbar says "this scrolls" and nothing else;
-   the names say who is in there, which is the question a reader actually has
-   in front of a row of strangers' work. */
-.lp-rail-names { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
-  margin: 0 0 26px; }
-.lp-rail-name { border: 1px solid var(--lp-line-2); background: var(--lp-bg2);
-  color: var(--lp-sub); border-radius: 999px; padding: 8px 16px; font-size: 13px;
-  font-weight: 700; cursor: pointer; transition: color .18s, border-color .18s, background .18s; }
-.lp-rail-name:hover { color: var(--lp-text); border-color: var(--o); }
-.lp-rail-name.active { background: var(--o); border-color: var(--o); color: var(--lp-on-o); }
+  padding: 4px 0 10px; margin: 0 -4px; scroll-padding-inline: 4px;
+  /* A thin bar, kept: with the row of names gone it is the only thing left
+     that says the row goes on past the edge. */
+  scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--o) 55%, transparent) transparent; }
 .lp-rail > * { flex: 0 0 clamp(230px, 26vw, 300px); scroll-snap-align: start; }
 /* The plate layout hangs a photograph above its card, so the rail needs the
    same room at the top that the grid gives it. */
@@ -438,7 +427,12 @@ iframe.lp-mock-media { border: 0; }
   display: grid; place-items: center; overflow: hidden; font-weight: 900; font-size: 20px;
   color: var(--lp-on-o);
   background: linear-gradient(135deg, var(--o), color-mix(in srgb, var(--o) 55%, #000)); }
-.lp-tenant-badge img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* min-*: 0 — a grid item's automatic minimum size is its content size, so the
+   picture kept its own proportions (92×138 in a 92px circle) and cropped itself
+   instead of being cropped by object-position. The dashboard's framing preview
+   then showed something the page never drew. */
+.lp-tenant-badge img { width: 100%; height: 100%; min-width: 0; min-height: 0;
+  object-fit: cover; display: block; }
 .lp-tenant-body { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; }
 .lp-tenant-body strong { font-size: 16px; }
 .lp-tenant-body span { color: var(--lp-sub); font-size: 13px; }

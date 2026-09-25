@@ -9,7 +9,6 @@ import { resolveVideoUrl } from '@/lib/video'
 import { mediaUrl } from '@/lib/portfolio'
 import SectionBg, { type SectionBgConfig } from '@/components/portfolio/SectionBg'
 import Analytics from '@/components/portfolio/Analytics'
-import ShowcaseRail from '@/components/portfolio/ShowcaseRail'
 import VideoFacade from '@/components/portfolio/VideoFacade'
 import DashShowcase from '@/components/portfolio/DashShowcase'
 import { LandingNav, LandingFooter } from '@/components/portfolio/LandingChrome'
@@ -601,9 +600,7 @@ export default async function HomePage({ searchParams }: Params) {
                 {showcase.length === 0 ? (
                   <p className="lp-empty">{c.showcaseEmpty}</p>
                 ) : (
-                  <ShowcaseRail
-                    rail={showcaseRail}
-                    names={showcase.map((s) => s.name)}
+                  <div
                     className={
                       showcaseRail
                         ? `lp-rail lp-showcase sc-${showcaseStyle}`
@@ -632,7 +629,7 @@ export default async function HomePage({ searchParams }: Params) {
                         <span className="lp-tenant-go lp-arrow">{c.visit}</span>
                       </a>
                     ))}
-                  </ShowcaseRail>
+                  </div>
                 )}
               </section>
             </SectionBg>
