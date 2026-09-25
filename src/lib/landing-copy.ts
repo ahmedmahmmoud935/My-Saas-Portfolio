@@ -171,7 +171,7 @@ export const LANDING_COPY = {
     plans: [
       { name: 'شهري', badge: '', price: '199', per: '/ شهريًا', note: 'مرونة كاملة من غير التزام طويل.', feats: ['ادفع شهر بشهر', 'الغي في أي وقت', 'كل المميزات'], cta: 'ابدأ شهرك المجاني', url: '', hi: false, color: '' },
       { name: 'سنوي', badge: 'الأوفر', price: '1,990', per: '/ سنويًا', note: 'يعني حوالي 166 في الشهر — وفّر شهرين', feats: ['شهرين مجانًا كل سنة', 'سعرك ثابت طول السنة', 'كل المميزات'], cta: 'ابدأ شهرك المجاني', url: '', hi: true, color: '' },
-      { name: 'مرة واحدة', badge: 'مدى الحياة', price: '4,990', per: '/ مرة واحدة', note: 'ادفع مرة، وموقعك ليك على طول.', feats: ['من غير اشتراكات متجددة', 'كل التحديثات الجاية مشمولة', 'كل المميزات'], cta: 'ابدأ شهرك المجاني', url: '', hi: false, color: '' },
+      { name: 'مرة واحدة', badge: 'دفعة واحدة', price: '4,990', per: '/ مرة واحدة', note: 'ادفع مرة واحدة — الاستضافة وكل المميزات والتحديثات، من غير اشتراك.', feats: ['من غير اشتراكات متجددة', 'كل التحديثات الجاية مشمولة', 'كل المميزات'], cta: 'ابدأ شهرك المجاني', url: '', hi: false, color: '' },
     ],
     // What every plan has, said once under the cards rather than repeated in
     // each of them — identical lists side by side read as padding.
@@ -193,13 +193,16 @@ export const LANDING_COPY = {
     faqEyebrow: 'إجابات سريعة',
     faqTitle: 'قبل ما تبدأ',
     faqs: [
+      { q: 'العميل هياخدني بجدية أكتر بموقع؟', a: 'الموقع باسمك وعلى دومينك بيقول إنك شغّال بجد مش بتجرّب. العميل بيشوف شغلك لوحده من غير منافسين جنبه، ويقدر يكلمك بضغطة على واتساب.' },
       { q: 'إيه اللي بيحصل بعد الشهر المجاني؟', a: 'قبل ما الشهر يخلص بنبعتلك تنبيه، وتختار الخطة اللي تناسبك. لو ماخترتش، موقعك بيتوقف مؤقتًا ومحتواك بيفضل محفوظ.' },
       { q: 'محتاج أدخل بطاقة دفع عشان أجرّب؟', a: 'لأ. سجّل وابدأ على طول — مش هتدفع حاجة غير لما تختار خطة.' },
       { q: 'إيه الفرق بين الخطط؟', a: 'المميزات واحدة في كل الخطط. الفرق بس في طريقة الدفع: شهري لو عايز مرونة، سنوي لو عايز توفّر، ومرة واحدة لو مش عايز اشتراكات خالص.' },
       { q: 'خطة المرة الواحدة بتشمل إيه بالظبط؟', a: 'الاستضافة وكل المميزات والتحديثات الجاية، من غير أي اشتراك. تجديد الدومين نفسه بيكون عليك سنويًا من الشركة اللي اشتريته منها.' },
-      { q: 'أقدر أغيّر خطتي أو ألغي؟', a: 'أيوه، في أي وقت.' },
+      { q: 'أقدر ألغي؟ وموقعي يحصله إيه؟', a: 'أيوه، تقدر تغيّر خطتك أو تلغي في أي وقت. لو لغيت، موقعك بيتوقف مؤقتًا ومحتواك بيفضل محفوظ، ولو رجعت بيرجع زي ما هو. والدومين اللي اشتريته باسمك ملكك إنت.' },
       { q: 'محتاج أعرف كود؟', a: 'خالص. كل حاجة من لوحة التحكم بالسحب والإفلات.' },
-      { q: 'أقدر أربط دوميني؟', a: 'أيوه، والـSSL بيتفعّل تلقائي. ولو معندكش دومين، بنقولك تشتريه إزاي خطوة بخطوة.' },
+      { q: 'الموقع بياخد قد إيه لحد ما يجهز؟', a: 'لو شغلك جاهز، تقدر تنشره في نفس اليوم: الموقع بيفتح بنصوص جاهزة على مجالك، وانت بتضيف مشاريعك وتعدّل اللي عايزه وتنشر.' },
+      { q: 'معنديش مشاريع جاهزة، أبدأ إزاي؟', a: 'ابدأ باللي عندك — ٣ لـ٥ شغلانات كويسة أحسن من ٢٠ عادية، وتقدر تضيف مشاريع شخصية أو تجارب. والأقسام اللي لسه فاضية مش بتظهر للزوار، فالموقع بيبان كامل من أول يوم.' },
+      { q: 'أقدر أربط دوميني؟ ومين يملكه؟', a: 'أيوه، والـSSL بيتفعّل تلقائي. الدومين بتشتريه باسمك من أي شركة دومينات، وبيفضل ملكك حتى لو سبت ViralPX. ولو معندكش دومين، بنقولك تشتريه إزاي خطوة بخطوة.' },
       { q: 'الموقع بيدعم العربي والإنجليزي؟', a: 'أيوه، الموقع كامل باللغتين، والزائر يبدّل بينهم بضغطة.' },
       { q: 'بياناتي في أمان؟', a: 'الموقع شغال على HTTPS، وبياناتك بيتعملها نسخ احتياطي بشكل دوري.' },
     ],
@@ -353,7 +356,7 @@ export const LANDING_COPY = {
     plans: [
       { name: 'Monthly', badge: '', price: '199', per: '/ month', note: 'Full flexibility, no long commitment.', feats: ['Pay month to month', 'Cancel anytime', 'Every feature'], cta: 'Start your free month', url: '', hi: false, color: '' },
       { name: 'Yearly', badge: 'Best value', price: '1,990', per: '/ year', note: 'About 166 a month — two months free', feats: ['Two months free every year', 'Your price stays fixed all year', 'Every feature'], cta: 'Start your free month', url: '', hi: true, color: '' },
-      { name: 'One-time', badge: 'Lifetime', price: '4,990', per: '/ once', note: 'Pay once, and your site is yours for good.', feats: ['No recurring subscription', 'All future updates included', 'Every feature'], cta: 'Start your free month', url: '', hi: false, color: '' },
+      { name: 'One-time', badge: 'One payment', price: '4,990', per: '/ once', note: 'Pay once — hosting, every feature and all updates, no subscription.', feats: ['No recurring subscription', 'All future updates included', 'Every feature'], cta: 'Start your free month', url: '', hi: false, color: '' },
     ],
     pricingIncludedTitle: 'In every plan:',
     pricingIncluded: [
@@ -372,13 +375,16 @@ export const LANDING_COPY = {
     faqEyebrow: 'Quick answers',
     faqTitle: 'Before you start',
     faqs: [
+      { q: 'Will clients take me more seriously with a site?', a: 'A site in your name, on your own domain, says you work at this rather than trying it out. The client sees your work on its own, with no competitors beside it, and can reach you with one tap on WhatsApp.' },
       { q: 'What happens after the free month?', a: 'Before it ends we send you a reminder, and you pick the plan that suits you. If you don’t, your site pauses and your content stays saved.' },
       { q: 'Do I need a card to try it?', a: 'No. Sign up and start straight away — you pay nothing until you choose a plan.' },
       { q: 'What is the difference between the plans?', a: 'Every plan has the same features. Only the payment differs: monthly for flexibility, yearly to save, and one-time if you want no subscription at all.' },
       { q: 'What exactly does the one-time plan include?', a: 'Hosting, every feature and all future updates, with no subscription. Renewing the domain itself is yours to do, yearly, with the company you bought it from.' },
-      { q: 'Can I change my plan or cancel?', a: 'Yes, at any time.' },
+      { q: 'Can I cancel? What happens to my site?', a: 'Yes — change your plan or cancel at any time. If you cancel, your site pauses and your content stays saved; come back and it returns as it was. A domain you bought in your name stays yours.' },
       { q: 'Do I need to know how to code?', a: 'Not at all. Everything is done from the dashboard, with drag and drop.' },
-      { q: 'Can I connect my own domain?', a: 'Yes, and SSL switches on automatically. If you don’t have a domain yet, we walk you through buying one step by step.' },
+      { q: 'How long until my site is ready?', a: 'If your work is ready, you can publish the same day: the site opens with starter text for your field, and you add your projects, adjust what you like and publish.' },
+      { q: 'I have no projects ready yet. Where do I start?', a: 'Start with what you have — three to five good pieces beat twenty average ones, and personal projects or experiments count. Sections that are still empty are hidden from visitors, so the site looks complete from day one.' },
+      { q: 'Can I connect my own domain? Who owns it?', a: 'Yes, and SSL switches on automatically. You buy the domain in your own name from any registrar, and it stays yours even if you leave ViralPX. If you don’t have one yet, we walk you through buying it step by step.' },
       { q: 'Does the site support Arabic and English?', a: 'Yes — the whole site works in both, and visitors switch with one tap.' },
       { q: 'Is my data safe?', a: 'The site runs on HTTPS, and your data is backed up regularly.' },
     ],
