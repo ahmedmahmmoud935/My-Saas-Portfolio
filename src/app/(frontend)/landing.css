@@ -703,9 +703,9 @@ html[data-theme='light'] .lp[data-card='elevated'] .lp-faq-item {
    the picture sits in it, and where it is framed when it is cropped. Height
    `auto` keeps the shape the picture came in; anything else wins over it. */
 .lp-dash-frame { display: block; width: 100%;
-  /* Either a shape or a height, never both: the dashboard sets one and leaves
-     the other `auto`, so a height it asks for is the height it gets. */
-  aspect-ratio: var(--dash-ratio, 16 / 10); height: var(--dash-h, auto);
+  /* A shape the dashboard picks — 16:9, like a YouTube video, unless it says
+     otherwise — and the height follows from the column's width. */
+  aspect-ratio: var(--dash-ratio, 16 / 9); height: auto;
   object-fit: cover; object-position: var(--dash-pos, 50% 50%);
   border-radius: 20px; border: 1px solid var(--lp-line); background: var(--lp-bg2); }
 /* Shown whole rather than filling the frame — a screenshot loses its point

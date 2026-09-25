@@ -17,6 +17,7 @@ import { tenantUrl } from '@/lib/tenant-url'
 import { resolveLandingOrder } from '@/lib/landing-order'
 import ContactFabs from '@/components/portfolio/ContactFabs'
 import { LineIcon, lineIconName } from '@/lib/line-icons'
+import { DASH_RATIOS } from '@/lib/landing-copy'
 import { platformLocale } from '@/lib/seo'
 import './landing.css'
 
@@ -527,8 +528,9 @@ export default async function HomePage({ searchParams }: Params) {
                      zero leaves the picture the shape it came in. */
                   style={
                     {
-                      '--dash-h': c.dashHeight ? `${c.dashHeight}px` : 'auto',
-                      '--dash-ratio': c.dashHeight ? 'auto' : '16 / 10',
+                      // A shape, not a height in pixels: a fixed height turned a
+                      // wide screenshot into a near-square on a narrow column.
+                      '--dash-ratio': DASH_RATIOS.includes(c.dashRatio) ? c.dashRatio : '16 / 9',
                       '--dash-pos': `${c.dashPosX ?? 50}% ${c.dashPosY ?? 50}%`,
                     } as React.CSSProperties
                   }

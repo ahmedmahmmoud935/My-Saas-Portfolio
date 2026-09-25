@@ -9,6 +9,7 @@ import LandingPreview from './LandingPreview'
 import { orderShowcase } from '@/lib/showcase-order'
 import { frameStyle } from '@/lib/frame-style'
 import { LINE_ICONS, LineIcon, lineIconName } from '@/lib/line-icons'
+import { DASH_RATIOS } from '@/lib/landing-copy'
 import type { ShowcaseLook } from '@/lib/landing-copy'
 import type { ShowcaseTenant } from '@/lib/landing-actions'
 import { ColorInput, Opt, Slider } from './controls'
@@ -1336,13 +1337,16 @@ export default function LandingEditor({
               ]}
               onChange={(v) => setKeyBoth('dashAlign', v)}
             />
-            <Slider
-              label={t('الارتفاع (٠ = على شكل الصورة)', 'Height (0 = the picture’s own shape)')}
-              value={Number(f.ar.dashHeight ?? 0)}
-              min={0}
-              max={760}
-              suffix={Number(f.ar.dashHeight ?? 0) === 0 ? '' : 'px'}
-              onChange={(v) => setKeyBoth('dashHeight', v)}
+            <Opt
+              label={t('شكل الإطار', 'Frame shape')}
+              value={DASH_RATIOS.includes(String(f.ar.dashRatio ?? '')) ? String(f.ar.dashRatio) : '16 / 9'}
+              options={[
+                { value: '16 / 9', label: t('عريض ١٦:٩ (زي يوتيوب)', 'Wide 16:9 (like YouTube)') },
+                { value: '16 / 10', label: '16:10' },
+                { value: '4 / 3', label: '4:3' },
+                { value: '1 / 1', label: t('مربع', 'Square') },
+              ]}
+              onChange={(v) => setKeyBoth('dashRatio', v)}
             />
             <Opt
               label={t('الصورة جوّه الإطار', 'The picture inside the frame')}
@@ -1353,7 +1357,7 @@ export default function LandingEditor({
               ]}
               onChange={(v) => setKeyBoth('dashFit', v)}
             />
-            {f.ar.dashFit !== 'contain' && Number(f.ar.dashHeight ?? 0) > 0 && (
+            {f.ar.dashFit !== 'contain' && (
               <>
                 <div className="grid-2">
                   <Slider

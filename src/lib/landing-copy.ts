@@ -112,6 +112,8 @@ export const LANDING_COPY = {
        whole column sits against a list that is usually taller than it. 0 is
        the shape the picture already has (16:10). */
     dashHeight: 0,
+    /** The frame's shape. 16:9 is a YouTube video's. */
+    dashRatio: '16 / 9',
     dashFit: 'cover',
     dashPosX: 50,
     dashPosY: 50,
@@ -301,6 +303,8 @@ export const LANDING_COPY = {
     dashSub: 'No code, and no waiting on anyone — open it, change it, save it, and the site changes with you.',
     dashSide: 'start',
     dashHeight: 0,
+    /** The frame's shape. 16:9 is a YouTube video's. */
+    dashRatio: '16 / 9',
     dashFit: 'cover',
     dashPosX: 50,
     dashPosY: 50,
@@ -426,6 +430,9 @@ export const LANDING_COPY = {
 }
 
 export type LandingCopy = (typeof LANDING_COPY)['ar']
+
+/** The shapes the dashboard tour's frame can take, widest first. */
+export const DASH_RATIOS = ['16 / 9', '16 / 10', '4 / 3', '1 / 1']
 
 /**
  * What a link typed in the dashboard means as an address.
