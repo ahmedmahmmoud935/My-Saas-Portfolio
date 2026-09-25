@@ -8,6 +8,7 @@ import SectionBgRows from './SectionBgRows'
 import LandingPreview from './LandingPreview'
 import { orderShowcase } from '@/lib/showcase-order'
 import { frameStyle } from '@/lib/frame-style'
+import { LINE_ICONS, LineIcon, lineIconName } from '@/lib/line-icons'
 import type { ShowcaseLook } from '@/lib/landing-copy'
 import type { ShowcaseTenant } from '@/lib/landing-actions'
 import { ColorInput, Opt, Slider } from './controls'
@@ -120,7 +121,7 @@ const SPOT: Record<SectionId, string> = {
 type ItemKey = 'features' | 'how' | 'faqs' | 'testimonials' | 'dash' | 'plans'
 
 /** One entry in a section's outline: a group of its fields, or one of its items. */
-type Pane = { id: string; label: string; mark?: string; item?: { key: ItemKey; i: number } }
+type Pane = { id: string; label: string; mark?: React.ReactNode; item?: { key: ItemKey; i: number } }
 
 /** A section as a short list: what comes before its items, the items, and after. */
 type Outline = {
@@ -214,6 +215,70 @@ function IconInput({
             disabled={Boolean(url)}
           />
         </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * A card's icon: one of the built-in line icons, or an upload.
+ *
+ * The built-in set comes first because it is the one that matches the page —
+ * flat strokes in the text colour, following the theme. An upload is tinted
+ * the same way by default; the switch is for the full-colour one that
+ * should keep its own colours.
+ */
+function LineIconChooser({
+  value,
+  url,
+  tint,
+  onIcon,
+  onUrl,
+  onTint,
+}: {
+  value: string
+  url?: string
+  tint: boolean
+  onIcon: (v: string) => void
+  onUrl: (v: string) => void
+  onTint: (v: boolean) => void
+}) {
+  const { t } = useDashLang()
+  const current = url ? null : lineIconName(value)
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <label className="lbl" style={{ display: 'block' }}>{t('الأيقونة', 'Icon')}</label>
+      <div className="li-grid">
+        {Object.entries(LINE_ICONS).map(([name, ic]) => (
+          <button
+            key={name}
+            type="button"
+            className={`li-opt${current === name ? ' on' : ''}`}
+            title={t(ic.ar, ic.en)}
+            onClick={() => {
+              onIcon(name)
+              if (url) onUrl('')
+            }}
+          >
+            <LineIcon name={name} size={22} />
+          </button>
+        ))}
+      </div>
+      <div className="li-upload">
+        <MediaUploader
+          compact
+          accept="image/*"
+          previewUrl={url || null}
+          label={t('أو ارفع أيقونة (SVG أو PNG شفاف)', 'Or upload one (SVG or transparent PNG)')}
+          onUploaded={(m) => onUrl(m.thumbUrl || m.url || '')}
+          onRemove={url ? () => onUrl('') : undefined}
+        />
+        {url && (
+          <label className="li-tint">
+            <input type="checkbox" checked={tint} onChange={(e) => onTint(e.target.checked)} />
+            {t('خلّي لونها يتبع الموقع في الداكن والفاتح', 'Colour it with the page, in dark and light')}
+          </label>
+        )}
       </div>
     </div>
   )
@@ -555,10 +620,10 @@ export default function LandingEditor({
     }))
 
   // Icons, step markers, faces and links aren't translated, so one edit lands in both copies.
-  const setArrBoth = (arr: RowList, i: number, field: string, v: string) =>
+  const setArrBoth = (arr: RowList, i: number, field: string, v: string | boolean) =>
     setF((p) => {
       const patch = (loc: 'ar' | 'en') =>
-        (p[loc][arr] as unknown as Record<string, string>[]).map((x, j) => (j === i ? { ...x, [field]: v } : x))
+        (p[loc][arr] as unknown as Record<string, string | boolean>[]).map((x, j) => (j === i ? { ...x, [field]: v } : x))
       return { ...p, ar: { ...p.ar, [arr]: patch('ar') }, en: { ...p.en, [arr]: patch('en') } }
     })
   // String lists: one line at an index, and whole lines added or removed in both.
@@ -650,7 +715,7 @@ export default function LandingEditor({
   const blankItem = (key: ItemKey, len: number): unknown => {
     switch (key) {
       case 'features':
-        return { icon: '✨', iconUrl: '', bgUrl: '', t: '', d: '' }
+        return { icon: 'sparkle', iconUrl: '', iconTint: true, bgUrl: '', t: '', d: '' }
       case 'how':
         return { n: String(len + 1), iconUrl: '', t: '', d: '' }
       case 'faqs':
@@ -695,7 +760,7 @@ export default function LandingEditor({
   const items = (
     key: ItemKey,
     label: (i: number) => string | undefined,
-    mark?: (i: number) => string | undefined,
+    mark?: (i: number) => React.ReactNode,
   ): Pane[] =>
     (f.ar[key] as unknown[]).map((_, i) => ({
       id: `${key}:${i}`,
@@ -732,7 +797,12 @@ export default function LandingEditor({
       before: [headPane],
       items: {
         key: 'features',
-        panes: items('features', (i) => f.ar.features[i]?.t, (i) => (f.ar.features[i]?.iconUrl ? '🖼' : f.ar.features[i]?.icon)),
+        panes: items('features', (i) => f.ar.features[i]?.t, (i) => {
+          const it = f.ar.features[i]
+          if (it?.iconUrl) return '🖼'
+          const name = lineIconName(it?.icon)
+          return name ? <LineIcon name={name} size={15} /> : it?.icon
+        }),
         add: t('ميزة جديدة', 'Add a feature'),
         noun: t('الكارت', 'card'),
       },
@@ -1203,7 +1273,14 @@ export default function LandingEditor({
             <Field label={t('الوصف', 'Description')} ar={f.ar.features[at].d} en={f.en.features[at]?.d ?? ''} onAr={(v) => setArr('features', at, 'd', v, 'ar')} onEn={(v) => setArr('features', at, 'd', v, 'en')} multiline rows={3} />
             <div className="grid-2 lx-media">
               <div>
-                <IconInput label={t('الأيقونة', 'Icon')} value={f.ar.features[at].icon} url={f.ar.features[at].iconUrl} onChange={(v) => setArrBoth('features', at, 'icon', v)} onUrl={(v) => setArrBoth('features', at, 'iconUrl', v)} />
+                <LineIconChooser
+                  value={f.ar.features[at].icon}
+                  url={f.ar.features[at].iconUrl}
+                  tint={f.ar.features[at].iconTint !== false}
+                  onIcon={(v) => setArrBoth('features', at, 'icon', v)}
+                  onUrl={(v) => setArrBoth('features', at, 'iconUrl', v)}
+                  onTint={(v) => setArrBoth('features', at, 'iconTint', v)}
+                />
               </div>
               <div>
                 <label className="lbl" style={{ display: 'block' }}>{t('خلفية الكارت (اختيارية)', 'Card background (optional)')}</label>

@@ -93,12 +93,12 @@ export const LANDING_COPY = {
     features: [
       // The address is isolated left-to-right: bare, the dot sits between an
       // Arabic word and a Latin one and the pair renders as "com.اسمك".
-      { icon: '🌐', iconUrl: '', bgUrl: '', t: 'دومينك الخاص', d: '⁦اسمك.com⁩ بدل لينك طويل — مع شهادة SSL مجانية وتلقائية.' },
-      { icon: '🎨', iconUrl: '', bgUrl: '', t: 'تصميم على مقاسك', d: 'ألوانك وخطوطك وترتيب أقسامك — من لوحة التحكم، وبالعربي كامل.' },
-      { icon: '🖼️', iconUrl: '', bgUrl: '', t: 'مشاريع وريلز', d: 'عارض ريلز 9:16 وصور وهايلايتس — شغلك يتعرض بالشكل اللي يستاهله.' },
-      { icon: '⚡', iconUrl: '', bgUrl: '', t: 'سريع وبيظهر في جوجل', d: 'صور WebP وSitemap وبيانات منظمة — موقع سريع وسهل يلاقوك فيه.' },
-      { icon: '✍️', iconUrl: '', bgUrl: '', t: 'مدونة تبني ثقتك', d: 'اكتب مقالاتك مع SEO جاهز لكل مقال — وخلّي خبرتك تتكلم عنك.' },
-      { icon: '📩', iconUrl: '', bgUrl: '', t: 'العميل يوصلك فورًا', d: 'نموذج تواصل بيوصل على إيميلك مباشرة، وزر واتساب على موقعك.' },
+      { icon: 'globe', iconUrl: '', iconTint: true, bgUrl: '', t: 'دومينك الخاص', d: '⁦اسمك.com⁩ بدل لينك طويل — مع شهادة SSL مجانية وتلقائية.' },
+      { icon: 'palette', iconUrl: '', iconTint: true, bgUrl: '', t: 'تصميم على مقاسك', d: 'ألوانك وخطوطك وترتيب أقسامك — من لوحة التحكم، وبالعربي كامل.' },
+      { icon: 'image', iconUrl: '', iconTint: true, bgUrl: '', t: 'مشاريع وريلز', d: 'عارض ريلز 9:16 وصور وهايلايتس — شغلك يتعرض بالشكل اللي يستاهله.' },
+      { icon: 'zap', iconUrl: '', iconTint: true, bgUrl: '', t: 'سريع وبيظهر في جوجل', d: 'صور WebP وSitemap وبيانات منظمة — موقع سريع وسهل يلاقوك فيه.' },
+      { icon: 'edit', iconUrl: '', iconTint: true, bgUrl: '', t: 'مدونة تبني ثقتك', d: 'اكتب مقالاتك مع SEO جاهز لكل مقال — وخلّي خبرتك تتكلم عنك.' },
+      { icon: 'mail', iconUrl: '', iconTint: true, bgUrl: '', t: 'العميل يوصلك فورًا', d: 'نموذج تواصل بيوصل على إيميلك مباشرة، وزر واتساب على موقعك.' },
     ],
     // The dashboard, one claim at a time: open a line and the picture beside it
     // changes to the part of the product that line is about.
@@ -286,12 +286,12 @@ export const LANDING_COPY = {
     featuresTitle: 'Everything that makes a client say “I want to work with them”',
     featuresSub: 'And you never pay extra for a feature — every plan has all of them.',
     features: [
-      { icon: '🌐', iconUrl: '', bgUrl: '', t: 'Your own domain', d: 'yourname.com instead of a long link — with free, automatic SSL.' },
-      { icon: '🎨', iconUrl: '', bgUrl: '', t: 'Design that fits you', d: 'Your colours, fonts and section order — all from the dashboard.' },
-      { icon: '🖼️', iconUrl: '', bgUrl: '', t: 'Projects & reels', d: 'A 9:16 reel player, images and highlights — your work shown the way it deserves.' },
-      { icon: '⚡', iconUrl: '', bgUrl: '', t: 'Fast, and found on Google', d: 'WebP images, a sitemap and structured data — a quick site that is easy to find.' },
-      { icon: '✍️', iconUrl: '', bgUrl: '', t: 'A blog that builds trust', d: 'Write articles with SEO ready for each one — and let your expertise speak for you.' },
-      { icon: '📩', iconUrl: '', bgUrl: '', t: 'Clients reach you instantly', d: 'A contact form that lands straight in your inbox, and a WhatsApp button on your site.' },
+      { icon: 'globe', iconUrl: '', iconTint: true, bgUrl: '', t: 'Your own domain', d: 'yourname.com instead of a long link — with free, automatic SSL.' },
+      { icon: 'palette', iconUrl: '', iconTint: true, bgUrl: '', t: 'Design that fits you', d: 'Your colours, fonts and section order — all from the dashboard.' },
+      { icon: 'image', iconUrl: '', iconTint: true, bgUrl: '', t: 'Projects & reels', d: 'A 9:16 reel player, images and highlights — your work shown the way it deserves.' },
+      { icon: 'zap', iconUrl: '', iconTint: true, bgUrl: '', t: 'Fast, and found on Google', d: 'WebP images, a sitemap and structured data — a quick site that is easy to find.' },
+      { icon: 'edit', iconUrl: '', iconTint: true, bgUrl: '', t: 'A blog that builds trust', d: 'Write articles with SEO ready for each one — and let your expertise speak for you.' },
+      { icon: 'mail', iconUrl: '', iconTint: true, bgUrl: '', t: 'Clients reach you instantly', d: 'A contact form that lands straight in your inbox, and a WhatsApp button on your site.' },
     ],
     dashEyebrow: 'The dashboard',
     dashTitle: 'Everything about your site is set in one place',

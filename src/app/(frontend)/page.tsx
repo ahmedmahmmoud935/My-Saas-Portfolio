@@ -16,6 +16,7 @@ import { DEFAULT_LOOK, landingTokensCss, onAccent, setOnly, type LandingLook } f
 import { tenantUrl } from '@/lib/tenant-url'
 import { resolveLandingOrder } from '@/lib/landing-order'
 import ContactFabs from '@/components/portfolio/ContactFabs'
+import { LineIcon, lineIconName } from '@/lib/line-icons'
 import { platformLocale } from '@/lib/seo'
 import './landing.css'
 
@@ -486,8 +487,17 @@ export default async function HomePage({ searchParams }: Params) {
                     >
                       <div className="lp-card-icon">
                         {f.iconUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={f.iconUrl} alt="" />
+                          f.iconTint !== false ? (
+                            /* Painted through the upload's own transparency, so an
+                               SVG or a transparent PNG takes the page's colour and
+                               follows it between the themes, like the built-in set. */
+                            <span className="lp-ic-tint" style={{ ['--ic' as string]: `url(${JSON.stringify(f.iconUrl)})` }} />
+                          ) : (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={f.iconUrl} alt="" />
+                          )
+                        ) : lineIconName(f.icon) ? (
+                          <LineIcon name={lineIconName(f.icon)!} />
                         ) : (
                           f.icon
                         )}
