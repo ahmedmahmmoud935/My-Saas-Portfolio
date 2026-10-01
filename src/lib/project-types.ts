@@ -43,15 +43,24 @@ export type ProjectInput = {
 /** A picture in the editor: its id, a preview, and what it shows in words. */
 export type EditImage = { id: number; url: string | null; alt?: string }
 
-/** A media document's description, whichever way it was read (one locale or all). */
+/** A file's name standing in for a description — what an import leaves behind. */
+const FILENAME = /^[\w.\- ()]+\.(png|jpe?g|webp|gif|avif|heic|svg|bmp|tiff?)$/i
+
+/**
+ * A media document's description, whichever way it was read (one locale or
+ * all). A bare file name is not a description: imported pictures arrived with
+ * theirs ("0042716786c1….png") in the field, and read aloud that is noise.
+ */
 export function altOf(src: unknown): string {
-  const alt = src && typeof src === 'object' ? (src as { alt?: unknown }).alt : undefined
-  if (typeof alt === 'string') return alt
-  if (alt && typeof alt === 'object') {
-    const o = alt as { ar?: string | null; en?: string | null }
-    return o.ar || o.en || ''
+  const raw = src && typeof src === 'object' ? (src as { alt?: unknown }).alt : undefined
+  let alt = ''
+  if (typeof raw === 'string') alt = raw
+  else if (raw && typeof raw === 'object') {
+    const o = raw as { ar?: string | null; en?: string | null }
+    alt = o.ar || o.en || ''
   }
-  return ''
+  alt = alt.trim()
+  return FILENAME.test(alt) ? '' : alt
 }
 
 /** Editor-side module: like ModuleInput but carries preview URLs for display. */
