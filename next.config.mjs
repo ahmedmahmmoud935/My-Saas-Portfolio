@@ -4,11 +4,10 @@ import { withPayload } from '@payloadcms/next/withPayload'
 const nextConfig = {
   experimental: {
     serverActions: {
-      // Media uploads go through a Server Action (uploadProjectMedia); the
-      // default 1MB cap rejects normal design files. 25mb turned away ordinary
-      // phone video, which is the main thing people upload here — the server
-      // compresses it after it lands, but it has to land first.
-      bodySizeLimit: '150mb',
+      // Uploads go through /api/upload-media now, not an action. The largest
+      // action body left is a suggestion with its attachments (5 × 10 MB);
+      // anything much bigger is a request no action here should have to read.
+      bodySizeLimit: '60mb',
     },
   },
   /**
@@ -37,12 +36,29 @@ const nextConfig = {
    */
   async headers() {
     return [
+      /* The basics every page should carry. The dashboard frames its own
+         pages for previews, so frames are allowed from the same site and no
+         other — another site cannot dress up the login page and catch clicks.
+         HSTS is sent on its own host only, never to subdomains it does not
+         know about. */
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'Strict-Transport-Security', value: 'max-age=31536000' },
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+        ],
+      },
       {
         source: '/',
         headers: [{ key: 'Link', value: '</llms.txt>; rel="describedby"; type="text/plain"' }],
       },
     ]
   },
+  // No advert for the stack in every response.
+  poweredByHeader: false,
   // Allow media served from R2 / the CDN in next/image.
   images: {
     remotePatterns: [

@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { recordSlugRedirect } from '@/lib/record-redirect'
+import { livePieces } from '../lib/public-read'
 
 /**
  * The platform's own writing, at /blog.
@@ -46,7 +47,7 @@ export const Posts: CollectionConfig = {
     defaultColumns: ['title', 'slug', 'published', 'updatedAt'],
   },
   access: {
-    read: () => true,
+    read: livePieces,
     create: ({ req }) => Boolean(req.user?.isOwner),
     update: ({ req }) => Boolean(req.user?.isOwner),
     delete: ({ req }) => Boolean(req.user?.isOwner),

@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useDashLang } from './DashLang'
 import { isStaleDeployment } from '@/lib/action-error'
 import { uploadFile, type UploadPhase } from '@/lib/upload-client'
-import { QUOTA_FULL, quotaFullText } from '@/lib/quota'
+import { MAX_UPLOAD_MB, QUOTA_FULL, quotaFullText } from '@/lib/quota'
 import {
   VIDEO_QUALITY_DEFAULT,
   VIDEO_QUALITY_OPTIONS,
@@ -141,11 +141,24 @@ export default function MediaUploader({
           text: t('انتهت الجلسة. سجّل الدخول تاني في تبويب جديد وبعدين جرّب.', 'Session expired. Sign in again in a new tab, then retry.'),
           reload: true,
         })
+      } else if (msg === 'too-big') {
+        setError({
+          text: t(
+            `الملف أكبر من المسموح — الصورة لحد ${MAX_UPLOAD_MB.image} ميجا والفيديو لحد ${MAX_UPLOAD_MB.video} ميجا. صغّره، أو ارفع الفيديو على يوتيوب وحط اللينك.`,
+            `The file is too large — images up to ${MAX_UPLOAD_MB.image} MB, videos up to ${MAX_UPLOAD_MB.video} MB. Make it smaller, or put the video on YouTube and use the link.`,
+          ),
+          reload: false,
+        })
+      } else if (msg === 'type') {
+        setError({
+          text: t('نوع الملف ده مش مدعوم — ارفع صورة أو فيديو.', 'That file type is not supported — upload an image or a video.'),
+          reload: false,
+        })
       } else if (isStaleDeployment(err)) {
         setError({ text: t('الموقع اتحدّث. حدّث الصفحة وجرّب تاني.', 'The site was updated. Refresh the page and retry.'), reload: true })
       } else {
         setError({
-          text: t(`فشل الرفع${msg ? `: ${msg}` : ''} — جرّب تاني.`, `Upload failed${msg ? `: ${msg}` : ''} — try again.`),
+          text: t('الرفع ماكملش — جرّب تاني بعد شوية.', 'The upload did not finish — please try again shortly.'),
           reload: false,
         })
       }

@@ -37,7 +37,12 @@ export default function SetPasswordPage() {
         body: JSON.stringify(body),
       })
       if (!res.ok) {
-        setErr('البيانات غير صحيحة أو انتهت صلاحيتها. اطلب رابطًا/كودًا جديدًا.')
+        const why = ((await res.json().catch(() => ({}))) as { error?: string }).error
+        setErr(
+          why === 'too-many'
+            ? 'الكود اتقفل بعد محاولات غلط كتير. استخدم الرابط اللي في الإيميل، أو اطلب كود جديد.'
+            : 'البيانات غير صحيحة أو انتهت صلاحيتها. اطلب رابطًا/كودًا جديدًا.',
+        )
         setBusy(false)
         return
       }

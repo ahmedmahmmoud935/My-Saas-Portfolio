@@ -10,6 +10,7 @@ import { readingMinutes } from '@/lib/reading-time'
 import Navbar from '@/components/portfolio/Navbar'
 import PageShell from '@/components/portfolio/PageShell'
 import Footer from '@/components/portfolio/Footer'
+import { cleanHtml } from '@/lib/clean-html'
 
 type Params = {
   params: Promise<{ username: string; slug: string }>
@@ -28,7 +29,8 @@ async function load(username: string, slugRaw: string, locale: 'ar' | 'en') {
   const payload = await getPayload({ config })
   const t = await payload.find({ collection: 'tenants', where: { slug: { equals: username } }, limit: 1, depth: 0 })
   const tenant = t.docs[0]
-  if (!tenant) return null
+  // A suspended client's whole site is off, not just its home page.
+  if (!tenant || (tenant as { suspended?: boolean }).suspended) return null
   const other = locale === 'ar' ? 'en' : 'ar'
   const bySlug = (l: 'ar' | 'en') =>
     payload.find({
@@ -221,7 +223,8 @@ export default async function ArticlePage({ params, searchParams }: Params) {
           <div
             className="article-body"
             style={{ lineHeight: 1.9, color: 'var(--text)' }}
-            dangerouslySetInnerHTML={{ __html: article.contentHtml || '' }}
+            // The client's own HTML, with anything that would run taken out.
+            dangerouslySetInnerHTML={{ __html: cleanHtml(article.contentHtml) }}
           />
 
           {/* What this piece is about, in the author's own words. Not links:

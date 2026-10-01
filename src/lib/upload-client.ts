@@ -65,7 +65,8 @@ export function uploadFile(
       }
       if (xhr.status >= 200 && xhr.status < 300 && body.id) resolve(body as UploadedMedia)
       else if (xhr.status === 401) reject(new Error('unauthorized'))
-      else reject(new Error(body.error || `HTTP ${xhr.status}`))
+      // A proxy's own 413 carries no JSON body: it is still "too big".
+      else reject(new Error(body.error || (xhr.status === 413 ? 'too-big' : 'upload-failed')))
     }
     xhr.send(fd)
   })

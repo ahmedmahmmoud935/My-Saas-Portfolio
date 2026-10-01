@@ -1,5 +1,6 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { allow, clientIp, tooMany } from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
 
@@ -7,6 +8,8 @@ const esc = (s: string) => s.replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;
 
 // Public contact form → email via Resend to the tenant's contact address.
 export async function POST(req: Request) {
+  // A handful of messages per visitor per ten minutes — a person, not a script.
+  if (!allow(`contact:${clientIp(req)}`, 5, 10 * 60 * 1000)) return tooMany()
   try {
     const { tenant, name, email, subject, message } = (await req.json()) as {
       tenant?: number

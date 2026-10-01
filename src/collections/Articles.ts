@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { recordSlugRedirect } from '@/lib/record-redirect'
+import { livePieces } from '../lib/public-read'
 
 /**
  * Blog articles (spec/01). Bilingual title/excerpt via localization.
@@ -13,7 +14,8 @@ export const Articles: CollectionConfig = {
     defaultColumns: ['title', 'slug', 'published', 'updatedAt'],
   },
   access: {
-    read: () => true, // public blog (frontend filters unpublished)
+    // Visitors see what is live; drafts and scheduled pieces wait.
+    read: livePieces,
   },
   hooks: {
     afterChange: [

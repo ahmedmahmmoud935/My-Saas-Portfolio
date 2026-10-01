@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { approvedReviews } from '../lib/public-read'
 
 /**
  * Client reviews (old `testimonials` table). Public visitors can submit
@@ -11,7 +12,8 @@ export const Testimonials: CollectionConfig = {
     defaultColumns: ['name', 'company', 'rating', 'approved', 'source'],
   },
   access: {
-    read: () => true, // frontend shows approved only
+    // Visitors see approved reviews only.
+    read: approvedReviews,
   },
   fields: [
     { name: 'name', type: 'text', required: true },

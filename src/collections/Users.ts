@@ -11,7 +11,15 @@ export const Users: CollectionConfig = {
     useAsTitle: 'email',
     defaultColumns: ['email', 'name', 'isOwner', 'activated'],
   },
-  auth: true,
+  /* Payload's default session is two hours with nothing renewing it, so a
+     client who signed in after lunch found their saves refused by the
+     evening. A dashboard you work in for an afternoon keeps you signed in for
+     a month; five wrong passwords lock the account for fifteen minutes. */
+  auth: {
+    tokenExpiration: 60 * 60 * 24 * 30,
+    maxLoginAttempts: 5,
+    lockTime: 15 * 60 * 1000,
+  },
   hooks: {
     // Block login until the client has activated (set their password via the
     // emailed link/code). Owners and already-activated users pass through.
@@ -65,5 +73,7 @@ export const Users: CollectionConfig = {
     { name: 'resetToken', type: 'text', admin: { hidden: true }, access: { read: () => false } },
     { name: 'resetCode', type: 'text', admin: { hidden: true }, access: { read: () => false } },
     { name: 'resetExp', type: 'number', admin: { hidden: true }, access: { read: () => false } },
+    // Wrong guesses at the current code. Five, and the code is spent.
+    { name: 'resetAttempts', type: 'number', admin: { hidden: true }, access: { read: () => false } },
   ],
 }

@@ -1,4 +1,5 @@
 import React from 'react'
+import { safeHref } from '@/lib/safe-url'
 
 export default function Logos({
   title,
@@ -27,7 +28,7 @@ export default function Logos({
               </div>
             )
             return l.websiteUrl ? (
-              <a key={l.id} href={l.websiteUrl} target="_blank" rel="noopener noreferrer">
+              <a key={l.id} href={safeHref(l.websiteUrl)} target="_blank" rel="noopener noreferrer">
                 {box}
               </a>
             ) : (

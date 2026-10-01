@@ -31,12 +31,14 @@
     "payload": "3.85.2",
     "react": "19.2.7",
     "react-dom": "19.2.7",
+    "sanitize-html": "^2.18.0",
     "sharp": "^0.34.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
+    "@types/sanitize-html": "^2.16.2",
     "embedded-postgres": "17.10.0-beta.17",
     "typescript": "^5.7.3"
   }

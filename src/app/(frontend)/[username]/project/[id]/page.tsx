@@ -5,6 +5,8 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { mediaUrl } from '@/lib/portfolio'
 import { altOf } from '@/lib/project-types'
+import { cleanHtml } from '@/lib/clean-html'
+import { isEmbeddablePage, recoverEscapedHtml, splitHtmlDocument } from '@/lib/html-embed'
 import { alternatesFor, absoluteUrl, creativeWorkJsonLd, langQuery, pageLocale, plainText } from '@/lib/seo'
 import ProjectView, { type Mod, type SerializedProject } from '@/components/project/ProjectView'
 import Navbar from '@/components/portfolio/Navbar'
@@ -21,15 +23,27 @@ function serializeModules(modules: unknown[]): Mod[] {
   const out: Mod[] = []
   for (const m of modules as Record<string, unknown>[]) {
     switch (m.blockType) {
-      case 'text':
-        out.push({
-          type: 'text',
-          textType: ((m.textType as string) === 'h1' || (m.textType as string) === 'h2'
-            ? (m.textType as 'h1' | 'h2')
-            : 'p'),
-          value: String(m.value ?? ''),
-        })
+      case 'text': {
+        const textType = ((m.textType as string) === 'h1' || (m.textType as string) === 'h2'
+          ? (m.textType as 'h1' | 'h2')
+          : 'p')
+        /* Un-escaped first, then cleaned, then handed over finished: the view
+           does no more decoding, so nothing the cleaner took out can be
+           decoded back in. A whole pasted page is split here too, and only
+           its markup cleaned — its stylesheet is scoped by the view. */
+        const raw = recoverEscapedHtml(String(m.value ?? ''))
+        if (isEmbeddablePage(raw)) {
+          const { html, css, dir } = splitHtmlDocument(raw)
+          out.push({ type: 'text', textType, value: '', embed: { html: cleanHtml(html), css, dir } })
+        } else {
+          out.push({
+            type: 'text',
+            textType,
+            value: cleanHtml(/<[a-z][\s\S]*>/i.test(raw) ? raw : raw.replace(/\n/g, '<br />')),
+          })
+        }
         break
+      }
       case 'image': {
         const src = m.src as { width?: number | null; height?: number | null } | null
         out.push({ type: 'image', src: mediaUrl(m.src as never), w: src?.width ?? null, h: src?.height ?? null, alt: altOf(m.src) })
@@ -149,7 +163,7 @@ export async function generateMetadata({ params, searchParams }: Params): Promis
       depth: 0,
     })
     const tenant = tenants.docs[0]
-    if (!tenant) return { alternates }
+    if (!tenant || (tenant as { suspended?: boolean }).suspended) return { alternates }
 
     const project = await payload.findByID({
       collection: 'projects',
@@ -210,7 +224,8 @@ export default async function ProjectDetailPage({ params, searchParams }: Params
     depth: 0,
   })
   const tenant = tenants.docs[0]
-  if (!tenant) notFound()
+  // A suspended client's whole site is off, not just its home page.
+  if (!tenant || (tenant as { suspended?: boolean }).suspended) notFound()
 
   let project
   try {
@@ -245,7 +260,9 @@ export default async function ProjectDetailPage({ params, searchParams }: Params
   const serialized: SerializedProject = {
     title: project.title,
     category: project.category,
-    description: project.description,
+    description: project.description
+      ? cleanHtml(/<[a-z][\s\S]*>/i.test(project.description) ? project.description : project.description.replace(/\n/g, '<br />'))
+      : project.description,
     projectType: (project.projectType as SerializedProject['projectType']) || 'grid',
     cover: mediaUrl(project.cover),
     images: (project.images || [])
@@ -311,9 +328,9 @@ export default async function ProjectDetailPage({ params, searchParams }: Params
                   locale,
                 ),
               image: mediaUrl(project.cover as never, 'card'),
-              url: await absoluteUrl(`/${tenant.slug}/project/${id}`),
+              url: await absoluteUrl(`/${tenant.slug}/project/${id}`, tenant.slug),
               authorName: tenant.name,
-              authorUrl: await absoluteUrl(`/${tenant.slug}`),
+              authorUrl: await absoluteUrl(`/${tenant.slug}`, tenant.slug),
               datePublished: (project as { createdAt?: string }).createdAt ?? null,
               genre: (project as { category?: string | null }).category ?? null,
             }),

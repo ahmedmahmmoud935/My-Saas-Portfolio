@@ -56,7 +56,8 @@ export async function storeUpload(
 
   const media = await ctx.payload.create({
     collection: 'media',
-    data: { tenant: ctx.tenantId, alt: name },
+    // No alt: a file name is not a description of a picture.
+    data: { tenant: ctx.tenantId },
     file: { data: buf as Buffer<ArrayBuffer>, mimetype, name, size: buf.length },
     context: { skipQuota: ctx.user.isOwner === true },
   })

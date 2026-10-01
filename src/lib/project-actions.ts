@@ -64,52 +64,6 @@ function toBlocks(
   }) as unknown as Blocks
 }
 
-/** Upload a file → Media (Payload does WebP + thumb/card; R2 or local). */
-export async function uploadProjectMedia(formData: FormData) {
-  const ctx = await getDashboardContext()
-  if (!ctx) throw new Error('unauthorized')
-  const file = formData.get('file') as File | null
-  if (!file) throw new Error('no file')
-
-  let buf: Buffer = Buffer.from(await file.arrayBuffer())
-  let mimetype = file.type
-  let name = file.name
-  // Videos are compressed here; the result is reported back so the dashboard
-  // can say what happened rather than silently storing a 70MB phone export.
-  let video: VideoReport | undefined
-  if (file.type.startsWith('video/')) {
-    // The uploader sends the quality the client picked; anything else is the
-    // balanced default.
-    const q = formData.get('quality')
-    const c = await compressVideo(buf, file.type, isVideoQuality(q) ? q : VIDEO_QUALITY_DEFAULT)
-    if (c.buf && c.mimetype) {
-      buf = c.buf
-      mimetype = c.mimetype
-      name = name.replace(/\.[^.]+$/, '') + '.mp4'
-    }
-    video = {
-      compressed: Boolean(c.buf),
-      fromMb: +(c.fromBytes / 1048576).toFixed(1),
-      toMb: +((c.toBytes ?? c.fromBytes) / 1048576).toFixed(1),
-      reason: c.reason,
-      height: c.height,
-    }
-  }
-  const media = await ctx.payload.create({
-    collection: 'media',
-    data: { tenant: ctx.tenantId, alt: name },
-    file: { data: buf as Buffer<ArrayBuffer>, mimetype, name, size: buf.length },
-  })
-  const sizes = (media as { sizes?: { thumb?: { url?: string }; card?: { url?: string } } }).sizes
-  return {
-    id: media.id,
-    url: media.url ?? null,
-    thumbUrl: sizes?.thumb?.url ?? media.url ?? null,
-    mimeType: media.mimeType ?? mimetype ?? null,
-    video,
-  }
-}
-
 async function assertOwnsProject(
   ctx: Awaited<ReturnType<typeof getDashboardContext>>,
   id: number,

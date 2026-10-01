@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { moduleBlocks } from '../blocks/modules'
+import { publishedProjects } from '../lib/public-read'
 
 /**
  * The core content type (spec/01 + spec/03). `projectType` controls the
@@ -13,7 +14,8 @@ export const Projects: CollectionConfig = {
     defaultColumns: ['title', 'category', 'mediaType', 'projectType', 'sortOrder'],
   },
   access: {
-    read: () => true, // public portfolios
+    // Visitors see what a portfolio shows; drafts stay with their owner.
+    read: publishedProjects,
   },
   fields: [
     {

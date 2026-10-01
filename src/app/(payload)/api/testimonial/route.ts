@@ -1,5 +1,7 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import sharp from 'sharp'
+import { allow, clientIp, tooMany } from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,6 +14,8 @@ const PHOTO_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/hei
 // Public testimonial submission → created with source='public', approved=false
 // so it stays hidden until the owner approves it in the dashboard/admin.
 export async function POST(req: Request) {
+  // A few reviews per visitor per ten minutes: enough for anyone honest.
+  if (!allow(`testimonial:${clientIp(req)}`, 5, 10 * 60 * 1000)) return tooMany()
   try {
     // The form sends multipart when a photo is attached and JSON when it isn't.
     const isForm = (req.headers.get('content-type') || '').includes('multipart/form-data')
@@ -56,14 +60,21 @@ export async function POST(req: Request) {
     let avatar: number | undefined
     if (photo && photo.size > 0 && photo.size <= MAX_PHOTO_BYTES && PHOTO_TYPES.has(photo.type)) {
       try {
-        const buf = Buffer.from(await photo.arrayBuffer())
+        /* A small round avatar is all this photo will ever be, so it is
+           stored at that size: a few tens of kilobytes rather than a phone's
+           five megabytes, against the client's storage, from strangers. */
+        const buf = await sharp(Buffer.from(await photo.arrayBuffer()))
+          .rotate()
+          .resize(400, 400, { fit: 'cover' })
+          .webp({ quality: 80 })
+          .toBuffer()
         const media = await payload.create({
           collection: 'media',
           data: { tenant: tenant.id, alt: String(name).slice(0, 120) },
           file: {
             data: buf as Buffer<ArrayBuffer>,
-            mimetype: photo.type,
-            name: photo.name || 'photo.jpg',
+            mimetype: 'image/webp',
+            name: 'review-photo.webp',
             size: buf.length,
           },
         })

@@ -1,7 +1,16 @@
 import type { Payload } from 'payload'
+import { randomBytes, randomInt } from 'node:crypto'
 
 const SITE = process.env.NEXT_PUBLIC_SERVER_URL || 'https://viralpx.com'
 const TTL_MS = 1000 * 60 * 60 * 24 * 3 // link + code valid for 3 days
+
+/** Wrong guesses a code survives. Five in 900,000 is not a way in. */
+export const MAX_CODE_ATTEMPTS = 5
+/** A new code is not sent for the same account more often than this. */
+export const RESEND_GAP_MS = 60 * 1000
+
+/** When the current code was sent, if one is pending. */
+export const issuedAt = (resetExp?: number | null) => (resetExp ? resetExp - TTL_MS : null)
 
 /** Branded, RTL "set your password" email showing BOTH a link and a 6-digit code. */
 function activationEmailHTML(url: string, code: string): string {
@@ -25,14 +34,18 @@ function activationEmailHTML(url: string, code: string): string {
  * the client a set-password link and the code. Used for onboarding, resend,
  * and the public "forgot password" flow.
  */
-export async function sendActivation(payload: Payload, user: { id: number | string; email: string }) {
-  const rnd = () => (globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2)).replace(/-/g, '')
-  const token = rnd() + rnd()
-  const code = String(Math.floor(100000 + Math.random() * 900000))
+export async function sendActivation(
+  payload: Payload,
+  user: { id: number | string; email: string },
+): Promise<boolean> {
+  // Unguessable both: a 256-bit link token, and a code from a cryptographic
+  // source rather than Math.random.
+  const token = randomBytes(32).toString('hex')
+  const code = String(randomInt(100000, 1000000))
   await payload.update({
     collection: 'users',
     id: user.id,
-    data: { resetToken: token, resetCode: code, resetExp: Date.now() + TTL_MS },
+    data: { resetToken: token, resetCode: code, resetExp: Date.now() + TTL_MS, resetAttempts: 0 },
     overrideAccess: true,
   })
   const url = `${SITE}/set-password?token=${token}`
@@ -44,5 +57,8 @@ export async function sendActivation(payload: Payload, user: { id: number | stri
     })
   } catch (e) {
     console.error('[activation] email failed:', e)
+    // The code and link are stored either way; the caller decides what to say.
+    return false
   }
+  return true
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useId } from 'react'
-import { extractImports, prefixHtmlClasses, scopeCss, splitHtmlDocument } from '@/lib/html-embed'
+import { extractImports, prefixHtmlClasses, scopeCss, splitHtmlDocument, type EmbeddedHtml } from '@/lib/html-embed'
 
 /**
  * A whole HTML page pasted in as a case study, rendered with its own
@@ -13,14 +13,18 @@ import { extractImports, prefixHtmlClasses, scopeCss, splitHtmlDocument } from '
  */
 export default function HtmlEmbed({
   value,
+  parts,
   className = '',
 }: {
-  value: string
+  /** A pasted document, split here (the dashboard's own preview). */
+  value?: string
+  /** …or one already split and cleaned on the server (public pages). */
+  parts?: EmbeddedHtml
   className?: string
 }) {
   // A stable class per instance, so two pasted pages can't restyle each other.
   const cls = `embed-${useId().replace(/[^a-zA-Z0-9]/g, '')}`
-  const { html, css, dir } = splitHtmlDocument(value)
+  const { html, css, dir } = parts ?? splitHtmlDocument(value ?? '')
   // The same token renames the page's own classes on both sides, so the site's
   // `.hero` / `.section` / `.eyebrow` can't reach in and restyle it.
   const markup = prefixHtmlClasses(html, cls)

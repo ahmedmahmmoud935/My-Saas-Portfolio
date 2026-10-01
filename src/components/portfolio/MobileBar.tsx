@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { safeHref } from '@/lib/safe-url'
 
 export type MBtn = { pos: string; type: string; target: string; icon: string; label: string }
 
@@ -45,7 +46,7 @@ export default function MobileBar({
       case 'articles':
         return `/${username}/articles${langQ}`
       case 'link':
-        return b.target || '#'
+        return safeHref(b.target)
       default:
         return `#${b.target}`
     }

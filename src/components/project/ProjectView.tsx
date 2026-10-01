@@ -3,11 +3,17 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Carousel from '@/components/shared/Carousel'
 import HtmlEmbed from '@/components/shared/HtmlEmbed'
-import { isEmbeddablePage, recoverEscapedHtml } from '@/lib/html-embed'
 import { resolveVideoUrl } from '@/lib/video'
 
 export type Mod =
-  | { type: 'text'; textType: 'h1' | 'h2' | 'p'; value: string }
+  | {
+      type: 'text'
+      textType: 'h1' | 'h2' | 'p'
+      /** Clean HTML, ready to render. */
+      value: string
+      /** A whole pasted page, split and cleaned on the server. */
+      embed?: { html: string; css: string; dir?: 'rtl' | 'ltr' }
+    }
   | { type: 'image'; src: string | null; w?: number | null; h?: number | null; alt?: string }
   | { type: 'grid'; items: { src: string; ar: number; w?: number | null; h?: number | null; alt?: string }[]; mobileCols?: number }
   | { type: 'carousel'; items: string[]; ratio?: number | null }
@@ -196,9 +202,8 @@ export default function ProjectView({ project }: { project: SerializedProject })
             // Same rich editor as the text modules — HTML, or legacy plain text.
             // eslint-disable-next-line react/no-danger
             dangerouslySetInnerHTML={{
-              __html: /<[a-z][\s\S]*>/i.test(project.description)
-                ? project.description
-                : project.description.replace(/\n/g, '<br />'),
+              // Cleaned and line-broken on the server.
+              __html: project.description,
             }}
           />
         )}
@@ -256,20 +261,10 @@ export default function ProjectView({ project }: { project: SerializedProject })
           {project.modules.map((m, i) => {
             switch (m.type) {
               case 'text': {
-                // Markup pasted into the visual editor was stored escaped, so
-                // the page used to print `<!doctype html>` at the reader.
-                const raw = recoverEscapedHtml(m.value)
-
-                // A whole HTML page pasted in as a case study: render it with
-                // its own stylesheet, confined to this element. Same component
-                // the dashboard previews with.
-                if (isEmbeddablePage(raw)) return <HtmlEmbed key={i} value={raw} />
-
-                // Ordinary rich text. Older projects hold plain text — keep
-                // their line breaks instead of collapsing them.
-                const html = {
-                  __html: /<[a-z][\s\S]*>/i.test(raw) ? raw : raw.replace(/\n/g, '<br />'),
-                }
+                // Un-escaped, split and cleaned on the server. Nothing is
+                // decoded here: decoding after cleaning would undo it.
+                if (m.embed) return <HtmlEmbed key={i} parts={m.embed} />
+                const html = { __html: m.value }
                 const cls = m.textType === 'h1' ? 'mod-h1' : m.textType === 'h2' ? 'mod-h2' : 'mod-p'
                 // eslint-disable-next-line react/no-danger
                 return <div className={`${cls} mod-rich`} key={i} dangerouslySetInnerHTML={html} />

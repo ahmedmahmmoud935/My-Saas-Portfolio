@@ -166,6 +166,7 @@ export interface User {
   resetToken?: string | null;
   resetCode?: string | null;
   resetExp?: number | null;
+  resetAttempts?: number | null;
   tenants?:
     | {
         tenant: number | Tenant;
@@ -1219,6 +1220,7 @@ export interface UsersSelect<T extends boolean = true> {
   resetToken?: T;
   resetCode?: T;
   resetExp?: T;
+  resetAttempts?: T;
   tenants?:
     | T
     | {

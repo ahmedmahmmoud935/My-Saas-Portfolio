@@ -34,3 +34,7 @@ export function quotaFullText(t: (ar: string, en: string) => string): string {
     'Your site has run out of storage. Delete pictures or videos you no longer need, link long videos from YouTube instead, or ask the admin for more room.',
   )
 }
+
+/** The largest file the dashboard takes, by kind. A video is compressed after
+ *  upload, so it may arrive larger than it will be stored. */
+export const MAX_UPLOAD_MB = { image: 30, video: 300 } as const
