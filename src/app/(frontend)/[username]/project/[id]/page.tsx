@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { mediaUrl } from '@/lib/portfolio'
+import { altOf } from '@/lib/project-types'
 import { alternatesFor, absoluteUrl, creativeWorkJsonLd, langQuery, pageLocale, plainText } from '@/lib/seo'
 import ProjectView, { type Mod, type SerializedProject } from '@/components/project/ProjectView'
 import Navbar from '@/components/portfolio/Navbar'
@@ -31,7 +32,7 @@ function serializeModules(modules: unknown[]): Mod[] {
         break
       case 'image': {
         const src = m.src as { width?: number | null; height?: number | null } | null
-        out.push({ type: 'image', src: mediaUrl(m.src as never), w: src?.width ?? null, h: src?.height ?? null })
+        out.push({ type: 'image', src: mediaUrl(m.src as never), w: src?.width ?? null, h: src?.height ?? null, alt: altOf(m.src) })
         break
       }
       case 'grid':
@@ -43,10 +44,10 @@ function serializeModules(modules: unknown[]): Mod[] {
               const src = mediaUrl(it.src as never)
               const s = it.src as { width?: number | null; height?: number | null } | null
               const ar = s && s.width && s.height ? s.width / s.height : 1
-              return src ? { src, ar, w: s?.width ?? null, h: s?.height ?? null } : null
+              return src ? { src, ar, w: s?.width ?? null, h: s?.height ?? null, alt: altOf(it.src) } : null
             })
             .filter(
-              (x): x is { src: string; ar: number; w: number | null; h: number | null } => !!x,
+              (x): x is { src: string; ar: number; w: number | null; h: number | null; alt: string } => !!x,
             ),
         })
         break
@@ -101,6 +102,19 @@ function serializeModules(modules: unknown[]): Mod[] {
  * headings above them ("Deliverables", "The idea") describe the page's
  * furniture, not the work, so they are only used when there are no paragraphs.
  */
+/**
+ * A project told only in pictures, said in one sentence.
+ *
+ * With no description and no text module, the page gave search results and
+ * AI assistants a title and nothing else to read — which is how a portfolio
+ * of finished work came back as "I can't see any projects".
+ */
+function saidInPictures(title: string, category: string | null | undefined, owner: string, locale: 'ar' | 'en') {
+  return locale === 'en'
+    ? `${title}${category ? ` — a ${category} project` : ''} by ${owner}. See the full project in pictures.`
+    : `${title}${category ? ` — مشروع ${category}` : ''} من أعمال ${owner}. شوف المشروع كامل بالصور.`
+}
+
 function textFromModules(modules: unknown): string | undefined {
   if (!Array.isArray(modules)) return undefined
   const said = (only?: string) =>
@@ -153,10 +167,12 @@ export async function generateMetadata({ params, searchParams }: Params): Promis
       seo?: { title?: string | null; description?: string | null; noindex?: boolean | null; nofollow?: boolean | null }
     }).seo
     const title = seo?.title || `${project.title} — ${tenant.name}`
+    const category = (project as { category?: string | null }).category
     const description =
       seo?.description ||
       plainText(project.description) ||
-      plainText(textFromModules(project.modules))
+      plainText(textFromModules(project.modules)) ||
+      saidInPictures(project.title, category, tenant.name, locale)
     const cover = mediaUrl(project.cover as never, 'card')
 
     return {
@@ -236,10 +252,11 @@ export default async function ProjectDetailPage({ params, searchParams }: Params
       .map((im) => {
         const src = mediaUrl(im.image)
         const m = im.image as { width?: number | null; height?: number | null } | null
-        return src ? { src, w: m?.width ?? null, h: m?.height ?? null } : null
+        return src ? { src, w: m?.width ?? null, h: m?.height ?? null, alt: altOf(im.image) } : null
       })
-      .filter((p): p is { src: string; w: number | null; h: number | null } => !!p),
+      .filter((p): p is { src: string; w: number | null; h: number | null; alt: string } => !!p),
     modules: serializeModules(project.modules as unknown[]),
+    imageWord: locale === 'en' ? 'image' : 'صورة',
   }
 
   const settings = settingsRes.docs[0] ?? null
@@ -286,7 +303,13 @@ export default async function ProjectDetailPage({ params, searchParams }: Params
               name: String(project.title ?? ''),
               description:
                 plainText(project.description, 400) ||
-                plainText(textFromModules(project.modules), 400),
+                plainText(textFromModules(project.modules), 400) ||
+                saidInPictures(
+                  String(project.title ?? ''),
+                  (project as { category?: string | null }).category,
+                  tenant.name,
+                  locale,
+                ),
               image: mediaUrl(project.cover as never, 'card'),
               url: await absoluteUrl(`/${tenant.slug}/project/${id}`),
               authorName: tenant.name,

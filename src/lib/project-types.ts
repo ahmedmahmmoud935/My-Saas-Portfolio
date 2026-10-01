@@ -40,12 +40,26 @@ export type ProjectInput = {
   published?: boolean
 }
 
+/** A picture in the editor: its id, a preview, and what it shows in words. */
+export type EditImage = { id: number; url: string | null; alt?: string }
+
+/** A media document's description, whichever way it was read (one locale or all). */
+export function altOf(src: unknown): string {
+  const alt = src && typeof src === 'object' ? (src as { alt?: unknown }).alt : undefined
+  if (typeof alt === 'string') return alt
+  if (alt && typeof alt === 'object') {
+    const o = alt as { ar?: string | null; en?: string | null }
+    return o.ar || o.en || ''
+  }
+  return ''
+}
+
 /** Editor-side module: like ModuleInput but carries preview URLs for display. */
 export type EditModule =
   | { type: 'text'; textType: 'h1' | 'h2' | 'p'; value: Bi }
-  | { type: 'image'; srcId: number | null; srcUrl: string | null }
-  | { type: 'grid'; items: { id: number; url: string | null }[]; mobileCols: number }
-  | { type: 'carousel'; items: { id: number; url: string | null }[] }
+  | { type: 'image'; srcId: number | null; srcUrl: string | null; alt?: string }
+  | { type: 'grid'; items: EditImage[]; mobileCols: number }
+  | { type: 'carousel'; items: EditImage[] }
   | { type: 'video'; embedUrl: string; posterId: number | null; posterUrl: string | null }
   | {
       type: 'beforeafter'

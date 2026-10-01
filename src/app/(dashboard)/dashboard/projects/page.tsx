@@ -4,7 +4,7 @@ import { getDashboardContext, getTenantSettings } from '@/lib/dashboard'
 import { toCategoryRows } from '@/lib/category-types'
 import { mediaUrl } from '@/lib/portfolio'
 import ProjectsManager, { type ProjectRow } from '@/components/dashboard/ProjectsManager'
-import type { Bi, EditModule } from '@/lib/project-types'
+import { altOf, type Bi, type EditModule } from '@/lib/project-types'
 
 const mid = (x: unknown): number | null =>
   x && typeof x === 'object' ? ((x as { id: number }).id ?? null) : ((x as number) ?? null)
@@ -22,23 +22,23 @@ function serializeEditModules(modules: unknown): EditModule[] {
         })
         break
       case 'image':
-        out.push({ type: 'image', srcId: mid(m.src), srcUrl: mediaUrl(m.src as never, 'thumb') })
+        out.push({ type: 'image', srcId: mid(m.src), srcUrl: mediaUrl(m.src as never, 'thumb'), alt: altOf(m.src) })
         break
       case 'grid':
         out.push({
           type: 'grid',
           mobileCols: Number(m.mobileCols) || 1,
           items: ((m.items as { src: unknown }[]) || [])
-            .map((it) => ({ id: mid(it.src), url: mediaUrl(it.src as never, 'thumb') }))
-            .filter((x): x is { id: number; url: string | null } => x.id != null),
+            .map((it) => ({ id: mid(it.src), url: mediaUrl(it.src as never, 'thumb'), alt: altOf(it.src) }))
+            .filter((x): x is { id: number; url: string | null; alt: string } => x.id != null),
         })
         break
       case 'carousel':
         out.push({
           type: 'carousel',
           items: ((m.items as { src: unknown }[]) || [])
-            .map((it) => ({ id: mid(it.src), url: mediaUrl(it.src as never, 'thumb') }))
-            .filter((x): x is { id: number; url: string | null } => x.id != null),
+            .map((it) => ({ id: mid(it.src), url: mediaUrl(it.src as never, 'thumb'), alt: altOf(it.src) }))
+            .filter((x): x is { id: number; url: string | null; alt: string } => x.id != null),
         })
         break
       case 'video':

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import MediaUploader from './MediaUploader'
+import AltInput from './AltInput'
 import NavIcon from './icons'
 import Carousel from '@/components/shared/Carousel'
 import { resolveVideoUrl } from '@/lib/video'
@@ -152,11 +153,16 @@ export default function ModulesEditor({
           )}
 
           {m.type === 'image' && (
-            <MediaUploader
-              big
-              previewUrl={m.srcUrl}
-              onUploaded={(u) => update(i, { ...m, srcId: u.id, srcUrl: u.thumbUrl })}
-            />
+            <>
+              <MediaUploader
+                big
+                previewUrl={m.srcUrl}
+                onUploaded={(u) => update(i, { ...m, srcId: u.id, srcUrl: u.thumbUrl, alt: '' })}
+              />
+              {m.srcId != null && (
+                <AltInput key={m.srcId} id={m.srcId} value={m.alt} onSaved={(alt) => update(i, { ...m, alt })} />
+              )}
+            </>
           )}
 
           {(m.type === 'grid' || m.type === 'carousel') && (
@@ -208,8 +214,17 @@ export default function ModulesEditor({
                           onUploaded={(u) =>
                             update(i, {
                               ...m,
-                              items: m.items.map((x, z) => (z === k ? { id: u.id, url: u.url ?? u.thumbUrl } : x)),
+                              items: m.items.map((x, z) => (z === k ? { id: u.id, url: u.url ?? u.thumbUrl, alt: '' } : x)),
                             })
+                          }
+                        />
+                        <AltInput
+                          key={it.id}
+                          compact
+                          id={it.id}
+                          value={it.alt}
+                          onSaved={(alt) =>
+                            update(i, { ...m, items: m.items.map((x, z) => (z === k ? { ...x, alt } : x)) })
                           }
                         />
                         <button

@@ -8,8 +8,8 @@ import { resolveVideoUrl } from '@/lib/video'
 
 export type Mod =
   | { type: 'text'; textType: 'h1' | 'h2' | 'p'; value: string }
-  | { type: 'image'; src: string | null; w?: number | null; h?: number | null }
-  | { type: 'grid'; items: { src: string; ar: number; w?: number | null; h?: number | null }[]; mobileCols?: number }
+  | { type: 'image'; src: string | null; w?: number | null; h?: number | null; alt?: string }
+  | { type: 'grid'; items: { src: string; ar: number; w?: number | null; h?: number | null; alt?: string }[]; mobileCols?: number }
   | { type: 'carousel'; items: string[]; ratio?: number | null }
   | { type: 'video'; embedUrl: string; poster?: string | null }
   | {
@@ -22,7 +22,7 @@ export type Mod =
   | { type: 'separator'; spacing: 'compact' | 'normal' | 'large' }
 
 /** A picture plus the size it was stored at, so the browser can reserve room. */
-export type Pic = { src: string; w?: number | null; h?: number | null }
+export type Pic = { src: string; w?: number | null; h?: number | null; alt?: string }
 
 export type SerializedProject = {
   title: string
@@ -32,6 +32,8 @@ export type SerializedProject = {
   cover?: string | null
   images: Pic[]
   modules: Mod[]
+  /** "صورة" / "image" — numbers a picture nobody described. */
+  imageWord?: string
 }
 
 /* ── Before/after slider ─────────────────────────────────────────────── */
@@ -124,6 +126,17 @@ const CloseIcon = (
 )
 
 export default function ProjectView({ project }: { project: SerializedProject }) {
+  /* What each picture is, in words, for search engines and AI assistants,
+     which read the text of a page and not its images. The owner's own
+     description of a picture when there is one; otherwise the project, its
+     category and the picture's place — numbered down the page, so no two
+     read the same. */
+  let shown = 0
+  const altFor = (own?: string) => {
+    shown += 1
+    if (own && own.trim()) return own.trim()
+    return [project.title, project.category, `${project.imageWord ?? 'image'} ${shown}`].filter(Boolean).join(' — ')
+  }
   const [lb, setLb] = useState<number | null>(null)
   const touchX = useRef<number | null>(null)
   const gallery = useRef<string[]>([])
@@ -170,7 +183,7 @@ export default function ProjectView({ project }: { project: SerializedProject })
 
       {project.projectType === 'stacked' && project.cover && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img className="detail-banner" src={project.cover} alt={project.title} />
+        <img className="detail-banner" src={project.cover} alt={altFor()} />
       )}
 
       <div className="detail-head">
@@ -205,7 +218,7 @@ export default function ProjectView({ project }: { project: SerializedProject })
               <img
                 key={i}
                 src={p.src}
-                alt={`${project.title} — ${i + 1}`}
+                alt={altFor(p.alt)}
                 // The size it was stored at. Without it the browser cannot
                 // reserve the space and the page jumps as each picture lands —
                 // the shift search engines measure as CLS.
@@ -227,7 +240,7 @@ export default function ProjectView({ project }: { project: SerializedProject })
             <img
               key={i}
               src={p.src}
-              alt={`${project.title} — ${i + 1}`}
+              alt={altFor(p.alt)}
               width={p.w ?? undefined}
               height={p.h ?? undefined}
               loading="lazy"
@@ -268,7 +281,7 @@ export default function ProjectView({ project }: { project: SerializedProject })
                     className="mod-img"
                     key={i}
                     src={m.src}
-                    alt={project.title}
+                    alt={altFor(m.alt)}
                     width={m.w ?? undefined}
                     height={m.h ?? undefined}
                     loading="lazy"
@@ -290,7 +303,7 @@ export default function ProjectView({ project }: { project: SerializedProject })
                       <img
                         key={j}
                         src={it.src}
-                        alt={`${project.title} — ${j + 1}`}
+                        alt={altFor(it.alt)}
                         width={it.w ?? undefined}
                         height={it.h ?? undefined}
                         loading="lazy"
