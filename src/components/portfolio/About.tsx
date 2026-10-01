@@ -6,19 +6,30 @@ export default function About({
   text,
   tags,
   variant = 'classic',
+  frame,
 }: {
   title: string
   photoUrl?: string | null
   text?: string
   tags?: string[]
   variant?: string
+  /** How the picture sits in its frame: filling or whole, and its focus. */
+  frame?: { size?: string | null; posX?: number | null; posY?: number | null } | null
 }) {
   return (
     <section className="section" id="about">
       <div className={`container about about-${variant}`}>
         {photoUrl && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img className="about-photo" src={photoUrl} alt={title} />
+          <img
+            className="about-photo"
+            src={photoUrl}
+            alt={title}
+            style={{
+              objectFit: frame?.size === 'contain' ? 'contain' : 'cover',
+              objectPosition: `${frame?.posX ?? 50}% ${frame?.posY ?? 50}%`,
+            }}
+          />
         )}
         <div>
           {/* Alignment comes from the layout's stylesheet. Set inline, `start`

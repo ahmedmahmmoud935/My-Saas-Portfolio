@@ -51,6 +51,7 @@ import * as migration_20260917_040000_heading_colors from './20260917_040000_hea
 import * as migration_20260918_010000_attachments_prefix from './20260918_010000_attachments_prefix';
 import * as migration_20260926_010000_landing_line_icons from './20260926_010000_landing_line_icons';
 import * as migration_20260926_020000_landing_conversion_copy from './20260926_020000_landing_conversion_copy';
+import * as migration_20261002_010000_about_photo_controls from './20261002_010000_about_photo_controls';
 
 export const migrations = [
   {
@@ -317,5 +318,10 @@ export const migrations = [
     up: migration_20260926_020000_landing_conversion_copy.up,
     down: migration_20260926_020000_landing_conversion_copy.down,
     name: '20260926_020000_landing_conversion_copy'
+  },
+  {
+    up: migration_20261002_010000_about_photo_controls.up,
+    down: migration_20261002_010000_about_photo_controls.down,
+    name: '20261002_010000_about_photo_controls'
   },
 ];

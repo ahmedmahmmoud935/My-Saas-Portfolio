@@ -173,6 +173,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
         text={content.about?.text || undefined}
         tags={splitTags(content.about?.tags)}
         variant={settings?.style?.about || 'classic'}
+        frame={settings?.aboutPhoto}
       />
     ),
     projects: (

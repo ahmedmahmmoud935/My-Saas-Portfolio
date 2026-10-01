@@ -154,6 +154,19 @@ export const SiteSettings: CollectionConfig = {
               ],
             },
             {
+              /* How the About picture (brand.photo) sits in its frame — the
+                 same two answers the hero cover gives: whole or filling, and
+                 which point of it stays in view. */
+              name: 'aboutPhoto',
+              type: 'group',
+              label: 'About picture controls',
+              fields: [
+                { name: 'size', type: 'text', defaultValue: 'cover', admin: { description: "'cover' | 'contain'" } },
+                { name: 'posX', type: 'number', defaultValue: 50, min: 0, max: 100 },
+                { name: 'posY', type: 'number', defaultValue: 50, min: 0, max: 100 },
+              ],
+            },
+            {
               name: 'heroCover',
               type: 'group',
               label: 'Hero cover controls',

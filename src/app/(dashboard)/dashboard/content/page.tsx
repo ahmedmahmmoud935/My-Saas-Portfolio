@@ -33,11 +33,6 @@ export default async function ContentPage() {
     locale: 'all',
   })
   const c = (res.docs[0]?.content ?? {}) as Record<string, Record<string, unknown>>
-  const photo = ((res.docs[0]?.brand ?? {}) as Record<string, unknown>).photo
-  const aboutPhoto = {
-    id: photo && typeof photo === 'object' ? ((photo as { id?: number }).id ?? null) : ((photo as number) ?? null),
-    url: mediaUrl(photo as never, 'card'),
-  }
 
   const form: ContentForm = {
     hero: {
@@ -200,7 +195,6 @@ export default async function ContentPage() {
   return (
     <ContentHub
       content={form}
-      aboutPhoto={aboutPhoto}
       logos={logos}
       achievements={achievements}
       testimonials={testimonials}

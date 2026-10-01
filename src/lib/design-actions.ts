@@ -61,6 +61,11 @@ export async function saveDesign(form: DesignForm): Promise<{ ok: true } | SaveR
           font: LEGACY_FONT_IDS.has(form.style.font) ? form.style.font : 'default',
         },
         themeConfig: { components: form.components },
+        aboutPhoto: {
+          size: form.aboutPhoto.size === 'contain' ? 'contain' : 'cover',
+          posX: form.aboutPhoto.posX,
+          posY: form.aboutPhoto.posY,
+        },
         heroCover: {
           size: form.heroCover.size,
           posX: form.heroCover.posX,
@@ -76,7 +81,7 @@ export async function saveDesign(form: DesignForm): Promise<{ ok: true } | SaveR
           gradientDark: form.heroCover.gradientDark || null,
         },
         brand: {
-          photo: brandRel(currentBrand.photo) as number | null,
+          photo: form.aboutPhotoId,
           avatar: brandRel(currentBrand.avatar) as number | null,
           brandLogo: form.brandLogoId,
           favicon: brandRel(currentBrand.favicon) as number | null,

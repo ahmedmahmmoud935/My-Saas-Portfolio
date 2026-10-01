@@ -242,6 +242,14 @@ function applyDesign(doc: Document, f: DesignForm, theme: 'dark' | 'light') {
     root.prepend(layer)
   }
 
+  const about = doc.querySelector<HTMLImageElement>('#about .about-photo')
+  if (about) {
+    if (f.aboutPhotoUrl && about.getAttribute('src') !== f.aboutPhotoUrl) about.src = f.aboutPhotoUrl
+    about.style.display = f.aboutPhotoUrl ? '' : 'none'
+    about.style.objectFit = f.aboutPhoto.size === 'contain' ? 'contain' : 'cover'
+    about.style.objectPosition = `${f.aboutPhoto.posX}% ${f.aboutPhoto.posY}%`
+  }
+
   const hero = doc.getElementById('hero')
   if (hero) {
     const c = f.heroCover
@@ -396,6 +404,93 @@ function GeneralPanel({
               <Opt label={tr('اتجاه الصفحة', 'Direction')} value={f.style.direction} options={opts(tr, [['auto', 'حسب اللغة', 'By language'], ['rtl', 'من اليمين', 'Right to left'], ['ltr', 'من الشمال', 'Left to right']])} onChange={(v) => setStyle({ direction: v })} />
               <p className="hx-note">{tr('الحركة بتبان على الموقع وانت بتنزل فيه، مش في المعاينة الثابتة.', 'Motion shows on the site as you scroll, not in the still preview.')}</p>
             </div>
+          </>
+        )}
+      </StepPanel>
+      {preview}
+    </div>
+  )
+}
+
+/**
+ * The About section: its layout, then its picture — chosen and framed the way
+ * the hero's cover is, beside the page it appears on.
+ */
+function AboutPanel({
+  f,
+  tr,
+  set,
+  layout,
+  save,
+  busy,
+  preview,
+}: {
+  f: DesignForm
+  tr: T
+  set: (p: Partial<DesignForm>) => void
+  layout: React.ReactNode
+  save: () => void
+  busy: boolean
+  preview: React.ReactNode
+}) {
+  const [step, setStep] = useState<'layout' | 'photo'>('layout')
+  const setFrame = (p: Partial<DesignForm['aboutPhoto']>) => set({ aboutPhoto: { ...f.aboutPhoto, ...p } })
+  return (
+    <div className="hx">
+      <StepPanel
+        steps={[
+          { id: 'layout', ar: 'الشكل', en: 'Layout' },
+          { id: 'photo', ar: 'الصورة', en: 'Picture' },
+        ]}
+        step={step}
+        setStep={setStep}
+        save={save}
+        busy={busy}
+        tr={tr}
+      >
+        {step === 'layout' && (
+          <>
+            <p className="hx-lead">{tr('الصورة جنب الكلام، أو صورة كبيرة فوقه، أو كلام بس.', 'The picture beside the words, a big picture above them, or words alone.')}</p>
+            <div className="hx-layouts">{layout}</div>
+          </>
+        )}
+        {step === 'photo' && (
+          <>
+            <p className="hx-lead">
+              {tr('الصورة اللي جنب النبذة، أو فوقها في شكل «صورة كبيرة».', 'The picture beside your bio, or above it in the “Big image” layout.')}
+            </p>
+            {!f.aboutPhotoUrl ? (
+              <div className="hx-block">
+                <MediaUploader key="none" label={tr('ارفع صورة', 'Upload a picture')} onUploaded={(m) => set({ aboutPhotoId: m.id, aboutPhotoUrl: m.url ?? m.thumbUrl })} />
+              </div>
+            ) : (
+              <>
+                <div className="hx-block">
+                  <div className="hx-label">
+                    {tr('دوس على أهم جزء في الصورة', 'Click the part of the picture that matters most')}
+                    <small>{tr('زي وشّك — علشان يفضل ظاهر لما الصورة تتقص', 'like a face — it stays in view when the picture is cropped')}</small>
+                  </div>
+                  <FocusPicker url={f.aboutPhotoUrl} x={f.aboutPhoto.posX} y={f.aboutPhoto.posY} onChange={(posX, posY) => setFrame({ posX, posY })} />
+                  <div className="hx-row">
+                    <MediaUploader key={f.aboutPhotoUrl} compact label={tr('غيّر الصورة', 'Replace image')} onUploaded={(m) => set({ aboutPhotoId: m.id, aboutPhotoUrl: m.url ?? m.thumbUrl })} />
+                    <button type="button" className="btn btn-ghost btn-sm" onClick={() => set({ aboutPhotoId: null, aboutPhotoUrl: null })}>
+                      {tr('شيل الصورة', 'Remove')}
+                    </button>
+                  </div>
+                </div>
+                <div className="hx-block">
+                  <Opt
+                    label={tr('الصورة تظهر إزاي؟', 'How the picture fits')}
+                    value={f.aboutPhoto.size === 'contain' ? 'contain' : 'cover'}
+                    options={[
+                      { value: 'cover', label: tr('تملا الإطار (بتتقص)', 'Fill the frame (crops)') },
+                      { value: 'contain', label: tr('كاملة من غير قص', 'Whole, uncropped') },
+                    ]}
+                    onChange={(v) => setFrame({ size: v })}
+                  />
+                </div>
+              </>
+            )}
           </>
         )}
       </StepPanel>
@@ -956,10 +1051,21 @@ export default function DesignEditor({ initial, sitePath }: { initial: DesignFor
       )}
 
       {/* ═══ OTHER SECTION TABS (layout only, for now) ═══ */}
-      {tab !== 'theme' && tab !== 'hero' && (
+      {tab === 'about' && (
+        <AboutPanel
+          f={f}
+          tr={tr}
+          set={set}
+          layout={sectionLayout('about', '')}
+          save={save}
+          busy={busy}
+          preview={preview('about')}
+        />
+      )}
+
+      {tab !== 'theme' && tab !== 'hero' && tab !== 'about' && (
         <div className="hx">
         <StepPanel steps={[{ id: 'layout', ar: 'الشكل', en: 'Layout' }]} step="layout" setStep={() => {}} save={save} busy={busy} tr={tr}>
-          {tab === 'about' && sectionLayout('about', tr('تخطيط قسم «عن النفس»', 'About layout'))}
           {tab === 'projects' && sectionLayout('projects', tr('تخطيط قسم المشاريع', 'Projects layout'))}
           {tab === 'expertise' && sectionLayout('expertise', tr('تخطيط قسم الخدمات', 'Services layout'))}
           {tab === 'exp' && sectionLayout('exp', tr('تخطيط قسم الخبرات', 'Experience layout'))}

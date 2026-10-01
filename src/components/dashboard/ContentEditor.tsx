@@ -6,7 +6,7 @@ import { portfolioTitle } from '@/lib/title'
 import { lightDim } from '@/lib/content-types'
 import PageHeader from './PageHeader'
 import MediaUploader from './MediaUploader'
-import { saveAboutPhoto, saveContent } from '@/lib/content-actions'
+import { saveContent } from '@/lib/content-actions'
 import {
   CONTENT_SECTIONS,
   emptyLoc,
@@ -214,21 +214,16 @@ function ArrayCard({
 
 export default function ContentEditor({
   initial,
-  aboutPhoto,
   onSaved,
   onSection,
 }: {
   initial: ContentForm
-  /** The picture beside the About text — saved with the texts. */
-  aboutPhoto?: { id: number | null; url: string | null }
   /** Told after a save, so the preview beside it can reload. */
   onSaved?: () => void
   /** Told which section is open, so the preview can go to it. */
   onSection?: (sec: keyof ContentForm) => void
 }) {
   const [f, setF] = useState<ContentForm>(initial)
-  const [photo, setPhoto] = useState(aboutPhoto ?? { id: null, url: null })
-  const [savedPhotoId, setSavedPhotoId] = useState(aboutPhoto?.id ?? null)
   const [sec, setSecState] = useState<keyof ContentForm>('hero')
   const setSec = (s: keyof ContentForm) => {
     setSecState(s)
@@ -254,11 +249,6 @@ export default function ContentEditor({
     try {
       const r = await saveContent(f)
       if (!r.ok) return setError(saveFailureText(r, t))
-      if (photo.id !== savedPhotoId) {
-        const p = await saveAboutPhoto(photo.id)
-        if (!p.ok) return setError(saveFailureText(p, t))
-        setSavedPhotoId(photo.id)
-      }
     } catch (e) {
       return setError(saveFailureText(e, t))
     } finally {
@@ -341,23 +331,9 @@ export default function ContentEditor({
           <>
             <LocField label={t('عنوان القسم', 'Section title')} value={f.about.title} onChange={(v) => patch({ about: { ...f.about, title: v } })} />
             <LocField label={t('النبذة', 'Bio')} multiline value={f.about.text} onChange={(v) => patch({ about: { ...f.about, text: v } })} />
-            <label className="lbl" style={{ display: 'block' }}>{t('صورة القسم', 'Section picture')}</label>
-            <div className="about-photo-row">
-              <MediaUploader
-                key={photo.id ?? 'none'}
-                big
-                previewUrl={photo.url}
-                label={t('ارفع صورة', 'Upload a picture')}
-                onUploaded={(m) => setPhoto({ id: m.id, url: m.url ?? m.thumbUrl })}
-                onRemove={() => setPhoto({ id: null, url: null })}
-              />
-              <p className="cover-note">
-                {t(
-                  'بتظهر جنب النبذة، أو فوقها لو شكل القسم «صورة كبيرة». الشكل بيتغيّر من التصميم ← عن النفس.',
-                  'Shown beside the bio, or above it with the “Big image” layout. The layout is chosen in Design → About.',
-                )}
-              </p>
-            </div>
+            <p className="cover-note" style={{ marginBottom: 14 }}>
+              {t('صورة القسم وشكلها بيتغيّروا من التصميم ← عن النفس ← الصورة.', 'The section’s picture is set in Design → About → Picture.')}
+            </p>
             <TagsField
               label={t('الوسوم', 'Tags')}
               value={f.about.tags}

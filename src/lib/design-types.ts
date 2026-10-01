@@ -189,6 +189,10 @@ export type DesignForm = {
     gradientDark: string
   }
   heroCoverId: number | null
+  /** The picture beside the About text, and how it sits in its frame. */
+  aboutPhotoId: number | null
+  aboutPhotoUrl: string | null
+  aboutPhoto: { size: string; posX: number; posY: number }
   /** The mark shown in the navbar. Without one the site falls back to the
    *  first letter of the name. */
   brandLogoId: number | null
@@ -358,6 +362,9 @@ export const emptyDesign = (): DesignForm => ({
   components: { card: 'solid', navbar: 'blur', button: 'rounded' },
   heroCover: { size: 'cover', posX: 50, posY: 50, overlay: 45, overlayLight: 25, height: 82, titleScale: 100, descScale: 100, align: 'auto', valign: 'auto', gradient: 'none', gradientDark: '' },
   heroCoverId: null,
+  aboutPhotoId: null,
+  aboutPhotoUrl: null,
+  aboutPhoto: { size: 'cover', posX: 50, posY: 50 },
   brandLogoId: null,
   brandLogoUrl: null,
   heroCoverUrl: null,

@@ -640,6 +640,14 @@ export interface SiteSetting {
     brandLogoOffsetX?: number | null;
     brandLogoOffsetY?: number | null;
   };
+  aboutPhoto?: {
+    /**
+     * 'cover' | 'contain'
+     */
+    size?: string | null;
+    posX?: number | null;
+    posY?: number | null;
+  };
   heroCover?: {
     /**
      * 'cover' | 'contain' | 'NN%'
@@ -1585,6 +1593,13 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         brandLogoScale?: T;
         brandLogoOffsetX?: T;
         brandLogoOffsetY?: T;
+      };
+  aboutPhoto?:
+    | T
+    | {
+        size?: T;
+        posX?: T;
+        posY?: T;
       };
   heroCover?:
     | T

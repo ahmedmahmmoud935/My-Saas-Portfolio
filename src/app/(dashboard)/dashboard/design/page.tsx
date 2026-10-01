@@ -55,6 +55,9 @@ export default async function DesignPage() {
         ? (s.brand.heroCover as { id: number }).id
         : (s.brand?.heroCover as number)) ?? null,
     heroCoverUrl: mediaUrl((s.brand?.heroCover as never) ?? null, 'thumb'),
+    aboutPhotoId: relId(s.brand?.photo),
+    aboutPhotoUrl: mediaUrl((s.brand?.photo as never) ?? null, 'card'),
+    aboutPhoto: merge(d.aboutPhoto, s.aboutPhoto),
     brandLogoId:
       (s.brand?.brandLogo && typeof s.brand.brandLogo === 'object'
         ? (s.brand.brandLogo as { id: number }).id
