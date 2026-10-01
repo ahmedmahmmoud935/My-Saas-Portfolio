@@ -1,6 +1,7 @@
 'use server'
 
 import type { PayloadRequest } from 'payload'
+import { randomBytes } from 'node:crypto'
 import { getDashboardContext } from './dashboard'
 import { sendActivation } from './activation'
 import { recordSlugRedirect } from './record-redirect'
@@ -31,21 +32,41 @@ export async function createClient(input: {
   field?: StarterField
 }) {
   const ctx = await ownerCtx()
+  const email = input.email.trim().toLowerCase()
+
+  /* Checked before anything is made: a tenant created for an email that turns
+     out to be taken was left behind with nobody to own it — a live address
+     with no account. */
+  const [slugTaken, emailTaken] = await Promise.all([
+    ctx.payload.find({ collection: 'tenants', where: { slug: { equals: input.slug } }, limit: 1, depth: 0 }),
+    ctx.payload.find({ collection: 'users', where: { email: { equals: email } }, limit: 1, depth: 0 }),
+  ])
+  if (slugTaken.docs.length) return { ok: false as const, code: 'slug-taken' }
+  if (emailTaken.docs.length) return { ok: false as const, code: 'email-taken' }
+
   const tenant = await ctx.payload.create({
     collection: 'tenants',
     data: { name: input.name, slug: input.slug, storageLimitMb: input.storageLimitMb },
   })
-  const user = await ctx.payload.create({
-    collection: 'users',
-    data: {
-      email: input.email,
-      // Unusable random password — the client sets their own via the emailed link/code.
-      password: `${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}A9!`,
-      name: input.name,
-      activated: false,
-      tenants: [{ tenant: tenant.id }],
-    },
-  })
+  let user
+  try {
+    user = await ctx.payload.create({
+      collection: 'users',
+      data: {
+        email,
+        // Unusable random password — the client sets their own via the emailed link/code.
+        password: `${randomBytes(18).toString('base64url')}A9!`,
+        name: input.name,
+        activated: false,
+        tenants: [{ tenant: tenant.id }],
+      },
+    })
+  } catch (e) {
+    // All or nothing: no portfolio without the account that owns it.
+    await ctx.payload.delete({ collection: 'tenants', id: tenant.id }).catch(() => {})
+    console.error('[createClient] user failed, tenant removed:', e)
+    return { ok: false as const, code: 'failed' }
+  }
   /* A portfolio that opens with something in it: texts for their line of
      work, in both languages, ready to rewrite. Never fatal — a client with an
      empty page is still a client. */
@@ -55,8 +76,8 @@ export async function createClient(input: {
     console.error('[createClient] starter content failed:', e)
   }
   // Email the client a set-password link + 6-digit code (proves email ownership).
-  await sendActivation(ctx.payload, { id: user.id, email: input.email })
-  return { ok: true, id: tenant.id }
+  const emailed = await sendActivation(ctx.payload, { id: user.id, email })
+  return { ok: true as const, id: tenant.id, emailed }
 }
 
 /** Re-send the set-password link + code to an existing client. */
@@ -64,8 +85,9 @@ export async function resendActivation(email: string) {
   const ctx = await ownerCtx()
   const res = await ctx.payload.find({ collection: 'users', where: { email: { equals: email } }, limit: 1 })
   const u = res.docs[0]
-  if (u) await sendActivation(ctx.payload, { id: u.id, email: u.email })
-  return { ok: true }
+  if (!u) return { ok: false as const, code: 'missing' }
+  const emailed = await sendActivation(ctx.payload, { id: u.id, email: u.email })
+  return emailed ? { ok: true as const } : { ok: false as const, code: 'email-failed' }
 }
 
 export async function updateTenant(
@@ -105,8 +127,38 @@ export async function updateTenant(
     }
   }
 
+  /* A domain is stored the one way the router reads it — bare host, lower
+     case — so two spellings of the same domain cannot both be saved and fight
+     over which portfolio it opens. */
+  if (rest.domain !== undefined) {
+    const host = normalizeDomain(rest.domain)
+    if (rest.domain && !host) return { ok: false, code: 'domain-invalid' }
+    if (host) {
+      const clash = await ctx.payload.find({
+        collection: 'tenants',
+        where: { and: [{ domain: { equals: host } }, { id: { not_equals: id } }] },
+        limit: 1,
+        depth: 0,
+      })
+      if (clash.docs.length) return { ok: false, code: 'domain-taken' }
+    }
+    rest.domain = host
+  }
+
   if (Object.keys(rest).length) await ctx.payload.update({ collection: 'tenants', id, data: rest })
   return { ok: true }
+}
+
+/** "https://WWW.Example.com/path" → "www.example.com"; empty or unusable → null. */
+function normalizeDomain(v: string | null | undefined): string | null {
+  const host = (v ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/^[a-z]+:\/\//, '')
+    .replace(/[/?#].*$/, '')
+    .replace(/:\d+$/, '')
+    .replace(/\.$/, '')
+  return /^(?=.{1,253}$)([a-z0-9-]+\.)+[a-z]{2,}$/.test(host) ? host : null
 }
 
 /** Suspend or re-enable a client (blocks login + hides their public site). */

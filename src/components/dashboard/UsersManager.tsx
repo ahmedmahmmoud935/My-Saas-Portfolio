@@ -43,10 +43,27 @@ export default function UsersManager({ clients }: { clients: Client[] }) {
     }
     setBusy(true)
     try {
-      await createClient(nc)
+      const r = await createClient(nc)
+      if (!r.ok) {
+        alert(
+          r.code === 'slug-taken'
+            ? t('اسم المستخدم ده مستخدم مع عميل تاني.', 'Another client already has that username.')
+            : r.code === 'email-taken'
+              ? t('الإيميل ده مستخدم في حساب تاني.', 'Another account already uses that email.')
+              : t('فشل الإنشاء — جرّب تاني.', 'Creation failed — try again.'),
+        )
+        return
+      }
       setCreating(false)
       setNc({ name: '', slug: '', email: '', storageLimitMb: DEFAULT_STORAGE_MB, field: 'designer' })
-      alert(t('تم الإنشاء ✓ اتبعت للعميل رابط لتعيين كلمة السر', 'Created ✓ a set-password link was emailed to the client'))
+      alert(
+        r.emailed
+          ? t('تم الإنشاء ✓ اتبعت للعميل رابط لتعيين كلمة السر', 'Created ✓ a set-password link was emailed to the client')
+          : t(
+              'العميل اتعمل ✓ بس إيميل كلمة السر ماوصلش. ابعته تاني من زرار «إرسال الرابط» جنب العميل.',
+              'Client created ✓ but the password email did not go out. Send it again with the “Send link” button.',
+            ),
+      )
       router.refresh()
     } catch {
       alert(t('فشل الإنشاء (تأكد إن الـ slug/الإيميل غير مكرّرين)', 'Creation failed (check the slug/email are not duplicated)'))
@@ -108,7 +125,11 @@ export default function UsersManager({ clients }: { clients: Client[] }) {
       alert(
         code === 'taken'
           ? t('الاسم ده مستخدم مع عميل تاني', 'Another client already has that name')
-          : code
+          : code === 'domain-taken'
+            ? t('الدومين ده مربوط بعميل تاني', 'Another client already has that domain')
+            : code === 'domain-invalid'
+              ? t('الدومين مش مكتوب صح — اكتبه زي example.com', 'That domain is not valid — write it like example.com')
+              : code
             ? slugProblemText(code as Parameters<typeof slugProblemText>[0], t('ar', 'en') === 'ar')
             : t('مش قادر أحفظ — جرّب تاني', 'Could not save — try again'),
       )
@@ -157,16 +178,16 @@ export default function UsersManager({ clients }: { clients: Client[] }) {
           ),
         )
       ) {
-        await resendActivation(mail)
-        alert(t('تم إرسال الرابط ✓', 'Link sent ✓'))
+        const sent = await resendActivation(mail).catch(() => null)
+        alert(sent?.ok ? t('تم إرسال الرابط ✓', 'Link sent ✓') : t('الإيميل ماتبعتش — جرّب تاني بعد شوية.', 'The email did not go out — try again shortly.'))
       }
     }
     router.refresh()
   }
   async function resendLink(c: Client) {
     if (!confirm(`${t('إرسال رابط تعيين كلمة السر إلى', 'Send a set-password link to')} ${c.email}؟`)) return
-    await resendActivation(c.email)
-    alert(t('تم إرسال الرابط ✓', 'Link sent ✓'))
+    const sent = await resendActivation(c.email).catch(() => null)
+    alert(sent?.ok ? t('تم إرسال الرابط ✓', 'Link sent ✓') : t('الإيميل ماتبعتش — جرّب تاني بعد شوية.', 'The email did not go out — try again shortly.'))
   }
   async function toggleSuspend(c: Client) {
     const on = !c.suspended

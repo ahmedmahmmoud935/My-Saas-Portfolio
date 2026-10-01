@@ -32,6 +32,11 @@ function subdomainLabel(host: string): string | null {
   return label && label !== 'www' && !label.includes('.') ? label : null
 }
 
+/* Whether a real map has ever arrived. Until one has, nobody's address is
+   known to be wrong — a cold start or a database hiccup must not read as
+   "this portfolio does not exist". */
+let mapLoaded = false
+
 // Cache the map (module scope survives across invocations per instance).
 let cache: { at: number; map: SiteMap } = {
   at: 0,
@@ -48,6 +53,7 @@ async function getMap(fallbackOrigin: string): Promise<SiteMap> {
       const res = await fetch(`${base}/api/domains`, { cache: 'no-store' })
       if (res.ok) {
         cache = { at: Date.now(), map: (await res.json()) as SiteMap }
+        mapLoaded = true
         return cache.map
       }
     } catch {
@@ -160,8 +166,11 @@ export async function middleware(req: NextRequest) {
       )
     }
     // A name nobody has: the platform's own site rather than a dead end.
-    if (!(map.live ?? []).includes(sub)) {
-      return NextResponse.redirect(new URL('/', `https://${appHost}`), 308)
+    // Temporary, and only on a map that really loaded: a permanent redirect is
+    // kept by browsers, and a passing failure would have sent a client's
+    // visitors away for good.
+    if (mapLoaded && !(map.live ?? []).includes(sub)) {
+      return NextResponse.redirect(new URL('/', `https://${appHost}`), 307)
     }
     /* Once a client connects a domain of their own, that is the address —
        the subdomain hands over to it rather than serving the same pages at a

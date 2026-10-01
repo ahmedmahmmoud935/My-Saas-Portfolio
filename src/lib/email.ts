@@ -15,7 +15,7 @@ export const resendEmailAdapter: EmailAdapter = () => ({
     const key = process.env.RESEND_API_KEY
     if (!key) {
       console.warn('[email] RESEND_API_KEY missing — email not sent:', message.subject)
-      return {}
+      throw new Error('email-not-configured')
     }
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -28,6 +28,13 @@ export const resendEmailAdapter: EmailAdapter = () => ({
         text: message.text,
       }),
     })
+    /* A refusal from Resend is a failed send, not a quiet success: fetch
+       does not throw on a 4xx/5xx, and the caller was told the email went
+       when it had not. */
+    if (!res.ok) {
+      const detail = await res.text().catch(() => '')
+      throw new Error(`resend ${res.status}: ${detail.slice(0, 200)}`)
+    }
     return res.json().catch(() => ({}))
   },
 })

@@ -77,8 +77,12 @@ export async function GET() {
       const own = settingsLang(s as Parameters<typeof settingsLang>[0])
       if (own) langs[slug] = own
     }
-  } catch {
-    /* DB unavailable — empty maps */
+  } catch (e) {
+    /* An empty map is not an answer: the middleware would take it for one
+       and send every portfolio's address to the platform's home page. Fail
+       loudly, and it keeps the last map it had. */
+    console.error('[domains] map unavailable:', (e as Error)?.message)
+    return Response.json({ error: 'unavailable' }, { status: 503, headers: { 'cache-control': 'no-store' } })
   }
   return Response.json(
     { domains, langs, slugs, live, hosts },
