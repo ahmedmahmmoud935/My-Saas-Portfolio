@@ -4968,3 +4968,23 @@ input[type='range']::-moz-range-thumb {
   margin-top: 4px;
   color: var(--danger, #ef4444);
 }
+
+/* ── The About picture, beside its note, in the content editor ── */
+.about-photo-row {
+  display: grid;
+  grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 14px;
+}
+.cover-note {
+  margin: 0;
+  color: var(--sub);
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+@media (max-width: 640px) {
+  .about-photo-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

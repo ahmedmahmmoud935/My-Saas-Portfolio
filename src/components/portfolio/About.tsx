@@ -21,9 +21,10 @@ export default function About({
           <img className="about-photo" src={photoUrl} alt={title} />
         )}
         <div>
-          <h2 className="section-title" style={{ textAlign: 'start', marginBottom: 16 }}>
-            {title}
-          </h2>
+          {/* Alignment comes from the layout's stylesheet. Set inline, `start`
+              outranked it, and the centred layouts centred everything but
+              their own heading. */}
+          <h2 className="section-title about-title">{title}</h2>
           {text && <p style={{ color: 'var(--sub)', lineHeight: 1.9, margin: 0 }}>{text}</p>}
           {tags && tags.length > 0 && (
             <div className="about-tags">

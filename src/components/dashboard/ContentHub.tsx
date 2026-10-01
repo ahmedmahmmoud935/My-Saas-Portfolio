@@ -48,6 +48,7 @@ const TAB_SPOT: Record<Exclude<HubTab, 'content'>, string> = {
  */
 export default function ContentHub({
   content,
+  aboutPhoto,
   logos,
   achievements,
   testimonials,
@@ -55,6 +56,7 @@ export default function ContentHub({
   slug,
 }: {
   content: ContentForm
+  aboutPhoto: { id: number | null; url: string | null }
   logos: React.ComponentProps<typeof LogosManager>['logos']
   achievements: React.ComponentProps<typeof AchievementsManager>['items']
   testimonials: React.ComponentProps<typeof TestimonialsManager>['items']
@@ -109,7 +111,7 @@ export default function ContentHub({
       <div className={`cx${showPreview ? ' cx-with-pv' : ''}`}>
         <div className="cx-main">
           {tab === 'content' && (
-            <ContentEditor initial={content} onSaved={() => setVersion((v) => v + 1)} onSection={setTextSec} />
+            <ContentEditor initial={content} aboutPhoto={aboutPhoto} onSaved={() => setVersion((v) => v + 1)} onSection={setTextSec} />
           )}
           {tab === 'clients' && <LogosManager logos={logos} />}
           {tab === 'achievements' && <AchievementsManager items={achievements} />}

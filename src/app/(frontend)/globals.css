@@ -2638,6 +2638,22 @@ html[data-theme='light'] .card.has-bg .ic {
 .about-visual .about-tags {
   justify-content: center;
 }
+/* The heading follows the text under it: beside the picture it starts where
+   the text starts; in the centred layouts — and on a phone, where every
+   layout centres — it sits in the middle with it. */
+.about .about-title {
+  text-align: start;
+  margin-bottom: 16px;
+}
+.about-visual .about-title,
+.about-simple .about-title {
+  text-align: center;
+}
+@media (max-width: 720px) {
+  .about .about-title {
+    text-align: center;
+  }
+}
 .about-simple {
   grid-template-columns: 1fr;
   text-align: center;
