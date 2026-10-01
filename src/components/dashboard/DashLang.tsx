@@ -1,6 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
+import FailureNotice from './FailureNotice'
 
 export type Lang = 'ar' | 'en'
 
@@ -36,7 +37,12 @@ export function DashLangProvider({ children }: { children: React.ReactNode }) {
 
   const t = (ar: string, en: string) => (lang === 'ar' ? ar : en)
 
-  return <LangContext.Provider value={{ lang, setLang, t }}>{children}</LangContext.Provider>
+  return (
+    <LangContext.Provider value={{ lang, setLang, t }}>
+      {children}
+      <FailureNotice />
+    </LangContext.Provider>
+  )
 }
 
 export const useDashLang = () => useContext(LangContext)

@@ -129,10 +129,19 @@ export async function alternatesFor(
   }
 }
 
-/** Absolute URL for a path on this site (structured data needs absolute ids). */
-export async function absoluteUrl(path: string): Promise<string> {
+/**
+ * Absolute URL for a path on this site (structured data needs absolute ids).
+ *
+ * Given the portfolio's slug, its prefix is dropped on the portfolio's own
+ * host — the same rule the canonical follows — so the structured data names
+ * the same address the page declares, not a second one beside it.
+ */
+export async function absoluteUrl(path: string, tenantSlug?: string): Promise<string> {
   const origin = await siteOrigin()
-  return `${origin}${path.startsWith('/') ? path : `/${path}`}`
+  const p = path.startsWith('/') ? path : `/${path}`
+  const local =
+    tenantSlug && origin !== APP_ORIGIN ? p.replace(new RegExp(`^/${tenantSlug}(?=/|$)`), '') || '/' : p
+  return `${origin}${local === '/' ? '' : local}` || origin
 }
 
 type PersonInput = {

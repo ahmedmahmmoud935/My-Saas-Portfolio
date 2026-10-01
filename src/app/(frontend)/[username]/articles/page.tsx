@@ -17,7 +17,8 @@ async function load(username: string, locale: 'ar' | 'en') {
   const payload = await getPayload({ config })
   const t = await payload.find({ collection: 'tenants', where: { slug: { equals: username } }, limit: 1, depth: 0 })
   const tenant = t.docs[0]
-  if (!tenant) return null
+  // A suspended client's whole site is off, not just its home page.
+  if (!tenant || (tenant as { suspended?: boolean }).suspended) return null
   const [settingsRes, articlesRes] = await Promise.all([
     payload.find({ collection: 'site-settings', where: { tenant: { equals: tenant.id } }, limit: 1, depth: 0, locale, fallbackLocale: locale === 'ar' ? 'en' : 'ar' }),
     payload.find({
@@ -82,7 +83,9 @@ export default async function ArticlesListPage({ params, searchParams }: Params)
             <h1 className="section-title">{locale === 'en' ? 'Articles' : 'المقالات'}</h1>
           </div>
           {articles.length === 0 ? (
-            <p style={{ textAlign: 'center', color: 'var(--sub)' }}>لا توجد مقالات بعد.</p>
+            <p style={{ textAlign: 'center', color: 'var(--sub)' }}>
+              {locale === 'en' ? 'No articles yet.' : 'لا توجد مقالات بعد.'}
+            </p>
           ) : (
             <div className="tst-grid">
               {articles.map((a) => (

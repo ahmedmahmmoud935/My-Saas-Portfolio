@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { getPayload } from 'payload'
+import { getPayload, type Where } from 'payload'
 import config from '@payload-config'
 import { livePosts } from '@/lib/posts'
 import { tenantUrl } from '@/lib/tenant-url'
@@ -53,6 +53,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // — asking a single locale left every post out of the sitemap.
     const posts = await livePosts('ar')
     for (const p of posts) {
+      if ((p as { seo?: { noindex?: boolean | null } }).seo?.noindex) continue
       const url = `${base}/blog/${p.slug}`
       urls.push({
         url,
@@ -76,6 +77,40 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       if (typeof id === 'number' && own) langOf.set(id, own)
     }
 
+    /* Every portfolio's live articles and projects in two queries, not two per
+       portfolio: a crawler asking for this file on launch day should not cost
+       a database round trip per client. Only what a visitor can open is
+       listed — a draft 404s, and a page marked noindex asks not to be here. */
+    const listed: Where = { 'seo.noindex': { not_equals: true } }
+    const [allArticles, allProjects] = await Promise.all([
+      payload.find({
+        collection: 'articles',
+        where: { and: [liveWhere(), listed] },
+        limit: 10000,
+        depth: 0,
+        pagination: false,
+      }),
+      payload.find({
+        collection: 'projects',
+        where: { and: [{ published: { not_equals: false } }, listed] },
+        limit: 10000,
+        depth: 0,
+        pagination: false,
+      }),
+    ])
+    const ownerOf = (doc: { tenant?: unknown }) =>
+      typeof doc.tenant === 'object' ? (doc.tenant as { id?: number } | null)?.id : (doc.tenant as number | undefined)
+    const byTenant = <T extends { tenant?: unknown }>(docs: T[]) => {
+      const m = new Map<number, T[]>()
+      for (const d of docs) {
+        const id = ownerOf(d)
+        if (typeof id === 'number') m.set(id, [...(m.get(id) ?? []), d])
+      }
+      return m
+    }
+    const articlesOf = byTenant(allArticles.docs)
+    const projectsOf = byTenant(allProjects.docs)
+
     for (const t of tenants.docs) {
       // A suspended client's site 404s; listing it would only earn crawl errors.
       if ((t as { suspended?: boolean }).suspended) continue
@@ -94,22 +129,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const index = `${home}/articles`
       urls.push({ url: index, changeFrequency: 'weekly', priority: 0.5, alternates: langs(index, site) })
 
-      const [articles, projects] = await Promise.all([
-        payload.find({
-          collection: 'articles',
-          where: { and: [{ tenant: { equals: t.id } }, liveWhere()] },
-          limit: 500,
-          depth: 0,
-        }),
-        payload.find({
-          collection: 'projects',
-          where: { tenant: { equals: t.id } },
-          limit: 500,
-          depth: 0,
-        }),
-      ])
-
-      for (const a of articles.docs) {
+      for (const a of articlesOf.get(t.id) ?? []) {
         const url = `${home}/articles/${a.slug}`
         urls.push({
           url,
@@ -120,7 +140,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         })
       }
 
-      for (const p of projects.docs) {
+      for (const p of projectsOf.get(t.id) ?? []) {
         const url = `${home}/project/${p.id}`
         urls.push({
           url,

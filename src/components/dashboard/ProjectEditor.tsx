@@ -67,6 +67,13 @@ export default function ProjectEditor({
       alert(t('اكتب عنوان المشروع', 'Enter the project title'))
       return
     }
+    /* A video project with no video went live as a card that opened an empty
+       player — the first thing a visitor clicked, on a site that had just
+       launched. The link (or an uploaded file) comes first. */
+    if (p.mediaType === 'video' && !(p.videoUrl ?? '').trim()) {
+      alert(t('حط لينك الفيديو أو ارفعه الأول — من غيره المشروع هيفتح فاضي.', 'Add the video link or upload it first — without it the project opens empty.'))
+      return
+    }
     setBusy(true)
     const input: ProjectInput = {
       id: p.id,

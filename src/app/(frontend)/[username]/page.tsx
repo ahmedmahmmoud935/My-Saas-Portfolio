@@ -468,7 +468,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
               jobTitle: content.hero?.title || null,
               description: content.hero?.desc || content.about?.text || null,
               image: mediaUrl(brand.avatar, 'card') || mediaUrl(brand.photo, 'card'),
-              url: await absoluteUrl(`/${tenant.slug}`),
+              url: await absoluteUrl(`/${tenant.slug}`, tenant.slug),
               email: content.contact?.email || null,
               sameAs: [
                 settings?.social?.behance,
