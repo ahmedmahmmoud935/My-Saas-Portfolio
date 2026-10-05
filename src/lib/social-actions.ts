@@ -18,8 +18,6 @@ export async function saveSocial(form: SocialForm) {
   if (!ctx) throw new Error('unauthorized')
   const settings = await getTenantSettings(ctx)
 
-  const b = (settings.brand ?? {}) as Record<string, unknown>
-  const rel = (v: unknown) => (v && typeof v === 'object' ? (v as { id: number }).id : (v as number | null))
 
   await ctx.payload.update({
     collection: 'site-settings',
@@ -34,16 +32,11 @@ export async function saveSocial(form: SocialForm) {
         vimeo: form.vimeo,
         visible: form.visible as never,
       },
-      brand: {
-        photo: rel(b.photo),
-        avatar: form.avatarId,
-        heroCover: rel(b.heroCover),
-        brandLogo: rel(b.brandLogo),
-        favicon: rel(b.favicon),
-        brandLogoScale: (b.brandLogoScale as number) ?? 1,
-        brandLogoOffsetX: (b.brandLogoOffsetX as number) ?? 0,
-        brandLogoOffsetY: (b.brandLogoOffsetY as number) ?? 0,
-      },
+      /* Only the picture this page owns. Writing the whole brand group back,
+         as read when the page loaded, put back an old logo or About picture
+         that the Design page had changed in another tab. Fields not sent are
+         left as they are. */
+      brand: { avatar: form.avatarId },
     } as never,
   })
   return { ok: true }

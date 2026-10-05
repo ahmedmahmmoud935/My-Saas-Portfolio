@@ -24,10 +24,6 @@ export async function saveDesign(form: DesignForm): Promise<{ ok: true } | SaveR
   try {
     const settings = await getTenantSettings(ctx)
 
-    // Merge into the existing brand group so we don't wipe photo/avatar/logo/favicon.
-    const currentBrand = (settings.brand ?? {}) as Record<string, unknown>
-    const brandRel = (v: unknown) => (v && typeof v === 'object' ? (v as { id: number }).id : v)
-
     await ctx.payload.update({
       collection: 'site-settings',
       id: settings.id,
@@ -80,14 +76,11 @@ export async function saveDesign(form: DesignForm): Promise<{ ok: true } | SaveR
           gradient: form.heroCover.gradient,
           gradientDark: form.heroCover.gradientDark || null,
         },
+        // Only the pictures this page owns; the rest of the group is left as
+        // it is, so a save here cannot undo a change made on another page.
         brand: {
           photo: form.aboutPhotoId,
-          avatar: brandRel(currentBrand.avatar) as number | null,
           brandLogo: form.brandLogoId,
-          favicon: brandRel(currentBrand.favicon) as number | null,
-          brandLogoScale: (currentBrand.brandLogoScale as number) ?? 1,
-          brandLogoOffsetX: (currentBrand.brandLogoOffsetX as number) ?? 0,
-          brandLogoOffsetY: (currentBrand.brandLogoOffsetY as number) ?? 0,
           heroCover: form.heroCoverId,
         },
       } as never,

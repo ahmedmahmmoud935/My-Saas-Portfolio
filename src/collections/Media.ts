@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { sql } from '@payloadcms/db-postgres'
 import { assertRoom } from '../lib/quota-server'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -10,7 +11,14 @@ const dirname = path.dirname(fileURLToPath(import.meta.url))
  * unset). Keeps the old WebP-thumbnail convention via Payload imageSizes:
  * grids/bubbles use `thumb`, detail/story use the original.
  */
-/** Adjust a tenant's storageUsedMb by a delta (MB), clamped at 0. */
+/**
+ * Adjust a tenant's storageUsedMb by a delta (MB), clamped at 0.
+ *
+ * One statement in the database, not a read and then a write: two uploads
+ * finishing together each read the same total, each added their own file to
+ * it, and the second write erased the first — the counter fell behind what was
+ * really stored, and the allowance with it.
+ */
 async function bumpStorage(
   req: { payload: import('payload').Payload },
   tenant: number | { id: number } | null | undefined,
@@ -19,16 +27,14 @@ async function bumpStorage(
   const tenantId = typeof tenant === 'object' ? tenant?.id : tenant
   if (!tenantId || !deltaMb) return
   try {
-    const t = await req.payload.findByID({ collection: 'tenants', id: tenantId, depth: 0 })
-    const next = Math.max(0, (t.storageUsedMb ?? 0) + deltaMb)
-    await req.payload.update({
-      collection: 'tenants',
-      id: tenantId,
-      data: { storageUsedMb: Math.round(next * 100) / 100 },
-      overrideAccess: true,
-    })
-  } catch {
+    const db = (req.payload.db as unknown as { drizzle: { execute: (q: unknown) => Promise<unknown> } }).drizzle
+    await db.execute(sql`
+      UPDATE "tenants"
+      SET "storage_used_mb" = ROUND(GREATEST(0, COALESCE("storage_used_mb", 0) + ${deltaMb})::numeric, 2)
+      WHERE "id" = ${tenantId}`)
+  } catch (e) {
     // Non-fatal: quota accounting shouldn't block uploads.
+    console.error('[media] storage counter not updated:', (e as Error)?.message)
   }
 }
 
