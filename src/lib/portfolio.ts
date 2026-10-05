@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import type {
@@ -37,7 +38,15 @@ export { isVideoSrc } from './media-kind'
  * Fetch everything needed to render a tenant's portfolio by username (slug).
  * Returns null when the slug maps to no tenant.
  */
-export async function getPortfolio(
+export const getPortfolio = cache(loadPortfolio)
+
+/*
+ * Wrapped in React's cache: the viewport colour, the metadata and the page
+ * each asked for the portfolio, so every visit read the whole of it — settings,
+ * every project, reviews, team — three times over. Now once per request, for
+ * the same username and language.
+ */
+async function loadPortfolio(
   username: string,
   locale: 'ar' | 'en' = 'ar',
 ): Promise<PortfolioData | null> {
@@ -74,6 +83,10 @@ export async function getPortfolio(
         limit: 200,
         depth: 1,
         locale,
+        /* A portfolio lists projects as cards; a project's own page reads its
+           blocks for itself. Populating every block of every project (each
+           picture in each) was most of what this request carried. */
+        select: { modules: false },
       }),
       payload.find({
         collection: 'achievements',

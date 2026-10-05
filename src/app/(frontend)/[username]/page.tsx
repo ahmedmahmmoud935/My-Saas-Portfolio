@@ -45,9 +45,11 @@ const splitTags = (s?: string | null): string[] =>
     .filter(Boolean)
 
 /** Paint the phone's browser/status bar in the portfolio's own background colour. */
-export async function generateViewport({ params }: Params): Promise<Viewport> {
+export async function generateViewport({ params, searchParams }: Params): Promise<Viewport> {
   const { username } = await params
-  const data = await getPortfolio(username)
+  const { lang } = (await searchParams) ?? {}
+  // Same arguments as the page's own call, so the cached read is shared.
+  const data = await getPortfolio(username, await pageLocale(lang))
   return {
     themeColor: [
       { media: '(prefers-color-scheme: dark)', color: data?.settings?.colors?.bg || '#0A0A0A' },
@@ -59,7 +61,9 @@ export async function generateViewport({ params }: Params): Promise<Viewport> {
 export async function generateMetadata({ params, searchParams }: Params): Promise<Metadata> {
   const { username } = await params
   const { lang, preview } = (await searchParams) ?? {}
-  const data = await getPortfolio(username)
+  // In the page's own language: the English page's title and description
+  // were read from the Arabic texts.
+  const data = await getPortfolio(username, await pageLocale(lang))
   if (!data) return { title: 'Not found' }
   // The dashboard's framed copy is not a page of its own.
   if (preview === '1') return { title: data.tenant.name, robots: { index: false, follow: false } }
