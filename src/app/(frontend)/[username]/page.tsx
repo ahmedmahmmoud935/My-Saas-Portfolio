@@ -118,6 +118,8 @@ export async function generateMetadata({ params, searchParams }: Params): Promis
 
 export default async function PortfolioPage({ params, searchParams }: Params) {
   const __p0 = Date.now() // TEMP PERF
+  const __mwAt = Number((await (await import('next/headers')).headers()).get('x-perf-mw') || 0) // TEMP PERF
+  console.log('[perf] page start, since middleware:', __mwAt ? __p0 - __mwAt : 'n/a') // TEMP PERF
   const { username } = await params
   const { lang, preview } = (await searchParams) ?? {}
   // Framed in the dashboard: not a visit, and not for Google Analytics.
