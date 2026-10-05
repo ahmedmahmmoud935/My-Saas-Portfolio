@@ -1,4 +1,5 @@
 import React from 'react'
+import { telTarget, waNumber } from '@/lib/phone'
 
 /**
  * The two ways a visitor reaches someone without writing anything: WhatsApp
@@ -17,8 +18,6 @@ import React from 'react'
  * is the only one a thumb finds.
  */
 
-/** Digits only: a number gets written +20 10, (010) and 0020 in equal measure. */
-const digits = (n: string) => n.replace(/[^\d]/g, '')
 
 export default function ContactFabs({
   whatsapp,
@@ -32,15 +31,17 @@ export default function ContactFabs({
   labels: { whatsapp: string; call: string }
   hideOnPhone?: boolean
 }) {
-  const wa = whatsapp ? digits(whatsapp) : ''
-  const tel = phone ? digits(phone) : ''
+  // A WhatsApp number without its country code cannot open a chat, so it gets
+  // no button rather than a broken one; the dashboard asks for the full number.
+  const wa = waNumber(whatsapp) ?? ''
+  const tel = telTarget(phone) ?? ''
   if (!wa && !tel) return null
 
   const off = hideOnPhone ? ' fab-desk' : ''
   return (
     <>
       {tel && (
-        <a className={`fab fab-call${off}`} href={`tel:+${tel}`} aria-label={labels.call} title={labels.call}>
+        <a className={`fab fab-call${off}`} href={`tel:${tel}`} aria-label={labels.call} title={labels.call}>
           <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden focusable="false">
             <path
               fill="currentColor"

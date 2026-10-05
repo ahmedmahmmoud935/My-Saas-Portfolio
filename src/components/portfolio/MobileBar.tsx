@@ -2,11 +2,14 @@
 
 import React from 'react'
 import { safeHref } from '@/lib/safe-url'
+import { waNumber } from '@/lib/phone'
 
 export type MBtn = { pos: string; type: string; target: string; icon: string; label: string }
 
-const waLink = (n?: string) =>
-  n ? `https://wa.me/${n.replace(/[^0-9]/g, '')}` : '#'
+const waLink = (n?: string) => {
+  const d = waNumber(n)
+  return d ? `https://wa.me/${d}` : '#contact'
+}
 
 function iconFor(type: string) {
   switch (type) {

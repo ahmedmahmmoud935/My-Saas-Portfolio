@@ -6,6 +6,7 @@ import PageHeader from './PageHeader'
 import MediaUploader from './MediaUploader'
 import { saveSocial, type SocialForm } from '@/lib/social-actions'
 import { useDashLang } from './DashLang'
+import { waNumber } from '@/lib/phone'
 
 const NETWORKS: { key: keyof SocialForm; label: string; icon: string }[] = [
   { key: 'whatsapp', label: 'WhatsApp', icon: '🟢' },
@@ -95,6 +96,14 @@ export default function SocialEditor({
                 onChange={(e) => setF((p) => ({ ...p, [n.key]: e.target.value }))}
                 style={{ textAlign: 'start' }}
               />
+              {n.key === 'whatsapp' && (f.whatsapp as string)?.trim() && !waNumber(f.whatsapp as string) && (
+                <p className="field-warn">
+                  {t(
+                    'اكتب الرقم بكود الدولة من غير الصفر، مثلًا 971558710190 — من غيره زرار الواتساب مش هيظهر.',
+                    'Write the number with its country code and no leading zero, e.g. 971558710190 — without it the WhatsApp button will not show.',
+                  )}
+                </p>
+              )}
             </div>
           ))}
         </div>
