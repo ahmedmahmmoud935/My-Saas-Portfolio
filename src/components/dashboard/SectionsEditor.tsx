@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useUnsaved } from './useUnsaved'
 import PageHeader from './PageHeader'
 import { SECTION_LABELS } from '@/lib/dashboard-nav'
 import { saveSections } from '@/lib/dashboard-actions'
@@ -10,6 +11,7 @@ type Item = { sectionId: string; visible: boolean }
 
 export default function SectionsEditor({ initial }: { initial: Item[] }) {
   const [items, setItems] = useState<Item[]>(initial)
+  const { markSaved } = useUnsaved(items)
   const [busy, setBusy] = useState(false)
   const [toast, setToast] = useState(false)
   const { t } = useDashLang()
@@ -27,6 +29,7 @@ export default function SectionsEditor({ initial }: { initial: Item[] }) {
   async function save() {
     setBusy(true)
     await saveSections(items)
+    markSaved()
     setBusy(false)
     setToast(true)
     setTimeout(() => setToast(false), 1800)

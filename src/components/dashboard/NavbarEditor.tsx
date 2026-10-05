@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useUnsaved } from './useUnsaved'
 import PageHeader from './PageHeader'
 import { saveNavbar } from '@/lib/dashboard-actions'
 import { useDashLang } from './DashLang'
@@ -9,6 +10,7 @@ type Item = { linkId: string; labelAr: string; labelEn: string; visible: boolean
 
 export default function NavbarEditor({ initial }: { initial: Item[] }) {
   const [items, setItems] = useState<Item[]>(initial)
+  const { markSaved } = useUnsaved(items)
   const [busy, setBusy] = useState(false)
   const [toast, setToast] = useState(false)
   const { t } = useDashLang()
@@ -26,6 +28,7 @@ export default function NavbarEditor({ initial }: { initial: Item[] }) {
   async function save() {
     setBusy(true)
     await saveNavbar(items)
+    markSaved()
     setBusy(false)
     setToast(true)
     setTimeout(() => setToast(false), 1800)

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useUnsaved } from './useUnsaved'
 import PageHeader from './PageHeader'
 import { saveMobilebar, type MobilebarForm, type MobileBtn } from '@/lib/mobilebar-actions'
 import { useDashLang } from './DashLang'
@@ -24,6 +25,7 @@ export default function MobilebarEditor({ initial }: { initial: MobilebarForm })
         ]
   const [enabled, setEnabled] = useState(initial.enabled)
   const [btns, setBtns] = useState<MobileBtn[]>(start)
+  const { markSaved } = useUnsaved({ enabled, btns })
   const [busy, setBusy] = useState(false)
   const { t: tr } = useDashLang()
   const [toast, setToast] = useState(false)
@@ -34,6 +36,7 @@ export default function MobilebarEditor({ initial }: { initial: MobilebarForm })
   async function save() {
     setBusy(true)
     await saveMobilebar({ enabled, buttons: btns })
+    markSaved()
     setBusy(false)
     setToast(true)
     setTimeout(() => setToast(false), 1800)

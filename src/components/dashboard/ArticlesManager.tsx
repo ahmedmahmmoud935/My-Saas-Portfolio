@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useUnsaved } from './useUnsaved'
 import { useRouter } from 'next/navigation'
 import PageHeader from './PageHeader'
 import MediaUploader from './MediaUploader'
@@ -105,6 +106,13 @@ export default function ArticlesManager({
 }) {
   const router = useRouter()
   const [edit, setEdit] = useState<Item | null>(null)
+  const { markSaved, confirmLeave } = useUnsaved(edit)
+  /** Opening a piece is the baseline its changes are measured from. */
+  const open = (item: Item) => {
+    setTab('write')
+    setEdit(item)
+    markSaved(item)
+  }
   const { t, lang } = useDashLang()
   const [busy, setBusy] = useState(false)
   /* Writing and reading are two different things to be looking at, and the
@@ -133,6 +141,7 @@ export default function ArticlesManager({
       },
     })
     setBusy(false)
+    markSaved(null)
     setEdit(null)
     router.refresh()
   }
@@ -159,7 +168,7 @@ export default function ArticlesManager({
           icon="📖"
           title={title ?? t('المقالات', 'Articles')}
           subtitle={subtitle ?? t('مدوّنتك — كل مقال صفحة تساعد على SEO', 'Your blog — each article is an SEO-friendly page')}
-          actions={<button className="btn btn-primary" onClick={() => { setTab('write'); setEdit(blank) }}>+ {t('مقال جديد', 'New article')}</button>}
+          actions={<button className="btn btn-primary" onClick={() => open(blank)}>+ {t('مقال جديد', 'New article')}</button>}
         />
       )}
 
@@ -188,7 +197,7 @@ export default function ArticlesManager({
                 </span>
               </div>
               <div className="pm-actions">
-                <button className="icon-btn" onClick={() => { setTab('write'); setEdit(a) }}>✏️</button>
+                <button className="icon-btn" onClick={() => open(a)}>✏️</button>
                 <button className="icon-btn del" onClick={() => remove(a.id!)}>🗑</button>
               </div>
             </div>
@@ -199,7 +208,7 @@ export default function ArticlesManager({
       {edit && (
         <div className="editor-page editor-wide">
           <div className="editor-bar">
-            <button className="btn btn-ghost" onClick={() => setEdit(null)}>
+            <button className="btn btn-ghost" onClick={() => confirmLeave() && setEdit(null)}>
               {t('رجوع', 'Back')}
             </button>
             <strong>{edit.id ? t('تعديل مقال', 'Edit article') : t('مقال جديد', 'New article')}</strong>

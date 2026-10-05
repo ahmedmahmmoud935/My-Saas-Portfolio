@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useCallback, useState } from 'react'
+import { useUnsaved } from './useUnsaved'
 import LandingPreview from './LandingPreview'
 import { tenantCssVars } from '@/lib/tenant-vars'
 import { pageBackground } from '@/lib/background'
@@ -731,6 +732,7 @@ function ThemePanel({
 
 export default function DesignEditor({ initial, sitePath }: { initial: DesignForm; sitePath: string }) {
   const [f, setF] = useState<DesignForm>(initial)
+  const { markSaved } = useUnsaved(f)
   const [tab, setTab] = useState<TopTab>('theme')
   const [sub, setSub] = useState<ThemeSub>('dark')
   const [heroStep, setHeroStep] = useState<HeroStep>('layout')
@@ -760,6 +762,7 @@ export default function DesignEditor({ initial, sitePath }: { initial: DesignFor
     try {
       const r = await saveDesign(f)
       if (!r.ok) return setError(saveFailureText(r, tr))
+      markSaved()
       setVersion((v) => v + 1)
       setToast(true)
       setTimeout(() => setToast(false), 1800)

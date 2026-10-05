@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useUnsaved } from './useUnsaved'
 import { saveFailureText } from '@/lib/action-error'
 import { portfolioTitle } from '@/lib/title'
 import { lightDim } from '@/lib/content-types'
@@ -224,6 +225,7 @@ export default function ContentEditor({
   onSection?: (sec: keyof ContentForm) => void
 }) {
   const [f, setF] = useState<ContentForm>(initial)
+  const { markSaved } = useUnsaved(f)
   const [sec, setSecState] = useState<keyof ContentForm>('hero')
   const setSec = (s: keyof ContentForm) => {
     setSecState(s)
@@ -254,6 +256,7 @@ export default function ContentEditor({
     } finally {
       setBusy(false)
     }
+    markSaved()
     onSaved?.()
     setToast(true)
     setTimeout(() => setToast(false), 1800)

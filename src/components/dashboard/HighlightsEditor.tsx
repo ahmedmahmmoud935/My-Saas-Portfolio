@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useUnsaved } from './useUnsaved'
 import PageHeader from './PageHeader'
 import MediaUploader from './MediaUploader'
 import { saveHighlights, type Highlight } from '@/lib/highlights-actions'
@@ -10,6 +11,7 @@ import NavIcon from './icons'
 
 export default function HighlightsEditor({ initial }: { initial: Highlight[] }) {
   const [hls, setHls] = useState<Highlight[]>(initial)
+  const { markSaved } = useUnsaved(hls)
   const [busy, setBusy] = useState(false)
   const { t } = useDashLang()
   const [toast, setToast] = useState(false)
@@ -22,6 +24,7 @@ export default function HighlightsEditor({ initial }: { initial: Highlight[] }) 
   async function save() {
     setBusy(true)
     await saveHighlights(hls)
+    markSaved()
     setBusy(false)
     setToast(true)
     setTimeout(() => setToast(false), 1800)

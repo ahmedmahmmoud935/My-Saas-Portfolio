@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useUnsaved } from './useUnsaved'
 import MediaUploader, { type UploadedMedia } from './MediaUploader'
 import ModulesEditor from './ModulesEditor'
 import { saveProject } from '@/lib/project-actions'
@@ -55,6 +56,11 @@ export default function ProjectEditor({
   onSaved: () => void
 }) {
   const [p, setP] = useState<EditableProject>(initial)
+  const { markSaved, confirmLeave } = useUnsaved(p)
+  // Every way out of the dialog asks first when something would be lost.
+  const close = () => {
+    if (confirmLeave()) onClose()
+  }
   const { t, lang } = useDashLang()
   const [busy, setBusy] = useState(false)
   const [toast, setToast] = useState(false)
@@ -93,6 +99,7 @@ export default function ProjectEditor({
       await saveProject(input)
       setToast(true)
       // Let the confirmation land before the modal closes.
+      markSaved()
       setTimeout(onSaved, 900)
     } catch (err) {
       const msg = err instanceof Error ? err.message : ''
@@ -103,10 +110,10 @@ export default function ProjectEditor({
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={close}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
-          <button className="icon-btn" onClick={onClose}>
+          <button className="icon-btn" onClick={close}>
             ✕
           </button>
           <strong>{p.id ? t('تعديل مشروع', 'Edit project') : t('مشروع جديد', 'New project')}</strong>
@@ -289,7 +296,7 @@ export default function ProjectEditor({
         </div>
 
         <div className="modal-foot">
-          <button className="btn btn-ghost" onClick={onClose}>
+          <button className="btn btn-ghost" onClick={close}>
             {t('إلغاء', 'Cancel')}
           </button>
           <button className="btn btn-primary" onClick={submit} disabled={busy}>

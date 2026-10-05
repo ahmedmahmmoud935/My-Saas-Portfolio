@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useRef, useState } from 'react'
+import { useUnsaved } from './useUnsaved'
 import { useRouter } from 'next/navigation'
 import MediaUploader from './MediaUploader'
 import NavIcon from './icons'
@@ -32,6 +33,7 @@ export default function ProjectPageBuilder({
 }) {
   const router = useRouter()
   const [p, setP] = useState<BuilderProject>(initial)
+  const { markSaved } = useUnsaved(p)
   const [busy, setBusy] = useState(false)
   const { t, lang } = useDashLang()
   const [toast, setToast] = useState(false)
@@ -101,6 +103,7 @@ export default function ProjectPageBuilder({
         published,
         modules: p.modules.map(editModuleToInput),
       })
+      markSaved()
       if (exit) {
         setPublished(true)
       } else {

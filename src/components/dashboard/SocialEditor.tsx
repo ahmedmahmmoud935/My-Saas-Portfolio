@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useUnsaved } from './useUnsaved'
 import PageHeader from './PageHeader'
 import MediaUploader from './MediaUploader'
 import { saveSocial, type SocialForm } from '@/lib/social-actions'
@@ -23,6 +24,7 @@ export default function SocialEditor({
   avatarUrl: string | null
 }) {
   const [f, setF] = useState<SocialForm>(initial)
+  const { markSaved } = useUnsaved(f)
   const [busy, setBusy] = useState(false)
   const { t } = useDashLang()
   const [toast, setToast] = useState(false)
@@ -36,8 +38,12 @@ export default function SocialEditor({
 
   async function save() {
     setBusy(true)
-    await saveSocial(f)
-    setBusy(false)
+    try {
+      await saveSocial(f)
+    } finally {
+      setBusy(false)
+    }
+    markSaved()
     setToast(true)
     setTimeout(() => setToast(false), 1800)
   }
