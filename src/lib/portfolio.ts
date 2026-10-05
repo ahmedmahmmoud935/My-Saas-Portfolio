@@ -51,9 +51,6 @@ async function loadPortfolio(
   locale: 'ar' | 'en' = 'ar',
 ): Promise<PortfolioData | null> {
   const payload = await getPayload({ config })
-  const __t0 = Date.now() // TEMP PERF
-  const __tm: Record<string, number> = {} // TEMP PERF
-  const __timed = <T,>(k: string, p: Promise<T>) => p.then((v) => ((__tm[k] = Date.now() - __t0), v)) // TEMP PERF
 
   const tenants = await payload.find({
     collection: 'tenants',
@@ -62,22 +59,21 @@ async function loadPortfolio(
     depth: 0,
   })
   const tenant = tenants.docs[0]
-  __tm.tenant = Date.now() - __t0 // TEMP PERF
   if (!tenant) return null
 
   const tenantFilter = { tenant: { equals: tenant.id } }
 
   const [settingsRes, projectsRes, achievementsRes, logosRes, testimonialsRes, teamRes] =
     await Promise.all([
-      __timed('settings', payload.find({
+      payload.find({
         collection: 'site-settings',
         where: tenantFilter,
         limit: 1,
         depth: 2,
         locale,
         fallbackLocale: locale === 'ar' ? 'en' : 'ar',
-      })),
-      __timed('projects', payload.find({
+      }),
+      payload.find({
         collection: 'projects',
         // Hide drafts (published === false); legacy rows with null stay visible.
         where: { and: [tenantFilter, { published: { not_equals: false } }] },
@@ -91,31 +87,31 @@ async function loadPortfolio(
            blocks for itself. Populating every block of every project (each
            picture in each) was most of what this request carried. */
         select: { modules: false },
-      })),
-      __timed('achievements', payload.find({
+      }),
+      payload.find({
         collection: 'achievements',
         where: tenantFilter,
         sort: 'sortOrder',
         limit: 50,
         depth: 1,
         locale,
-      })),
-      __timed('logos', payload.find({
+      }),
+      payload.find({
         collection: 'logos',
         where: tenantFilter,
         sort: 'sortOrder',
         limit: 100,
         depth: 1,
-      })),
-      __timed('testimonials', payload.find({
+      }),
+      payload.find({
         collection: 'testimonials',
         where: { and: [tenantFilter, { approved: { equals: true } }] },
         sort: 'sortOrder',
         limit: 100,
         depth: 1,
         locale,
-      })),
-      __timed('team', payload.find({
+      }),
+      payload.find({
         collection: 'team',
         where: tenantFilter,
         // Hand-ordered; the order people are introduced in is a decision.
@@ -123,10 +119,9 @@ async function loadPortfolio(
         limit: 60,
         depth: 1,
         locale,
-      })),
+      }),
     ])
 
-  console.log('[perf] portfolio', username, locale, JSON.stringify(__tm), 'total', Date.now() - __t0) // TEMP PERF
   return {
     tenant,
     settings: settingsRes.docs[0] ?? null,

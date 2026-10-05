@@ -50,9 +50,7 @@ async function getMap(fallbackOrigin: string): Promise<SiteMap> {
   const internal = process.env.INTERNAL_ORIGIN || `http://127.0.0.1:${process.env.PORT || '3000'}`
   for (const base of [internal, fallbackOrigin]) {
     try {
-      const __m0 = Date.now() // TEMP PERF
       const res = await fetch(`${base}/api/domains`, { cache: 'no-store' })
-      console.log('[perf] domains-map fetch', Date.now() - __m0, 'cached-age', Date.now() - cache.at) // TEMP PERF
       if (res.ok) {
         cache = { at: Date.now(), map: (await res.json()) as SiteMap }
         mapLoaded = true
@@ -83,7 +81,6 @@ function localeHeaders(req: NextRequest, slug: string | null, map: SiteMap) {
   const site = siteLang(slug, map)
   const lang = asked === 'ar' || asked === 'en' ? asked : site
   const headers = new Headers(req.headers)
-  headers.set('x-perf-mw', String(Date.now())) // TEMP PERF
   headers.set('x-pf-lang', lang)
   /* The language the bare address serves, whatever this particular request
      asked for — which is how a page knows that `?lang=ar` on an Arabic site
@@ -147,9 +144,7 @@ function stripDefaultLang(req: NextRequest, site: 'ar' | 'en', permanent: boolea
 const slugFromPath = (pathname: string) => pathname.split('/').filter(Boolean)[0] ?? null
 
 export async function middleware(req: NextRequest) {
-  const __mw0 = Date.now() // TEMP PERF
   const host = (req.headers.get('host') || '').split(':')[0].toLowerCase()
-  void __mw0 // TEMP PERF
   const isPrimary = !host || PRIMARY.has(host) || host.endsWith('.sslip.io')
 
   const map = await getMap(req.nextUrl.origin)
