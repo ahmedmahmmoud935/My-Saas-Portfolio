@@ -117,6 +117,7 @@ export async function generateMetadata({ params, searchParams }: Params): Promis
 }
 
 export default async function PortfolioPage({ params, searchParams }: Params) {
+  const __p0 = Date.now() // TEMP PERF
   const { username } = await params
   const { lang, preview } = (await searchParams) ?? {}
   // Framed in the dashboard: not a visit, and not for Google Analytics.
@@ -412,6 +413,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
     }
   }
 
+  console.log('[perf] page', username, 'ready-to-render', Date.now() - __p0) // TEMP PERF
   return (
     <div
       className="pf-root"

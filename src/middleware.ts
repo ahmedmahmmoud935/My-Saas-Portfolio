@@ -50,7 +50,9 @@ async function getMap(fallbackOrigin: string): Promise<SiteMap> {
   const internal = process.env.INTERNAL_ORIGIN || `http://127.0.0.1:${process.env.PORT || '3000'}`
   for (const base of [internal, fallbackOrigin]) {
     try {
+      const __m0 = Date.now() // TEMP PERF
       const res = await fetch(`${base}/api/domains`, { cache: 'no-store' })
+      console.log('[perf] domains-map fetch', Date.now() - __m0, 'cached-age', Date.now() - cache.at) // TEMP PERF
       if (res.ok) {
         cache = { at: Date.now(), map: (await res.json()) as SiteMap }
         mapLoaded = true
