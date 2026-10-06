@@ -53,6 +53,7 @@ import * as migration_20260926_010000_landing_line_icons from './20260926_010000
 import * as migration_20260926_020000_landing_conversion_copy from './20260926_020000_landing_conversion_copy';
 import * as migration_20261002_010000_about_photo_controls from './20261002_010000_about_photo_controls';
 import * as migration_20261002_020000_reset_attempts from './20261002_020000_reset_attempts';
+import * as migration_20261007_010000_landing_honest_copy from './20261007_010000_landing_honest_copy';
 
 export const migrations = [
   {
@@ -329,5 +330,10 @@ export const migrations = [
     up: migration_20261002_020000_reset_attempts.up,
     down: migration_20261002_020000_reset_attempts.down,
     name: '20261002_020000_reset_attempts'
+  },
+  {
+    up: migration_20261007_010000_landing_honest_copy.up,
+    down: migration_20261007_010000_landing_honest_copy.down,
+    name: '20261007_010000_landing_honest_copy'
   },
 ];
