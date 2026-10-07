@@ -55,6 +55,7 @@ import * as migration_20261002_010000_about_photo_controls from './20261002_0100
 import * as migration_20261002_020000_reset_attempts from './20261002_020000_reset_attempts';
 import * as migration_20261007_010000_landing_honest_copy from './20261007_010000_landing_honest_copy';
 import * as migration_20261008_010000_landing_new_copy from './20261008_010000_landing_new_copy';
+import * as migration_20261008_020000_landing_hero_back from './20261008_020000_landing_hero_back';
 
 export const migrations = [
   {
@@ -341,5 +342,10 @@ export const migrations = [
     up: migration_20261008_010000_landing_new_copy.up,
     down: migration_20261008_010000_landing_new_copy.down,
     name: '20261008_010000_landing_new_copy'
+  },
+  {
+    up: migration_20261008_020000_landing_hero_back.up,
+    down: migration_20261008_020000_landing_hero_back.down,
+    name: '20261008_020000_landing_hero_back'
   },
 ];
