@@ -14,7 +14,7 @@ import type { ShowcaseLook } from '@/lib/landing-copy'
 import type { ShowcaseTenant } from '@/lib/landing-actions'
 import { ColorInput, Opt, Slider } from './controls'
 import { saveLanding, type LandingImages, type LandingStyle, type LandingTheme, type LandingTools } from '@/lib/landing-actions'
-import { LANDING_COPY } from '@/lib/landing-copy'
+import { LANDING_COPY, landingSeo } from '@/lib/landing-copy'
 import { LANDING_BANDS, type LandingOrderItem } from '@/lib/landing-order'
 import {
   DARK_PALETTES,
@@ -343,6 +343,7 @@ function Field({
   onEn,
   multiline,
   rows,
+  hint,
 }: {
   label: string
   ar: string
@@ -351,6 +352,8 @@ function Field({
   onEn: (v: string) => void
   multiline?: boolean
   rows?: number
+  /** What an empty field stands for, shown greyed in it. */
+  hint?: { ar: string; en: string }
 }) {
   const { t } = useDashLang()
   const C = (multiline ? 'textarea' : 'input') as 'input'
@@ -358,8 +361,8 @@ function Field({
     <div style={{ marginBottom: 12 }}>
       <label className="lbl" style={{ display: 'block' }}>{label}</label>
       <div className="grid-2">
-        <C className="field" placeholder={t('عربي', 'Arabic')} value={ar} onChange={(e) => onAr(e.target.value)} {...(multiline ? { rows: rows ?? 2 } : {})} />
-        <C className="field" dir="ltr" placeholder="English" value={en} onChange={(e) => onEn(e.target.value)} style={{ textAlign: 'start' }} {...(multiline ? { rows: rows ?? 2 } : {})} />
+        <C className="field" placeholder={hint?.ar || t('عربي', 'Arabic')} value={ar} onChange={(e) => onAr(e.target.value)} {...(multiline ? { rows: rows ?? 2 } : {})} />
+        <C className="field" dir="ltr" placeholder={hint?.en || 'English'} value={en} onChange={(e) => onEn(e.target.value)} style={{ textAlign: 'start' }} {...(multiline ? { rows: rows ?? 2 } : {})} />
       </div>
     </div>
   )
@@ -1995,12 +1998,28 @@ export default function LandingEditor({
 
         {sec === 'tools' && (
           <>
-            <Field label={t('عنوان الصفحة في جوجل', 'Page title in Google')} ar={f.ar.seoTitle} en={f.en.seoTitle} onAr={(v) => setKey('seoTitle', v, 'ar')} onEn={(v) => setKey('seoTitle', v, 'en')} />
-            <Field label={t('وصف الصفحة في جوجل', 'Page description in Google')} ar={f.ar.seoDescription} en={f.en.seoDescription} onAr={(v) => setKey('seoDescription', v, 'ar')} onEn={(v) => setKey('seoDescription', v, 'en')} multiline rows={3} />
+            <Field
+              label={t('عنوان الصفحة في جوجل', 'Page title in Google')}
+              ar={f.ar.seoTitle}
+              en={f.en.seoTitle}
+              onAr={(v) => setKey('seoTitle', v, 'ar')}
+              onEn={(v) => setKey('seoTitle', v, 'en')}
+              hint={{ ar: landingSeo({ ...f.ar, seoTitle: '' }).title, en: landingSeo({ ...f.en, seoTitle: '' }).title }}
+            />
+            <Field
+              label={t('وصف الصفحة في جوجل', 'Page description in Google')}
+              ar={f.ar.seoDescription}
+              en={f.en.seoDescription}
+              onAr={(v) => setKey('seoDescription', v, 'ar')}
+              onEn={(v) => setKey('seoDescription', v, 'en')}
+              multiline
+              rows={3}
+              hint={{ ar: landingSeo({ ...f.ar, seoDescription: '' }).description, en: landingSeo({ ...f.en, seoDescription: '' }).description }}
+            />
             <Note style={{ margin: '-4px 0 22px' }}>
               {t(
-                'العنوان أقل من ٦٠ حرف والوصف أقل من ١٦٠ عشان جوجل ميقصّهمش. الوصف ده كمان بيظهر لما حد يشارك اللينك.',
-                'Keep the title under 60 characters and the description under 160 so Google does not cut them. The description also shows when the link is shared.',
+                'سيبهم فاضيين وهيمشوا لوحدهم مع عنوان الصفحة الرئيسية والسطر اللي تحته — اللي مكتوب بالرمادي هو اللي هيظهر. لو كتبت حاجة هنا، هي اللي هتظهر بدالهم. العنوان أقل من ٦٠ حرف والوصف أقل من ١٦٠ عشان جوجل ميقصّهمش، والوصف بيظهر كمان لما حد يشارك اللينك.',
+                'Leave them empty and they follow the headline and the line under it — the grey text is what will show. Anything you type here is used instead. Keep the title under 60 characters and the description under 160 so Google does not cut them; the description also shows when the link is shared.',
               )}
             </Note>
 

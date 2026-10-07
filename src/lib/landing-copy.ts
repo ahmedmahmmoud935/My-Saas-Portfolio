@@ -244,9 +244,9 @@ export const LANDING_COPY = {
       { slug: 'terms', title: 'الشروط والأحكام', body: '' },
       { slug: 'refund', title: 'سياسة الاسترجاع', body: '' },
     ] as LandingLegalPage[],
-    seoTitle: 'ViralPX — موقع بورتفوليو باسمك، وأول شهر مجانًا',
-    seoDescription:
-      'حوّل مشاريعك وريلزك ومقالاتك لموقع بورتفوليو احترافي على دومينك الخاص — بالعربي والإنجليزي، من غير كود. جرّبه شهر كامل مجانًا.',
+    // Empty follows the hero: see landingSeo below.
+    seoTitle: '',
+    seoDescription: '',
     rights: 'كل الحقوق محفوظة',
     // The two buttons that float over the page. Empty = that button is off.
     waNumber: '',
@@ -422,9 +422,8 @@ export const LANDING_COPY = {
       { slug: 'terms', title: 'Terms and conditions', body: '' },
       { slug: 'refund', title: 'Refund policy', body: '' },
     ] as LandingLegalPage[],
-    seoTitle: 'ViralPX — A portfolio site in your name, first month free',
-    seoDescription:
-      'Turn your projects, reels and articles into a professional portfolio site on your own domain — Arabic and English, no code. Try it free for a month.',
+    seoTitle: '',
+    seoDescription: '',
     rights: 'All rights reserved',
     waNumber: '',
     phone: '',
@@ -490,5 +489,21 @@ export function mergeCopy(base: LandingCopy, saved: unknown): LandingCopy {
       const got = Array.isArray(s.legal) ? s.legal.find((x) => x?.slug === p.slug) : null
       return got ? { ...p, ...got } : p
     }),
+  }
+}
+
+/**
+ * The landing page's title and description for Google and for shared links.
+ *
+ * Written by hand they drifted: the headline was rewritten and the browser tab
+ * kept announcing the old one. Left empty they follow the hero — its headline
+ * after the brand name, its sub-line as the description — so changing the
+ * headline changes both. Anything typed in the SEO fields still wins.
+ */
+export function landingSeo(c: { seoTitle?: string; seoDescription?: string; heroTitle?: string; heroSub?: string }) {
+  const headline = (c.heroTitle ?? '').replace(/\s+/g, ' ').trim().replace(/[,،.:;—-]+$/, '').trim()
+  return {
+    title: c.seoTitle?.trim() || (headline ? `ViralPX — ${headline}` : 'ViralPX'),
+    description: c.seoDescription?.trim() || (c.heroSub ?? '').replace(/\s+/g, ' ').trim(),
   }
 }

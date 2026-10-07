@@ -2,7 +2,7 @@ import React from 'react'
 import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { LANDING_COPY, mergeCopy, resolveLink, type ShowcaseLook } from '@/lib/landing-copy'
+import { LANDING_COPY, landingSeo, mergeCopy, resolveLink, type ShowcaseLook } from '@/lib/landing-copy'
 import { orderShowcase, showcasePictures } from '@/lib/showcase'
 import { frameStyle } from '@/lib/frame-style'
 import { resolveVideoUrl } from '@/lib/video'
@@ -116,8 +116,7 @@ export async function generateMetadata({ searchParams }: Params): Promise<Metada
   // Falls back to the hero picture when no share image has been set, so a
   // shared link is never a bare grey card.
   const og = look.ogUrl || look.heroUrl
-  const title = landing.copy.seoTitle || 'ViralPX'
-  const description = landing.copy.seoDescription || landing.copy.heroSub
+  const { title, description } = landingSeo(landing.copy)
   return {
     title,
     description,
