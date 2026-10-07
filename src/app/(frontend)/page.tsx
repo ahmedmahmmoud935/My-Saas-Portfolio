@@ -10,6 +10,7 @@ import { mediaUrl } from '@/lib/portfolio'
 import SectionBg, { type SectionBgConfig } from '@/components/portfolio/SectionBg'
 import Analytics from '@/components/portfolio/Analytics'
 import VideoFacade from '@/components/portfolio/VideoFacade'
+import PlayVideoButton from '@/components/portfolio/PlayVideoButton'
 import DashShowcase from '@/components/portfolio/DashShowcase'
 import { LandingNav, LandingFooter } from '@/components/portfolio/LandingChrome'
 import { DEFAULT_LOOK, landingTokensCss, onAccent, setOnly, type LandingLook } from '@/lib/landing-look'
@@ -334,7 +335,7 @@ export default async function HomePage({ searchParams }: Params) {
                 ) : (
                   <div className="lp-hero-glow" />
                 )}
-                <span className="lp-eyebrow">{c.heroEyebrow}</span>
+                {c.heroEyebrow && <span className="lp-eyebrow">{c.heroEyebrow}</span>}
                 <h1
                   /* Its own width once the lines are decided here rather than by
                      where the box runs out — a 15ch cap would wrap a line the owner
@@ -424,6 +425,7 @@ export default async function HomePage({ searchParams }: Params) {
                       duration={c.panelDuration}
                       playLabel={locale === 'en' ? 'Play the video' : 'شغّل الفيديو'}
                     closeLabel={locale === 'en' ? 'Close the video' : 'اقفل الفيديو'}
+                      playEvent="lp-play-panel"
                     />
                   ) : media?.type === 'image' ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -463,13 +465,19 @@ export default async function HomePage({ searchParams }: Params) {
                   )}
                 </figure>
 
-                {(c.panelBtn || c.panelNote) && (
+                {((c.panelBtn && (c.panelBtnUrl?.trim() || media?.type === 'video')) || c.panelNote) && (
                   <div className="lp-sec-foot">
-                    {c.panelBtn && (
-                      <a className="lp-btn lp-btn-primary lp-btn-lg lp-arrow" href={to(c.panelBtnUrl)}>
-                        <span className="lp-btn-label">{c.panelBtn}</span>
-                      </a>
-                    )}
+                    {/* With no destination of its own, the button plays the video
+                        above it, and waits for one when there is none: a "watch"
+                        button that opened WhatsApp would be a broken promise. */}
+                    {c.panelBtn &&
+                      (c.panelBtnUrl?.trim() ? (
+                        <a className="lp-btn lp-btn-primary lp-btn-lg lp-arrow" href={to(c.panelBtnUrl)}>
+                          <span className="lp-btn-label">{c.panelBtn}</span>
+                        </a>
+                      ) : media?.type === 'video' ? (
+                        <PlayVideoButton event="lp-play-panel" label={c.panelBtn} />
+                      ) : null)}
                     {c.panelNote && <small>{c.panelNote}</small>}
                   </div>
                 )}
@@ -547,7 +555,7 @@ export default async function HomePage({ searchParams }: Params) {
       audience.length > 0 && (
               <SectionBg config={sections.audience}>
                 <section className="lp-sec lp-sec-tight" id="audience">
-                  <Head eyebrow={c.audienceEyebrow} title={c.audienceTitle} />
+                  <Head eyebrow={c.audienceEyebrow} title={c.audienceTitle} sub={c.audienceSub} />
                   <ul className="lp-chips">
                     {audience.map((t) => (
                       <li key={t}>{t}</li>
@@ -675,18 +683,20 @@ export default async function HomePage({ searchParams }: Params) {
                         <small>{p.per}</small>
                       </div>
                       {p.note && <p className="lp-plan-note">{p.note}</p>}
-                      <ul>
-                        {p.feats.map((f) => (
-                          <li key={f}>{f}</li>
-                        ))}
-                      </ul>
+                      {p.feats.some((f) => f.trim()) && (
+                        <ul>
+                          {p.feats.filter((f) => f.trim()).map((f) => (
+                            <li key={f}>{f}</li>
+                          ))}
+                        </ul>
+                      )}
                       <a className={`lp-btn lp-btn-lg ${p.hi ? 'lp-btn-primary lp-arrow' : 'lp-btn-ghost'}`} href={to(p.url)}>
                         <span className="lp-btn-label">{p.cta}</span>
                       </a>
                     </div>
                   ))}
                 </div>
-                {included.length > 0 && (
+                {(included.length > 0 || c.pricingIncludedTitle) && (
                   <div className="lp-included">
                     {c.pricingIncludedTitle && <strong>{c.pricingIncludedTitle}</strong>}
                     {included.map((t) => (

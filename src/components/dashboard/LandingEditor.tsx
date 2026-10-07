@@ -1242,6 +1242,12 @@ export default function LandingEditor({
           <>
             {scalar('panelBtn', t('نص الزر', 'Button text'))}
             {link('panelBtnUrl', t('وجهة الزر', 'Where it goes'))}
+            <Note>
+              {t(
+                'لو سبت الوجهة فاضية، الزر بيشغّل الفيديو اللي فوقه، ومش بيظهر لحد ما تضيف فيديو.',
+                'Leave the destination empty and the button plays the video above it; it stays hidden until there is a video.',
+              )}
+            </Note>
             {scalar('panelNote', t('السطر الصغير تحت الزر', 'Small line under the button'), true)}
           </>
         )}
@@ -1438,6 +1444,7 @@ export default function LandingEditor({
           <>
             {scalar('audienceEyebrow', t('العنوان الصغير', 'Eyebrow'))}
             {scalar('audienceTitle', t('عنوان القسم', 'Section title'), true)}
+            {scalar('audienceSub', t('الوصف', 'Description'), true)}
           </>
         )}
         {sec === 'audience' && cur === 'list' && (
@@ -1592,7 +1599,7 @@ export default function LandingEditor({
             {scalar('pricingEyebrow', t('العنوان الصغير', 'Eyebrow'))}
             {scalar('pricingTitle', t('عنوان القسم', 'Section title'), true)}
             {scalar('pricingSub', t('الوصف', 'Description'), true)}
-            {scalar('pricingNote', t('السطر الأخير تحت الأسعار', 'Closing line under the prices'))}
+            {scalar('pricingNote', t('السطور الأخيرة تحت الأسعار (كل سطر لوحده)', 'Closing lines under the prices (one per line)'), true)}
           </>
         )}
         {sec === 'pricing' && current?.item && f.ar.plans[at] && (

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import VideoLightbox, { youTubePoster } from './VideoLightbox'
 
 /**
@@ -20,6 +20,7 @@ export default function VideoFacade({
   duration,
   playLabel,
   closeLabel,
+  playEvent,
 }: {
   kind: 'file' | 'iframe'
   src: string
@@ -28,9 +29,17 @@ export default function VideoFacade({
   duration?: string
   playLabel: string
   closeLabel: string
+  /** A window event that opens the player too, for a button outside the picture. */
+  playEvent?: string
 }) {
   // The press opens the player over the page; the picture stays where it was.
   const [playing, setPlaying] = useState(false)
+  useEffect(() => {
+    if (!playEvent) return
+    const open = () => setPlaying(true)
+    window.addEventListener(playEvent, open)
+    return () => window.removeEventListener(playEvent, open)
+  }, [playEvent])
   poster = poster || (kind === 'iframe' ? youTubePoster(src) : null)
 
   return (

@@ -88,7 +88,7 @@ html[data-theme='light'] .lp { --lp-accent-2: color-mix(in srgb, var(--o) 74%, #
   margin-top: 3px; font-family: var(--lp-display); }
 
 .lp-nav-links { display: flex; gap: 24px; font-size: 14px; font-weight: 700; }
-.lp-nav-links a { color: var(--lp-sub); transition: color .15s; }
+.lp-nav-links a { color: var(--lp-sub); transition: color .15s; white-space: nowrap; }
 .lp-nav-links a:hover { color: var(--o); }
 .lp-nav-actions { display: flex; align-items: center; gap: 10px; }
 /* Two buttons doing the same kind of job — switching one thing about the page
@@ -646,7 +646,7 @@ html[data-theme='light'] .lp[data-card='elevated'] .lp-faq-item {
 .lp-included span { display: inline-flex; align-items: baseline; gap: 7px; font-size: 14px;
   color: color-mix(in srgb, var(--lp-text) 76%, var(--lp-sub)); }
 .lp-included span::before { content: '✓'; color: var(--o); font-weight: 900; }
-.lp-pricing-note { margin: 18px 0 0; text-align: center; color: var(--lp-sub); font-size: 13.5px; }
+.lp-pricing-note { margin: 18px 0 0; text-align: center; color: var(--lp-sub); font-size: 13.5px; white-space: pre-line; }
 
 /* Testimonials. One or two quotes stretched across a 1180px row would each be
    a single long line, so the row narrows to what it holds. */
