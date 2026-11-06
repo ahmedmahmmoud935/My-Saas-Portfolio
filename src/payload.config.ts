@@ -25,6 +25,7 @@ import { Notices } from './collections/Notices'
 import { Feedback } from './collections/Feedback'
 import { Attachments } from './collections/Attachments'
 import { SiteSettings } from './globals/SiteSettings'
+import { purgesPortfolio } from './lib/cdn-purge'
 import { Landing } from './globals/Landing'
 
 const filename = fileURLToPath(import.meta.url)
@@ -50,21 +51,24 @@ export default buildConfig({
     },
   },
   email: resendEmailAdapter,
+  // Everything a portfolio page is built from purges that portfolio's pages
+  // from Cloudflare when it changes (see cdn-purge). Visits are written by
+  // the pages themselves, so they stay out of it.
   collections: [
     Users,
-    Tenants,
-    Media,
-    Projects,
-    Articles,
+    purgesPortfolio(Tenants, (doc) => doc.id as number),
+    purgesPortfolio(Media),
+    purgesPortfolio(Projects),
+    purgesPortfolio(Articles),
     Posts,
-    Redirects,
-    Logos,
-    Testimonials,
-    Team,
-    Achievements,
+    purgesPortfolio(Redirects),
+    purgesPortfolio(Logos),
+    purgesPortfolio(Testimonials),
+    purgesPortfolio(Team),
+    purgesPortfolio(Achievements),
     Visits,
     Imports,
-    SiteSettings,
+    purgesPortfolio(SiteSettings),
     Notices,
     Feedback,
     Attachments,
