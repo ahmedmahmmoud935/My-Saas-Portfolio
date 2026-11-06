@@ -160,6 +160,8 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
         heightVh={settings?.heroCover?.height ?? 82}
         titleScale={settings?.heroCover?.titleScale ?? 100}
         descScale={settings?.heroCover?.descScale ?? 100}
+        titleScaleMobile={settings?.heroCover?.titleScaleMobile}
+        descScaleMobile={settings?.heroCover?.descScaleMobile}
         align={settings?.heroCover?.align || 'auto'}
         valign={settings?.heroCover?.valign || 'auto'}
         variant={settings?.style?.hero || 'split'}

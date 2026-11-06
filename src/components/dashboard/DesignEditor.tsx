@@ -303,6 +303,10 @@ function applyDesign(doc: Document, f: DesignForm, theme: 'dark' | 'light') {
     hero.style.setProperty('--hero-h', `${c.height}vh`)
     hero.style.setProperty('--hero-title-scale', String(c.titleScale / 100))
     hero.style.setProperty('--hero-desc-scale', String(c.descScale / 100))
+    if (c.titleScaleMobile) hero.style.setProperty('--hero-title-scale-m', String(c.titleScaleMobile / 100))
+    else hero.style.removeProperty('--hero-title-scale-m')
+    if (c.descScaleMobile) hero.style.setProperty('--hero-desc-scale-m', String(c.descScaleMobile / 100))
+    else hero.style.removeProperty('--hero-desc-scale-m')
     hero.style.setProperty('--hero-veil-dark', String(c.overlay / 100))
     hero.style.setProperty('--hero-veil-light', String(c.overlayLight / 100))
     if (c.align !== 'auto') hero.dataset.ha = c.align
@@ -1075,6 +1079,40 @@ export default function DesignEditor({ initial, sitePath }: { initial: DesignFor
                 <div className="hx-block">
                   <Range label={tr('حجم العنوان', 'Heading size')} value={f.heroCover.titleScale} min={50} max={160} shown={`${f.heroCover.titleScale}%`} onChange={(v) => setCover({ titleScale: v })} />
                   <Range label={tr('حجم الوصف', 'Description size')} value={f.heroCover.descScale} min={50} max={200} shown={`${f.heroCover.descScale}%`} onChange={(v) => setCover({ descScale: v })} />
+                </div>
+                <div className="hx-block">
+                  <p className="hx-note" style={{ margin: 0 }}>
+                    {tr(
+                      '📱 على الموبايل: الموبايل ليه مقاس لوحده. لو ماغيّرتوش بيمشي زي الكمبيوتر — شوفه بزرار الموبايل فوق المعاينة.',
+                      '📱 On phones: phones get their own size. Left alone it follows the computer — check it with the phone button above the preview.',
+                    )}
+                  </p>
+                  <Range
+                    label={tr('حجم العنوان على الموبايل', 'Heading size on phones')}
+                    value={f.heroCover.titleScaleMobile || f.heroCover.titleScale}
+                    min={50}
+                    max={200}
+                    shown={f.heroCover.titleScaleMobile ? `${f.heroCover.titleScaleMobile}%` : tr('زي الكمبيوتر', 'Same as computer')}
+                    onChange={(v) => setCover({ titleScaleMobile: v })}
+                  />
+                  <Range
+                    label={tr('حجم الوصف على الموبايل', 'Description size on phones')}
+                    value={f.heroCover.descScaleMobile || f.heroCover.descScale}
+                    min={50}
+                    max={200}
+                    shown={f.heroCover.descScaleMobile ? `${f.heroCover.descScaleMobile}%` : tr('زي الكمبيوتر', 'Same as computer')}
+                    onChange={(v) => setCover({ descScaleMobile: v })}
+                  />
+                  {(f.heroCover.titleScaleMobile > 0 || f.heroCover.descScaleMobile > 0) && (
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      style={{ justifySelf: 'start' }}
+                      onClick={() => setCover({ titleScaleMobile: 0, descScaleMobile: 0 })}
+                    >
+                      {tr('رجّع الموبايل زي الكمبيوتر', 'Make phones follow the computer again')}
+                    </button>
+                  )}
                   <Range
                     label={tr('طول القسم', 'Section height')}
                     value={f.heroCover.height}

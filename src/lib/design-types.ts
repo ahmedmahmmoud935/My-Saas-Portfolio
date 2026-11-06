@@ -179,6 +179,9 @@ export type DesignForm = {
     titleScale: number
     /** Percentage of the description's own derived size. */
     descScale: number
+    /** The same two on a phone; 0 follows the computer's. */
+    titleScaleMobile: number
+    descScaleMobile: number
     /** auto | start | center | end */
     align: string
     /** auto | top | center | bottom */
@@ -360,7 +363,7 @@ export const emptyDesign = (): DesignForm => ({
     anim: 'fade-up',
   },
   components: { card: 'solid', navbar: 'blur', button: 'rounded' },
-  heroCover: { size: 'cover', posX: 50, posY: 50, overlay: 45, overlayLight: 25, height: 82, titleScale: 100, descScale: 100, align: 'auto', valign: 'auto', gradient: 'none', gradientDark: '' },
+  heroCover: { size: 'cover', posX: 50, posY: 50, overlay: 45, overlayLight: 25, height: 82, titleScale: 100, descScale: 100, titleScaleMobile: 0, descScaleMobile: 0, align: 'auto', valign: 'auto', gradient: 'none', gradientDark: '' },
   heroCoverId: null,
   aboutPhotoId: null,
   aboutPhotoUrl: null,

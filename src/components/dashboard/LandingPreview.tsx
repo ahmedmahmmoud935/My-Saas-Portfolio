@@ -98,14 +98,22 @@ export default function LandingPreview({
   }, [spot, go])
 
   /* One paint per frame at most: a slider fires many times between two frames,
-     and only the last of them can be seen. */
-  const raf = useRef(0)
+     and only the last of them can be seen. A timer backs the frame up, because
+     a frame the browser is not drawing (the pane half off screen) never comes
+     and the preview would stop following the controls. */
+  const queued = useRef<{ raf: number; timer: ReturnType<typeof setTimeout> } | null>(null)
   const paint = useCallback(() => {
-    cancelAnimationFrame(raf.current)
-    raf.current = requestAnimationFrame(() => {
+    if (queued.current) return
+    const run = () => {
+      const q = queued.current
+      if (!q) return
+      queued.current = null
+      cancelAnimationFrame(q.raf)
+      clearTimeout(q.timer)
       const doc = frame.current?.contentDocument
       if (doc && applyRef.current) applyRef.current(doc)
-    })
+    }
+    queued.current = { raf: requestAnimationFrame(run), timer: setTimeout(run, 50) }
   }, [])
   useEffect(() => {
     paint()

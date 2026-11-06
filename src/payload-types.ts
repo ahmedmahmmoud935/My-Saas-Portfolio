@@ -664,6 +664,8 @@ export interface SiteSetting {
     height?: number | null;
     titleScale?: number | null;
     descScale?: number | null;
+    titleScaleMobile?: number | null;
+    descScaleMobile?: number | null;
     /**
      * auto | start | center | end
      */
@@ -1614,6 +1616,8 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         height?: T;
         titleScale?: T;
         descScale?: T;
+        titleScaleMobile?: T;
+        descScaleMobile?: T;
         align?: T;
         valign?: T;
         gradient?: T;

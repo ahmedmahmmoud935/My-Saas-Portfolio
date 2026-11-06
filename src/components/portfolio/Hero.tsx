@@ -42,6 +42,8 @@ export default function Hero({
   heightVh = 82,
   titleScale = 100,
   descScale = 100,
+  titleScaleMobile,
+  descScaleMobile,
   align = 'auto',
   valign = 'auto',
   variant = 'split',
@@ -62,6 +64,9 @@ export default function Hero({
   heightVh?: number
   titleScale?: number
   descScale?: number
+  /** On a phone; unset follows the two above. */
+  titleScaleMobile?: number | null
+  descScaleMobile?: number | null
   align?: string
   valign?: string
   variant?: string
@@ -94,6 +99,11 @@ export default function Hero({
           ['--hero-title-scale' as string]: titleScale / 100,
           // On top of the proportion the description takes from the heading.
           ['--hero-desc-scale' as string]: descScale / 100,
+          // A phone's own sizes. The heading is measured from the screen
+          // width with a floor and a ceiling, so one percentage could not be
+          // right on both: tuned for the laptop it was wrong on the phone.
+          ...(titleScaleMobile ? { ['--hero-title-scale-m' as string]: titleScaleMobile / 100 } : {}),
+          ...(descScaleMobile ? { ['--hero-desc-scale-m' as string]: descScaleMobile / 100 } : {}),
           // Both strengths travel to CSS; the theme decides which one is used
           // and whether the veil is black or white.
           ['--hero-veil-dark' as string]: overlay / 100,

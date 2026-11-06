@@ -71,6 +71,8 @@ export async function saveDesign(form: DesignForm): Promise<{ ok: true } | SaveR
           height: form.heroCover.height,
           titleScale: form.heroCover.titleScale,
           descScale: form.heroCover.descScale,
+          titleScaleMobile: form.heroCover.titleScaleMobile || null,
+          descScaleMobile: form.heroCover.descScaleMobile || null,
           align: form.heroCover.align,
           valign: form.heroCover.valign,
           gradient: form.heroCover.gradient,

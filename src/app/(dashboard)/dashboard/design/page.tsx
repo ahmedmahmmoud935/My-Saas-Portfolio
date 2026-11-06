@@ -49,7 +49,11 @@ export default async function DesignPage() {
     })),
     style: merge(d.style, s.style),
     components: merge(d.components, (s.themeConfig as Record<string, unknown>)?.components),
-    heroCover: merge(d.heroCover, s.heroCover),
+    heroCover: (() => {
+      const c = merge(d.heroCover, s.heroCover)
+      // Never set is stored as null; the form reads it as "same as the computer".
+      return { ...c, titleScaleMobile: c.titleScaleMobile || 0, descScaleMobile: c.descScaleMobile || 0 }
+    })(),
     heroCoverId:
       (s.brand?.heroCover && typeof s.brand.heroCover === 'object'
         ? (s.brand.heroCover as { id: number }).id

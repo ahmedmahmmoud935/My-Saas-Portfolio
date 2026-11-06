@@ -514,7 +514,7 @@ html[data-theme='light'] .pf-root .hero-overlay {
   /* Between a third and a quarter of the heading — the proportion the
      reference uses. Fixed at 18px it read as a caption under a big heading and
      as a second headline under a small one. */
-  font-size: calc(clamp(15px, calc(var(--hero-title) * 0.29), 24px) * var(--hero-desc-scale, 1));
+  font-size: calc(clamp(15px, calc(var(--hero-title) * 0.29), 24px) * var(--hero-desc-scale-now, var(--hero-desc-scale, 1)));
   line-height: 1.7;
   color: var(--sub);
   max-width: 46ch;
@@ -3285,6 +3285,9 @@ html[data-theme='light'] .pf-sec-dim {
   .pf-root .hero {
     --hero-title-size: clamp(28px, 8.4vw, 44px);
     --hero-lh: 1.12;
+    /* The phone's own sizes from the Design tab, the computer's when unset. */
+    --hero-title: calc(var(--hero-title-size) * var(--hero-title-scale-m, var(--hero-title-scale, 1)));
+    --hero-desc-scale-now: var(--hero-desc-scale-m, var(--hero-desc-scale, 1));
   }
   .pf-root .hero .hero-name {
     letter-spacing: -0.5px !important;

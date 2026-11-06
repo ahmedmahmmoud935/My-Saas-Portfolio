@@ -192,6 +192,9 @@ export const SiteSettings: CollectionConfig = {
                     // takes from the heading — so the block can keep its scale
                     // and still be tuned for a long line or a short one.
                     { name: 'descScale', type: 'number', defaultValue: 100, min: 50, max: 200 },
+                    // The same two on a phone. Empty follows the computer's.
+                    { name: 'titleScaleMobile', type: 'number', min: 50, max: 200 },
+                    { name: 'descScaleMobile', type: 'number', min: 50, max: 200 },
                   ],
                 },
                 {
