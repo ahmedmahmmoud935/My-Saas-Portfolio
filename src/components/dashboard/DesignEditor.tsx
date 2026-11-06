@@ -224,23 +224,69 @@ function applyDesign(doc: Document, f: DesignForm, theme: 'dark' | 'light') {
   root.dataset.btn = f.components.button
   root.dir = f.style.direction === 'ltr' || f.style.direction === 'rtl' ? f.style.direction : root.lang === 'en' ? 'ltr' : 'rtl'
 
-  root.querySelectorAll(':scope > .pf-bg-layer').forEach((el) => el.remove())
+  /* The page backdrop is rebuilt only when it changed. Rebuilt on every paint,
+     a slider anywhere on this screen tore down and re-decoded a full-page
+     picture sixty times a second, which is what made dragging one stutter. */
+  // The dim is left out of the key and set on its own below, so its slider
+  // never rebuilds the picture either.
+  const bgKey = JSON.stringify([{ ...f.background, dim: 0 }, { ...f.backgroundLight, dim: 0 }])
+  if (root.dataset.bgKey !== bgKey) {
+    root.dataset.bgKey = bgKey
+    root.querySelectorAll(':scope > .pf-bg-layer').forEach((el) => el.remove())
+    for (const [b, light] of [
+      [f.background, false],
+      [f.backgroundLight, true],
+    ] as const) {
+      const look = pageBackground(b)
+      if (!look) continue
+      const layer = doc.createElement('div')
+      layer.className = `pf-bg-layer ${light ? 'for-light' : 'for-dark'}${look.animated ? ' animated' : ''}${look.scrolls ? ' scrolls' : ''}`
+      Object.assign(layer.style, look.style)
+      if (b.type === 'image' && b.imageUrl) {
+        const dim = doc.createElement('span')
+        dim.className = `pf-bg-dim${light ? ' light' : ''}`
+        dim.style.opacity = String(b.dim / 100)
+        layer.appendChild(dim)
+      }
+      root.prepend(layer)
+    }
+  }
   for (const [b, light] of [
     [f.background, false],
     [f.backgroundLight, true],
   ] as const) {
-    const look = pageBackground(b)
-    if (!look) continue
-    const layer = doc.createElement('div')
-    layer.className = `pf-bg-layer ${light ? 'for-light' : 'for-dark'}${look.animated ? ' animated' : ''}${look.scrolls ? ' scrolls' : ''}`
-    Object.assign(layer.style, look.style)
-    if (b.type === 'image' && b.imageUrl) {
-      const dim = doc.createElement('span')
-      dim.className = `pf-bg-dim${light ? ' light' : ''}`
-      dim.style.opacity = String(b.dim / 100)
-      layer.appendChild(dim)
+    const dim = root.querySelector<HTMLElement>(`:scope > .pf-bg-layer.${light ? 'for-light' : 'for-dark'} > .pf-bg-dim`)
+    if (dim) dim.style.opacity = String(b.dim / 100)
+  }
+
+  /* A section's own backdrop: the dim, the framing, held or scrolling, and
+     its colours, on the section already on the page. One added since the
+     last save has no wrapper here yet and shows after saving. */
+  for (const r of f.sectionBg) {
+    const wrap = doc.getElementById(r.section)?.closest<HTMLElement>('.pf-sec-bg')
+    if (!wrap) continue
+    if (r.mode === 'color') {
+      if (r.color) wrap.style.setProperty('--sec-bg', r.color)
+      else wrap.style.removeProperty('--sec-bg')
+      if (r.colorLight) wrap.style.setProperty('--sec-bg-light', r.colorLight)
+      else wrap.style.removeProperty('--sec-bg-light')
+      continue
     }
-    root.prepend(layer)
+    const layer = wrap.querySelector<HTMLElement>(':scope > .pf-sec-layer')
+    if (!layer) continue
+    const dim = layer.querySelector<HTMLElement>('.pf-sec-dim')
+    if (dim) dim.style.opacity = String(Math.min(100, Math.max(0, r.dim)) / 100)
+    const media = layer.querySelector<HTMLElement>('.pf-sec-media')
+    if (!media) continue
+    const pos = `${r.posX}% ${r.posY}%`
+    if (media.tagName === 'VIDEO') {
+      media.style.objectPosition = pos
+    } else {
+      media.style.backgroundPosition = pos
+      const url = r.imageUrl ? `url(${JSON.stringify(r.imageUrl)})` : ''
+      if (url && media.style.backgroundImage !== url) media.style.backgroundImage = url
+      layer.classList.toggle('pinned', !!r.fixed)
+    }
   }
 
   const about = doc.querySelector<HTMLImageElement>('#about .about-photo')
@@ -752,7 +798,13 @@ export default function DesignEditor({ initial, sitePath }: { initial: DesignFor
     mode === 'dark'
       ? set({ background: { ...f.background, ...p } })
       : set({ backgroundLight: { ...f.backgroundLight, ...p } })
-  const setSectionBg = (rows: SectionBgForm[]) => set({ sectionBg: rows })
+  // The preview goes to the section whose backdrop was just touched.
+  const [bgSpot, setBgSpot] = useState<string | null>(null)
+  const setSectionBg = (rows: SectionBgForm[]) => {
+    const touched = rows.find((r, i) => JSON.stringify(r) !== JSON.stringify(f.sectionBg[i]))
+    if (touched) setBgSpot(touched.section)
+    set({ sectionBg: rows })
+  }
   const setComp = (p: Partial<DesignForm['components']>) => set({ components: { ...f.components, ...p } })
   const setCover = (p: Partial<DesignForm['heroCover']>) => set({ heroCover: { ...f.heroCover, ...p } })
 
@@ -858,7 +910,7 @@ export default function DesignEditor({ initial, sitePath }: { initial: DesignFor
               setSectionBg={setSectionBg}
               save={save}
               busy={busy}
-              preview={preview('top')}
+              preview={preview(bgSpot || 'top')}
             />
           )}
 

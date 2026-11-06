@@ -2025,8 +2025,13 @@ textarea.field {
   pointer-events: none;
 }
 
-/* Range sliders — the native control renders in the browser's own blue. */
+/* Range sliders — the native control renders in the browser's own blue.
+   Always left to right: Safari draws a slider in a right-to-left page
+   mirrored but reads the pointer as if it were not, so the thumb jumped away
+   from the finger and seemed to stick. Low on the left, high on the right is
+   how a slider reads in an Arabic interface too. */
 input[type='range'] {
+  direction: ltr;
   -webkit-appearance: none;
   appearance: none;
   height: 6px;

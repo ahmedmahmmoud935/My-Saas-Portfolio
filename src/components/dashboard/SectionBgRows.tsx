@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import MediaUploader from './MediaUploader'
 import NavIcon from './icons'
 import { ColorInput, Opt, Slider } from './controls'
@@ -85,41 +85,7 @@ export default function SectionBgRows({
             </>
           )}
 
-          {r.mode === 'image' && (
-            // Picture on one side, every setting for it on the other, each
-            // starting on the same line as the last. The settings used to be
-            // scattered around the picture with the sliders stranded in a
-            // column of their own.
-            <div className="bg-image-row">
-              <MediaUploader
-                big
-                dim={r.dim}
-                previewUrl={r.imageUrl}
-                label={tr('صورة', 'Image')}
-                onUploaded={(m) => patchRow(i, { imageId: m.id, imageUrl: m.url ?? m.thumbUrl })}
-                onRemove={() => patchRow(i, { imageId: null, imageUrl: null })}
-              />
-              <div className="bg-image-ctrls">
-                <Opt
-                  label={tr('السلوك عند التمرير', 'Scroll behaviour')}
-                  value={r.fixed ? 'fixed' : 'scroll'}
-                  options={[
-                    { value: 'fixed', label: tr('ثابتة (بارالاكس)', 'Fixed (parallax)') },
-                    { value: 'scroll', label: tr('تتحرك', 'Scrolls') },
-                  ]}
-                  onChange={(v) => patchRow(i, { fixed: v === 'fixed' })}
-                />
-                <div className="bg-ctrls">
-                  <label className="lbl">{tr('التعتيم', 'Dim')} — {r.dim}%</label>
-                  <input type="range" min={0} max={100} value={r.dim} onChange={(e) => patchRow(i, { dim: Number(e.target.value) })} />
-                  <label className="lbl">{tr('الموضع ↔', 'Position ↔')} — {r.posX}%</label>
-                  <input type="range" min={0} max={100} value={r.posX} onChange={(e) => patchRow(i, { posX: Number(e.target.value) })} />
-                  <label className="lbl">{tr('الموضع ↕', 'Position ↕')} — {r.posY}%</label>
-                  <input type="range" min={0} max={100} value={r.posY} onChange={(e) => patchRow(i, { posY: Number(e.target.value) })} />
-                </div>
-              </div>
-            </div>
-          )}
+          {r.mode === 'image' && <ImageRow row={r} tr={tr} patch={(p) => patchRow(i, p)} />}
 
           {r.mode === 'video' && (
             <>
@@ -138,5 +104,100 @@ export default function SectionBgRows({
         + {tr('خلفية قسم', 'Section background')}
       </button>
     </>
+  )
+}
+
+type Framing = Pick<SectionBgForm, 'dim' | 'posX' | 'posY'>
+
+/**
+ * A picture backdrop: the picture on one side, every setting for it on the
+ * other, each starting on the same line as the last.
+ *
+ * The three sliders move on their own state and hand the value to the page a
+ * moment after the hand stops. Sent on every step of a drag, each one redrew
+ * the whole design screen, so the thumb stuck and jumped behind the pointer.
+ * The picture beside them still darkens at once, from the same local value.
+ */
+function ImageRow({
+  row,
+  tr,
+  patch,
+}: {
+  row: SectionBgForm
+  tr: (ar: string, en: string) => string
+  patch: (p: Partial<SectionBgForm>) => void
+}) {
+  const [live, setLive] = useState<Framing>({ dim: row.dim, posX: row.posX, posY: row.posY })
+  const pending = useRef<Partial<Framing>>({})
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const patchRef = useRef(patch)
+  patchRef.current = patch
+
+  // A value changed from outside (a reset, a reload) wins over the local one.
+  useEffect(() => {
+    if (!timer.current) setLive({ dim: row.dim, posX: row.posX, posY: row.posY })
+  }, [row.dim, row.posX, row.posY])
+
+  const flush = () => {
+    if (timer.current) clearTimeout(timer.current)
+    timer.current = null
+    const p = pending.current
+    pending.current = {}
+    if (Object.keys(p).length) patchRef.current(p)
+  }
+  useEffect(() => flush, [])
+
+  const move = (key: keyof Framing, v: number) => {
+    setLive((l) => ({ ...l, [key]: v }))
+    pending.current = { ...pending.current, [key]: v }
+    if (timer.current) clearTimeout(timer.current)
+    timer.current = setTimeout(flush, 150)
+  }
+
+  const slider = (key: keyof Framing, label: string) => (
+    <>
+      <label className="lbl">
+        {label} — {live[key]}%
+      </label>
+      <input
+        type="range"
+        min={0}
+        max={100}
+        value={live[key]}
+        onChange={(e) => move(key, Number(e.target.value))}
+        onPointerUp={flush}
+        onKeyUp={flush}
+        onBlur={flush}
+      />
+    </>
+  )
+
+  return (
+    <div className="bg-image-row">
+      <MediaUploader
+        big
+        dim={live.dim}
+        previewUrl={row.imageUrl}
+        label={tr('صورة', 'Image')}
+        onUploaded={(m) => patch({ imageId: m.id, imageUrl: m.url ?? m.thumbUrl })}
+        onRemove={() => patch({ imageId: null, imageUrl: null })}
+      />
+      <div className="bg-image-ctrls">
+        <Opt
+          label={tr('السلوك عند التمرير', 'Scroll behaviour')}
+          value={row.fixed ? 'fixed' : 'scroll'}
+          options={[
+            { value: 'fixed', label: tr('ثابتة (بارالاكس)', 'Fixed (parallax)') },
+            { value: 'scroll', label: tr('تتحرك', 'Scrolls') },
+          ]}
+          onChange={(v) => patch({ fixed: v === 'fixed' })}
+        />
+        <div className="bg-ctrls">
+          {slider('dim', tr('التعتيم', 'Dim'))}
+          {slider('posX', tr('الموضع ↔', 'Position ↔'))}
+          {slider('posY', tr('الموضع ↕', 'Position ↕'))}
+        </div>
+      </div>
+    </div>
   )
 }

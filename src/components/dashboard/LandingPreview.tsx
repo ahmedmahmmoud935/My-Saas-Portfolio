@@ -97,9 +97,15 @@ export default function LandingPreview({
     go()
   }, [spot, go])
 
+  /* One paint per frame at most: a slider fires many times between two frames,
+     and only the last of them can be seen. */
+  const raf = useRef(0)
   const paint = useCallback(() => {
-    const doc = frame.current?.contentDocument
-    if (doc && applyRef.current) applyRef.current(doc)
+    cancelAnimationFrame(raf.current)
+    raf.current = requestAnimationFrame(() => {
+      const doc = frame.current?.contentDocument
+      if (doc && applyRef.current) applyRef.current(doc)
+    })
   }, [])
   useEffect(() => {
     paint()
