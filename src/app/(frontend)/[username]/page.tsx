@@ -18,6 +18,7 @@ import Team from '@/components/portfolio/Team'
 import Products from '@/components/portfolio/Products'
 import { withMissingSections } from '@/lib/dashboard-nav'
 import StudioPortfolio from '@/components/studio/StudioPortfolio'
+import ScrollMemory from '@/components/portfolio/ScrollMemory'
 import { buildStudioData } from '@/lib/studio-data'
 import Contact from '@/components/portfolio/Contact'
 import Footer from '@/components/portfolio/Footer'
@@ -490,6 +491,8 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
         {!isPreview && <TrackVisit tenant={tenant.id} page="home" />}
         <MotionFx anim="none" cursor={(settings?.style as { cursor?: string } | undefined)?.cursor || 'default'} />
         {sharedHead}
+      <ScrollMemory />
+        <ScrollMemory />
         <StudioPortfolio d={buildStudioData(data, locale, q)} />
       </>
     )

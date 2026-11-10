@@ -5,6 +5,7 @@ import StudioWork from './StudioWork'
 import StudioContactForm from './StudioContactForm'
 import StudioReviewText from './StudioReviewText'
 import StudioChart from './StudioChart'
+import StudioServices from './StudioServices'
 import SectionBg from '@/components/portfolio/SectionBg'
 import type { Heading, StudioData, StudioSection } from '@/lib/studio-data'
 import '@/app/(frontend)/studio.css'
@@ -312,27 +313,14 @@ export default function StudioPortfolio({ d }: { d: StudioData }) {
               </div>
               {d.services.subtitle && <p>{d.services.subtitle}</p>}
             </div>
-            <div className="st-services-grid">
-              {d.services.items.map((s, i) => (
-                <article className="st-service-card" key={i}>
-                  <div className="st-service-top">
-                    {s.iconUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={s.iconUrl} alt="" width={32} height={32} style={{ width: 32, height: 32, objectFit: 'contain' }} />
-                    ) : (
-                      <Icon name={s.icon} />
-                    )}
-                  </div>
-                  <h3>{s.title}</h3>
-                  {s.desc && <p>{s.desc}</p>}
-                  {hasContact && (
-                    <a href="#contact" aria-label={`${ui.discuss}: ${s.title}`}>
-                      <Icon name={d.dir === 'ltr' ? 'arrow-right' : 'arrow-left'} />
-                    </a>
-                  )}
-                </article>
-              ))}
-            </div>
+            <StudioServices
+              services={d.services}
+              ui={ui}
+              ltr={d.dir === 'ltr'}
+              whatsapp={d.contact?.whatsapp?.href ?? null}
+              phone={d.contact?.phone?.href ?? null}
+              hasContact={hasContact}
+            />
           </section>
         )}
       </>

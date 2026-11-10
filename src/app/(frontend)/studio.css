@@ -612,3 +612,26 @@ html[data-theme=dark] .st-root .st-hero-veil{opacity:var(--veil-d,.45)}
    back so the chosen colour or picture shows. */
 .st-root .pf-sec-bg{margin-top:0}
 .st-root .pf-sec-bg>section,.st-root .pf-sec-bg>.pf-sec-inner>section{background:transparent}
+
+/* ── Services: centred heading, shorter cards with their arrows on one
+   line, the whole service in a window with WhatsApp and a call. ──────── */
+.st-root .st-services-heading{flex-direction:column;align-items:center;text-align:center;gap:14px}
+.st-root .st-services-heading>p{max-width:620px}
+.st-root .st-services-grid{align-items:stretch}
+.st-root .st-service-card.st-service-open{display:flex;flex-direction:column;padding:24px 26px;cursor:pointer;text-align:start}
+.st-root .st-service-open .st-service-top{margin-bottom:18px}
+.st-root .st-service-open h3{font-size:20px;margin-bottom:10px}
+.st-root .st-service-open>p{padding-bottom:18px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.st-root .st-service-arrow{margin-top:auto;margin-inline-start:auto;border:1px solid var(--line);border-radius:50%;place-items:center;width:44px;height:44px;display:grid;transition:background .2s,color .2s}
+.st-root .st-service-open:hover .st-service-arrow,.st-root .st-service-open:focus-visible .st-service-arrow{background:var(--accent);border-color:var(--accent);color:#fff}
+.st-root .st-service-dialog{width:min(560px,100vw - 40px)}
+.st-root .st-service-dialog .st-dialog-body{padding:34px}
+.st-root .st-service-dialog .st-service-top svg{width:34px;height:34px;color:var(--accent)}
+.st-root .st-service-dialog h2{margin:14px 0 10px;font-size:26px;line-height:1.6}
+.st-root .st-service-full{color:var(--muted);font-size:16px;line-height:2;white-space:pre-line}
+.st-root .st-service-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
+.st-root .st-service-actions .st-button{flex:1 1 200px}
+
+/* ── Reviews: every card in a row the same height. ─────────────────────── */
+.st-root .st-review-grid{align-items:stretch}
+.st-root .st-review-card{height:100%}
