@@ -417,6 +417,8 @@ export const SiteSettings: CollectionConfig = {
                     { name: 'skin', type: 'text', defaultValue: 'classic', admin: { description: 'classic | studio' } },
                     // Studio only: three of the latest designs fanned out under the hero.
                     { name: 'heroGallery', type: 'checkbox', defaultValue: true },
+                    // …and whether they show on phones too.
+                    { name: 'heroGalleryMobile', type: 'checkbox', defaultValue: true },
                   ],
                 },
                 {

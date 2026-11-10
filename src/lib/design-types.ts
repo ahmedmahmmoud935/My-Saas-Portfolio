@@ -169,6 +169,8 @@ export type DesignForm = {
     skin: string
     /** Studio look: the latest designs fanned out under the hero. */
     heroGallery: boolean
+    /** …shown on phones as well. */
+    heroGalleryMobile: boolean
   }
   components: { card: string; navbar: string; button: string }
   heroCover: {
@@ -374,6 +376,7 @@ export const emptyDesign = (): DesignForm => ({
     anim: 'fade-up',
     skin: 'classic',
     heroGallery: true,
+    heroGalleryMobile: true,
   },
   components: { card: 'solid', navbar: 'blur', button: 'rounded' },
   heroCover: { size: 'cover', posX: 50, posY: 50, overlay: 45, overlayLight: 25, height: 82, titleScale: 100, descScale: 100, titleScaleMobile: 0, descScaleMobile: 0, align: 'auto', valign: 'auto', gradient: 'none', gradientDark: '' },

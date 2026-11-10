@@ -60,6 +60,8 @@ export const STUDIO_UI = {
     langShort: 'EN',
     empty: 'لا توجد مشاريع في هذا التصنيف.',
     more: 'المزيد على Behance',
+    allWork: 'عرض كل المشاريع',
+    backHome: 'الرئيسية',
     previewLabel: 'معاينة تصميمية للواجهة',
     previewIdea: 'معاينة تصميمية لفكرة الصفحة',
     details: 'التفاصيل',
@@ -110,6 +112,8 @@ export const STUDIO_UI = {
     langShort: 'عربي',
     empty: 'No projects in this category.',
     more: 'More on Behance',
+    allWork: 'View all projects',
+    backHome: 'Home',
     previewLabel: 'Illustrative interface preview',
     previewIdea: 'Illustrative layout of the design concept',
     details: 'Details',
@@ -153,6 +157,9 @@ export type StudioData = {
   vars: Record<string, string>
   attrs: Record<string, string>
   name: string
+  /** The home page and the all-projects page, in this language. */
+  homeHref: string
+  workHref: string
   monogram: { text: string; logoUrl: string | null }
   langHref: string
   hero: {
@@ -162,6 +169,8 @@ export type StudioData = {
     btn1: string
     btn2: string
     btn2Href: string
+    /** Whether the photos under the hero show on phones. */
+    tilesMobile: boolean
     /** A cover picture behind the hero, with its veil per theme. */
     cover: { url: string; posX: number; posY: number; fit: string; dark: number; light: number } | null
     tiles: (
@@ -532,6 +541,8 @@ export function buildStudioData(data: PortfolioData, lang: Lang, q: string): Stu
     ui,
     ...studioRootVars(settings as unknown as StudioLookInput),
     name,
+    homeHref: `${base}${q}`,
+    workHref: `${base}/projects${q}`,
     monogram: { text: monoText, logoUrl: mediaUrl(brand.brandLogo as never, 'thumb') },
     langHref: `${base}?lang=${lang === 'en' ? 'ar' : 'en'}`,
     hero: {
@@ -541,6 +552,7 @@ export function buildStudioData(data: PortfolioData, lang: Lang, q: string): Stu
       btn1: trim(hero.btn1) || ui.seeWork,
       btn2: trim(hero.btn2),
       btn2Href: hasDigital ? '#products' : '#contact',
+      tilesMobile: style.heroGalleryMobile !== false,
       cover: (() => {
         const url = mediaUrl(brand.heroCover as never)
         if (!url) return null

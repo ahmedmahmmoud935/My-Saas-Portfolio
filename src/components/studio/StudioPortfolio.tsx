@@ -59,7 +59,12 @@ function HeroTitle({ lines }: { lines: string[] }) {
 
 const STAGES = ['st-viral-stage', 'st-learning-stage', 'st-dashboard-stage']
 
-export default function StudioPortfolio({ d }: { d: StudioData }) {
+/**
+ * `page` is 'home' for the portfolio itself, or 'work' for the page with
+ * every project — the same bar and footer around the full work section.
+ */
+export default function StudioPortfolio({ d, page = 'home' }: { d: StudioData; page?: 'home' | 'work' }) {
+  const onHome = page === 'home'
   const isEn = d.lang === 'en'
   const ui = d.ui
   /* Which sections are on the page: a link, a button or a card arrow only
@@ -151,7 +156,7 @@ export default function StudioPortfolio({ d }: { d: StudioData }) {
               )}
             </div>
             {d.hero.tiles.length > 0 && (
-              <div className="st-hero-gallery" aria-label={ui.gallery}>
+              <div className={`st-hero-gallery${d.hero.tilesMobile ? '' : ' st-desktop-only'}`} aria-label={ui.gallery}>
                 {d.hero.tiles.map((t, i) =>
                   t.kind === 'digital' ? (
                     <a key={i} href={t.href} className="st-hero-tile st-digital-tile">
@@ -249,7 +254,7 @@ export default function StudioPortfolio({ d }: { d: StudioData }) {
     ),
     work: (
       <>
-        {d.work && <StudioWork work={d.work} ui={ui} ltr={d.dir === 'ltr'} />}
+        {d.work && <StudioWork work={d.work} ui={ui} ltr={d.dir === 'ltr'} allHref={d.workHref} />}
       </>
     ),
     digital: (
@@ -613,10 +618,26 @@ export default function StudioPortfolio({ d }: { d: StudioData }) {
       <a className="st-skip-link" href={d.work ? '#projects' : '#main'}>
         {ui.seeWork}
       </a>
-      <StudioHeader ui={ui} name={d.name} monogram={d.monogram} links={links} digital={!d.nav && !!d.digital} contact={hasContact} langHref={d.langHref} isEn={isEn} ltr={d.dir === 'ltr'} />
+      <StudioHeader
+        ui={ui}
+        name={d.name}
+        monogram={d.monogram}
+        links={links}
+        digital={!d.nav && !!d.digital}
+        contact={hasContact}
+        langHref={onHome ? d.langHref : `${d.langHref.replace(/\?.*$/, '')}/projects${d.langHref.match(/\?.*$/)?.[0] ?? ''}`}
+        isEn={isEn}
+        ltr={d.dir === 'ltr'}
+        base={onHome ? '' : d.homeHref}
+      />
 
       <main id="main">
-        {d.order.filter(shown).map((id) =>
+        {!onHome && d.work && (
+          <div className="st-work-page">
+            <StudioWork work={d.work} ui={ui} ltr={d.dir === 'ltr'} />
+          </div>
+        )}
+        {onHome && d.order.filter(shown).map((id) =>
           d.sectionBg[id] ? (
             <SectionBg key={id} config={d.sectionBg[id]}>
               {blocks[id]}

@@ -644,3 +644,10 @@ html[data-theme=dark] .st-root .st-hero-veil{opacity:var(--veil-d,.45)}
 .st-root .st-project-cover:hover .st-project-hover,.st-root .st-project-cover:focus-visible .st-project-hover{opacity:1;transform:none}
 .st-root .st-project-open{z-index:1}
 @media (hover:none){.st-root .st-project-hover{opacity:1;transform:none;font-size:13px;padding:30px 12px 12px;padding-inline-end:50px}}
+
+/* The hero's photos, hidden on phones when the client chooses. */
+@media (max-width:600px){.st-root .st-hero-gallery.st-desktop-only{display:none}}
+
+/* The button to every project, under the home page's two rows. */
+.st-root .st-work-all{display:flex;justify-content:center;margin-top:36px}
+.st-root .st-work-page .st-work-section{border-radius:0;min-height:70vh}

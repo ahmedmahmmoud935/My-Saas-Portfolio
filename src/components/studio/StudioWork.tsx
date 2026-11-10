@@ -10,7 +10,18 @@ import type { StudioData, StudioProject, WorkType } from '@/lib/studio-data'
  * project over the page (a <dialog>), with previous / next through what is
  * filtered and a button to the project's full page.
  */
-export default function StudioWork({ work, ui, ltr }: { work: NonNullable<StudioData['work']>; ui: StudioData['ui']; ltr: boolean }) {
+export default function StudioWork({
+  work,
+  ui,
+  ltr,
+  allHref,
+}: {
+  work: NonNullable<StudioData['work']>
+  ui: StudioData['ui']
+  ltr: boolean
+  /** On the home page: two rows only, and a button to every project here. */
+  allHref?: string
+}) {
   const [type, setType] = useState<WorkType>(work.tabs[0]?.id ?? 'designs')
   const [cat, setCat] = useState('all')
   const [open, setOpen] = useState<StudioProject | null>(null)
@@ -22,6 +33,26 @@ export default function StudioWork({ work, ui, ltr }: { work: NonNullable<Studio
     [work.projects, type, cat],
   )
   const cats = work.categories[type]
+
+  /* Two rows on the home page: as many as the grid shows across, twice. The
+     count of columns is read from the grid itself, since it changes with the
+     screen and with the columns chosen in the dashboard. Before it is read,
+     the reference's desktop count stands in, so the page does not jump. */
+  const grid = useRef<HTMLDivElement>(null)
+  const [cols, setCols] = useState(type === 'reels' ? 4 : type === 'videos' ? 2 : 3)
+  useEffect(() => {
+    const el = grid.current
+    if (!el || !allHref) return
+    const read = () => {
+      const n = getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length
+      if (n > 0) setCols(n)
+    }
+    read()
+    const ro = new ResizeObserver(read)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [allHref, type])
+  const shownList = allHref ? list.slice(0, cols * 2) : list
 
   useEffect(() => {
     if (open) dialog.current?.showModal()
@@ -85,6 +116,7 @@ export default function StudioWork({ work, ui, ltr }: { work: NonNullable<Studio
           </div>
         )}
         <div
+          ref={grid}
           className={`st-project-grid st-grid-${type}`}
           aria-live="polite"
           style={
@@ -96,7 +128,7 @@ export default function StudioWork({ work, ui, ltr }: { work: NonNullable<Studio
           }
           data-cols={work.cols[type].d || work.cols[type].t || work.cols[type].m ? '' : undefined}
         >
-          {list.map((p) => {
+          {shownList.map((p) => {
             /* The name shows over the picture on hover, not under it. A
                design opens its own page in one click; a video still plays in
                the window over the page. */
@@ -135,6 +167,14 @@ export default function StudioWork({ work, ui, ltr }: { work: NonNullable<Studio
           })}
         </div>
         {!list.length && <p className="st-empty-state">{ui.empty}</p>}
+        {allHref && list.length > shownList.length && (
+          <div className="st-work-all">
+            <a className="st-button st-primary" href={allHref}>
+              {ui.allWork}
+              <Icon name="arrow-up-right" size={18} />
+            </a>
+          </div>
+        )}
         {work.more && (
           <div className="st-work-footer">
             <a href={work.more.href} target="_blank" rel="noopener noreferrer">

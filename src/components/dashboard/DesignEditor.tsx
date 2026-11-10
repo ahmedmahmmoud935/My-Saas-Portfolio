@@ -506,6 +506,14 @@ function GeneralPanel({
                     options={opts(tr, [['on', 'تظهر', 'Shown'], ['off', 'مخفية', 'Hidden']])}
                     onChange={(v) => setStyle({ heroGallery: v === 'on' })}
                   />
+                  {f.style.heroGallery !== false && (
+                    <Opt
+                      label={tr('الصور دي على الموبايل', 'Those photos on phones')}
+                      value={f.style.heroGalleryMobile === false ? 'off' : 'on'}
+                      options={opts(tr, [['on', 'تظهر', 'Shown'], ['off', 'مخفية', 'Hidden']])}
+                      onChange={(v) => setStyle({ heroGalleryMobile: v === 'on' })}
+                    />
+                  )}
                 </>
               )}
             </div>

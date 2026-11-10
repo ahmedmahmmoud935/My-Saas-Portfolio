@@ -816,6 +816,7 @@ export interface SiteSetting {
      */
     skin?: string | null;
     heroGallery?: boolean | null;
+    heroGalleryMobile?: boolean | null;
     direction?: ('auto' | 'rtl' | 'ltr') | null;
     cursor?: ('default' | 'dot-ring') | null;
     anim?: ('fade-up' | 'fade' | 'none') | null;
@@ -1788,6 +1789,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         fontLatin?: T;
         skin?: T;
         heroGallery?: T;
+        heroGalleryMobile?: T;
         direction?: T;
         cursor?: T;
         anim?: T;

@@ -21,6 +21,7 @@ export default function StudioHeader({
   langHref,
   isEn,
   ltr,
+  base = '',
 }: {
   ui: StudioUI
   name: string
@@ -32,6 +33,8 @@ export default function StudioHeader({
   langHref: string
   isEn: boolean
   ltr: boolean
+  /** Where the section links point: '' on the home page, its address elsewhere. */
+  base?: string
 }) {
   const [dark, setDark] = useState(false)
   const [open, setOpen] = useState(false)
@@ -69,7 +72,7 @@ export default function StudioHeader({
     <>
       <header className="st-site-header">
         <div className="st-shell st-header-inner">
-          <a href="#top" className="st-brand" aria-label={name}>
+          <a href={base || '#top'} className="st-brand" aria-label={name}>
             <Monogram monogram={monogram} />
             <span className="st-brand-caption">{name}</span>
           </a>
@@ -77,13 +80,13 @@ export default function StudioHeader({
             {links
               .filter((l) => l.id !== 'contact')
               .map((l) => (
-                <a key={l.id} href={`#${l.id}`}>
+                <a key={l.id} href={`${base}#${l.id}`}>
                   {l.label}
                   {l.id === 'products' && <Icon name="code-xml" size={16} />}
                 </a>
               ))}
             {digital && (
-              <a href="#products">
+              <a href={`${base}#products`}>
                 {ui.nav.digital}
                 <Icon name="code-xml" size={16} />
               </a>
@@ -97,7 +100,7 @@ export default function StudioHeader({
               {ui.langShort}
             </a>
             {contact && (
-              <a className="st-button st-small st-primary st-header-cta" href="#contact">
+              <a className="st-button st-small st-primary st-header-cta" href={`${base}#contact`}>
                 {ui.talk}
                 <Icon name="arrow-up-right" size={16} />
               </a>
@@ -117,13 +120,13 @@ export default function StudioHeader({
       {open && (
         <nav className="st-mobile-nav" id="st-mobile-nav">
           {links.map((l) => (
-            <a key={l.id} href={`#${l.id}`} onClick={() => setOpen(false)}>
+            <a key={l.id} href={`${base}#${l.id}`} onClick={() => setOpen(false)}>
               {l.label}
               <Icon name={Arrow} />
             </a>
           ))}
           {digital && (
-            <a href="#products" onClick={() => setOpen(false)}>
+            <a href={`${base}#products`} onClick={() => setOpen(false)}>
               {ui.nav.digitalLong}
               <Icon name="code-xml" />
             </a>
