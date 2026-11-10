@@ -96,9 +96,12 @@ export default function StudioWork({ work, ui, ltr }: { work: NonNullable<Studio
           }
           data-cols={work.cols[type].d || work.cols[type].t || work.cols[type].m ? '' : undefined}
         >
-          {list.map((p) => (
-            <article className="st-project-card" key={p.id}>
-              <button className="st-project-cover" aria-label={`${ui.view}: ${p.title}`} onClick={show(p)}>
+          {list.map((p) => {
+            /* The name shows over the picture on hover, not under it. A
+               design opens its own page in one click; a video still plays in
+               the window over the page. */
+            const inner = (
+              <>
                 {p.coverUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={p.coverUrl} alt={p.title} loading="lazy" width={600} height={600} />
@@ -108,18 +111,28 @@ export default function StudioWork({ work, ui, ltr }: { work: NonNullable<Studio
                     <Icon name="play" size={22} fill="currentColor" />
                   </span>
                 )}
+                <span className="st-project-hover">
+                  <span>{p.title}</span>
+                </span>
                 <span className="st-project-open">
                   <Icon name="arrow-up-right" size={23} />
                 </span>
-              </button>
-              <div className="st-project-caption">
-                <button onClick={show(p)}>
-                  {p.title}
-                  <Icon name="arrow-up-right" size={15} />
-                </button>
-              </div>
-            </article>
-          ))}
+              </>
+            )
+            return (
+              <article className="st-project-card" key={p.id}>
+                {p.type === 'designs' ? (
+                  <a className="st-project-cover" href={p.pageHref} aria-label={`${ui.view}: ${p.title}`}>
+                    {inner}
+                  </a>
+                ) : (
+                  <button className="st-project-cover" aria-label={`${ui.view}: ${p.title}`} onClick={show(p)}>
+                    {inner}
+                  </button>
+                )}
+              </article>
+            )
+          })}
         </div>
         {!list.length && <p className="st-empty-state">{ui.empty}</p>}
         {work.more && (
