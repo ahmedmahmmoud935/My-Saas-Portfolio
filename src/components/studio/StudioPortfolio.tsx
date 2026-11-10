@@ -3,6 +3,7 @@ import { Icon } from './icons'
 import StudioHeader, { Monogram } from './StudioHeader'
 import StudioWork from './StudioWork'
 import StudioContactForm from './StudioContactForm'
+import StudioReviewText from './StudioReviewText'
 import type { Heading, StudioData } from '@/lib/studio-data'
 import '@/app/(frontend)/studio.css'
 
@@ -303,26 +304,13 @@ export default function StudioPortfolio({ d }: { d: StudioData }) {
         {d.reviews && (
           <section className="st-reviews-section st-section" id="testimonials">
             <div className="st-shell">
-              <div className="st-split-heading">
-                <div className="st-section-title">
-                  <h2>{d.reviews.title}</h2>
-                  {d.reviews.subtitle && <p className="st-section-subtitle">{d.reviews.subtitle}</p>}
-                </div>
-                <a className="st-button st-outline st-small" href={d.reviews.addHref} target="_blank" rel="noopener noreferrer">
-                  {ui.addReview}
-                  <Icon name="arrow-up-right" />
-                </a>
+              <div className="st-section-title st-reviews-heading">
+                <h2>{d.reviews.title}</h2>
+                {d.reviews.subtitle && <p className="st-section-subtitle">{d.reviews.subtitle}</p>}
               </div>
               <div className="st-review-grid">
                 {d.reviews.items.map((r) => (
                   <article className="st-review-card" key={r.id}>
-                    <div className="st-review-stars">
-                      {Array.from({ length: r.rating }, (_, i) => (
-                        <Icon key={i} name="star" size={18} fill="currentColor" />
-                      ))}
-                      <Icon name="quote" />
-                    </div>
-                    <p dir="auto">{r.text}</p>
                     <div className="st-review-person">
                       {r.avatar ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -334,9 +322,22 @@ export default function StudioPortfolio({ d }: { d: StudioData }) {
                         <strong>{r.name}</strong>
                         {r.role && <span>{r.role}</span>}
                       </div>
+                      <Icon name="quote" className="st-review-quote" />
                     </div>
+                    <div className="st-review-stars">
+                      {Array.from({ length: r.rating }, (_, i) => (
+                        <Icon key={i} name="star" size={18} fill="currentColor" />
+                      ))}
+                    </div>
+                    <StudioReviewText text={r.text} more={ui.readMore} less={ui.readLess} />
                   </article>
                 ))}
+              </div>
+              <div className="st-reviews-foot">
+                <a className="st-button st-outline st-small" href={d.reviews.addHref} target="_blank" rel="noopener noreferrer">
+                  {ui.addReview}
+                  <Icon name="arrow-up-right" />
+                </a>
               </div>
             </div>
           </section>

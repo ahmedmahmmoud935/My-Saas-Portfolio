@@ -509,3 +509,26 @@ html[data-theme=dark] .st-root .st-creative-strip{color:#eee8df;background:#1417
    here it is this box's, so it has to be its own stacking context or the
    shapes drawn behind things (the arch behind the About photo) land under it. */
 .st-root{isolation:isolate}
+
+/* ── Reviews: heading centred, the person first, long reviews cut with
+   "read more", the add button under the cards, a slider on phones. ───── */
+.st-root .st-reviews-heading{text-align:center;margin-inline:auto}
+.st-root .st-review-grid{align-items:start}
+.st-root .st-review-card{padding:26px 28px;gap:0}
+.st-root .st-review-card .st-review-person{border-top:0;border-bottom:1px solid var(--line);padding:0 0 16px;margin-bottom:18px}
+.st-root .st-review-quote{color:#bcb5a7;margin-inline-start:auto;width:22px;height:22px}
+.st-root .st-review-card .st-review-stars{margin-bottom:12px}
+.st-root .st-review-card>p{flex:none;margin:0}
+.st-root .st-review-clamp{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.st-root .st-review-more{color:var(--accent);font-size:14px;font-weight:600;padding:8px 0 0;align-self:flex-start}
+.st-root .st-review-more:hover{text-decoration:underline;text-underline-offset:4px}
+.st-root .st-reviews-foot{display:flex;justify-content:center;margin-top:34px}
+@media (max-width:800px){
+  .st-root .st-review-grid{display:flex;grid-template-columns:none;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin-inline:-20px;padding:2px 20px 6px;scroll-padding-inline:20px}
+  .st-root .st-review-grid::-webkit-scrollbar{display:none}
+  .st-root .st-review-card{flex:0 0 82%;scroll-snap-align:start}
+}
+@media (max-width:600px){
+  .st-root .st-review-grid{margin-inline:-18px;padding-inline:18px;scroll-padding-inline:18px}
+  .st-root .st-review-card{flex-basis:86%;padding:22px}
+}
