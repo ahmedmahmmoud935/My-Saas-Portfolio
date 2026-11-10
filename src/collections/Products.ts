@@ -41,6 +41,16 @@ export const Products: CollectionConfig = {
     // The live site's own share picture, found from the link (see readPreview).
     { name: 'previewImage', type: 'text', admin: { readOnly: true } },
     { name: 'btnLabel', type: 'text', localized: true },
+    { name: 'detailsLabel', type: 'text', localized: true, admin: { description: 'The "Details" summary, renamed.' } },
+    /* How the card's picture is drawn in the studio template: the uploaded
+       image, or one of the reference's drawn previews — a website (the brand,
+       a line and a grid of the latest designs), a landing page (the brand, a
+       headline, a button and the image), or a demo dashboard. */
+    { name: 'preview', type: 'text', defaultValue: 'image', admin: { description: 'image | site | landing | chart' } },
+    { name: 'mockBrand', type: 'text' },
+    { name: 'mockTagline', type: 'text', localized: true },
+    { name: 'mockHeadline', type: 'textarea', localized: true },
+    { name: 'mockCta', type: 'text', localized: true },
     { name: 'sortOrder', type: 'number', defaultValue: 0, admin: { position: 'sidebar' } },
   ],
 }

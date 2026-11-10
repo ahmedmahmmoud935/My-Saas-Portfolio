@@ -212,7 +212,21 @@ export default async function ContentPage() {
     const desc = loc(p.description)
     const details = loc(p.details)
     const btn = loc(p.btnLabel)
+    const dl = loc(p.detailsLabel)
+    const tg = loc(p.mockTagline)
+    const hl = loc(p.mockHeadline)
+    const cta = loc(p.mockCta)
     return {
+      detailsLabelAr: dl.ar,
+      detailsLabelEn: dl.en,
+      preview: p.preview || 'image',
+      mockBrand: p.mockBrand ?? '',
+      mockTaglineAr: tg.ar,
+      mockTaglineEn: tg.en,
+      mockHeadlineAr: hl.ar,
+      mockHeadlineEn: hl.en,
+      mockCtaAr: cta.ar,
+      mockCtaEn: cta.en,
       id: p.id,
       titleAr: title.ar,
       titleEn: title.en,

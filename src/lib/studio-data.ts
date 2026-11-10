@@ -56,7 +56,8 @@ export const STUDIO_UI = {
     langShort: 'EN',
     empty: 'لا توجد مشاريع في هذا التصنيف.',
     more: 'المزيد على Behance',
-    previewLabel: 'معاينة الواجهة',
+    previewLabel: 'معاينة تصميمية للواجهة',
+    previewIdea: 'معاينة تصميمية لفكرة الصفحة',
     details: 'التفاصيل',
     visit: 'زور الموقع',
     navLabel: 'التنقل الرئيسي',
@@ -102,7 +103,8 @@ export const STUDIO_UI = {
     langShort: 'عربي',
     empty: 'No projects in this category.',
     more: 'More on Behance',
-    previewLabel: 'Interface preview',
+    previewLabel: 'Illustrative interface preview',
+    previewIdea: 'Illustrative layout of the design concept',
     details: 'Details',
     visit: 'Visit the site',
     navLabel: 'Main navigation',
@@ -180,6 +182,9 @@ export type StudioData = {
       url: string
       btn: string
       host: string
+      detailsLabel: string
+      preview: 'image' | 'site' | 'landing' | 'chart'
+      mock: { brand: string; tagline: string; headline: string[]; cta: string; imgs: string[] }
     }[]
     endText: string
     endBtn: string
@@ -276,6 +281,20 @@ function toolTile(name: string) {
 }
 
 const SERVICE_ICONS = ['palette', 'clapperboard', 'layers', 'monitor', 'layout-dashboard', 'sparkles']
+/* Each service draws the icon its name asks for, as the reference's do;
+   a name that matches none takes the next in the reference's order. */
+const SERVICE_ICON_RULES: [RegExp, string][] = [
+  [/ذكاء|\bai\b|artificial/i, 'sparkles'],
+  [/نظام|أنظمة|انظمة|لوحة|لوحات|dashboard|system/i, 'layout-dashboard'],
+  [/موقع|مواقع|ويب|web|site/i, 'monitor'],
+  [/فيديو|مونتاج|ريلز|video|edit|reel/i, 'clapperboard'],
+  [/حمل|محتوى|موشن|campaign|content|motion/i, 'layers'],
+  [/تصميم|هوية|جرافيك|design|brand|graphic|ui|ux/i, 'palette'],
+]
+function serviceIcon(title: string, i: number) {
+  for (const [re, icon] of SERVICE_ICON_RULES) if (re.test(title)) return icon
+  return SERVICE_ICONS[i % SERVICE_ICONS.length]
+}
 
 /* The reference's own surfaces for its palette. With other colours they are
    worked out from the client's, in the same proportions. */
@@ -410,8 +429,20 @@ export function buildStudioData(data: PortfolioData, lang: Lang, q: string): Stu
       url,
       btn: trim(p.btnLabel) || ui.visit,
       host: url ? host(url) : '',
+      detailsLabel: trim(p.detailsLabel) || ui.details,
+      preview: (['site', 'landing', 'chart'].includes(String(p.preview)) ? p.preview : 'image') as 'image' | 'site' | 'landing' | 'chart',
+      mock: {
+        brand: trim(p.mockBrand),
+        tagline: trim(p.mockTagline),
+        headline: lines(p.mockHeadline),
+        cta: trim(p.mockCta),
+        imgs: [] as string[],
+      },
     }
   })
+
+  // A drawn website shows the client's latest four designs as its grid.
+  for (const p of prods) if (p.preview === 'site') p.mock.imgs = designs.slice(0, 4).map((d) => d.coverUrl)
 
   // ── Hero ───────────────────────────────────────────────────────────────
   const hero = (c.hero ?? {}) as Record<string, unknown>
@@ -459,7 +490,7 @@ export function buildStudioData(data: PortfolioData, lang: Lang, q: string): Stu
       title: trim(it.title),
       desc: trim(it.description),
       iconUrl: mediaUrl(it.icon as never, 'thumb'),
-      icon: SERVICE_ICONS[i % SERVICE_ICONS.length],
+      icon: serviceIcon(trim(it.title), i),
     }))
     .filter((s) => s.title)
 

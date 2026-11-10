@@ -4,6 +4,7 @@ import StudioHeader, { Monogram } from './StudioHeader'
 import StudioWork from './StudioWork'
 import StudioContactForm from './StudioContactForm'
 import StudioReviewText from './StudioReviewText'
+import StudioChart from './StudioChart'
 import type { Heading, StudioData } from '@/lib/studio-data'
 import '@/app/(frontend)/studio.css'
 
@@ -210,20 +211,7 @@ export default function StudioPortfolio({ d }: { d: StudioData }) {
 
               {feature && (
                 <article className="st-digital-feature">
-                  <div className={`st-product-stage ${STAGES[0]}`}>
-                    <div className="st-browser-frame">
-                      <div className="st-browser-bar">
-                        <span aria-hidden="true">● ● ●</span>
-                        <strong dir="auto">{feature.host || feature.title}</strong>
-                        <Icon name="code-xml" />
-                      </div>
-                      {feature.image && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img className="st-stage-shot" src={feature.image} alt={feature.title} loading="lazy" />
-                      )}
-                    </div>
-                    <span className="st-preview-label">{ui.previewLabel}</span>
-                  </div>
+                  <ProductStage p={feature} i={0} ui={ui} isEn={isEn} />
                   <ProductCopy p={feature} ui={ui} feature />
                 </article>
               )}
@@ -232,20 +220,7 @@ export default function StudioPortfolio({ d }: { d: StudioData }) {
                 <div className="st-digital-pair">
                   {pair.map((p, i) => (
                     <article className="st-digital-project" key={p.id}>
-                      <div className={`st-product-stage ${STAGES[(i + 1) % STAGES.length]}`}>
-                        <div className="st-browser-frame st-tilt">
-                          <div className="st-browser-bar">
-                            <span aria-hidden="true">● ● ●</span>
-                            <strong dir="auto">{p.host || p.title}</strong>
-                            <Icon name="code-xml" />
-                          </div>
-                          {p.image && (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img className="st-stage-shot" src={p.image} alt={p.title} loading="lazy" />
-                          )}
-                        </div>
-                        <span className="st-preview-label">{ui.previewLabel}</span>
-                      </div>
+                      <ProductStage p={p} i={i + 1} ui={ui} isEn={isEn} />
                       <ProductCopy p={p} ui={ui} />
                     </article>
                   ))}
@@ -532,11 +507,98 @@ export default function StudioPortfolio({ d }: { d: StudioData }) {
   )
 }
 
-function ProductCopy({ p, ui, feature }: { p: NonNullable<StudioData['digital']>['items'][number]; ui: StudioData['ui']; feature?: boolean }) {
+type Product = NonNullable<StudioData['digital']>['items'][number]
+
+/** A product's picture, drawn the way the reference draws its three. */
+function ProductStage({ p, i, ui, isEn }: { p: Product; i: number; ui: StudioData['ui']; isEn: boolean }) {
+  const headline = p.mock.headline.join('\n')
+  if (p.preview === 'chart') {
+    return (
+      <div className="st-product-stage st-dashboard-stage">
+        <StudioChart title={p.mock.brand} isEn={isEn} />
+      </div>
+    )
+  }
+  if (p.preview === 'landing') {
+    return (
+      <div className="st-product-stage st-learning-stage">
+        <div className="st-learning-preview">
+          <div className="st-learning-nav">
+            <strong dir="auto">{p.mock.brand || p.title}</strong>
+            {p.mock.tagline && <span>{p.mock.tagline}</span>}
+          </div>
+          <div className="st-learning-content">
+            <div>
+              {headline && <h3>{headline}</h3>}
+              {p.mock.cta && (
+                <span className="st-preview-cta">
+                  {p.mock.cta}
+                  <Icon name="arrow-up-right" size={15} />
+                </span>
+              )}
+            </div>
+            {p.image && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={p.image} alt={p.title} loading="lazy" />
+            )}
+          </div>
+        </div>
+        <span className="st-preview-label">{ui.previewIdea}</span>
+      </div>
+    )
+  }
+  if (p.preview === 'site') {
+    return (
+      <div className="st-product-stage st-viral-stage">
+        <div className="st-browser-frame">
+          <div className="st-browser-bar">
+            <span aria-hidden="true">● ● ●</span>
+            <strong dir="auto">{p.title}</strong>
+            <Icon name="code-xml" />
+          </div>
+          <div className="st-viral-preview">
+            <div className="st-viral-preview-head">
+              <strong dir="ltr">{p.mock.brand || p.host || p.title}</strong>
+              {p.mock.tagline && <span>{p.mock.tagline}</span>}
+            </div>
+            {headline && <h3>{headline}</h3>}
+            {p.mock.imgs.length > 0 && (
+              <div className="st-preview-image-grid">
+                {p.mock.imgs.map((src, j) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={j} src={src} alt="" loading="lazy" />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        <span className="st-preview-label">{ui.previewLabel}</span>
+      </div>
+    )
+  }
+  return (
+    <div className={`st-product-stage ${STAGES[i % STAGES.length]}`}>
+      <div className={`st-browser-frame${i ? ' st-tilt' : ''}`}>
+        <div className="st-browser-bar">
+          <span aria-hidden="true">● ● ●</span>
+          <strong dir="auto">{p.host || p.title}</strong>
+          <Icon name="code-xml" />
+        </div>
+        {p.image && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img className="st-stage-shot" src={p.image} alt={p.title} loading="lazy" />
+        )}
+      </div>
+      <span className="st-preview-label">{ui.previewLabel}</span>
+    </div>
+  )
+}
+
+function ProductCopy({ p, ui, feature }: { p: Product; ui: StudioData['ui']; feature?: boolean }) {
   const detailLines = p.details.split(/\r?\n/).map((l) => l.trim()).filter(Boolean)
   return (
     <div className="st-digital-copy">
-      {p.tag && <span className="st-project-status">{p.tag}</span>}
+      {p.tag && <span className={`st-project-status${p.preview === 'chart' ? ' st-concept' : ''}`}>{p.tag}</span>}
       {/* A Latin name sets large and left-to-right with its arrow at the far
           end, as the reference's product name does. */}
       <h3 dir={/^[\x00-\x7F]+$/.test(p.title) ? 'ltr' : undefined}>
@@ -555,7 +617,7 @@ function ProductCopy({ p, ui, feature }: { p: NonNullable<StudioData['digital']>
       ) : p.details ? (
         <details>
           <summary>
-            {ui.details}
+            {p.detailsLabel}
             <Icon name="arrow-down" size={18} />
           </summary>
           <p>{p.details}</p>
