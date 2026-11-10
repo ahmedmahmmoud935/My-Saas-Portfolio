@@ -43,6 +43,7 @@ async function addressesOf(payload: Payload, tenantId: number): Promise<string[]
   ])
   const paths = [
     '/',
+    '/projects',
     '/articles',
     ...projects.docs.map((p) => `/project/${p.id}`),
     ...articles.docs.map((a) => (a as { slug?: string }).slug).filter(Boolean).map((s) => `/articles/${s}`),
