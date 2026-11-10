@@ -10,7 +10,7 @@ import type { StudioData, StudioProject, WorkType } from '@/lib/studio-data'
  * project over the page (a <dialog>), with previous / next through what is
  * filtered and a button to the project's full page.
  */
-export default function StudioWork({ work, ui, isEn }: { work: NonNullable<StudioData['work']>; ui: StudioData['ui']; isEn: boolean }) {
+export default function StudioWork({ work, ui, ltr }: { work: NonNullable<StudioData['work']>; ui: StudioData['ui']; ltr: boolean }) {
   const [type, setType] = useState<WorkType>(work.tabs[0]?.id ?? 'designs')
   const [cat, setCat] = useState('all')
   const [open, setOpen] = useState<StudioProject | null>(null)
@@ -48,7 +48,7 @@ export default function StudioWork({ work, ui, isEn }: { work: NonNullable<Studi
   }
 
   return (
-    <section className="st-work-section st-section" id="work">
+    <section className="st-work-section st-section" id="projects">
       <div className="st-shell">
         <div className="st-work-heading">
           <div className="st-section-title">
@@ -84,7 +84,18 @@ export default function StudioWork({ work, ui, isEn }: { work: NonNullable<Studi
             ))}
           </div>
         )}
-        <div className={`st-project-grid st-grid-${type}`} aria-live="polite">
+        <div
+          className={`st-project-grid st-grid-${type}`}
+          aria-live="polite"
+          style={
+            {
+              ...(work.cols[type].d ? { '--c-d': work.cols[type].d } : {}),
+              ...(work.cols[type].t ? { '--c-t': work.cols[type].t } : {}),
+              ...(work.cols[type].m ? { '--c-m': work.cols[type].m } : {}),
+            } as React.CSSProperties
+          }
+          data-cols={work.cols[type].d || work.cols[type].t || work.cols[type].m ? '' : undefined}
+        >
           {list.map((p) => (
             <article className="st-project-card" key={p.id}>
               <button className="st-project-cover" aria-label={`${ui.view}: ${p.title}`} onClick={show(p)}>
@@ -146,20 +157,29 @@ export default function StudioWork({ work, ui, isEn }: { work: NonNullable<Studi
             <div className="st-dialog-body">
               <h2 id="st-project-title">{open.title}</h2>
               <div className="st-dialog-actions">
-                <a className="st-button st-primary st-small" href={open.pageHref}>
-                  {ui.projectSource}
-                  <Icon name="external-link" size={15} />
-                </a>
+                {/* A video's own page carries no player of its own, so the
+                    button goes to the video; a design goes to its page. */}
+                {open.type !== 'designs' && open.videoHref ? (
+                  <a className="st-button st-primary st-small" href={open.videoHref} target="_blank" rel="noopener noreferrer">
+                    {ui.videoSource}
+                    <Icon name="external-link" size={15} />
+                  </a>
+                ) : (
+                  <a className="st-button st-primary st-small" href={open.pageHref}>
+                    {ui.projectSource}
+                    <Icon name="external-link" size={15} />
+                  </a>
+                )}
                 {list.length > 1 && (
                   <div className="st-dialog-nav">
                     <button className="st-icon-button" aria-label={ui.previous} onClick={() => step(-1)}>
-                      <Icon name={isEn ? 'arrow-left' : 'arrow-right'} size={18} />
+                      <Icon name={ltr ? 'arrow-left' : 'arrow-right'} size={18} />
                     </button>
                     <span dir="ltr">
                       {list.findIndex((p) => p.id === open.id) + 1} / {list.length}
                     </span>
                     <button className="st-icon-button" aria-label={ui.next} onClick={() => step(1)}>
-                      <Icon name={isEn ? 'arrow-right' : 'arrow-left'} size={18} />
+                      <Icon name={ltr ? 'arrow-right' : 'arrow-left'} size={18} />
                     </button>
                   </div>
                 )}

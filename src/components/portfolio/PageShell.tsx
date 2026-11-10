@@ -59,6 +59,16 @@ export default function PageShell({
       data-btn={comp.button || 'rounded'}
       data-skin={st.skin || 'classic'}
     >
+      {/* A studio site opens light, as its home page does; without this a
+          visitor going from the home page to a project switched to dark. A
+          theme the visitor picked still wins. */}
+      {st.skin === 'studio' && (
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{if(!localStorage.getItem('pf-theme'))document.documentElement.setAttribute('data-theme','light')}catch(e){}})();`,
+          }}
+        />
+      )}
       <Analytics id={settings?.seoTools?.analyticsId} />
       {bgDark && (
         <div

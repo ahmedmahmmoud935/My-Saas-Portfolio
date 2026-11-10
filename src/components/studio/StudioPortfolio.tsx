@@ -5,7 +5,8 @@ import StudioWork from './StudioWork'
 import StudioContactForm from './StudioContactForm'
 import StudioReviewText from './StudioReviewText'
 import StudioChart from './StudioChart'
-import type { Heading, StudioData } from '@/lib/studio-data'
+import SectionBg from '@/components/portfolio/SectionBg'
+import type { Heading, StudioData, StudioSection } from '@/lib/studio-data'
 import '@/app/(frontend)/studio.css'
 
 /**
@@ -60,26 +61,66 @@ const STAGES = ['st-viral-stage', 'st-learning-stage', 'st-dashboard-stage']
 export default function StudioPortfolio({ d }: { d: StudioData }) {
   const isEn = d.lang === 'en'
   const ui = d.ui
-  const links = [
-    d.work && { id: 'work', label: ui.nav.work },
+  /* Which sections are on the page: a link, a button or a card arrow only
+     points at a section that is there. */
+  const present = new Set<string>(
+    [
+      d.order.includes('hero') && 'hero',
+      d.about && 'about',
+      d.work && 'projects',
+      d.digital && 'products',
+      d.services && 'expertise',
+      d.reviews && 'testimonials',
+      d.team && 'team',
+      d.clients && 'logos',
+      d.clients && d.clients.stats.length > 0 && 'achievements',
+      d.experience && 'experience',
+      d.tools && 'tools',
+      d.education && 'education',
+      d.skills && 'skills',
+      d.contact && 'contact',
+    ].filter((x): x is string => !!x),
+  )
+  const hasContact = present.has('contact')
+  // A section with nothing to show is left out, background and all.
+  const SHOWN: Record<StudioSection, unknown> = {
+    hero: true, about: d.about, work: d.work, digital: d.digital, services: d.services, reviews: d.reviews,
+    team: d.team, clients: d.clients, experience: d.experience, tools: d.tools, education: d.education,
+    skills: d.skills, contact: d.contact,
+  }
+  const shown = (id: StudioSection) => !!SHOWN[id]
+  const defaultLinks = [
+    d.work && { id: 'projects', label: ui.nav.work },
     d.about && { id: 'about', label: ui.nav.about },
-    d.services && { id: 'services', label: ui.nav.services },
+    d.services && { id: 'expertise', label: ui.nav.services },
     d.experience && { id: 'experience', label: ui.nav.experience },
     d.contact && { id: 'contact', label: ui.nav.contact },
   ].filter((l): l is { id: string; label: string } => !!l)
+  // The bar editor's own links and labels, when the client has set them.
+  const links = d.nav ? d.nav.filter((l) => present.has(l.id)) : defaultLinks
 
   const [feature, ...pair] = d.digital?.items ?? []
 
-  return (
-    <div className={`st-root st-portfolio st-lang-${d.lang}`} style={d.vars as React.CSSProperties} dir={isEn ? 'ltr' : 'rtl'} lang={d.lang}>
-      <a className="st-skip-link" href="#work">
-        {ui.seeWork}
-      </a>
-      <StudioHeader ui={ui} name={d.name} monogram={d.monogram} links={links} digital={!!d.digital} langHref={d.langHref} isEn={isEn} />
-
-      <main>
-        {/* ── Hero ─────────────────────────────────────────────────────── */}
-        <section className="st-hero" id="home">
+  /* Each section, so they can be laid out in the client's own order. */
+  const blocks: Record<StudioSection, React.ReactNode> = {
+    hero: (
+      <>
+        <section className={`st-hero${d.hero.cover ? ' st-has-cover' : ''}`} id="hero">
+          {d.hero.cover && (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                className="st-hero-cover"
+                src={d.hero.cover.url}
+                alt=""
+                style={{ objectFit: d.hero.cover.fit as React.CSSProperties['objectFit'], objectPosition: `${d.hero.cover.posX}% ${d.hero.cover.posY}%` }}
+              />
+              <span
+                className="st-hero-veil"
+                style={{ ['--veil-d' as string]: d.hero.cover.dark / 100, ['--veil-l' as string]: d.hero.cover.light / 100 } as React.CSSProperties}
+              />
+            </>
+          )}
           <div className="st-hero-content st-shell">
             {d.hero.kicker && (
               <div className="st-creator-label">
@@ -95,14 +136,16 @@ export default function StudioPortfolio({ d }: { d: StudioData }) {
             </h1>
             {d.hero.desc && <p className="st-hero-description">{d.hero.desc}</p>}
             <div className="st-hero-buttons">
-              <a href="#work" className="st-button st-primary">
-                {d.hero.btn1}
-                <Icon name="arrow-down" size={18} />
-              </a>
-              {d.hero.btn2 && (
+              {d.work && (
+                <a href="#projects" className="st-button st-primary">
+                  {d.hero.btn1}
+                  <Icon name="arrow-down" size={18} />
+                </a>
+              )}
+              {d.hero.btn2 && present.has(d.hero.btn2Href.slice(1)) && (
                 <a href={d.hero.btn2Href} className="st-button st-outline">
                   {d.hero.btn2}
-                  <Icon name={d.hero.btn2Href === '#digital' ? 'code-xml' : 'arrow-up-right'} size={19} />
+                  <Icon name={d.hero.btn2Href === '#products' ? 'code-xml' : 'arrow-up-right'} size={19} />
                 </a>
               )}
             </div>
@@ -155,14 +198,23 @@ export default function StudioPortfolio({ d }: { d: StudioData }) {
             ))}
           </div>
         )}
-
-        {/* ── About ────────────────────────────────────────────────────── */}
+      </>
+    ),
+    about: (
+      <>
         {d.about && (
           <section className="st-about-section st-shell st-section" id="about">
             {d.about.photo && (
               <div className="st-about-photo">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={d.about.photo} alt={d.name} width={460} height={550} loading="lazy" />
+                <img
+                  src={d.about.photo}
+                  alt={d.name}
+                  width={460}
+                  height={550}
+                  loading="lazy"
+                  style={{ objectFit: d.about.frame.fit as React.CSSProperties['objectFit'], objectPosition: `${d.about.frame.posX}% ${d.about.frame.posY}%` }}
+                />
                 {d.about.stat && (
                   <div className="st-photo-note">
                     <span dir="ltr">
@@ -192,12 +244,17 @@ export default function StudioPortfolio({ d }: { d: StudioData }) {
             </div>
           </section>
         )}
-
-        {d.work && <StudioWork work={d.work} ui={ui} isEn={isEn} />}
-
-        {/* ── Beyond the image ─────────────────────────────────────────── */}
+      </>
+    ),
+    work: (
+      <>
+        {d.work && <StudioWork work={d.work} ui={ui} ltr={d.dir === 'ltr'} />}
+      </>
+    ),
+    digital: (
+      <>
         {d.digital && (
-          <section className="st-digital-section st-section" id="digital">
+          <section className="st-digital-section st-section" id="products">
             <div className="st-shell">
               <div className="st-digital-heading">
                 <div className="st-digital-symbol" aria-hidden="true">
@@ -230,7 +287,7 @@ export default function StudioPortfolio({ d }: { d: StudioData }) {
               {(d.digital.endText || d.digital.endBtn) && (
                 <div className="st-digital-end">
                   {d.digital.endText && <p>{d.digital.endText}</p>}
-                  {d.digital.endBtn && (
+                  {d.digital.endBtn && hasContact && (
                     <a href="#contact" className="st-button st-outline">
                       {d.digital.endBtn}
                       <Icon name="arrow-up-right" />
@@ -241,10 +298,12 @@ export default function StudioPortfolio({ d }: { d: StudioData }) {
             </div>
           </section>
         )}
-
-        {/* ── Services ─────────────────────────────────────────────────── */}
+      </>
+    ),
+    services: (
+      <>
         {d.services && (
-          <section className="st-services-section st-shell st-section" id="services">
+          <section className="st-services-section st-shell st-section" id="expertise">
             <div className="st-services-heading">
               <div>
                 <h2>
@@ -266,16 +325,20 @@ export default function StudioPortfolio({ d }: { d: StudioData }) {
                   </div>
                   <h3>{s.title}</h3>
                   {s.desc && <p>{s.desc}</p>}
-                  <a href="#contact" aria-label={`${ui.discuss}: ${s.title}`}>
-                    <Icon name={isEn ? 'arrow-right' : 'arrow-left'} />
-                  </a>
+                  {hasContact && (
+                    <a href="#contact" aria-label={`${ui.discuss}: ${s.title}`}>
+                      <Icon name={d.dir === 'ltr' ? 'arrow-right' : 'arrow-left'} />
+                    </a>
+                  )}
                 </article>
               ))}
             </div>
           </section>
         )}
-
-        {/* ── Reviews ──────────────────────────────────────────────────── */}
+      </>
+    ),
+    reviews: (
+      <>
         {d.reviews && (
           <section className="st-reviews-section st-section" id="testimonials">
             <div className="st-shell">
@@ -317,10 +380,12 @@ export default function StudioPortfolio({ d }: { d: StudioData }) {
             </div>
           </section>
         )}
-
-        {/* ── Clients and numbers ──────────────────────────────────────── */}
+      </>
+    ),
+    clients: (
+      <>
         {d.clients && (
-          <section className="st-clients-section st-shell st-section" id="clients">
+          <section className="st-clients-section st-shell st-section" id="logos">
             <div className="st-section-title">
               <h2>{d.clients.title}</h2>
             </div>
@@ -342,7 +407,7 @@ export default function StudioPortfolio({ d }: { d: StudioData }) {
               </div>
             )}
             {d.clients.stats.length > 0 && (
-              <div className="st-stats-grid">
+              <div className="st-stats-grid" id="achievements">
                 {d.clients.stats.map((s, i) => (
                   <div className="st-stat" key={i}>
                     <strong dir="ltr">{s.value}</strong>
@@ -353,8 +418,10 @@ export default function StudioPortfolio({ d }: { d: StudioData }) {
             )}
           </section>
         )}
-
-        {/* ── Experience ───────────────────────────────────────────────── */}
+      </>
+    ),
+    experience: (
+      <>
         {d.experience && (
           <section className="st-experience-section st-section" id="experience">
             <div className="st-shell st-experience-grid">
@@ -380,8 +447,10 @@ export default function StudioPortfolio({ d }: { d: StudioData }) {
             </div>
           </section>
         )}
-
-        {/* ── Tools ────────────────────────────────────────────────────── */}
+      </>
+    ),
+    tools: (
+      <>
         {d.tools && (
           <section className="st-tools-section st-shell st-section" id="tools">
             <div className="st-section-title">
@@ -390,17 +459,26 @@ export default function StudioPortfolio({ d }: { d: StudioData }) {
             <div className="st-tools-grid" dir="ltr">
               {d.tools.items.map((t, i) => (
                 <div className="st-tool" key={i}>
-                  <span className="st-tool-icon" style={{ background: t.bg, color: t.fg }}>
-                    {t.letters}
-                  </span>
+                  {t.iconUrl ? (
+                    <span className="st-tool-icon st-tool-img">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={t.iconUrl} alt="" width={36} height={36} />
+                    </span>
+                  ) : (
+                    <span className="st-tool-icon" style={{ background: t.bg, color: t.fg }}>
+                      {t.letters}
+                    </span>
+                  )}
                   <span>{t.name}</span>
                 </div>
               ))}
             </div>
           </section>
         )}
-
-        {/* ── Education ────────────────────────────────────────────────── */}
+      </>
+    ),
+    education: (
+      <>
         {d.education && (
           <section className="st-education-section st-shell" id="education">
             <div>
@@ -427,8 +505,58 @@ export default function StudioPortfolio({ d }: { d: StudioData }) {
             </div>
           </section>
         )}
-
-        {/* ── Contact ──────────────────────────────────────────────────── */}
+      </>
+    ),
+    team: (
+      <>
+        {d.team && (
+          <section className="st-reviews-section st-section st-team-section" id="team">
+            <div className="st-shell">
+              <div className="st-section-title st-reviews-heading">
+                <h2>{d.team.title}</h2>
+              </div>
+              <div className="st-review-grid">
+                {d.team.members.map((m) => (
+                  <article className="st-review-card st-team-card" key={m.id}>
+                    <div className="st-review-person">
+                      {m.photo ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={m.photo} alt="" width={43} height={43} loading="lazy" />
+                      ) : (
+                        <span className="st-review-initials">{m.initials}</span>
+                      )}
+                      <div dir="auto">
+                        <strong>{m.name}</strong>
+                        {m.role && <span>{m.role}</span>}
+                      </div>
+                    </div>
+                    {m.bio && <p dir="auto">{m.bio}</p>}
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+      </>
+    ),
+    skills: (
+      <>
+        {d.skills && (
+          <section className="st-tools-section st-shell st-section" id="skills">
+            <div className="st-section-title">
+              <h2>{d.skills.title}</h2>
+            </div>
+            <div className="st-about-chips st-skills-chips">
+              {d.skills.items.map((s) => (
+                <span key={s}>{s}</span>
+              ))}
+            </div>
+          </section>
+        )}
+      </>
+    ),
+    contact: (
+      <>
         {d.contact && (
           <section className="st-contact-section st-section" id="contact">
             <div className="st-shell st-contact-grid">
@@ -439,7 +567,7 @@ export default function StudioPortfolio({ d }: { d: StudioData }) {
                 </h2>
                 {d.contact.subtitle && <h3>{d.contact.subtitle}</h3>}
                 {d.contact.body && <p>{d.contact.body}</p>}
-                {(d.contact.email || d.contact.phone) && (
+                {(d.contact.email || d.contact.phone || d.contact.whatsapp) && (
                   <div className="st-contact-details">
                     {d.contact.email && (
                       <a href={`mailto:${d.contact.email}`}>
@@ -461,6 +589,16 @@ export default function StudioPortfolio({ d }: { d: StudioData }) {
                         <Icon name="arrow-up-right" />
                       </a>
                     )}
+                    {d.contact.whatsapp && (
+                      <a href={d.contact.whatsapp.href} target="_blank" rel="noopener noreferrer">
+                        <Icon name="phone" />
+                        <div>
+                          <small>WhatsApp</small>
+                          <span dir="ltr">{d.contact.whatsapp.display}</span>
+                        </div>
+                        <Icon name="arrow-up-right" />
+                      </a>
+                    )}
                   </div>
                 )}
                 {d.contact.socials.length > 0 && (
@@ -478,14 +616,35 @@ export default function StudioPortfolio({ d }: { d: StudioData }) {
             </div>
           </section>
         )}
+      </>
+    ),
+  }
+
+  return (
+    <div id="top" className={`st-root st-portfolio st-lang-${d.lang}`} style={d.vars as React.CSSProperties} dir={d.dir} lang={d.lang} {...d.attrs}>
+      <a className="st-skip-link" href={d.work ? '#projects' : '#main'}>
+        {ui.seeWork}
+      </a>
+      <StudioHeader ui={ui} name={d.name} monogram={d.monogram} links={links} digital={!d.nav && !!d.digital} contact={hasContact} langHref={d.langHref} isEn={isEn} ltr={d.dir === 'ltr'} />
+
+      <main id="main">
+        {d.order.filter(shown).map((id) =>
+          d.sectionBg[id] ? (
+            <SectionBg key={id} config={d.sectionBg[id]}>
+              {blocks[id]}
+            </SectionBg>
+          ) : (
+            <React.Fragment key={id}>{blocks[id]}</React.Fragment>
+          ),
+        )}
       </main>
 
       <footer className="st-site-footer">
         <div className="st-shell">
           <div className="st-footer-main">
-            <Monogram monogram={d.monogram} as="a" href="#home" />
+            <Monogram monogram={d.monogram} as="a" href="#top" />
             {d.footer && <p>{d.footer}</p>}
-            <a href="#home">
+            <a href="#top">
               {ui.top}
               <Icon name="arrow-up-right" size={16} />
             </a>

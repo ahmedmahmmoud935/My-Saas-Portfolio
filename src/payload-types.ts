@@ -1055,6 +1055,7 @@ export interface SiteSetting {
       subtitle?: string | null;
     };
     studio?: {
+      brand?: string | null;
       strip?: string | null;
       servicesSub?: string | null;
       reviewsSub?: string | null;
@@ -2013,6 +2014,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         studio?:
           | T
           | {
+              brand?: T;
               strip?: T;
               servicesSub?: T;
               reviewsSub?: T;

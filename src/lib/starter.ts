@@ -152,6 +152,7 @@ export function starterContent(field: StarterField, name: string): ContentForm {
     },
     // The studio template's own lines: the reference wording, in both languages.
     studio: {
+      brand: L(name, name),
       strip: L('تصميم, حركة, تجارب رقمية, عقل إبداعي واحد', 'Design, Motion, Digital experiences, One creative mind'),
       servicesSub: L(
         'خدمات إبداعية وتقنية تعمل معاً، أو كلٌّ منها على حدة، حسب المرحلة التي وصل إليها مشروعك.',
@@ -186,7 +187,8 @@ export async function seedStarter(payload: Payload, tenantId: number, field: Sta
       data: {
         tenant: tenantId,
         colors: { ...STUDIO_LOOK.colors },
-        style: { skin: 'studio', heroGallery: true, fontAr: STUDIO_LOOK.fontAr, fontLatin: STUDIO_LOOK.fontLatin },
+        // The reference has no entrance motion; the client can turn it on.
+        style: { skin: 'studio', heroGallery: true, fontAr: STUDIO_LOOK.fontAr, fontLatin: STUDIO_LOOK.fontLatin, anim: 'none' },
         themeConfig: { components: { ...STUDIO_LOOK.components } },
       } as never,
     }))

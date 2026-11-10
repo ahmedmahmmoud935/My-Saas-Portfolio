@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useCallback, useState } from 'react'
+import { studioRootVars } from '@/lib/studio-look'
 import { useUnsaved } from './useUnsaved'
 import LandingPreview from './LandingPreview'
 import { tenantCssVars } from '@/lib/tenant-vars'
@@ -211,6 +212,46 @@ function ColorRow({ label, hint, value, onChange, reset }: { label: string; hint
  */
 function applyDesign(doc: Document, f: DesignForm, theme: 'dark' | 'light') {
   doc.documentElement.dataset.theme = theme
+  /* A studio site: the same settings, through the same function the page
+     itself uses, so the preview and the published page agree. */
+  const studio = doc.querySelector<HTMLElement>('.st-root')
+  if (studio) {
+    const { vars, attrs } = studioRootVars({
+      colors: f.colors as never,
+      style: f.style as never,
+      themeConfig: { components: f.components as never },
+      heroCover: f.heroCover as never,
+    })
+    for (const k of Array.from(studio.style)) if (k.startsWith('--t-')) studio.style.removeProperty(k)
+    for (const [k, v] of Object.entries(vars)) studio.style.setProperty(k, v)
+    for (const [k, v] of Object.entries(attrs)) studio.setAttribute(k, v)
+    const lang = studio.getAttribute('lang')
+    studio.dir = f.style.direction === 'ltr' || f.style.direction === 'rtl' ? f.style.direction : lang === 'en' ? 'ltr' : 'rtl'
+    /* Pictures replaced or removed before saving show here too; a picture
+       added where there was none, and section backgrounds, show after the
+       save that reloads the preview. */
+    const photo = studio.querySelector<HTMLImageElement>('.st-about-photo > img')
+    if (photo) {
+      if (f.aboutPhotoUrl && photo.getAttribute('src') !== f.aboutPhotoUrl) photo.src = f.aboutPhotoUrl
+      photo.style.display = f.aboutPhotoUrl ? '' : 'none'
+      photo.style.objectFit = f.aboutPhoto.size === 'contain' ? 'contain' : 'cover'
+      photo.style.objectPosition = `${f.aboutPhoto.posX}% ${f.aboutPhoto.posY}%`
+    }
+    const cover = studio.querySelector<HTMLImageElement>('.st-hero-cover')
+    if (cover) {
+      if (f.heroCoverUrl && cover.getAttribute('src') !== f.heroCoverUrl) cover.src = f.heroCoverUrl
+      cover.style.display = f.heroCoverUrl ? '' : 'none'
+      cover.style.objectFit = f.heroCover.size === 'contain' ? 'contain' : 'cover'
+      cover.style.objectPosition = `${f.heroCover.posX}% ${f.heroCover.posY}%`
+    }
+    const veil = studio.querySelector<HTMLElement>('.st-hero-veil')
+    if (veil) {
+      veil.style.display = f.heroCoverUrl ? '' : 'none'
+      veil.style.setProperty('--veil-d', String(f.heroCover.overlay / 100))
+      veil.style.setProperty('--veil-l', String(f.heroCover.overlayLight / 100))
+    }
+    return
+  }
   const root = doc.querySelector<HTMLElement>('.pf-root')
   if (!root) return
   root.style.removeProperty('--heading-dark')
@@ -898,6 +939,12 @@ export default function DesignEditor({ initial, sitePath }: { initial: DesignFor
   const sectionLayout = (id: Exclude<TopTab, 'theme'>, label: string) => {
     const key = SECTION_STYLE_KEY[id]
     return (
+      <>
+      {f.style.skin === 'studio' && (
+        <p className="hx-note" style={{ marginTop: 0 }}>
+          {tr('التخطيطات دي للشكل الكلاسيك؛ في «ستوديو» القسم ده له تصميم واحد.', 'These layouts are for the Classic look; in Studio this section has one design.')}
+        </p>
+      )}
       <LayoutPicker
         section={id}
         label={label}
@@ -905,6 +952,7 @@ export default function DesignEditor({ initial, sitePath }: { initial: DesignFor
         options={LAYOUT_OPTIONS[id as keyof typeof LAYOUT_OPTIONS]}
         onChange={(v) => setStyle({ [key]: v })}
       />
+      </>
     )
   }
 
@@ -920,6 +968,17 @@ export default function DesignEditor({ initial, sitePath }: { initial: DesignFor
           </button>
         }
       />
+
+      {/* On the studio look, say plainly which controls reach it. */}
+      {f.style.skin === 'studio' && (
+        <div className="panel" style={{ marginBottom: 14, fontSize: 13.5, lineHeight: 1.9, color: 'var(--sub)' }}>
+          <strong style={{ color: 'var(--text)' }}>{tr('موقعك على شكل «ستوديو».', 'Your site uses the Studio look.')}</strong>{' '}
+          {tr(
+            'بيشتغل عليه: الألوان في الثيمين ولون العناوين، الخطوط، شكل الكروت والأزرار والشريط العلوي، الحركة والماوس واتجاه الصفحة، صورة الغلاف وتعتيمها، أحجام العنوان والوصف (كمبيوتر وموبايل)، صورة «عن النفس» ومكانها، خلفيات الأقسام، وأعمدة شبكة المشاريع. تخطيطات الأقسام وخلفية الصفحة ومحاذاة وطول الرئيسية والتدرجات خاصة بالشكل الكلاسيك.',
+            'It applies: colours in both themes and the heading colour, fonts, card / button / top-bar shapes, motion, cursor and direction, the cover picture and its veil, heading and line sizes (computer and phone), the About photo and its framing, section backgrounds and the project grid columns. Section layouts, the page background, the hero alignment and height, and the gradients belong to the Classic look.',
+          )}
+        </div>
+      )}
 
       {/* Top-level tabs: Theme + one per section */}
       <div className="design-tabs de-toptabs">

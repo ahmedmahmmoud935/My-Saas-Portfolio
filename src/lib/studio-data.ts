@@ -4,7 +4,8 @@ import { resolveVideoUrl } from './video'
 import { telTarget, waNumber } from './phone'
 import { safeHref } from './safe-url'
 import { toCategoryRows, catLabel } from './category-types'
-import { STUDIO_LOOK } from './design-types'
+import { studioRootVars, type StudioLookInput } from './studio-look'
+import type { SectionBgConfig } from '@/components/portfolio/SectionBg'
 
 /**
  * Everything the studio template shows, read out of a portfolio's data and
@@ -134,10 +135,17 @@ export type StudioProject = {
   videoHref: string | null
 }
 
+/** The template's sections, in the order they can be arranged. */
+export type StudioSection = 'hero' | 'about' | 'work' | 'digital' | 'services' | 'reviews' | 'team' | 'clients' | 'experience' | 'tools' | 'education' | 'skills' | 'contact'
+
 export type StudioData = {
   lang: Lang
+  dir: 'rtl' | 'ltr'
+  order: StudioSection[]
+  cursor: boolean
   ui: StudioUI
   vars: Record<string, string>
+  attrs: Record<string, string>
   name: string
   monogram: { text: string; logoUrl: string | null }
   langHref: string
@@ -148,6 +156,8 @@ export type StudioData = {
     btn1: string
     btn2: string
     btn2Href: string
+    /** A cover picture behind the hero, with its veil per theme. */
+    cover: { url: string; posX: number; posY: number; fit: string; dark: number; light: number } | null
     tiles: (
       | { kind: 'image'; cls: 'identity' | 'middle' | 'campaign'; href: string; img: string; caption: string }
       | { kind: 'digital'; href: string; brand: string; message: string; imgs: string[]; caption: string }
@@ -156,6 +166,7 @@ export type StudioData = {
   strip: string[]
   about: {
     photo: string | null
+    frame: { fit: string; posX: number; posY: number }
     stat: { number: string; suffix: string; label: string } | null
     heading: Heading
     paragraphs: string[]
@@ -168,6 +179,8 @@ export type StudioData = {
     categories: Record<WorkType, { id: string; label: string }[]>
     projects: StudioProject[]
     more: { href: string; label: string } | null
+    /** Columns per screen size, when the client chose other than the template's own. */
+    cols: Record<WorkType, { d?: number; t?: number; m?: number }>
   } | null
   digital: {
     title: string
@@ -221,11 +234,18 @@ export type StudioData = {
     body: string
     email: string
     phone: { href: string; display: string } | null
+    whatsapp: { href: string; display: string } | null
     socials: { label: string; href: string }[]
     formTitle: string
     services: string[]
     tenantId: number
   } | null
+  team: { title: string; members: { id: number; name: string; role: string; bio: string; photo: string | null; initials: string }[] } | null
+  skills: { title: string; items: string[] } | null
+  /** Backgrounds the client gave sections in Design, by template section. */
+  sectionBg: Partial<Record<StudioSection, SectionBgConfig>>
+  /** The top bar's links: the client's, when set in the bar editor. */
+  nav: { id: string; label: string }[] | null
   footer: string
   call: string | null
 }
@@ -296,57 +316,6 @@ function serviceIcon(title: string, i: number) {
   return SERVICE_ICONS[i % SERVICE_ICONS.length]
 }
 
-/* The reference's own surfaces for its palette. With other colours they are
-   worked out from the client's, in the same proportions. */
-const REF = {
-  light: { soft: '#efeae1', line: '#ddd6cb', accentLight: '#f5e0d3', hover: '#963918' },
-  dark: { soft: '#252923', line: '#464a40', accentLight: '#37362b', strong: '#c77649' },
-}
-
-type Colors = Record<string, string | null | undefined>
-
-function paletteVars(c: Colors): Record<string, string> {
-  const pick = (k: string, d: string) => (trim(c[k]) || d).toLowerCase()
-  const L = {
-    bg: pick('bgLight', STUDIO_LOOK.colors.bgLight),
-    surface: pick('bg2Light', STUDIO_LOOK.colors.bg2Light),
-    ink: pick('textLight', STUDIO_LOOK.colors.textLight),
-    muted: pick('subtextLight', STUDIO_LOOK.colors.subtextLight),
-    accent: pick('accentLight', STUDIO_LOOK.colors.accentLight),
-  }
-  const D = {
-    bg: pick('bg', STUDIO_LOOK.colors.bg),
-    surface: pick('bg2', STUDIO_LOOK.colors.bg2),
-    ink: pick('text', STUDIO_LOOK.colors.text),
-    muted: pick('subtext', STUDIO_LOOK.colors.subtext),
-    accent: pick('accent', STUDIO_LOOK.colors.accent),
-  }
-  const isRef = (o: Record<string, string>, ref: Record<string, string>) =>
-    Object.entries(o).every(([k, v]) => v === ref[k].toLowerCase())
-  const refL = isRef(L, { bg: STUDIO_LOOK.colors.bgLight, surface: STUDIO_LOOK.colors.bg2Light, ink: STUDIO_LOOK.colors.textLight, muted: STUDIO_LOOK.colors.subtextLight, accent: STUDIO_LOOK.colors.accentLight })
-  const refD = isRef(D, { bg: STUDIO_LOOK.colors.bg, surface: STUDIO_LOOK.colors.bg2, ink: STUDIO_LOOK.colors.text, muted: STUDIO_LOOK.colors.subtext, accent: STUDIO_LOOK.colors.accent })
-  return {
-    '--t-bg': L.bg,
-    '--t-surface': L.surface,
-    '--t-ink': L.ink,
-    '--t-muted': L.muted,
-    '--t-accent': L.accent,
-    '--t-soft': refL ? REF.light.soft : `color-mix(in srgb, ${L.ink} 6%, ${L.bg})`,
-    '--t-line': refL ? REF.light.line : `color-mix(in srgb, ${L.ink} 14%, ${L.bg})`,
-    '--t-accent-light': refL ? REF.light.accentLight : `color-mix(in srgb, ${L.accent} 16%, ${L.surface})`,
-    '--t-accent-hover': refL ? REF.light.hover : `color-mix(in srgb, ${L.accent} 80%, #000)`,
-    '--t-bg-d': D.bg,
-    '--t-surface-d': D.surface,
-    '--t-ink-d': D.ink,
-    '--t-muted-d': D.muted,
-    '--t-accent-d': D.accent,
-    '--t-soft-d': refD ? REF.dark.soft : `color-mix(in srgb, ${D.surface} 45%, ${D.bg})`,
-    '--t-line-d': refD ? REF.dark.line : `color-mix(in srgb, ${D.ink} 22%, ${D.bg})`,
-    '--t-accent-light-d': refD ? REF.dark.accentLight : `color-mix(in srgb, ${D.accent} 12%, ${D.surface})`,
-    '--t-accent-strong-d': refD ? REF.dark.strong : `color-mix(in srgb, ${D.accent} 78%, #000)`,
-  }
-}
-
 const host = (u: string) => {
   try {
     return new URL(u).hostname.replace(/^www\./, '')
@@ -372,17 +341,23 @@ export function buildStudioData(data: PortfolioData, lang: Lang, q: string): Stu
   )
   const on = (id: string) => !hidden.has(id)
 
-  const name = trim(tenant.name)
+  // The name in the bar and the footer: the client's own wording, per language.
+  const name = trim(studio.brand) || trim(tenant.name)
   const enName = name
   const monoText = initials(enName).toLowerCase() || name.slice(0, 2)
   const base = `/${tenant.slug}`
 
   // ── Work ───────────────────────────────────────────────────────────────
   const typeOf = (p: (typeof projects)[number]): WorkType =>
-    (p.mediaType || 'image') === 'image' ? 'designs' : p.videoKind === 'reel' ? 'reels' : 'videos'
+    // As the classic grid sorts them: only an explicit "video" is a landscape video.
+    (p.mediaType || 'image') === 'image' ? 'designs' : p.videoKind === 'video' ? 'videos' : 'reels'
   const studioProjects: StudioProject[] = projects
     .map((p) => {
-      const cover = mediaUrl(p.cover, 'card')
+      // No cover chosen: the project's first picture stands in, as on its page.
+      const cover =
+        mediaUrl(p.cover, 'card') ||
+        (p.images ?? []).map((im) => mediaUrl(im.image as never, 'card')).find((u): u is string => !!u) ||
+        null
       const type = typeOf(p)
       const video = type === 'designs' ? null : resolveVideoUrl(p.videoUrl)
       return {
@@ -447,23 +422,23 @@ export function buildStudioData(data: PortfolioData, lang: Lang, q: string): Stu
   // ── Hero ───────────────────────────────────────────────────────────────
   const hero = (c.hero ?? {}) as Record<string, unknown>
   const tiles: StudioData['hero']['tiles'] = []
-  if (style.heroGallery !== false && designs.length) {
+  if (style.heroGallery !== false && on('projects') && designs.length) {
     const prod = on('products') ? prods.find((p) => p.title) : undefined
     const first = designs[0]
-    tiles.push({ kind: 'image', cls: 'identity', href: '#work', img: first.coverUrl, caption: first.title })
+    tiles.push({ kind: 'image', cls: 'identity', href: '#projects', img: first.coverUrl, caption: first.title })
     if (prod) {
       tiles.push({
         kind: 'digital',
-        href: '#digital',
+        href: '#products',
         brand: prod.host || prod.title,
         message: prod.host ? prod.title : prod.tag || prod.title,
         imgs: [prod.image, ...designs.slice(1, 3).map((d) => d.coverUrl)].filter((u): u is string => !!u).slice(0, 3),
         caption: trim(c.products?.title) || ui.nav.digitalLong,
       })
     } else if (designs[2]) {
-      tiles.push({ kind: 'image', cls: 'middle', href: '#work', img: designs[2].coverUrl, caption: designs[2].title })
+      tiles.push({ kind: 'image', cls: 'middle', href: '#projects', img: designs[2].coverUrl, caption: designs[2].title })
     }
-    if (designs[1]) tiles.push({ kind: 'image', cls: 'campaign', href: '#work', img: designs[1].coverUrl, caption: designs[1].title })
+    if (designs[1]) tiles.push({ kind: 'image', cls: 'campaign', href: '#projects', img: designs[1].coverUrl, caption: designs[1].title })
   }
   const hasDigital = on('products') && prods.length > 0
 
@@ -472,9 +447,14 @@ export function buildStudioData(data: PortfolioData, lang: Lang, q: string): Stu
   const statValue = trim(about.statValue)
   const aboutTitle = lines(about.title)
   const aboutData: StudioData['about'] =
-    on('about') && (aboutTitle.length || trim(about.text))
+    on('about') && (aboutTitle.length || trim(about.text) || mediaUrl(brand.photo as never) || words(about.tags).length)
       ? {
           photo: mediaUrl(brand.photo as never, 'card'),
+          frame: {
+            fit: (settings?.aboutPhoto as { size?: string } | undefined)?.size === 'contain' ? 'contain' : 'cover',
+            posX: Number((settings?.aboutPhoto as { posX?: number } | undefined)?.posX ?? 50),
+            posY: Number((settings?.aboutPhoto as { posY?: number } | undefined)?.posY ?? 35),
+          },
           stat: statValue ? { ...splitStat(statValue), label: trim(about.statLabel) } : null,
           heading: { lines: aboutTitle, accentLast: aboutTitle.length > 1 },
           paragraphs: lines(about.text),
@@ -515,10 +495,36 @@ export function buildStudioData(data: PortfolioData, lang: Lang, q: string): Stu
   const experience = ((c.experience ?? {}) as { title?: string; items?: Record<string, unknown>[] })
   const tools = ((c.tools ?? {}) as { title?: string; items?: Record<string, unknown>[] })
 
+  /* The sections in the client's own order. The template's ids map onto
+     the section editor's; clients and numbers share one section, placed
+     where the first of the two is. */
+  const SECTION_OF: Record<string, StudioSection> = {
+    hero: 'hero', about: 'about', projects: 'work', products: 'digital', expertise: 'services',
+    testimonials: 'reviews', team: 'team', logos: 'clients', achievements: 'clients', experience: 'experience',
+    tools: 'tools', education: 'education', skills: 'skills', contact: 'contact',
+  }
+  const DEFAULT_ORDER: StudioSection[] = ['hero', 'about', 'work', 'digital', 'services', 'reviews', 'team', 'clients', 'experience', 'tools', 'education', 'skills', 'contact']
+  const savedOrder = [...(settings?.sections ?? [])]
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .map((s) => SECTION_OF[String(s.sectionId)])
+    .filter((x): x is StudioSection => !!x)
+  const order: StudioSection[] = []
+  for (const id of savedOrder) if (!order.includes(id)) order.push(id)
+  DEFAULT_ORDER.forEach((id, i) => {
+    if (order.includes(id)) return
+    const prev = DEFAULT_ORDER.slice(0, i).reverse().find((p) => order.includes(p))
+    order.splice(prev ? order.indexOf(prev) + 1 : 0, 0, id)
+  })
+  // The hero leads the page whatever the order says, as in the classic look.
+  const ordered: StudioSection[] = [...(on('hero') ? (['hero'] as StudioSection[]) : []), ...order.filter((x) => x !== 'hero')]
+
   return {
     lang,
+    dir: style.direction === 'ltr' ? 'ltr' : style.direction === 'rtl' ? 'rtl' : lang === 'en' ? 'ltr' : 'rtl',
+    order: ordered,
+    cursor: style.cursor === 'dot-ring',
     ui,
-    vars: paletteVars((settings?.colors ?? {}) as Colors),
+    ...studioRootVars(settings as unknown as StudioLookInput),
     name,
     monogram: { text: monoText, logoUrl: mediaUrl(brand.brandLogo as never, 'thumb') },
     langHref: `${base}?lang=${lang === 'en' ? 'ar' : 'en'}`,
@@ -528,7 +534,21 @@ export function buildStudioData(data: PortfolioData, lang: Lang, q: string): Stu
       desc: trim(hero.desc),
       btn1: trim(hero.btn1) || ui.seeWork,
       btn2: trim(hero.btn2),
-      btn2Href: hasDigital ? '#digital' : '#contact',
+      btn2Href: hasDigital ? '#products' : '#contact',
+      cover: (() => {
+        const url = mediaUrl(brand.heroCover as never)
+        if (!url) return null
+        const hc = (settings?.heroCover ?? {}) as Record<string, unknown>
+        const num = (v: unknown, d: number) => (typeof v === 'number' && Number.isFinite(v) ? v : d)
+        return {
+          url,
+          posX: num(hc.posX, 50),
+          posY: num(hc.posY, 50),
+          fit: hc.size === 'contain' ? 'contain' : 'cover',
+          dark: num(hc.overlay, 45),
+          light: num(hc.overlayLight, 25),
+        }
+      })(),
       tiles,
     },
     strip: on('hero') ? words(studio.strip) : [],
@@ -541,7 +561,17 @@ export function buildStudioData(data: PortfolioData, lang: Lang, q: string): Stu
             tabs,
             categories: { designs: catsFor('designs'), reels: catsFor('reels'), videos: catsFor('videos') },
             projects: studioProjects,
-            more: trim(social.behance) ? { href: safeHref(trim(social.behance)), label: ui.more } : null,
+            more: trim(social.behance) && visibleSocial.has('behance') ? { href: safeHref(trim(social.behance)), label: ui.more } : null,
+            cols: (() => {
+              /* The grid keeps the reference's own columns until the client
+                 picks others: the stored defaults (4 / 3 / 2) are what every
+                 site has without choosing, so they read as "not chosen". */
+              const g = (settings?.gridCols ?? {}) as Record<string, number | null | undefined>
+              const pick = (v: number | null | undefined, def: number) => (typeof v === 'number' && v > 0 && v !== def ? v : undefined)
+              const image = { d: pick(g.imageDesktop, 4), t: pick(g.imageTablet, 3), m: pick(g.imageMobile, 2) }
+              const video = { d: pick(g.videoDesktop, 4), t: pick(g.videoTablet, 3), m: pick(g.videoMobile, 2) }
+              return { designs: image, reels: video, videos: video }
+            })(),
           }
         : null,
     digital: hasDigital
@@ -562,11 +592,11 @@ export function buildStudioData(data: PortfolioData, lang: Lang, q: string): Stu
           }
         : null,
     reviews:
-      on('testimonials') && testimonials.length
+      on('testimonials')
         ? {
             title: trim(c.testimonials?.title) || (lang === 'en' ? 'Words I value.' : 'كلمات أعتز بها.'),
             subtitle: trim(studio.reviewsSub),
-            addHref: `/testimonial/${tenant.slug}`,
+            addHref: `/testimonial/${tenant.slug}${lang === 'en' ? '?lang=en' : ''}`,
             items: testimonials.map((t) => ({
               id: t.id,
               text: trim(t.content),
@@ -633,13 +663,50 @@ export function buildStudioData(data: PortfolioData, lang: Lang, q: string): Stu
           body: trim(studio.contactBody),
           email: trim(contact.email),
           phone: tel ? { href: `tel:${tel}`, display: rawPhone } : null,
+          whatsapp: wa && visibleSocial.has('whatsapp') ? { href: `https://wa.me/${wa}`, display: `+${wa}` } : null,
           socials: socialLinks,
           formTitle: trim(studio.formTitle) || (lang === 'en' ? 'Tell me about your project' : 'احكِ لي عن مشروعك'),
           services: services.map((s) => s.title),
           tenantId: tenant.id,
         }
       : null,
+    team:
+      on('team') && data.team.length
+        ? {
+            title: trim(c.team?.title) || (lang === 'en' ? 'The team.' : 'الفريق.'),
+            members: data.team.map((m) => ({
+              id: m.id,
+              name: trim(m.name),
+              role: trim(m.role),
+              bio: trim(m.bio),
+              photo: mediaUrl(m.photo, 'thumb'),
+              initials: initials(trim(m.name)),
+            })),
+          }
+        : null,
+    skills:
+      on('skills') && words(c.skills?.items).length
+        ? { title: trim(c.skills?.title) || (lang === 'en' ? 'Skills.' : 'المهارات.'), items: words(c.skills?.items) }
+        : null,
+    sectionBg: (() => {
+      const out: Partial<Record<StudioSection, SectionBgConfig>> = {}
+      for (const row of settings?.sectionBg ?? []) {
+        const id = SECTION_OF[String(row.section)]
+        if (!id || out[id]) continue
+        out[id] = { ...row, imageUrl: mediaUrl(row.image as never, 'card') } as SectionBgConfig
+      }
+      return out
+    })(),
+    nav: (() => {
+      // Never configured: the template's own links. Configured with every
+      // link hidden: none.
+      const all = settings?.navbarLinks ?? []
+      if (!all.length) return null
+      return all
+        .filter((l) => l.visible !== false && l.linkId)
+        .map((l) => ({ id: String(l.linkId), label: trim(l.label) || String(l.linkId) }))
+    })(),
     footer: trim(studio.footer),
-    call: tel ? `tel:${tel}` : wa ? `https://wa.me/${wa}` : null,
+    call: tel ? `tel:${tel}` : wa && visibleSocial.has('whatsapp') ? `https://wa.me/${wa}` : null,
   }
 }

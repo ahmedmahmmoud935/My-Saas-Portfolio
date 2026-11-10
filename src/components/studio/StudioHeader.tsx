@@ -17,16 +17,21 @@ export default function StudioHeader({
   monogram,
   links,
   digital,
+  contact,
   langHref,
   isEn,
+  ltr,
 }: {
   ui: StudioUI
   name: string
   monogram: { text: string; logoUrl: string | null }
   links: { id: string; label: string }[]
   digital: boolean
+  /** Whether there is a contact section for "let's talk" to go to. */
+  contact: boolean
   langHref: string
   isEn: boolean
+  ltr: boolean
 }) {
   const [dark, setDark] = useState(false)
   const [open, setOpen] = useState(false)
@@ -57,13 +62,14 @@ export default function StudioHeader({
     }
   }
 
-  const Arrow = isEn ? 'arrow-right' : 'arrow-left'
+  // Arrows follow the page's direction, which can differ from its language.
+  const Arrow = ltr ? 'arrow-right' : 'arrow-left'
 
   return (
     <>
       <header className="st-site-header">
         <div className="st-shell st-header-inner">
-          <a href="#home" className="st-brand" aria-label={name}>
+          <a href="#top" className="st-brand" aria-label={name}>
             <Monogram monogram={monogram} />
             <span className="st-brand-caption">{name}</span>
           </a>
@@ -73,10 +79,11 @@ export default function StudioHeader({
               .map((l) => (
                 <a key={l.id} href={`#${l.id}`}>
                   {l.label}
+                  {l.id === 'products' && <Icon name="code-xml" size={16} />}
                 </a>
               ))}
             {digital && (
-              <a href="#digital">
+              <a href="#products">
                 {ui.nav.digital}
                 <Icon name="code-xml" size={16} />
               </a>
@@ -89,10 +96,12 @@ export default function StudioHeader({
             <a className="st-language-switch" href={langHref} aria-label={ui.langLabel}>
               {ui.langShort}
             </a>
-            <a className="st-button st-small st-primary st-header-cta" href="#contact">
-              {ui.talk}
-              <Icon name="arrow-up-right" size={16} />
-            </a>
+            {contact && (
+              <a className="st-button st-small st-primary st-header-cta" href="#contact">
+                {ui.talk}
+                <Icon name="arrow-up-right" size={16} />
+              </a>
+            )}
             <button
               className="st-icon-button st-menu-toggle"
               aria-controls="st-mobile-nav"
@@ -114,7 +123,7 @@ export default function StudioHeader({
             </a>
           ))}
           {digital && (
-            <a href="#digital" onClick={() => setOpen(false)}>
+            <a href="#products" onClick={() => setOpen(false)}>
               {ui.nav.digitalLong}
               <Icon name="code-xml" />
             </a>

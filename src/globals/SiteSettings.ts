@@ -811,6 +811,7 @@ export const SiteSettings: CollectionConfig = {
                   name: 'studio',
                   type: 'group',
                   fields: [
+                    { name: 'brand', type: 'text', localized: true },
                     { name: 'strip', type: 'text', localized: true },
                     { name: 'servicesSub', type: 'textarea', localized: true },
                     { name: 'reviewsSub', type: 'textarea', localized: true },

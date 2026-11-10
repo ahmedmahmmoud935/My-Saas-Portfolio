@@ -40,10 +40,11 @@ export type ContentForm = {
   studio: Record<StudioTextKey, Loc>
 }
 
-export type StudioTextKey = 'strip' | 'servicesSub' | 'reviewsSub' | 'experienceSub' | 'contactBody' | 'formTitle' | 'digitalEnd' | 'digitalEndBtn' | 'footer'
+export type StudioTextKey = 'brand' | 'strip' | 'servicesSub' | 'reviewsSub' | 'experienceSub' | 'contactBody' | 'formTitle' | 'digitalEnd' | 'digitalEndBtn' | 'footer'
 
 /** The studio lines, in the order the editor lists them, with their labels. */
 export const STUDIO_TEXTS: { key: StudioTextKey; ar: string; en: string; multiline: boolean }[] = [
+  { key: 'brand', ar: 'الاسم في الشريط العلوي والفوتر', en: 'Name in the top bar and footer', multiline: false },
   { key: 'strip', ar: 'الكلمات اللي في الشريط تحت الرئيسية (افصل بينها بفاصلة)', en: 'Words in the strip under the hero (comma-separated)', multiline: false },
   { key: 'servicesSub', ar: 'وصف قسم الخدمات', en: 'Services description', multiline: true },
   { key: 'reviewsSub', ar: 'وصف قسم الآراء', en: 'Reviews description', multiline: true },

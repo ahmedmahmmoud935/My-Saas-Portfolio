@@ -440,6 +440,47 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
 
   const skin = studio ? 'studio' : 'classic'
 
+  /* What every portfolio carries whichever template draws it: the install
+     prompt and the structured data that describes the person. */
+  const sharedHead = (
+    <>
+      <InstallApp
+        label={
+          locale === 'en'
+            ? `Add ${content.hero?.name || tenant.name} to your home screen`
+            : `ثبّت ${content.hero?.name || tenant.name} على شاشتك`
+        }
+      />
+      {/* The portfolio as a person: the name, the job title, the photo and the
+          accounts are all on the page already — this is what ties them
+          together for a search engine. Articles have declared themselves as
+          BlogPosting all along; the portfolio itself declared nothing.
+          eslint-disable-next-line react/no-danger */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            personJsonLd({
+              name: content.hero?.name || tenant.name,
+              jobTitle: content.hero?.title || null,
+              description: content.hero?.desc || content.about?.text || null,
+              image: mediaUrl(brand.avatar, 'card') || mediaUrl(brand.photo, 'card'),
+              url: await absoluteUrl(`/${tenant.slug}`, tenant.slug),
+              email: content.contact?.email || null,
+              sameAs: [
+                settings?.social?.behance,
+                settings?.social?.instagram,
+                settings?.social?.linkedin,
+                settings?.social?.facebook,
+                settings?.social?.vimeo,
+              ].filter((u): u is string => typeof u === 'string' && /^https?:\/\//.test(u)),
+            }),
+          ),
+        }}
+      />
+    </>
+  )
+
   /* The studio look is its own template: the owner's reference design, laid
      out from the same content, with the same tracking. */
   if (studio) {
@@ -447,6 +488,8 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
       <>
         {!isPreview && <Analytics id={settings?.seoTools?.analyticsId} />}
         {!isPreview && <TrackVisit tenant={tenant.id} page="home" />}
+        <MotionFx anim="none" cursor={(settings?.style as { cursor?: string } | undefined)?.cursor || 'default'} />
+        {sharedHead}
         <StudioPortfolio d={buildStudioData(data, locale, q)} />
       </>
     )
@@ -492,40 +535,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
       {!isPreview && <Analytics id={settings?.seoTools?.analyticsId} />}
       <MotionFx anim={st.anim || 'fade-up'} cursor={st.cursor || 'default'} />
       {!isPreview && <TrackVisit tenant={tenant.id} page="home" />}
-      <InstallApp
-        label={
-          locale === 'en'
-            ? `Add ${content.hero?.name || tenant.name} to your home screen`
-            : `ثبّت ${content.hero?.name || tenant.name} على شاشتك`
-        }
-      />
-      {/* The portfolio as a person: the name, the job title, the photo and the
-          accounts are all on the page already — this is what ties them
-          together for a search engine. Articles have declared themselves as
-          BlogPosting all along; the portfolio itself declared nothing.
-          eslint-disable-next-line react/no-danger */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(
-            personJsonLd({
-              name: content.hero?.name || tenant.name,
-              jobTitle: content.hero?.title || null,
-              description: content.hero?.desc || content.about?.text || null,
-              image: mediaUrl(brand.avatar, 'card') || mediaUrl(brand.photo, 'card'),
-              url: await absoluteUrl(`/${tenant.slug}`, tenant.slug),
-              email: content.contact?.email || null,
-              sameAs: [
-                settings?.social?.behance,
-                settings?.social?.instagram,
-                settings?.social?.linkedin,
-                settings?.social?.facebook,
-                settings?.social?.vimeo,
-              ].filter((u): u is string => typeof u === 'string' && /^https?:\/\//.test(u)),
-            }),
-          ),
-        }}
-      />
+      {sharedHead}
       <Navbar
         logo={logoText}
         logoUrl={mediaUrl(brand.brandLogo, 'thumb')}
