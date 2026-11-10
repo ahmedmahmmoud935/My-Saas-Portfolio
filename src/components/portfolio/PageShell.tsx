@@ -57,6 +57,7 @@ export default function PageShell({
       data-card={comp.card || 'solid'}
       data-navbar={comp.navbar || 'blur'}
       data-btn={comp.button || 'rounded'}
+      data-skin={st.skin || 'classic'}
     >
       <Analytics id={settings?.seoTools?.analyticsId} />
       {bgDark && (

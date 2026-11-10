@@ -7,6 +7,7 @@ export default function About({
   tags,
   variant = 'classic',
   frame,
+  stat,
 }: {
   title: string
   photoUrl?: string | null
@@ -15,21 +16,34 @@ export default function About({
   variant?: string
   /** How the picture sits in its frame: filling or whole, and its focus. */
   frame?: { size?: string | null; posX?: number | null; posY?: number | null } | null
+  /** A number laid on the photo ("6+") and what it counts — the studio look. */
+  stat?: { value: string; label: string } | null
 }) {
+  const photo = photoUrl && (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      className="about-photo"
+      src={photoUrl}
+      alt={title}
+      style={{
+        objectFit: frame?.size === 'contain' ? 'contain' : 'cover',
+        objectPosition: `${frame?.posX ?? 50}% ${frame?.posY ?? 50}%`,
+      }}
+    />
+  )
   return (
     <section className="section" id="about">
       <div className={`container about about-${variant}`}>
-        {photoUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            className="about-photo"
-            src={photoUrl}
-            alt={title}
-            style={{
-              objectFit: frame?.size === 'contain' ? 'contain' : 'cover',
-              objectPosition: `${frame?.posX ?? 50}% ${frame?.posY ?? 50}%`,
-            }}
-          />
+        {photo && stat ? (
+          <figure className="about-figure">
+            {photo}
+            <figcaption className="about-stat">
+              <b dir="ltr">{stat.value}</b>
+              {stat.label && <span>{stat.label}</span>}
+            </figcaption>
+          </figure>
+        ) : (
+          photo
         )}
         <div>
           {/* Alignment comes from the layout's stylesheet. Set inline, `start`

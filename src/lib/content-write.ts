@@ -29,7 +29,13 @@ function buildContent(form: ContentForm, loc: 'ar' | 'en', ids?: IdMap) {
       btn1: g(form.hero.btn1),
       btn2: g(form.hero.btn2),
     },
-    about: { title: g(form.about.title), text: g(form.about.text), tags: g(form.about.tags) },
+    about: {
+      title: g(form.about.title),
+      text: g(form.about.text),
+      tags: g(form.about.tags),
+      statValue: form.about.statValue ?? '',
+      statLabel: g(form.about.statLabel ?? { ar: '', en: '' }),
+    },
     expertise: {
       title: g(form.expertise.title),
       items: form.expertise.items.map((it, i) => ({

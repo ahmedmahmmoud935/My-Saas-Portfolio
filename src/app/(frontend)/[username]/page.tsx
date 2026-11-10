@@ -16,6 +16,7 @@ import Logos from '@/components/portfolio/Logos'
 import Testimonials from '@/components/portfolio/Testimonials'
 import Team from '@/components/portfolio/Team'
 import Products from '@/components/portfolio/Products'
+import { withMissingSections } from '@/lib/dashboard-nav'
 import Contact from '@/components/portfolio/Contact'
 import Footer from '@/components/portfolio/Footer'
 import TrackVisit from '@/components/portfolio/TrackVisit'
@@ -129,6 +130,8 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
   if ((data.tenant as { suspended?: boolean }).suspended) notFound()
 
   const { tenant, settings, projects, achievements, logos, testimonials, team, products } = data
+  // The overall look. 'studio' adds the hero gallery and the About number.
+  const studio = (settings?.style as { skin?: string | null } | undefined)?.skin === 'studio'
   const content = settings?.content ?? {}
   const brand = settings?.brand ?? {}
 
@@ -171,6 +174,14 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
         gradientDark={settings?.heroCover?.gradientDark || ''}
         posX={settings?.heroCover?.posX ?? 50}
         posY={settings?.heroCover?.posY ?? 50}
+        gallery={
+          studio && (settings?.style as { heroGallery?: boolean | null } | undefined)?.heroGallery !== false
+            ? projects
+                .filter((p) => (p.mediaType || 'image') === 'image' && p.cover)
+                .slice(0, 3)
+                .map((p) => ({ id: p.id, title: p.title, url: mediaUrl(p.cover, 'card') as string, href: `/${tenant.slug}/project/${p.id}${q}` }))
+            : []
+        }
       />
     ),
     about: (
@@ -181,6 +192,11 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
         tags={splitTags(content.about?.tags)}
         variant={settings?.style?.about || 'classic'}
         frame={settings?.aboutPhoto}
+        stat={
+          studio && content.about?.statValue
+            ? { value: content.about.statValue, label: content.about.statLabel || '' }
+            : null
+        }
       />
     ),
     projects: (
@@ -396,9 +412,9 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
     const saved = [...settings.sections]
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
       .map((s) => ({ id: String(s.sectionId), on: s.visible !== false }))
-    const seen = new Set(saved.map((s) => s.id))
-    const missing = defaultOrder.filter((id) => !seen.has(id)).map((id) => ({ id, on: true }))
-    return [...saved, ...missing].filter((s) => s.on && s.id in sectionEls).map((s) => s.id)
+    return withMissingSections(saved, defaultOrder, (id) => ({ id, on: true }))
+      .filter((s) => s.on && s.id in sectionEls)
+      .map((s) => s.id)
   })()
 
   const cssVars = tenantCssVars(settings) as React.CSSProperties
@@ -433,6 +449,8 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
     }
   }
 
+  const skin = studio ? 'studio' : 'classic'
+
   return (
     <div
       className="pf-root"
@@ -448,6 +466,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
       data-card={comp.card || 'solid'}
       data-navbar={comp.navbar || 'blur'}
       data-btn={comp.button || 'rounded'}
+      data-skin={skin}
     >
       {bgDark && (
         <div

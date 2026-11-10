@@ -24,7 +24,7 @@ export type ToolItem = { name: string; iconId: number | null; iconUrl: string | 
 
 export type ContentForm = {
   hero: { name: Loc; title: Loc; desc: Loc; btn1: Loc; btn2: Loc }
-  about: { title: Loc; text: Loc; tags: Loc }
+  about: { title: Loc; text: Loc; tags: Loc; statValue: string; statLabel: Loc }
   expertise: { title: Loc; items: ExpertiseItem[] }
   experience: { title: Loc; items: ExperienceItem[] }
   education: { title: Loc; items: EducationItem[] }

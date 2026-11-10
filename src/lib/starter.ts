@@ -1,4 +1,5 @@
 import type { Payload } from 'payload'
+import { STUDIO_LOOK } from './design-types'
 import type { ContentForm, ExpertiseItem, Loc } from './content-types'
 import { writeContent } from './content-write'
 import type { StarterField } from './starter-fields'
@@ -131,7 +132,7 @@ export function starterContent(field: StarterField, name: string): ContentForm {
   const v = VOICES[field]
   return {
     hero: { name: L(name, name), title: v.title, desc: v.desc, btn1: L('شوف شغلي', 'See my work'), btn2: L('تواصل معايا', 'Get in touch') },
-    about: { title: L('عنّي', 'About me'), text: v.about, tags: v.tags },
+    about: { title: L('عنّي', 'About me'), text: v.about, tags: v.tags, statValue: '', statLabel: L('', '') },
     expertise: { title: L('خدماتي', 'What I do'), items: v.services.map(([t, d]) => service(t, d)) },
     // Left empty: an employer or a degree is a fact about a person, not a
     // starting point. The page leaves both sections out until they are filled.
@@ -158,8 +159,19 @@ export function starterContent(field: StarterField, name: string): ContentForm {
  */
 export async function seedStarter(payload: Payload, tenantId: number, field: StarterField, name: string) {
   const found = await payload.find({ collection: 'site-settings', where: { tenant: { equals: tenantId } }, limit: 1, depth: 0 })
+  /* A new portfolio starts in the studio look: its colours in both themes, its
+     fonts and its shapes. The owner can switch to classic from Design. */
   const settings =
-    found.docs[0] ?? (await payload.create({ collection: 'site-settings', data: { tenant: tenantId } }))
+    found.docs[0] ??
+    (await payload.create({
+      collection: 'site-settings',
+      data: {
+        tenant: tenantId,
+        colors: { ...STUDIO_LOOK.colors },
+        style: { skin: 'studio', heroGallery: true, fontAr: STUDIO_LOOK.fontAr, fontLatin: STUDIO_LOOK.fontLatin },
+        themeConfig: { components: { ...STUDIO_LOOK.components } },
+      } as never,
+    }))
   // The public contact address stays empty — the form delivers to the
   // client's login address without printing it on the page.
   await writeContent(payload, settings.id, starterContent(field, name))

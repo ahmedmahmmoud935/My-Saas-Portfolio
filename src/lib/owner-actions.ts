@@ -176,6 +176,8 @@ export async function deleteClient(tenantId: number) {
     'logos',
     'achievements',
     'testimonials',
+    'team',
+    'products',
     'articles',
     'visits',
     'site-settings',

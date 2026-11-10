@@ -796,9 +796,14 @@ export interface SiteSetting {
      */
     fontAr?: string | null;
     /**
-     * montserrat | inter | playfair | cormorant | bebas | poppins
+     * montserrat | inter | playfair | cormorant | bebas | poppins | manrope
      */
     fontLatin?: string | null;
+    /**
+     * classic | studio
+     */
+    skin?: string | null;
+    heroGallery?: boolean | null;
     direction?: ('auto' | 'rtl' | 'ltr') | null;
     cursor?: ('default' | 'dot-ring') | null;
     anim?: ('fade-up' | 'fade' | 'none') | null;
@@ -964,6 +969,8 @@ export interface SiteSetting {
        * Comma-separated.
        */
       tags?: string | null;
+      statValue?: string | null;
+      statLabel?: string | null;
     };
     expertise?: {
       title?: string | null;
@@ -1749,6 +1756,8 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         font?: T;
         fontAr?: T;
         fontLatin?: T;
+        skin?: T;
+        heroGallery?: T;
         direction?: T;
         cursor?: T;
         anim?: T;
@@ -1895,6 +1904,8 @@ export interface SiteSettingsSelect<T extends boolean = true> {
               title?: T;
               text?: T;
               tags?: T;
+              statValue?: T;
+              statLabel?: T;
             };
         expertise?:
           | T

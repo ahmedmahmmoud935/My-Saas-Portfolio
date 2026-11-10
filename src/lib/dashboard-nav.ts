@@ -77,3 +77,34 @@ export const SECTION_LABELS: Record<string, { ar: string; en: string }> = {
 }
 
 export const SECTION_ORDER = Object.keys(SECTION_LABELS)
+
+/**
+ * A saved section order with the sections added since it was saved put back
+ * in, each right after the section it follows by default.
+ *
+ * Appended at the end, a new section (the digital products) landed under the
+ * contact form on every site saved before it existed.
+ */
+export function withMissingSections<T extends { id: string }>(
+  saved: T[],
+  defaults: readonly string[],
+  make: (id: string) => T,
+): T[] {
+  const out = [...saved]
+  const has = new Set(out.map((s) => s.id))
+  defaults.forEach((id, i) => {
+    if (has.has(id)) return
+    // The nearest earlier default that is on the list; first if there is none.
+    let at = 0
+    for (let j = i - 1; j >= 0; j--) {
+      const k = out.findIndex((s) => s.id === defaults[j])
+      if (k >= 0) {
+        at = k + 1
+        break
+      }
+    }
+    out.splice(at, 0, make(id))
+    has.add(id)
+  })
+  return out
+}

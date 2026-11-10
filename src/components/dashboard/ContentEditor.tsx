@@ -342,6 +342,25 @@ export default function ContentEditor({
               value={f.about.tags}
               onChange={(v) => patch({ about: { ...f.about, tags: v } })}
             />
+            <label className="lbl" style={{ marginTop: 14, display: 'block' }}>
+              {t('رقم على الصورة (شكل ستوديو)', 'A number on the photo (studio look)')}
+            </label>
+            <input
+              className="field"
+              dir="ltr"
+              style={{ textAlign: 'start', maxWidth: 200 }}
+              placeholder="6+"
+              value={f.about.statValue ?? ''}
+              onChange={(e) => patch({ about: { ...f.about, statValue: e.target.value } })}
+            />
+            <LocField
+              label={t('الرقم ده بيعدّ إيه؟', 'What the number counts')}
+              value={f.about.statLabel ?? { ar: '', en: '' }}
+              onChange={(v) => patch({ about: { ...f.about, statLabel: v } })}
+            />
+            <p className="cover-note" style={{ marginBottom: 14 }}>
+              {t('مثلاً: 6+ «سنوات من التفكير الإبداعي». سيبه فاضي ومش هيظهر.', 'e.g. 6+ “years of creative thinking”. Leave it empty to hide it.')}
+            </p>
           </>
         )}
 

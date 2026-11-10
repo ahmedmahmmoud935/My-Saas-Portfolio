@@ -405,8 +405,18 @@ export const SiteSettings: CollectionConfig = {
                       name: 'fontLatin',
                       type: 'text',
                       defaultValue: 'montserrat',
-                      admin: { description: 'montserrat | inter | playfair | cormorant | bebas | poppins' },
+                      admin: { description: 'montserrat | inter | playfair | cormorant | bebas | poppins | manrope' },
                     },
+                  ],
+                },
+                {
+                  type: 'row',
+                  fields: [
+                    // The site's overall look: 'classic' is the original;
+                    // 'studio' is the warm editorial one new portfolios start in.
+                    { name: 'skin', type: 'text', defaultValue: 'classic', admin: { description: 'classic | studio' } },
+                    // Studio only: three of the latest designs fanned out under the hero.
+                    { name: 'heroGallery', type: 'checkbox', defaultValue: true },
                   ],
                 },
                 {
@@ -695,6 +705,9 @@ export const SiteSettings: CollectionConfig = {
                     { name: 'title', type: 'text', localized: true },
                     { name: 'text', type: 'textarea', localized: true },
                     { name: 'tags', type: 'text', localized: true, admin: { description: 'Comma-separated.' } },
+                    // A number on the photo ("6+") and what it counts.
+                    { name: 'statValue', type: 'text' },
+                    { name: 'statLabel', type: 'text', localized: true },
                   ],
                 },
                 {

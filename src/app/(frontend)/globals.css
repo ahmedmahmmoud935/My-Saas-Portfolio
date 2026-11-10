@@ -2985,6 +2985,9 @@ html[data-theme='light'] .card.has-bg .ic {
 .pf-root[data-font-ar='markazi'] {
   --font-cairo: var(--f-markazi);
 }
+.pf-root[data-font-ar='kufam'] {
+  --font-cairo: var(--f-kufam);
+}
 
 /* Latin / heading face. Naming the family literally keeps Next's metric
    fallback (a system font with Arabic coverage) out of the stack, so Arabic
@@ -3005,6 +3008,9 @@ html[data-theme='light'] .card.has-bg .ic {
 }
 .pf-root[data-font-latin='poppins'] {
   --font-display: 'Poppins', var(--font-cairo), system-ui, sans-serif;
+}
+.pf-root[data-font-latin='manrope'] {
+  --font-display: 'Manrope', var(--font-cairo), system-ui, sans-serif;
 }
 
 /* ═══ Optical centring ═══════════════════════════════════════════════════

@@ -165,6 +165,10 @@ export type DesignForm = {
     direction: string
     cursor: string
     anim: string
+    /** The overall look: 'classic' (the original) or 'studio'. */
+    skin: string
+    /** Studio look: the latest designs fanned out under the hero. */
+    heroGallery: boolean
   }
   components: { card: string; navbar: string; button: string }
   heroCover: {
@@ -228,6 +232,7 @@ export const FONT_AR_OPTIONS = [
   { value: 'cairo', label: 'Cairo · القاهرة' },
   { value: 'almarai', label: 'Almarai · المراعي' },
   { value: 'markazi', label: 'Markazi · مركزي' },
+  { value: 'kufam', label: 'Kufam · كوفام' },
 ]
 
 export const FONT_LATIN_OPTIONS = [
@@ -237,6 +242,7 @@ export const FONT_LATIN_OPTIONS = [
   { value: 'cormorant', label: 'Cormorant' },
   { value: 'bebas', label: 'Bebas Neue' },
   { value: 'poppins', label: 'Poppins' },
+  { value: 'manrope', label: 'Manrope' },
 ]
 
 /**
@@ -285,6 +291,8 @@ export type Palette = { name: string; accent: string; bg: string; bg2: string; t
 
 /** Dark-mode ready palettes (set the accent/bg/bg2/text/subtext dark colours). */
 export const DARK_PALETTES: Palette[] = [
+  // The studio look's dark half: warm charcoal under a soft terracotta.
+  { name: 'Studio', accent: '#EDA478', bg: '#1F211F', bg2: '#292C28', text: '#F2ECE2', subtext: '#BAB8AE' },
   // Deep blue under a warm orange — what the landing page ships with. Pure
   // black leaves no room underneath it: every panel drawn on it has to be
   // lighter, so surfaces, cards and hairlines all arrive as greys of one
@@ -307,6 +315,8 @@ export const DARK_PALETTES: Palette[] = [
 
 /** Light-mode ready palettes (set the *Light colours). */
 export const LIGHT_PALETTES: Palette[] = [
+  // The studio look's light half: warm paper, ink and a burnt terracotta.
+  { name: 'Studio', accent: '#B84B24', bg: '#F8F5EF', bg2: '#FFFDFA', text: '#252520', subtext: '#6E6B63' },
   // Harbour's other half: the dark canvas becomes the text, so the two themes
   // are recognisably one brand rather than two.
   { name: 'Salt', accent: '#A85400', bg: '#FFFFFF', bg2: '#F4F6FB', text: '#0B1736', subtext: '#64748B' },
@@ -362,6 +372,8 @@ export const emptyDesign = (): DesignForm => ({
     direction: 'auto',
     cursor: 'default',
     anim: 'fade-up',
+    skin: 'classic',
+    heroGallery: true,
   },
   components: { card: 'solid', navbar: 'blur', button: 'rounded' },
   heroCover: { size: 'cover', posX: 50, posY: 50, overlay: 45, overlayLight: 25, height: 82, titleScale: 100, descScale: 100, titleScaleMobile: 0, descScaleMobile: 0, align: 'auto', valign: 'auto', gradient: 'none', gradientDark: '' },
@@ -373,3 +385,26 @@ export const emptyDesign = (): DesignForm => ({
   brandLogoUrl: null,
   heroCoverUrl: null,
 })
+
+/**
+ * The studio look in full: its colours in both themes, its two fonts and its
+ * component shapes. Written to a new portfolio when it is created, and to an
+ * existing one when its owner picks "use the studio colours and fonts".
+ */
+export const STUDIO_LOOK = {
+  colors: {
+    accent: '#EDA478',
+    bg: '#1F211F',
+    bg2: '#292C28',
+    text: '#F2ECE2',
+    subtext: '#BAB8AE',
+    accentLight: '#B84B24',
+    bgLight: '#F8F5EF',
+    bg2Light: '#FFFDFA',
+    textLight: '#252520',
+    subtextLight: '#6E6B63',
+  },
+  fontAr: 'kufam',
+  fontLatin: 'manrope',
+  components: { card: 'solid', navbar: 'solid', button: 'pill' },
+} as const

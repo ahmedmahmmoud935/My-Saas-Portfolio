@@ -1,7 +1,7 @@
 import React from 'react'
 import { redirect } from 'next/navigation'
 import { getDashboardContext, getTenantSettings } from '@/lib/dashboard'
-import { SECTION_ORDER } from '@/lib/dashboard-nav'
+import { SECTION_ORDER, withMissingSections } from '@/lib/dashboard-nav'
 import SectionsEditor from '@/components/dashboard/SectionsEditor'
 
 export default async function SectionsPage() {
@@ -19,20 +19,11 @@ export default async function SectionsPage() {
      Anything the site has and the list does not is appended. */
   const items =
     saved.length > 0
-      ? (() => {
-          const rows = saved.map((s) => ({
-            sectionId: s.sectionId as string,
-            visible: s.visible !== false,
-          }))
-          const seen = new Set(rows.map((r) => r.sectionId))
-          return [
-            ...rows,
-            ...SECTION_ORDER.filter((id) => !seen.has(id)).map((id) => ({
-              sectionId: id,
-              visible: true,
-            })),
-          ]
-        })()
+      ? withMissingSections(
+          saved.map((s) => ({ id: s.sectionId as string, visible: s.visible !== false })),
+          SECTION_ORDER,
+          (id) => ({ id, visible: true }),
+        ).map((r) => ({ sectionId: r.id, visible: r.visible }))
       : SECTION_ORDER.map((id) => ({ sectionId: id, visible: true }))
 
   return <SectionsEditor initial={items} />

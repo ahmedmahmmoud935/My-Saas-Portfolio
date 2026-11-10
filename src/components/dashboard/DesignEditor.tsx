@@ -25,6 +25,7 @@ import {
   DARK_PALETTES,
   LIGHT_PALETTES,
   BG_SECTIONS,
+  STUDIO_LOOK,
   GRADIENT_SUGGESTIONS,
   ANIMATED_SUGGESTIONS,
   SOLID_SUGGESTIONS,
@@ -164,7 +165,7 @@ const SET_NAMES: Record<string, string> = {
   Midnight: 'كحلي', Ember: 'جمري', Ocean: 'محيط', Forest: 'غابة', Plum: 'برقوقي', Mono: 'أبيض وأسود',
   Aurora: 'شفق', Sunset: 'غروب', Lagoon: 'بحيرة', Nebula: 'سديم', Ink: 'حبر', Ash: 'رمادي',
   Espresso: 'قهوة', Harbour: 'ميناء', Salt: 'ملح', Paper: 'ورق', Fog: 'ضباب', Mist: 'شبورة',
-  Sage: 'ميرمية', Blush: 'وردي', Cream: 'كريمي',
+  Sage: 'ميرمية', Blush: 'وردي', Cream: 'كريمي', Studio: 'ستوديو',
 }
 
 const THEME_STEPS = [
@@ -222,6 +223,7 @@ function applyDesign(doc: Document, f: DesignForm, theme: 'dark' | 'light') {
   root.dataset.card = f.components.card
   root.dataset.navbar = f.components.navbar
   root.dataset.btn = f.components.button
+  root.dataset.skin = f.style.skin === 'studio' ? 'studio' : 'classic'
   root.dir = f.style.direction === 'ltr' || f.style.direction === 'rtl' ? f.style.direction : root.lang === 'en' ? 'ltr' : 'rtl'
 
   /* The page backdrop is rebuilt only when it changed. Rebuilt on every paint,
@@ -427,7 +429,45 @@ function GeneralPanel({
 
         {step === 'look' && (
           <>
-            <p className="hx-lead">{tr('شكل الكروت والشريط العلوي والأزرار في كل الموقع.', 'How cards, the navbar and buttons look across the site.')}</p>
+            <p className="hx-lead">{tr('الشكل العام للموقع، وشكل الكروت والشريط العلوي والأزرار.', 'The overall look of the site, and how cards, the navbar and buttons look.')}</p>
+            <div className="hx-block">
+              <Opt
+                label={tr('شكل الموقع', 'Site look')}
+                value={f.style.skin === 'studio' ? 'studio' : 'classic'}
+                options={opts(tr, [['studio', 'ستوديو', 'Studio'], ['classic', 'كلاسيك', 'Classic']])}
+                onChange={(v) => setStyle({ skin: v })}
+              />
+              {f.style.skin === 'studio' && (
+                <>
+                  <p className="hx-note">
+                    {tr(
+                      'ستوديو: ألوان دافية، عناوين كبيرة، صور الأعمال تحت العنوان الرئيسي، ورقم على صورتك في «عن النفس» (بيتكتب من المحتوى ← عن النفس).',
+                      'Studio: warm colours, large headings, your latest designs under the hero, and a number on your About photo (written in Content → About).',
+                    )}
+                  </p>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    style={{ justifySelf: 'start' }}
+                    onClick={() =>
+                      set({
+                        colors: { ...f.colors, ...STUDIO_LOOK.colors },
+                        style: { ...f.style, fontAr: STUDIO_LOOK.fontAr, fontLatin: STUDIO_LOOK.fontLatin },
+                        components: { ...STUDIO_LOOK.components },
+                      })
+                    }
+                  >
+                    {tr('🎨 استخدم ألوان وخطوط الستوديو', '🎨 Use the studio colours and fonts')}
+                  </button>
+                  <Opt
+                    label={tr('صور الأعمال تحت العنوان الرئيسي', 'Your work under the hero')}
+                    value={f.style.heroGallery === false ? 'off' : 'on'}
+                    options={opts(tr, [['on', 'تظهر', 'Shown'], ['off', 'مخفية', 'Hidden']])}
+                    onChange={(v) => setStyle({ heroGallery: v === 'on' })}
+                  />
+                </>
+              )}
+            </div>
             <div className="hx-block">
               <Opt label={tr('الكروت', 'Cards')} value={f.components.card} options={opts(tr, [['solid', 'مصمتة', 'Solid'], ['glass', 'زجاجية', 'Glass'], ['outline', 'بإطار بس', 'Outline']])} onChange={(v) => setComp({ card: v })} />
               <Opt label={tr('الشريط العلوي', 'Navbar')} value={f.components.navbar} options={opts(tr, [['blur', 'شفاف مغبّش', 'Blurred'], ['solid', 'مصمت', 'Solid'], ['transparent', 'شفاف', 'Transparent']])} onChange={(v) => setComp({ navbar: v })} />
@@ -861,7 +901,7 @@ export default function DesignEditor({ initial, sitePath }: { initial: DesignFor
       <LayoutPicker
         section={id}
         label={label}
-        value={f.style[key]}
+        value={String(f.style[key])}
         options={LAYOUT_OPTIONS[id as keyof typeof LAYOUT_OPTIONS]}
         onChange={(v) => setStyle({ [key]: v })}
       />

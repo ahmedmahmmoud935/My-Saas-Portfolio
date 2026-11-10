@@ -11,8 +11,11 @@ import {
   Cormorant,
   Bebas_Neue,
   Poppins,
+  Kufam,
+  Manrope,
 } from 'next/font/google'
 import './globals.css'
+import './skin-studio.css'
 
 // Default pair (Tajawal kept in --font-cairo so no CSS changes are needed).
 const cairo = Tajawal({
@@ -47,6 +50,9 @@ const inter = Inter({ subsets: ['latin'], weight: ['400', '600', '700', '900'], 
 const playfair = Playfair_Display({ subsets: ['latin'], weight: ['500', '700', '800'], variable: '--f-playfair', display: 'swap', adjustFontFallback: false, fallback: ['Tajawal', 'Cairo', 'system-ui', 'sans-serif'] })
 const cormorant = Cormorant({ subsets: ['latin'], weight: ['500', '600', '700'], variable: '--f-cormorant', display: 'swap', adjustFontFallback: false, fallback: ['Tajawal', 'Cairo', 'system-ui', 'sans-serif'] })
 const poppins = Poppins({ subsets: ['latin'], weight: ['400', '600', '700', '800', '900'], variable: '--f-poppins', display: 'swap', adjustFontFallback: false, fallback: ['Tajawal', 'Cairo', 'system-ui', 'sans-serif'] })
+// The studio look's pair: Kufam carries the Arabic, Manrope the Latin.
+const kufam = Kufam({ subsets: ['arabic', 'latin'], weight: ['400', '500', '600', '700'], variable: '--f-kufam', display: 'swap' })
+const manrope = Manrope({ subsets: ['latin'], weight: ['400', '600', '700', '800'], variable: '--f-manrope', display: 'swap', adjustFontFallback: false, fallback: ['Kufam', 'Tajawal', 'system-ui', 'sans-serif'] })
 const bebas = Bebas_Neue({ subsets: ['latin'], weight: ['400'], variable: '--f-bebas', display: 'swap', adjustFontFallback: false, fallback: ['Tajawal', 'Cairo', 'system-ui', 'sans-serif'] })
 
 const fontVars = [
@@ -60,6 +66,8 @@ const fontVars = [
   cormorant.variable,
   bebas.variable,
   poppins.variable,
+  kufam.variable,
+  manrope.variable,
 ].join(' ')
 
 export const metadata = {

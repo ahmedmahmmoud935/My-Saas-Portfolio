@@ -44,6 +44,7 @@ export default function Hero({
   descScale = 100,
   titleScaleMobile,
   descScaleMobile,
+  gallery = [],
   align = 'auto',
   valign = 'auto',
   variant = 'split',
@@ -67,6 +68,8 @@ export default function Hero({
   /** On a phone; unset follows the two above. */
   titleScaleMobile?: number | null
   descScaleMobile?: number | null
+  /** Studio look: the latest designs fanned out under the buttons. */
+  gallery?: { id: number; title: string; url: string; href: string }[]
   align?: string
   valign?: string
   variant?: string
@@ -156,6 +159,17 @@ export default function Hero({
             </a>
           )}
         </div>
+        {gallery.length > 0 && (
+          <div className={`hero-gallery n${gallery.length}`}>
+            {gallery.map((g) => (
+              <a className="hero-tile" key={g.id} href={g.href}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={g.url} alt={g.title} loading="lazy" />
+                <span>{g.title}</span>
+              </a>
+            ))}
+          </div>
+        )}
       </div>
     </header>
   )

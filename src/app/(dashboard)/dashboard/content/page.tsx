@@ -42,7 +42,13 @@ export default async function ContentPage() {
       btn1: L(c.hero?.btn1),
       btn2: L(c.hero?.btn2),
     },
-    about: { title: L(c.about?.title), text: L(c.about?.text), tags: L(c.about?.tags) },
+    about: {
+      title: L(c.about?.title),
+      text: L(c.about?.text),
+      tags: L(c.about?.tags),
+      statValue: S(c.about?.statValue),
+      statLabel: L(c.about?.statLabel),
+    },
     expertise: {
       title: L(c.expertise?.title),
       items: ((c.expertise?.items as Record<string, unknown>[]) ?? []).map((it) => ({
