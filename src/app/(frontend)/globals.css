@@ -968,12 +968,16 @@ html:not([data-theme='light']) .hg-on-light {
   grid-auto-flow: column;
   grid-auto-columns: minmax(0, 1fr);
   width: min(100%, 720px);
-  gap: 6px;
-  padding: 6px;
-  margin: 0 auto 26px;
+  /* Room around the chosen tab, so it sits inside the band rather than
+     touching its edge; the band's corners are the tab's plus that room, so
+     the two curves run parallel. */
+  gap: 8px;
+  padding: 9px;
+  margin: 0 auto 28px;
   background: var(--bg-2);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: 22px;
+  box-shadow: inset 0 1px 2px color-mix(in srgb, #000 8%, transparent);
 }
 .media-tab {
   appearance: none;
@@ -984,8 +988,8 @@ html:not([data-theme='light']) .hg-on-light {
   font-weight: 700;
   font-size: 16px;
   letter-spacing: 0.2px;
-  padding: 14px 12px;
-  border-radius: 12px;
+  padding: 13px 12px;
+  border-radius: 13px;
   cursor: pointer;
   white-space: nowrap;
   transition: color 0.2s, background 0.2s;
@@ -1005,18 +1009,18 @@ html:not([data-theme='light']) .hg-on-light {
 .media-tab.active {
   background: var(--accent);
   color: #fff;
-  box-shadow: 0 8px 22px -10px color-mix(in srgb, var(--accent) 85%, transparent);
+  box-shadow: 0 6px 16px -8px color-mix(in srgb, var(--accent) 70%, transparent);
 }
 @media (max-width: 560px) {
   .media-tabs {
-    gap: 4px;
-    padding: 5px;
-    border-radius: 14px;
+    gap: 6px;
+    padding: 7px;
+    border-radius: 18px;
   }
   .media-tab {
     font-size: 14px;
-    padding: 12px 6px;
-    border-radius: 10px;
+    padding: 11px 6px;
+    border-radius: 11px;
   }
 }
 
