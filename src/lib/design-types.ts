@@ -65,6 +65,7 @@ export const BG_SECTIONS: { id: string; ar: string; en: string }[] = [
   { id: 'hero', ar: 'الرئيسية', en: 'Hero' },
   { id: 'about', ar: 'عن النفس', en: 'About' },
   { id: 'projects', ar: 'المشاريع', en: 'Projects' },
+  { id: 'products', ar: 'أبعد من الصورة', en: 'Beyond the image' },
   { id: 'achievements', ar: 'الإنجازات', en: 'Achievements' },
   { id: 'expertise', ar: 'الخدمات', en: 'Services' },
   { id: 'testimonials', ar: 'الآراء', en: 'Testimonials' },

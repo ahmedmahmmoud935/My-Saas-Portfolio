@@ -18,6 +18,7 @@ import { Posts } from './collections/Posts'
 import { Logos } from './collections/Logos'
 import { Testimonials } from './collections/Testimonials'
 import { Team } from './collections/Team'
+import { Products } from './collections/Products'
 import { Achievements } from './collections/Achievements'
 import { Visits } from './collections/Visits'
 import { Imports } from './collections/Imports'
@@ -65,6 +66,7 @@ export default buildConfig({
     purgesPortfolio(Logos),
     purgesPortfolio(Testimonials),
     purgesPortfolio(Team),
+    purgesPortfolio(Products),
     purgesPortfolio(Achievements),
     Visits,
     Imports,
@@ -104,6 +106,7 @@ export default buildConfig({
         logos: {},
         testimonials: {},
         team: {},
+        products: {},
         achievements: {},
         visits: {},
         // One settings document per tenant (behaves like a global).

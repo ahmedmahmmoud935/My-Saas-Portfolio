@@ -77,6 +77,7 @@ export interface Config {
     logos: Logo;
     testimonials: Testimonial;
     team: Team;
+    products: Product;
     achievements: Achievement;
     visits: Visit;
     imports: Import;
@@ -101,6 +102,7 @@ export interface Config {
     logos: LogosSelect<false> | LogosSelect<true>;
     testimonials: TestimonialsSelect<false> | TestimonialsSelect<true>;
     team: TeamSelect<false> | TeamSelect<true>;
+    products: ProductsSelect<false> | ProductsSelect<true>;
     achievements: AchievementsSelect<false> | AchievementsSelect<true>;
     visits: VisitsSelect<false> | VisitsSelect<true>;
     imports: ImportsSelect<false> | ImportsSelect<true>;
@@ -546,6 +548,34 @@ export interface Team {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products".
+ */
+export interface Product {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  title: string;
+  /**
+   * What kind of product: "Landing page", "Concept"…
+   */
+  tag?: string | null;
+  description?: string | null;
+  /**
+   * Opened by "Details" on the card.
+   */
+  details?: string | null;
+  image?: (number | null) | Media;
+  /**
+   * The live product. Empty: no button.
+   */
+  url?: string | null;
+  previewImage?: string | null;
+  btnLabel?: string | null;
+  sortOrder?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "achievements".
  */
 export interface Achievement {
@@ -726,6 +756,7 @@ export interface SiteSetting {
               | 'hero'
               | 'about'
               | 'projects'
+              | 'products'
               | 'achievements'
               | 'expertise'
               | 'testimonials'
@@ -871,6 +902,7 @@ export interface SiteSetting {
           | 'hero'
           | 'about'
           | 'projects'
+          | 'products'
           | 'achievements'
           | 'expertise'
           | 'testimonials'
@@ -998,6 +1030,10 @@ export interface SiteSetting {
     };
     team?: {
       title?: string | null;
+    };
+    products?: {
+      title?: string | null;
+      subtitle?: string | null;
     };
     tools?: {
       title?: string | null;
@@ -1140,6 +1176,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'team';
         value: number | Team;
+      } | null)
+    | ({
+        relationTo: 'products';
+        value: number | Product;
       } | null)
     | ({
         relationTo: 'achievements';
@@ -1518,6 +1558,24 @@ export interface TeamSelect<T extends boolean = true> {
   role?: T;
   bio?: T;
   photo?: T;
+  sortOrder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products_select".
+ */
+export interface ProductsSelect<T extends boolean = true> {
+  tenant?: T;
+  title?: T;
+  tag?: T;
+  description?: T;
+  details?: T;
+  image?: T;
+  url?: T;
+  previewImage?: T;
+  btnLabel?: T;
   sortOrder?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1905,6 +1963,12 @@ export interface SiteSettingsSelect<T extends boolean = true> {
           | T
           | {
               title?: T;
+            };
+        products?:
+          | T
+          | {
+              title?: T;
+              subtitle?: T;
             };
         tools?:
           | T

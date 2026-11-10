@@ -90,6 +90,7 @@ export default async function ContentPage() {
     projects: { title: L(c.projects?.title), subtitle: L(c.projects?.subtitle) },
     clients: { title: L(c.clients?.title) },
     testimonials: { title: L(c.testimonials?.title) },
+    products: { title: L(c.products?.title), subtitle: L(c.products?.subtitle) },
     contact: {
       title: L(c.contact?.title),
       subtitle: L(c.contact?.subtitle),
@@ -99,7 +100,7 @@ export default async function ContentPage() {
   }
 
   // Collections that also fill portfolio sections — managed here too.
-  const [logosRes, achRes, testRes, teamRes] = await Promise.all([
+  const [logosRes, achRes, testRes, teamRes, productsRes] = await Promise.all([
     ctx.payload.find({
       collection: 'logos',
       where: { tenant: { equals: ctx.tenantId } },
@@ -127,6 +128,14 @@ export default async function ContentPage() {
        the form needs the Arabic and the English halves side by side. */
     ctx.payload.find({
       collection: 'team',
+      where: { tenant: { equals: ctx.tenantId } },
+      sort: ['sortOrder', 'createdAt'],
+      limit: 200,
+      depth: 1,
+      locale: 'all',
+    }),
+    ctx.payload.find({
+      collection: 'products',
       where: { tenant: { equals: ctx.tenantId } },
       sort: ['sortOrder', 'createdAt'],
       limit: 200,
@@ -188,6 +197,32 @@ export default async function ContentPage() {
     }
   })
 
+  const products = productsRes.docs.map((p, i) => {
+    const title = loc(p.title)
+    const tag = loc(p.tag)
+    const desc = loc(p.description)
+    const details = loc(p.details)
+    const btn = loc(p.btnLabel)
+    return {
+      id: p.id,
+      titleAr: title.ar,
+      titleEn: title.en,
+      tagAr: tag.ar,
+      tagEn: tag.en,
+      descAr: desc.ar,
+      descEn: desc.en,
+      detailsAr: details.ar,
+      detailsEn: details.en,
+      btnAr: btn.ar,
+      btnEn: btn.en,
+      url: p.url ?? '',
+      imageId: (p.image && typeof p.image === 'object' ? p.image.id : (p.image as number)) ?? null,
+      imageUrl: mediaUrl(p.image as never, 'card'),
+      previewUrl: p.previewImage ?? null,
+      sortOrder: p.sortOrder ?? i,
+    }
+  })
+
   // The public review page is addressed by the tenant's slug, so the dashboard
   // needs it to show the link the owner sends to clients.
   const tenant = await ctx.payload.findByID({ collection: 'tenants', id: ctx.tenantId, depth: 0 })
@@ -199,6 +234,7 @@ export default async function ContentPage() {
       achievements={achievements}
       testimonials={testimonials}
       team={team}
+      products={products}
       slug={tenant.slug}
     />
   )

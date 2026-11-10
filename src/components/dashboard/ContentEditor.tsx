@@ -462,6 +462,16 @@ export default function ContentEditor({
           <LocField label={t('عنوان القسم', 'Section title')} value={f.testimonials.title} onChange={(v) => patch({ testimonials: { ...f.testimonials, title: v } })} />
         )}
 
+        {sec === 'products' && (
+          <>
+            <LocField label={t('عنوان القسم', 'Section title')} value={f.products.title} onChange={(v) => patch({ products: { ...f.products, title: v } })} />
+            <LocField multiline label={t('السطر اللي تحت العنوان', 'Line under the title')} value={f.products.subtitle} onChange={(v) => patch({ products: { ...f.products, subtitle: v } })} />
+            <p style={{ color: 'var(--sub)', fontSize: 13 }}>
+              {t('الكروت نفسها بتتضاف من تبويب «أبعد من الصورة» فوق.', 'The cards themselves are added from the “Beyond the image” tab above.')}
+            </p>
+          </>
+        )}
+
         {sec === 'contact' && (
           <>
             <LocField label={t('العنوان', 'Title')} value={f.contact.title} onChange={(v) => patch({ contact: { ...f.contact, title: v } })} />

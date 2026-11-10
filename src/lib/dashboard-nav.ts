@@ -63,6 +63,7 @@ export const SECTION_LABELS: Record<string, { ar: string; en: string }> = {
   hero: { ar: 'الرئيسية', en: 'Hero' },
   about: { ar: 'عن النفس', en: 'About' },
   projects: { ar: 'المشاريع', en: 'Projects' },
+  products: { ar: 'أبعد من الصورة', en: 'Beyond the image' },
   achievements: { ar: 'الإنجازات', en: 'Achievements' },
   expertise: { ar: 'الخدمات', en: 'Key Expertise' },
   testimonials: { ar: 'آراء العملاء', en: 'Testimonials' },

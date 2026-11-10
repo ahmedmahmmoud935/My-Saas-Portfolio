@@ -58,6 +58,8 @@ import * as migration_20261008_010000_landing_new_copy from './20261008_010000_l
 import * as migration_20261008_020000_landing_hero_back from './20261008_020000_landing_hero_back';
 import * as migration_20261008_030000_landing_seo_follows_hero from './20261008_030000_landing_seo_follows_hero';
 import * as migration_20261106_010000_hero_phone_sizes from './20261106_010000_hero_phone_sizes';
+import * as migration_20261110_010000_products from './20261110_010000_products';
+import * as migration_20261110_020000_ahmed_first_product from './20261110_020000_ahmed_first_product';
 
 export const migrations = [
   {
@@ -359,5 +361,15 @@ export const migrations = [
     up: migration_20261106_010000_hero_phone_sizes.up,
     down: migration_20261106_010000_hero_phone_sizes.down,
     name: '20261106_010000_hero_phone_sizes'
+  },
+  {
+    up: migration_20261110_010000_products.up,
+    down: migration_20261110_010000_products.down,
+    name: '20261110_010000_products'
+  },
+  {
+    up: migration_20261110_020000_ahmed_first_product.up,
+    down: migration_20261110_020000_ahmed_first_product.down,
+    name: '20261110_020000_ahmed_first_product'
   },
 ];

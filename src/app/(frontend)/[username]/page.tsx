@@ -15,6 +15,7 @@ import Achievements from '@/components/portfolio/Achievements'
 import Logos from '@/components/portfolio/Logos'
 import Testimonials from '@/components/portfolio/Testimonials'
 import Team from '@/components/portfolio/Team'
+import Products from '@/components/portfolio/Products'
 import Contact from '@/components/portfolio/Contact'
 import Footer from '@/components/portfolio/Footer'
 import TrackVisit from '@/components/portfolio/TrackVisit'
@@ -127,7 +128,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
   // Suspended clients: hide the public site.
   if ((data.tenant as { suspended?: boolean }).suspended) notFound()
 
-  const { tenant, settings, projects, achievements, logos, testimonials, team } = data
+  const { tenant, settings, projects, achievements, logos, testimonials, team, products } = data
   const content = settings?.content ?? {}
   const brand = settings?.brand ?? {}
 
@@ -310,6 +311,23 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
         }))}
       />
     ),
+    products: (
+      <Products
+        title={content.products?.title || (locale === 'en' ? 'Beyond the image' : 'أبعد من الصورة')}
+        subtitle={content.products?.subtitle}
+        locale={locale}
+        items={products.map((p) => ({
+          id: p.id,
+          title: p.title,
+          tag: p.tag,
+          description: p.description,
+          details: p.details,
+          imageUrl: mediaUrl(p.image, 'card') || p.previewImage || null,
+          url: p.url,
+          btnLabel: p.btnLabel,
+        }))}
+      />
+    ),
     team: (
       <Team
         title={content.team?.title || (locale === 'en' ? 'The team' : 'الفريق')}
@@ -357,6 +375,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
     'hero',
     'about',
     'projects',
+    'products',
     'achievements',
     'expertise',
     'testimonials',

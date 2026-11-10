@@ -77,6 +77,7 @@ function buildContent(form: ContentForm, loc: 'ar' | 'en', ids?: IdMap) {
     projects: { title: g(form.projects.title), subtitle: g(form.projects.subtitle) },
     clients: { title: g(form.clients.title) },
     testimonials: { title: g(form.testimonials.title) },
+    products: { title: g(form.products.title), subtitle: g(form.products.subtitle) },
     contact: {
       title: g(form.contact.title),
       subtitle: g(form.contact.subtitle),

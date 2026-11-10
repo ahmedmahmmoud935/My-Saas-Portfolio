@@ -3,8 +3,8 @@
 import { getDashboardContext } from './dashboard'
 
 // Generic tenant-scoped CRUD for the simple per-tenant collections.
-type Coll = 'logos' | 'achievements' | 'testimonials' | 'team' | 'articles' | 'redirects' | 'posts'
-const ALLOWED: Coll[] = ['logos', 'achievements', 'testimonials', 'team', 'articles', 'redirects', 'posts']
+type Coll = 'logos' | 'achievements' | 'testimonials' | 'team' | 'products' | 'articles' | 'redirects' | 'posts'
+const ALLOWED: Coll[] = ['logos', 'achievements', 'testimonials', 'team', 'products', 'articles', 'redirects', 'posts']
 
 /**
  * Collections that belong to the platform rather than to a tenant.

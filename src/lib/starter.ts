@@ -142,6 +142,7 @@ export function starterContent(field: StarterField, name: string): ContentForm {
     projects: { title: L('أعمالي', 'My work'), subtitle: v.projectsSub },
     clients: { title: L('عملاء اشتغلت معاهم', 'Clients') },
     testimonials: { title: L('آراء العملاء', 'What clients say') },
+    products: { title: L('أبعد من الصورة', 'Beyond the image'), subtitle: L('منتجات رقمية بنيتها', 'Digital products I have built') },
     contact: {
       title: L('يلا نشتغل سوا', "Let's work together"),
       subtitle: L('ابعتلي تفاصيل مشروعك وهرد عليك في أقرب وقت.', "Tell me about your project and I'll get back to you soon."),

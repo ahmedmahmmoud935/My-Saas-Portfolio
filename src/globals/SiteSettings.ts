@@ -13,6 +13,7 @@ const SECTION_IDS = [
   'hero',
   'about',
   'projects',
+  'products',
   'achievements',
   'expertise',
   'testimonials',
@@ -780,6 +781,16 @@ export const SiteSettings: CollectionConfig = {
                   name: 'team',
                   type: 'group',
                   fields: [{ name: 'title', type: 'text', localized: true }],
+                },
+                {
+                  // "Beyond the image" — the heading over the cards the
+                  // `products` collection fills, and the line under it.
+                  name: 'products',
+                  type: 'group',
+                  fields: [
+                    { name: 'title', type: 'text', localized: true },
+                    { name: 'subtitle', type: 'textarea', localized: true },
+                  ],
                 },
                 {
                   name: 'tools',

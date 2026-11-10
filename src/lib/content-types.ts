@@ -34,6 +34,7 @@ export type ContentForm = {
   // Headings only — the entries themselves live in their own collections.
   clients: { title: Loc }
   testimonials: { title: Loc }
+  products: { title: Loc; subtitle: Loc }
   contact: { title: Loc; subtitle: Loc; email: string; phone: string }
 }
 
@@ -50,6 +51,7 @@ export const CONTENT_SECTIONS: { id: keyof ContentForm; label: string }[] = [
   { id: 'projects', label: 'المشاريع' },
   { id: 'clients', label: 'العملاء' },
   { id: 'testimonials', label: 'الآراء' },
+  { id: 'products', label: 'أبعد من الصورة' },
   { id: 'contact', label: 'التواصل' },
 ]
 

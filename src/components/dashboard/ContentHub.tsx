@@ -7,13 +7,15 @@ import LogosManager from './LogosManager'
 import AchievementsManager from './AchievementsManager'
 import TestimonialsManager from './TestimonialsManager'
 import TeamManager from './TeamManager'
+import ProductsManager from './ProductsManager'
 import { useDashLang } from './DashLang'
 import type { ContentForm } from '@/lib/content-types'
 
-type HubTab = 'content' | 'clients' | 'achievements' | 'testimonials' | 'team'
+type HubTab = 'content' | 'products' | 'clients' | 'achievements' | 'testimonials' | 'team'
 
 const TABS: { id: HubTab; ar: string; en: string }[] = [
   { id: 'content', ar: 'النصوص', en: 'Texts' },
+  { id: 'products', ar: 'أبعد من الصورة', en: 'Beyond the image' },
   { id: 'clients', ar: 'العملاء', en: 'Clients' },
   { id: 'achievements', ar: 'الإنجازات', en: 'Achievements' },
   { id: 'testimonials', ar: 'آراء العملاء', en: 'Testimonials' },
@@ -32,6 +34,7 @@ const TEXT_SPOT: Record<keyof ContentForm, string> = {
   projects: 'projects',
   clients: 'logos',
   testimonials: 'testimonials',
+  products: 'products',
   contact: 'contact',
 }
 const TAB_SPOT: Record<Exclude<HubTab, 'content'>, string> = {
@@ -39,6 +42,7 @@ const TAB_SPOT: Record<Exclude<HubTab, 'content'>, string> = {
   achievements: 'achievements',
   testimonials: 'testimonials',
   team: 'team',
+  products: 'products',
 }
 
 /**
@@ -52,6 +56,7 @@ export default function ContentHub({
   achievements,
   testimonials,
   team,
+  products,
   slug,
 }: {
   content: ContentForm
@@ -59,6 +64,7 @@ export default function ContentHub({
   achievements: React.ComponentProps<typeof AchievementsManager>['items']
   testimonials: React.ComponentProps<typeof TestimonialsManager>['items']
   team: React.ComponentProps<typeof TeamManager>['items']
+  products: React.ComponentProps<typeof ProductsManager>['items']
   /** The tenant's slug — the public review page lives at /testimonial/<slug>. */
   slug: string
 }) {
@@ -83,7 +89,7 @@ export default function ContentHub({
       return
     }
     setVersion((v) => v + 1)
-  }, [logos, achievements, testimonials, team])
+  }, [logos, achievements, testimonials, team, products])
 
   const spot = tab === 'content' ? TEXT_SPOT[textSec] : TAB_SPOT[tab]
 
@@ -115,6 +121,7 @@ export default function ContentHub({
           {tab === 'achievements' && <AchievementsManager items={achievements} />}
           {tab === 'testimonials' && <TestimonialsManager items={testimonials} slug={slug} />}
           {tab === 'team' && <TeamManager items={team} />}
+          {tab === 'products' && <ProductsManager items={products} />}
         </div>
         {showPreview && (
           <LandingPreview spot={spot} version={version} path={`/${slug}`} onClose={() => setShowPreview(false)} />
