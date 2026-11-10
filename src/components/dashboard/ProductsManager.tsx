@@ -44,6 +44,8 @@ export type ProductItem = {
   imageUrl: string | null
   /** The live site's own share picture, used when none is uploaded. */
   previewUrl?: string | null
+  /** Shown on the large card. */
+  featured?: boolean
   sortOrder: number
 }
 
@@ -157,6 +159,19 @@ export default function ProductsManager({ items }: { items: ProductItem[] }) {
     router.refresh()
   }
 
+  /** The one product on the large card: marking one unmarks the other. */
+  async function feature(m: ProductItem) {
+    if (busy || !m.id) return
+    setBusy(true)
+    const on = !m.featured
+    await Promise.all([
+      saveDoc('products', m.id, { featured: on }, 'ar'),
+      ...(on ? items.filter((o) => o.featured && o.id && o.id !== m.id).map((o) => saveDoc('products', o.id!, { featured: false }, 'ar')) : []),
+    ])
+    setBusy(false)
+    router.refresh()
+  }
+
   /** Swapping two neighbours' order, and saving only those two. */
   async function move(i: number, dir: -1 | 1) {
     const j = i + dir
@@ -237,6 +252,11 @@ export default function ProductsManager({ items }: { items: ProductItem[] }) {
               </div>
               <div style={{ flex: '1 1 200px', textAlign: 'start', minWidth: 0 }}>
                 <strong>{m.titleAr || m.titleEn}</strong>
+                {(m.featured || (!items.some((o) => o.featured) && i === 0)) && (
+                  <span className="pill" style={{ marginInlineStart: 8, fontSize: 12 }}>
+                    {t('⭐ المعروض بالكبير', '⭐ Shown large')}
+                  </span>
+                )}
                 <div style={{ color: 'var(--sub)', fontSize: 13 }}>
                   {[m.tagAr || m.tagEn, m.url ? m.url.replace(/^https?:\/\//, '') : t('من غير رابط', 'No link')].filter(Boolean).join(' · ')}
                 </div>
@@ -245,6 +265,9 @@ export default function ProductsManager({ items }: { items: ProductItem[] }) {
                 <button className="icon-btn" style={{ height: 20 }} onClick={() => move(i, -1)}>▲</button>
                 <button className="icon-btn" style={{ height: 20 }} onClick={() => move(i, 1)}>▼</button>
               </div>
+              <button className={`btn ${m.featured ? 'btn-primary' : 'btn-ghost'}`} disabled={busy} onClick={() => feature(m)} title={t('يظهر بالعرض الكبير والباقي أصغر تحته', 'Shown on the large card, the rest smaller below')}>
+                {m.featured ? t('⭐ إلغاء العرض الكبير', '⭐ Unfeature') : t('☆ اعرضه بالكبير', '☆ Show large')}
+              </button>
               <button className="btn btn-ghost" onClick={() => setEdit(m)}>
                 {t('تعديل', 'Edit')}
               </button>

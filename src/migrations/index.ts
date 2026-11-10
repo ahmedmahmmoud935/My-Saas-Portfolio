@@ -66,6 +66,7 @@ import * as migration_20261110_050000_product_previews from './20261110_050000_p
 import * as migration_20261110_060000_ahmed_reference_content from './20261110_060000_ahmed_reference_content';
 import * as migration_20261110_070000_studio_brand from './20261110_070000_studio_brand';
 import * as migration_20261111_010000_hero_gallery_mobile from './20261111_010000_hero_gallery_mobile';
+import * as migration_20261111_020000_product_featured from './20261111_020000_product_featured';
 
 export const migrations = [
   {
@@ -407,5 +408,10 @@ export const migrations = [
     up: migration_20261111_010000_hero_gallery_mobile.up,
     down: migration_20261111_010000_hero_gallery_mobile.down,
     name: '20261111_010000_hero_gallery_mobile'
+  },
+  {
+    up: migration_20261111_020000_product_featured.up,
+    down: migration_20261111_020000_product_featured.down,
+    name: '20261111_020000_product_featured'
   },
 ];

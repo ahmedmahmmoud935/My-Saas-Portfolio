@@ -105,7 +105,10 @@ export default function StudioPortfolio({ d, page = 'home' }: { d: StudioData; p
   // The bar editor's own links and labels, when the client has set them.
   const links = d.nav ? d.nav.filter((l) => present.has(l.id)) : defaultLinks
 
-  const [feature, ...pair] = d.digital?.items ?? []
+  // The product the client marked to show large, else the first; the rest smaller.
+  const prodList = d.digital?.items ?? []
+  const feature = prodList.find((p) => p.featured) ?? prodList[0]
+  const pair = prodList.filter((p) => p !== feature)
 
   /* Each section, so they can be laid out in the client's own order. */
   const blocks: Record<StudioSection, React.ReactNode> = {
@@ -136,9 +139,6 @@ export default function StudioPortfolio({ d, page = 'home' }: { d: StudioData; p
             )}
             <h1>
               <HeroTitle lines={d.hero.title} />
-              <span className="st-hero-spark" aria-hidden="true">
-                ✳︎
-              </span>
             </h1>
             {d.hero.desc && <p className="st-hero-description">{d.hero.desc}</p>}
             <div className="st-hero-buttons">
@@ -556,7 +556,6 @@ export default function StudioPortfolio({ d, page = 'home' }: { d: StudioData; p
               <div className="st-contact-copy">
                 <h2>
                   {d.contact.title}
-                  <span>↗</span>
                 </h2>
                 {d.contact.subtitle && <h3>{d.contact.subtitle}</h3>}
                 {d.contact.body && <p>{d.contact.body}</p>}

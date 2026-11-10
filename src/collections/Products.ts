@@ -51,6 +51,8 @@ export const Products: CollectionConfig = {
     { name: 'mockTagline', type: 'text', localized: true },
     { name: 'mockHeadline', type: 'textarea', localized: true },
     { name: 'mockCta', type: 'text', localized: true },
+    // The one shown on the large card in the studio look.
+    { name: 'featured', type: 'checkbox', defaultValue: false },
     { name: 'sortOrder', type: 'number', defaultValue: 0, admin: { position: 'sidebar' } },
   ],
 }

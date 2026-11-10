@@ -211,6 +211,8 @@ export type StudioData = {
       btn: string
       host: string
       detailsLabel: string
+      /** Shown on the large card, the rest under it. */
+      featured: boolean
       preview: 'image' | 'site' | 'landing' | 'chart'
       mock: { brand: string; tagline: string; headline: string[]; cta: string; imgs: string[] }
     }[]
@@ -420,6 +422,7 @@ export function buildStudioData(data: PortfolioData, lang: Lang, q: string): Stu
       btn: trim(p.btnLabel) || ui.visit,
       host: url ? host(url) : '',
       detailsLabel: trim(p.detailsLabel) || ui.details,
+      featured: (p as { featured?: boolean | null }).featured === true,
       preview: (['site', 'landing', 'chart'].includes(String(p.preview)) ? p.preview : 'image') as 'image' | 'site' | 'landing' | 'chart',
       mock: {
         brand: trim(p.mockBrand),

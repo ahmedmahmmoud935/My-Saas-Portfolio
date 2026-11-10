@@ -242,6 +242,7 @@ export default async function ContentPage() {
       imageId: (p.image && typeof p.image === 'object' ? p.image.id : (p.image as number)) ?? null,
       imageUrl: mediaUrl(p.image as never, 'card'),
       previewUrl: p.previewImage ?? null,
+      featured: (p as { featured?: boolean | null }).featured === true,
       sortOrder: p.sortOrder ?? i,
     }
   })

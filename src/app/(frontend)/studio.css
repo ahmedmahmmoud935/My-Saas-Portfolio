@@ -651,3 +651,11 @@ html[data-theme=dark] .st-root .st-hero-veil{opacity:var(--veil-d,.45)}
 /* The button to every project, under the home page's two rows. */
 .st-root .st-work-all{display:flex;justify-content:center;margin-top:36px}
 .st-root .st-work-page .st-work-section{border-radius:0;min-height:70vh}
+
+/* The products under the large one sit three to a row, smaller. */
+@media (min-width:1101px){
+  .st-root .st-digital-pair{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .st-root .st-digital-project .st-product-stage{height:260px}
+  .st-root .st-digital-project .st-digital-copy{padding:26px}
+  .st-root .st-digital-project .st-digital-copy h3{font-size:24px}
+}
