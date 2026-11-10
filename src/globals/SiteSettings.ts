@@ -806,6 +806,23 @@ export const SiteSettings: CollectionConfig = {
                   ],
                 },
                 {
+                  // The lines only the studio template has: the word strip under
+                  // the hero, the sections' descriptions, the contact paragraph…
+                  name: 'studio',
+                  type: 'group',
+                  fields: [
+                    { name: 'strip', type: 'text', localized: true },
+                    { name: 'servicesSub', type: 'textarea', localized: true },
+                    { name: 'reviewsSub', type: 'textarea', localized: true },
+                    { name: 'experienceSub', type: 'textarea', localized: true },
+                    { name: 'contactBody', type: 'textarea', localized: true },
+                    { name: 'formTitle', type: 'text', localized: true },
+                    { name: 'digitalEnd', type: 'textarea', localized: true },
+                    { name: 'digitalEndBtn', type: 'text', localized: true },
+                    { name: 'footer', type: 'text', localized: true },
+                  ],
+                },
+                {
                   name: 'tools',
                   type: 'group',
                   fields: [

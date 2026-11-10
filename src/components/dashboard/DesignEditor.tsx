@@ -441,8 +441,8 @@ function GeneralPanel({
                 <>
                   <p className="hx-note">
                     {tr(
-                      'ستوديو: ألوان دافية، عناوين كبيرة، صور الأعمال تحت العنوان الرئيسي، ورقم على صورتك في «عن النفس» (بيتكتب من المحتوى ← عن النفس).',
-                      'Studio: warm colours, large headings, your latest designs under the hero, and a number on your About photo (written in Content → About).',
+                      'ستوديو: قالب كامل بتصميم مختلف، وبيتملي من نفس محتواك. الرقم اللي على صورتك بيتكتب من المحتوى ← عن النفس، والجمل الخاصة بيه من المحتوى ← نصوص ستوديو. المعاينة بتتحدّث بعد الحفظ.',
+                      'Studio: a whole template of its own, filled from the same content. The number on your photo is in Content → About, and its own lines in Content → Studio texts. The preview updates after saving.',
                     )}
                   </p>
                   <button

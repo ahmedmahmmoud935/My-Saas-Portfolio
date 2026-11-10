@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { useUnsaved } from './useUnsaved'
 import { saveFailureText } from '@/lib/action-error'
 import { portfolioTitle } from '@/lib/title'
-import { lightDim } from '@/lib/content-types'
+import { lightDim, STUDIO_TEXTS } from '@/lib/content-types'
 import PageHeader from './PageHeader'
 import MediaUploader from './MediaUploader'
 import { saveContent } from '@/lib/content-actions'
@@ -488,6 +488,26 @@ export default function ContentEditor({
             <p style={{ color: 'var(--sub)', fontSize: 13 }}>
               {t('الكروت نفسها بتتضاف من تبويب «أبعد من الصورة» فوق.', 'The cards themselves are added from the “Beyond the image” tab above.')}
             </p>
+          </>
+        )}
+
+        {sec === 'studio' && (
+          <>
+            <p className="cover-note" style={{ marginBottom: 14 }}>
+              {t(
+                'النصوص دي بتظهر بس لما شكل الموقع يكون «ستوديو» (التصميم ← إعدادات عامة ← الشكل).',
+                'These lines show only with the Studio look (Design → General → Look).',
+              )}
+            </p>
+            {STUDIO_TEXTS.map((it) => (
+              <LocField
+                key={it.key}
+                label={t(it.ar, it.en)}
+                multiline={it.multiline}
+                value={f.studio?.[it.key] ?? { ar: '', en: '' }}
+                onChange={(v) => patch({ studio: { ...f.studio, [it.key]: v } })}
+              />
+            ))}
           </>
         )}
 

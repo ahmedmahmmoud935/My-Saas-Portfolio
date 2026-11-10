@@ -150,6 +150,24 @@ export function starterContent(field: StarterField, name: string): ContentForm {
       email: '',
       phone: '',
     },
+    // The studio template's own lines: the reference wording, in both languages.
+    studio: {
+      strip: L('تصميم, حركة, تجارب رقمية, عقل إبداعي واحد', 'Design, Motion, Digital experiences, One creative mind'),
+      servicesSub: L(
+        'خدمات إبداعية وتقنية تعمل معاً، أو كلٌّ منها على حدة، حسب المرحلة التي وصل إليها مشروعك.',
+        'Creative and technical skills, working together or independently, to meet your project where it is.',
+      ),
+      reviewsSub: L('آراء من أشخاص شاركتهم رحلة العمل.', "From people I've shared the creative process with."),
+      experienceSub: L('محطات مختلفة. خبرة تتراكم مع كل تجربة.', 'Different stops. Experience that builds with every project.'),
+      contactBody: L(
+        'شاركني الهدف وما تحتاجه، لنحدّد معاً نطاق المشروع والخطوة الأولى.',
+        'Share your goal and what you need, and we will set the scope and the first step together.',
+      ),
+      formTitle: L('احكِ لي عن مشروعك', 'Tell me about your project'),
+      digitalEnd: L('لديك فكرة موقع أو خطوات عمل تحتاج إلى تنظيم؟', 'Have a website idea or a workflow that needs structure?'),
+      digitalEndBtn: L('لنحوّلها إلى تجربة', 'Let’s turn it into an experience'),
+      footer: L('فكرة واضحة. تفاصيل مدروسة. أثر يبقى.', 'Clear ideas. Considered details. Lasting impact.'),
+    },
   }
 }
 

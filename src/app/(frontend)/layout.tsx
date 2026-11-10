@@ -15,7 +15,6 @@ import {
   Manrope,
 } from 'next/font/google'
 import './globals.css'
-import './skin-studio.css'
 
 // Default pair (Tajawal kept in --font-cairo so no CSS changes are needed).
 const cairo = Tajawal({

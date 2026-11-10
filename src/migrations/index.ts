@@ -61,6 +61,7 @@ import * as migration_20261106_010000_hero_phone_sizes from './20261106_010000_h
 import * as migration_20261110_010000_products from './20261110_010000_products';
 import * as migration_20261110_020000_ahmed_first_product from './20261110_020000_ahmed_first_product';
 import * as migration_20261110_030000_studio_look from './20261110_030000_studio_look';
+import * as migration_20261110_040000_studio_texts from './20261110_040000_studio_texts';
 
 export const migrations = [
   {
@@ -377,5 +378,10 @@ export const migrations = [
     up: migration_20261110_030000_studio_look.up,
     down: migration_20261110_030000_studio_look.down,
     name: '20261110_030000_studio_look'
+  },
+  {
+    up: migration_20261110_040000_studio_texts.up,
+    down: migration_20261110_040000_studio_texts.down,
+    name: '20261110_040000_studio_texts'
   },
 ];

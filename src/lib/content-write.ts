@@ -1,5 +1,5 @@
 import type { Payload } from 'payload'
-import type { ContentForm, Loc } from './content-types'
+import { STUDIO_TEXTS, type ContentForm, type Loc } from './content-types'
 
 /*
  * Writing a portfolio's texts, both languages.
@@ -90,6 +90,7 @@ function buildContent(form: ContentForm, loc: 'ar' | 'en', ids?: IdMap) {
       email: form.contact.email,
       phone: form.contact.phone,
     },
+    studio: Object.fromEntries(STUDIO_TEXTS.map(({ key }) => [key, g(form.studio?.[key] ?? { ar: '', en: '' })])),
   }
 }
 

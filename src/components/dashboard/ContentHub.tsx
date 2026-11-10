@@ -36,6 +36,7 @@ const TEXT_SPOT: Record<keyof ContentForm, string> = {
   testimonials: 'testimonials',
   products: 'products',
   contact: 'contact',
+  studio: 'top',
 }
 const TAB_SPOT: Record<Exclude<HubTab, 'content'>, string> = {
   clients: 'logos',

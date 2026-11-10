@@ -36,7 +36,24 @@ export type ContentForm = {
   testimonials: { title: Loc }
   products: { title: Loc; subtitle: Loc }
   contact: { title: Loc; subtitle: Loc; email: string; phone: string }
+  /** Lines only the studio template shows. */
+  studio: Record<StudioTextKey, Loc>
 }
+
+export type StudioTextKey = 'strip' | 'servicesSub' | 'reviewsSub' | 'experienceSub' | 'contactBody' | 'formTitle' | 'digitalEnd' | 'digitalEndBtn' | 'footer'
+
+/** The studio lines, in the order the editor lists them, with their labels. */
+export const STUDIO_TEXTS: { key: StudioTextKey; ar: string; en: string; multiline: boolean }[] = [
+  { key: 'strip', ar: 'الكلمات اللي في الشريط تحت الرئيسية (افصل بينها بفاصلة)', en: 'Words in the strip under the hero (comma-separated)', multiline: false },
+  { key: 'servicesSub', ar: 'وصف قسم الخدمات', en: 'Services description', multiline: true },
+  { key: 'reviewsSub', ar: 'وصف قسم الآراء', en: 'Reviews description', multiline: true },
+  { key: 'experienceSub', ar: 'وصف قسم الخبرات', en: 'Experience description', multiline: true },
+  { key: 'contactBody', ar: 'فقرة قسم التواصل', en: 'Contact paragraph', multiline: true },
+  { key: 'formTitle', ar: 'عنوان نموذج التواصل', en: 'Contact form title', multiline: false },
+  { key: 'digitalEnd', ar: 'الجملة في آخر «أبعد من الصورة»', en: 'The line at the end of “Beyond the image”', multiline: true },
+  { key: 'digitalEndBtn', ar: 'زرار آخر «أبعد من الصورة»', en: 'The button at the end of “Beyond the image”', multiline: false },
+  { key: 'footer', ar: 'جملة الفوتر', en: 'Footer line', multiline: false },
+]
 
 export const emptyLoc = (): Loc => ({ ar: '', en: '' })
 
@@ -53,6 +70,7 @@ export const CONTENT_SECTIONS: { id: keyof ContentForm; label: string }[] = [
   { id: 'testimonials', label: 'الآراء' },
   { id: 'products', label: 'أبعد من الصورة' },
   { id: 'contact', label: 'التواصل' },
+  { id: 'studio', label: 'نصوص ستوديو' },
 ]
 
 /**

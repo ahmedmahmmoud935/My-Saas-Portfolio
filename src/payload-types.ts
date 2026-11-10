@@ -1042,6 +1042,17 @@ export interface SiteSetting {
       title?: string | null;
       subtitle?: string | null;
     };
+    studio?: {
+      strip?: string | null;
+      servicesSub?: string | null;
+      reviewsSub?: string | null;
+      experienceSub?: string | null;
+      contactBody?: string | null;
+      formTitle?: string | null;
+      digitalEnd?: string | null;
+      digitalEndBtn?: string | null;
+      footer?: string | null;
+    };
     tools?: {
       title?: string | null;
       items?:
@@ -1980,6 +1991,19 @@ export interface SiteSettingsSelect<T extends boolean = true> {
           | {
               title?: T;
               subtitle?: T;
+            };
+        studio?:
+          | T
+          | {
+              strip?: T;
+              servicesSub?: T;
+              reviewsSub?: T;
+              experienceSub?: T;
+              contactBody?: T;
+              formTitle?: T;
+              digitalEnd?: T;
+              digitalEndBtn?: T;
+              footer?: T;
             };
         tools?:
           | T

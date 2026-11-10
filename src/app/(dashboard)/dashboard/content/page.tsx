@@ -4,7 +4,7 @@ import { getDashboardContext, getTenantSettings } from '@/lib/dashboard'
 import { mediaUrl } from '@/lib/portfolio'
 import ContentHub from '@/components/dashboard/ContentHub'
 import { lightDim } from '@/lib/content-types'
-import type { ContentForm, Loc } from '@/lib/content-types'
+import { STUDIO_TEXTS, type ContentForm, type Loc } from '@/lib/content-types'
 
 const L = (x: unknown): Loc => {
   if (x && typeof x === 'object' && ('ar' in x || 'en' in x)) {
@@ -103,6 +103,9 @@ export default async function ContentPage() {
       email: S(c.contact?.email),
       phone: S(c.contact?.phone),
     },
+    studio: Object.fromEntries(
+      STUDIO_TEXTS.map(({ key }) => [key, L((c.studio as Record<string, unknown> | undefined)?.[key])]),
+    ) as ContentForm['studio'],
   }
 
   // Collections that also fill portfolio sections — managed here too.

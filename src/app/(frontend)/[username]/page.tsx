@@ -17,6 +17,8 @@ import Testimonials from '@/components/portfolio/Testimonials'
 import Team from '@/components/portfolio/Team'
 import Products from '@/components/portfolio/Products'
 import { withMissingSections } from '@/lib/dashboard-nav'
+import StudioPortfolio from '@/components/studio/StudioPortfolio'
+import { buildStudioData } from '@/lib/studio-data'
 import Contact from '@/components/portfolio/Contact'
 import Footer from '@/components/portfolio/Footer'
 import TrackVisit from '@/components/portfolio/TrackVisit'
@@ -174,14 +176,6 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
         gradientDark={settings?.heroCover?.gradientDark || ''}
         posX={settings?.heroCover?.posX ?? 50}
         posY={settings?.heroCover?.posY ?? 50}
-        gallery={
-          studio && (settings?.style as { heroGallery?: boolean | null } | undefined)?.heroGallery !== false
-            ? projects
-                .filter((p) => (p.mediaType || 'image') === 'image' && p.cover)
-                .slice(0, 3)
-                .map((p) => ({ id: p.id, title: p.title, url: mediaUrl(p.cover, 'card') as string, href: `/${tenant.slug}/project/${p.id}${q}` }))
-            : []
-        }
       />
     ),
     about: (
@@ -192,11 +186,6 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
         tags={splitTags(content.about?.tags)}
         variant={settings?.style?.about || 'classic'}
         frame={settings?.aboutPhoto}
-        stat={
-          studio && content.about?.statValue
-            ? { value: content.about.statValue, label: content.about.statLabel || '' }
-            : null
-        }
       />
     ),
     projects: (
@@ -450,6 +439,18 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
   }
 
   const skin = studio ? 'studio' : 'classic'
+
+  /* The studio look is its own template: the owner's reference design, laid
+     out from the same content, with the same tracking. */
+  if (studio) {
+    return (
+      <>
+        {!isPreview && <Analytics id={settings?.seoTools?.analyticsId} />}
+        {!isPreview && <TrackVisit tenant={tenant.id} page="home" />}
+        <StudioPortfolio d={buildStudioData(data, locale, q)} />
+      </>
+    )
+  }
 
   return (
     <div
