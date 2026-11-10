@@ -659,3 +659,20 @@ html[data-theme=dark] .st-root .st-hero-veil{opacity:var(--veil-d,.45)}
   .st-root .st-digital-project .st-digital-copy{padding:26px}
   .st-root .st-digital-project .st-digital-copy h3{font-size:24px}
 }
+
+/* "Beyond the image" follows the site's own colours, in both themes: the
+   band takes the surface colour, the cards the page's, and the words, lines
+   and buttons the palette's. The drawn previews inside keep their colours —
+   they are pictures of the products. */
+.st-root .st-digital-section{color:var(--ink);background:var(--surface)}
+.st-root .st-digital-symbol{color:var(--accent);background:var(--accent-light)}
+.st-root .st-digital-heading .st-section-subtitle{color:var(--muted)}
+.st-root .st-digital-feature,.st-root .st-digital-project{background:var(--bg);border-color:var(--line)}
+.st-root .st-project-status,.st-root .st-digital-copy .st-concept{color:var(--ink);border-color:var(--line)}
+.st-root .st-digital-copy h3>span{color:var(--accent)}
+.st-root .st-digital-copy>p,.st-root .st-digital-copy details p{color:var(--muted)}
+.st-root .st-digital-copy ul{color:var(--ink)}
+.st-root .st-digital-copy details{border-top-color:var(--line)}
+.st-root .st-digital-link{color:#fff;background:var(--accent)}
+.st-root .st-digital-link:hover{background:var(--accent-hover)}
+.st-root .st-digital-end .st-outline{color:var(--ink);border-color:var(--line)}
