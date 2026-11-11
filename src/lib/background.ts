@@ -12,12 +12,11 @@ export type BgConfig = {
 }
 
 /**
- * Turn a saved background into an inline style for `.pf-bg-layer`.
+ * Turn a saved background into an inline style for a page background layer.
  *
  * Returns null when the theme has nothing of its own to draw, so the page just
  * shows the palette's base colour. The animated variant only sets up the
- * gradient here — the movement itself is the `pfBgShift` keyframes in CSS,
- * switched on by the `animated` class.
+ * gradient here — the movement itself is the studio keyframes in CSS.
  */
 export function pageBackground(bg?: BgConfig | null): {
   style: CSSProperties

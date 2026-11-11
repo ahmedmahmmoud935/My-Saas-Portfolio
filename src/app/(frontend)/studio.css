@@ -2,9 +2,8 @@
  * The studio template — the owner's reference design, rule for rule.
  *
  * Taken from the reference site's own stylesheet. Every class carries an
- * "st-" prefix and every rule sits under .st-root, so it cannot touch the
- * classic look (which uses some of the same plain names: .hero, .section,
- * .tool…) and the classic rules cannot touch it.
+ * "st-" prefix and every rule sits under .st-root, so it stays separate from
+ * the marketing site and shared page styles.
  *
  * The colours are the client's: the page sets --t-* from their palette, and
  * each one falls back to the reference value, so the default studio palette
@@ -580,7 +579,7 @@ html[data-theme=dark] .st-root .st-hero-veil{opacity:var(--veil-d,.45)}
 .st-root[data-anim=fade] :is(main>section,main>.pf-sec-bg,.st-creative-strip){animation:stFade .7s ease both}
 @media (prefers-reduced-motion:reduce){.st-root[data-anim] :is(main>section,main>.pf-sec-bg,.st-creative-strip){animation:none}}
 
-/* The dot-and-ring cursor replaces the pointer, as on the classic look. */
+/* The dot-and-ring cursor replaces the pointer, when enabled in Design. */
 .st-root[data-cursor=dot-ring],.st-root[data-cursor=dot-ring] :is(a,button,summary,label){cursor:none}
 
 /* Grid columns, when chosen other than the reference's. Each screen size

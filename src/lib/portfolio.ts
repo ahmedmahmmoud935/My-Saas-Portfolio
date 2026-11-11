@@ -143,5 +143,3 @@ async function loadPortfolio(
     products: productsRes.docs,
   }
 }
-
-export { tenantCssVars } from './tenant-vars'

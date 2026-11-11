@@ -165,7 +165,7 @@ export type DesignForm = {
     direction: string
     cursor: string
     anim: string
-    /** The overall look: 'classic' (the original) or 'studio'. */
+    /** Retained for saved settings; every site uses studio. */
     skin: string
     /** Studio look: the latest designs fanned out under the hero. */
     heroGallery: boolean
@@ -374,7 +374,7 @@ export const emptyDesign = (): DesignForm => ({
     direction: 'auto',
     cursor: 'default',
     anim: 'fade-up',
-    skin: 'classic',
+    skin: 'studio',
     heroGallery: true,
     heroGalleryMobile: true,
   },

@@ -23,49 +23,8 @@
   --section-pad: clamp(56px, 7vw, 96px);
   --container: 1200px;
 }
-
-/* ── Light mode ──────────────────────────────────────────────────────────
-   Toggled from the navbar (sun/moon). The per-tenant colours are applied
-   inline on .pf-root, so the override needs !important to win; the brand
-   --accent is kept. */
-/* The tenant colours are applied inline on .pf-root; make it drive the whole
-   page surface so changing bg/text actually repaints the site (not just cards). */
-.pf-root {
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  /* Establish a stacking context so the z-index:-1 background layer paints
-     above this element's own background instead of behind it — without it the
-     chosen page background is completely hidden by the palette colour.
-     `relative` anchors the scrolling variant of that layer to the document. */
-  isolation: isolate;
-  position: relative;
-}
 html[data-theme='light'] body {
   background: var(--bg-light, #ffffff);
-}
-html[data-theme='light'] .pf-root {
-  /* Light mode uses the tenant's editable light palette (from the dashboard),
-     falling back to readable defaults. Cards separate via borders + shadows. */
-  --bg: var(--bg-light, #ffffff) !important;
-  --bg-2: var(--bg2-light, #ffffff) !important;
-  --bg-3: color-mix(in srgb, var(--bg2-light, #f3f5f8) 90%, #000) !important;
-  --text: var(--text-light, #0c0f16) !important;
-  --sub: var(--sub-light, #495265) !important;
-  --border: color-mix(in srgb, var(--text-light, #0c0f16) 14%, transparent) !important;
-  --accent: var(--accent-light, var(--accent-base, #f97316)) !important;
-}
-/* The section-title colour picked for the light theme, if any. */
-html[data-theme='light'] .pf-root .section-title {
-  color: var(--heading-light, inherit);
-}
-html[data-theme='light'] .pf-root .card,
-html[data-theme='light'] .pf-root .contact-card,
-html[data-theme='light'] .pf-root .exp-item,
-html[data-theme='light'] .pf-root .tool,
-html[data-theme='light'] .pf-root .project-card,
-html[data-theme='light'] .pf-root .cs-card {
-  box-shadow: 0 12px 34px -20px rgba(13, 20, 40, 0.28);
 }
 
 *,
@@ -138,11 +97,6 @@ img {
   background: var(--accent);
   color: #fff;
 }
-.btn-outline {
-  background: transparent;
-  color: var(--text);
-  border-color: var(--border);
-}
 
 .container {
   width: 100%;
@@ -172,32 +126,6 @@ img {
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border);
 }
-.nav-logo {
-  font-family: var(--font-display);
-  font-weight: 800;
-  /* Bigger, and first: a logo sitting after the menu on the far edge read as an
-     afterthought rather than as the thing you click to get home. */
-  font-size: 24px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  order: -1;
-  margin-right: auto;
-  padding: 0;
-  background: none;
-  border: 0;
-  color: inherit;
-  text-decoration: none;
-  cursor: pointer;
-  line-height: 1;
-}
-.nav-logo img {
-  height: 34px;
-  width: auto;
-  max-width: 160px;
-  object-fit: contain;
-  display: block;
-}
 /* Centred on the bar itself, not on whatever space the logo and the controls
    happen to leave — those two differ in width, and centring between them puts
    the links off-centre by half that difference. */
@@ -213,121 +141,13 @@ img {
   font-size: 14px;
   font-weight: 600;
 }
-/* The frame is pinned to ltr; the labels are not. */
-.pf-root[dir='rtl'] .nav-links,
-.pf-root[dir='rtl'] .nav-menu {
-  direction: rtl;
-}
 .nav-links a:hover {
-  color: var(--accent);
-}
-.nav-lang {
-  /* The same circle as the theme button beside it — the two are a pair and
-     read as one control group. A fixed 38px box also settles the label
-     problem: "EN" in one language and "ع" in the other used to resize the
-     button and nudge both of them sideways on every switch, which moved the
-     control out from under the thumb pressing it. */
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  padding: 0;
-  background: transparent;
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 13px;
-  cursor: pointer;
-  transition: border-color 0.2s, color 0.2s;
-}
-.nav-lang:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-.nav-theme {
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  margin-inline-end: 10px;
-  background: transparent;
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  cursor: pointer;
-  transition: border-color 0.2s, color 0.2s, transform 0.2s;
-}
-.nav-theme:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-  transform: rotate(-15deg);
-}
-/* The burger and the panel it opens exist only where the inline list doesn't.
-   Hidden above 820px rather than never rendered, so the markup is identical on
-   the server and in the browser. */
-.nav-burger {
-  display: none;
-  place-items: center;
-  /* Last in the row, so it sits at the very edge of the bar rather than
-     between the two round controls. */
-  order: 1;
-  width: 40px;
-  height: 40px;
-  margin: 0;
-  margin-inline-start: 6px;
-  /* No ring: the icon is the control. It keeps a 40px box so it stays a
-     comfortable tap target without drawing one. */
-  background: none;
-  color: var(--text);
-  border: 0;
-  padding: 0;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-.nav-burger:hover,
-.nav-burger[aria-expanded='true'] {
-  color: var(--accent);
-}
-/* Drops out of the bar itself, full width, under the blur. */
-.nav-menu {
-  display: none;
-  position: absolute;
-  inset-inline: 0;
-  top: 100%;
-  flex-direction: column;
-  padding: 6px 20px 14px;
-  /* Opaque, unlike the bar above it. The bar is translucent on purpose — you
-     want to see the page moving under it — but a menu you are reading has to
-     hide what is behind it, and at 94% the hero heading still showed through
-     the links. */
-  background: var(--bg);
-  border-bottom: 1px solid var(--border);
-  box-shadow: 0 18px 30px -18px rgba(0, 0, 0, 0.55);
-}
-.nav-menu a {
-  padding: 13px 4px;
-  font-size: 16px;
-  font-weight: 600;
-  border-bottom: 1px solid var(--border);
-}
-.nav-menu a:last-child {
-  border-bottom: 0;
-}
-.nav-menu a:active {
   color: var(--accent);
 }
 
 @media (max-width: 820px) {
   .nav-links {
     display: none;
-  }
-  .nav-burger {
-    display: grid;
-  }
-  .nav-menu.open {
-    display: flex;
   }
 }
 
@@ -337,17 +157,6 @@ img {
    hero→first-section gap look smaller than the rest). */
 .section {
   padding-block: var(--section-pad) 0;
-}
-/* Only the genuinely last section on the page. Unscoped, this also matched
-   every backdropped section (each is an only child inside its wrapper), which
-   is why coloured bands ended up with double the space below the content. */
-.pf-root > .section:last-of-type,
-.pf-root > .pf-sec-bg:last-of-type > .section {
-  padding-bottom: var(--section-pad);
-}
-.section-head {
-  text-align: center;
-  margin-bottom: 46px;
 }
 .section-title {
   color: var(--heading-dark, inherit);
@@ -388,93 +197,6 @@ img {
      consecutive lines collide. Declared here so the layouts and the phone can
      each set their own without every one of them needing a script rule. */
   --hero-lh: 1.04;
-}
-.hero-bg {
-  position: absolute;
-  inset: 0;
-  object-fit: cover;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-}
-.hero-overlay {
-  position: absolute;
-  inset: 0;
-  /* The veil is black over the dark theme and WHITE over the light one: the
-     headline is light on one and dark on the other, so the same black wash that
-     rescues it in the dark theme only dirties the cover in the light one. Both
-     strengths come in from the editor; the theme picks. */
-  --hero-veil-rgb: 0, 0, 0;
-  --hero-overlay: var(--hero-veil-dark, 0.45);
-  background: linear-gradient(90deg, var(--bg) 8%, transparent 70%),
-    rgba(var(--hero-veil-rgb), var(--hero-overlay));
-  z-index: 1;
-}
-html[data-theme='light'] .pf-root .hero-overlay {
-  --hero-veil-rgb: 255, 255, 255;
-  --hero-overlay: var(--hero-veil-light, 0.25);
-}
-.hero-inner {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  /* Hug the leading edge (no centered container). Follows the page direction:
-     English → left, Arabic → right. */
-  max-width: none;
-  padding-inline: clamp(24px, 5vw, 72px);
-  text-align: start;
-}
-/* Eyebrow now sits UNDER the name (old layout). */
-.hero-eyebrow {
-  font-family: var(--font-display);
-  text-transform: uppercase;
-  letter-spacing: 6px;
-  /* Over a quarter of the heading and set bold: this line is usually a name,
-     and at a fifth in book weight it read as a caption for the heading rather
-     than as the person's own line. */
-  font-size: clamp(14px, calc(var(--hero-title) * 0.28), 26px);
-  font-weight: 800;
-  color: var(--sub);
-  margin: 0 0 11px;
-}
-.hero-name {
-  font-family: var(--font-display);
-  font-size: var(--hero-title);
-  font-weight: 900;
-  line-height: var(--hero-lh);
-  letter-spacing: -2px;
-  /* Twice the gap below the line under it: heading, then the name, then the
-     job — read as one block with the name belonging to the job, not floating
-     between the two. */
-  margin: 0 0 22px;
-}
-.hero-name .accent {
-  color: var(--accent);
-}
-
-/* ── Where the hero text sits ──────────────────────────────────────────────
-   Only present when the owner has picked something; without the attribute
-   each layout keeps its own placement. The attribute selectors also outrank
-   the layout classes, which is what lets the choice win over, say,
-   `.hero-cover-full`'s bottom alignment. */
-/* `align-items` needs a flex context to mean anything, and only the panel
-   layout's inner is one. Applied only when an alignment was chosen, so no
-   existing layout changes shape. */
-.hero[data-ha] .hero-inner {
-  display: flex;
-  flex-direction: column;
-}
-.hero[data-ha='start'] .hero-inner {
-  text-align: start;
-  align-items: flex-start;
-}
-.hero[data-ha='center'] .hero-inner {
-  text-align: center;
-  align-items: center;
-}
-.hero[data-ha='end'] .hero-inner {
-  text-align: end;
-  align-items: flex-end;
 }
 /* The description carries a max-width, so centring the text is not enough —
    the box itself has to move. */
@@ -552,108 +274,6 @@ html[data-theme='light'] .pf-root .hero-overlay {
     transform: none;
   }
 }
-/* The image and the dim share one explicit box (an <img> ignores inset-block-end,
-   so give it a real height) — same size, all corners rounded, inset from edges. */
-.hero-split .hero-bg,
-.hero-split .hero-overlay {
-  /* Square panel, vertically centred (top/bottom:0 + margin auto with a
-     definite height from aspect-ratio). */
-  inset-block: 0;
-  margin-block: auto;
-  inset-inline-end: 56px;
-  inset-inline-start: auto;
-  width: clamp(300px, 34vw, 500px);
-  aspect-ratio: 1 / 1;
-  height: auto;
-  border-radius: 22px;
-}
-/* Any full-bleed hero variant fills the whole screen. "split" frames its
-   picture and "panel" gives it a column of its own, so both are excluded. */
-.hero:not(.hero-split):not(.hero-panel) .hero-bg,
-.hero:not(.hero-split):not(.hero-panel) .hero-overlay {
-  inset: 0;
-  margin: 0;
-  width: 100%;
-  height: 100%;
-  aspect-ratio: auto;
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
-}
-/* Full-bleed heroes fill (crop) by default rather than letterboxing. Not
-   !important any more: it beat the inline value the Fit control writes, so
-   choosing "contain" on any of these layouts silently did nothing. This is the
-   default; the control overrides it. */
-.hero:not(.hero-split):not(.hero-panel) .hero-bg {
-  object-fit: cover;
-}
-.hero-split .hero-bg {
-  object-fit: cover;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.5);
-  animation: heroImgIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-/* Softer, greyer shadow on the white theme (the heavy black one looked off). */
-html[data-theme='light'] .hero-split .hero-bg {
-  border-color: rgba(15, 23, 42, 0.08);
-  box-shadow: 0 22px 55px -18px rgba(15, 23, 42, 0.3);
-}
-.hero-split .hero-overlay {
-  background: rgba(var(--hero-veil-rgb, 0, 0, 0), var(--hero-overlay, 0));
-  pointer-events: none;
-}
-.hero-split .hero-inner {
-  /* The picture is capped at 500px, so on a wide screen a flat 50% left a
-     stripe of empty space between the words and the picture and forced the
-     heading to wrap earlier than it had to. Take everything the picture and a
-     gap are not using, up to a limit that keeps the line length readable. */
-  max-width: min(62%, calc(100% - clamp(300px, 34vw, 500px) - 90px));
-  margin-inline: 0;
-  animation: heroTextIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-@media (max-width: 820px) {
-  .hero-split .hero-bg {
-    inset: 0;
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    aspect-ratio: auto;
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
-  }
-  /* On a phone this hero stops being a picture beside the words and becomes a
-     picture behind them, so it needs a veil the words can be read against.
-
-     The old one ran at 90deg — left to right — which is the wrong axis for a
-     portrait screen and the wrong side entirely in Arabic: it put the solid
-     end on the left while the text sits on the right. And it leaned on the
-     owner's overlay setting, which is set for the desktop layout where nothing
-     is written over the picture at all; at 0% there was no veil left.
-
-     This one runs down the screen and carries its own floor, so the text stays
-     readable whatever the cover setting is. The colour still follows the
-     theme — black on dark, white on light. */
-  /* Geometry only. The veil itself is set once for every variant in the phone
-     block near the end of this file — that rule carries !important and this
-     one never won, which is why editing the colour here changed nothing. */
-  .hero-split .hero-overlay {
-    inset: 0;
-    width: 100%;
-    height: auto;
-    aspect-ratio: auto;
-    border-radius: 0;
-  }
-  .hero-split .hero-inner {
-    max-width: none;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .hero-split .hero-bg,
-  .hero-split .hero-inner {
-    animation: none;
-  }
-}
 
 /* panel — a two-column band: the words on the leading side, the picture on the
    trailing side, whole and uncropped.
@@ -679,54 +299,12 @@ html[data-theme='light'] .hero-split .hero-bg {
   gap: clamp(20px, 4vw, 56px);
   padding-inline: clamp(16px, 3vw, 48px);
 }
-.hero-panel .hero-inner {
-  grid-column: 1;
-  grid-row: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  max-width: none;
-}
 /* Smaller than the full-bleed heroes on purpose: this heading shares its row
    with a picture, so it has about half the width to work in. If it is sized
    for the full page, a line the author deliberately broke gets wrapped again
    by the browser and their break points stop meaning anything. */
 .hero-panel {
   --hero-title-size: clamp(34px, 4.6vw, 68px);
-}
-.hero-panel .hero-name {
-  letter-spacing: -1.2px;
-  /* No `text-wrap: balance` here. Balancing evens out the lines by moving
-     words between them, which is the opposite of what is wanted once the
-     author has chosen where the heading breaks — it split their second line
-     in two to make the block look even. */
-}
-/* In this layout the eyebrow reads as a label above the heading. */
-.hero-panel .hero-eyebrow {
-  order: -1;
-  margin: 0 0 14px;
-}
-/* The picture takes the second column and is never cropped. */
-.hero-panel .hero-bg {
-  position: relative;
-  grid-column: 2;
-  grid-row: 1;
-  inset: auto;
-  margin: 0;
-  width: 100%;
-  height: auto;
-  max-height: 80%;
-  aspect-ratio: auto;
-  object-fit: contain;
-  border: none;
-  border-radius: 18px;
-  box-shadow: none;
-  justify-self: center;
-  animation: heroImgIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-/* No veil — there is nothing written over this picture to protect. */
-.hero-panel .hero-overlay {
-  display: none;
 }
 /* A chosen gradient becomes the band behind both columns, not a layer over the
    picture, so it has to go back to filling the hero. */
@@ -745,24 +323,8 @@ html[data-theme='light'] .hero-split .hero-bg {
     gap: 20px;
     padding-block: 32px;
   }
-  .hero-panel .hero-inner,
-  .hero-panel .hero-bg {
-    grid-column: 1;
-  }
-  .hero-panel .hero-inner {
-    grid-row: 2;
-  }
-  .hero-panel .hero-bg {
-    grid-row: 1;
-    max-height: 38vh;
-  }
   .hero-panel .hero-desc {
     max-width: none;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .hero-panel .hero-bg {
-    animation: none;
   }
 }
 
@@ -770,51 +332,20 @@ html[data-theme='light'] .hero-split .hero-bg {
 .hero-centered {
   justify-content: center;
 }
-.hero-centered .hero-inner {
-  max-width: min(94vw, 1100px);
-  margin-inline: auto;
-  text-align: center;
-}
 /* Keep the name on one line (shrinks with the viewport instead of wrapping). */
 .hero-centered {
   --hero-title-size: clamp(34px, 9vw, 104px);
 }
-.hero-centered .hero-name {
-  white-space: nowrap;
-}
 .hero-centered .hero-btns {
   justify-content: center;
 }
-.hero-centered .hero-overlay {
-  background: rgba(var(--hero-veil-rgb, 0, 0, 0), var(--hero-overlay, 0.4));
-}
-
-/* massive — oversized name, eyebrow above it */
-.hero-massive .hero-inner {
-  display: flex;
-  flex-direction: column;
-}
-.hero-massive .hero-eyebrow {
-  order: -1;
-  margin: 0 0 20px;
-}
 .hero-massive {
   --hero-title-size: clamp(58px, 12vw, 150px);
-}
-.hero-massive .hero-name {
-  letter-spacing: -3px;
 }
 
 /* cover-full — content pinned to the bottom over a darker image */
 .hero-cover-full {
   align-items: flex-end;
-}
-.hero-cover-full .hero-inner {
-  padding-bottom: clamp(40px, 8vh, 96px);
-}
-.hero-cover-full .hero-overlay {
-  background: linear-gradient(0deg, rgba(var(--hero-veil-rgb, 0, 0, 0), 0.85) 5%, transparent 55%),
-    rgba(var(--hero-veil-rgb, 0, 0, 0), var(--hero-overlay, 0.1));
 }
 
 /* minimal — restrained type and no heavy overlay. Its height used to be
@@ -825,14 +356,6 @@ html[data-theme='light'] .hero-split .hero-bg {
 }
 .hero-minimal {
   --hero-title-size: clamp(36px, 5.5vw, 68px);
-}
-.hero-minimal .hero-name {
-  font-weight: 800;
-  letter-spacing: -1px;
-}
-.hero-minimal .hero-overlay {
-  background: linear-gradient(90deg, var(--bg) 6%, transparent 55%),
-    rgba(var(--hero-veil-rgb, 0, 0, 0), var(--hero-overlay, 0.25));
 }
 
 /* ── Hero cover gradients (shown when there's no image) ─────────────────────
@@ -849,58 +372,6 @@ html[data-theme='light'] .hero-split .hero-bg {
   50% {
     background-position: 100% 50%;
   }
-}
-.hg-aurora {
-  background-image: linear-gradient(120deg, #06b6d4, #3b82f6, #8b5cf6, #06b6d4);
-}
-.hg-sunset {
-  background-image: linear-gradient(120deg, #f97316, #ef4444, #ec4899, #f97316);
-}
-.hg-ocean {
-  background-image: linear-gradient(120deg, #0ea5e9, #2563eb, #06b6d4, #0ea5e9);
-}
-.hg-candy {
-  background-image: linear-gradient(120deg, #ec4899, #a855f7, #8b5cf6, #ec4899);
-}
-.hg-mint {
-  background-image: linear-gradient(120deg, #10b981, #14b8a6, #22d3ee, #10b981);
-}
-.hg-ember {
-  background-image: linear-gradient(120deg, #ef4444, #f59e0b, #f97316, #ef4444);
-}
-.hg-dusk {
-  background-image: linear-gradient(120deg, #6366f1, #8b5cf6, #ec4899, #6366f1);
-}
-/* The set offered now: four soft ones for the light theme, four deep ones for
-   the dark theme — dark text reads on the first, white text on the second.
-   The vivid ones above stay for sites that picked them before. */
-.hg-peach {
-  background-image: linear-gradient(120deg, #ffe4d2, #fcd5e5, #fff1c9, #ffe4d2);
-}
-.hg-sky {
-  background-image: linear-gradient(120deg, #d6e8ff, #dff4fb, #e8e2ff, #d6e8ff);
-}
-.hg-fresh {
-  background-image: linear-gradient(120deg, #d3f5e4, #d2f3f0, #e6f6d6, #d3f5e4);
-}
-.hg-lilac {
-  background-image: linear-gradient(120deg, #ebe4ff, #fbe1ef, #dfe6ff, #ebe4ff);
-}
-.hg-midnight {
-  background-image: linear-gradient(120deg, #0b1026, #17245c, #2a1f5c, #0b1026);
-}
-.hg-embers {
-  background-image: linear-gradient(120deg, #140806, #5a1d0c, #7a2e0e, #140806);
-}
-.hg-forest {
-  background-image: linear-gradient(120deg, #03140f, #0b3b2e, #0d3440, #03140f);
-}
-.hg-nebula {
-  background-image: linear-gradient(120deg, #120b2b, #3b1560, #5c1540, #120b2b);
-}
-html[data-theme='light'] .hg-on-dark,
-html:not([data-theme='light']) .hg-on-light {
-  display: none;
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-grad {
@@ -921,12 +392,6 @@ html:not([data-theme='light']) .hg-on-light {
   object-fit: cover;
   border-radius: var(--radius-card);
   border: 1px solid var(--border);
-}
-.about-tags {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 18px;
 }
 .chip {
   /* inline-flex + an explicit line-height: as plain inline text the glyphs sat
@@ -952,117 +417,8 @@ html:not([data-theme='light']) .hg-on-light {
     margin-inline: auto;
   }
 }
-
-/* ─── Projects ──────────────────────────────────────────────────────────── */
-/* Primary media switch — a solid segmented control (distinct from category chips).
-   A band most of the column wide, each tab an equal share of it: sized to its
-   words it read as a small pill floating under the heading, easy to miss as
-   the way into the reels and videos. The tabs not chosen are the text colour,
-   a little softened, rather than the grey of a caption, so all three read as
-   choices and only the chosen one stands out. */
-.media-tabs {
-  /* Centred with auto margins. The old `left: 50%; translateX(-50%)` trick
-     assumes LTR: in RTL the offset and the translate pull the same way, which
-     shoved this off the right edge and gave the page a horizontal scrollbar. */
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(0, 1fr);
-  width: min(100%, 720px);
-  /* Room around the chosen tab, so it sits inside the band rather than
-     touching its edge; the band's corners are the tab's plus that room, so
-     the two curves run parallel. */
-  gap: 8px;
-  padding: 9px;
-  margin: 0 auto 28px;
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: 22px;
-  box-shadow: inset 0 1px 2px color-mix(in srgb, #000 8%, transparent);
-}
-.media-tab {
-  appearance: none;
-  border: 0;
-  background: transparent;
-  color: color-mix(in srgb, var(--text) 78%, transparent);
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 16px;
-  letter-spacing: 0.2px;
-  padding: 13px 12px;
-  border-radius: 13px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: color 0.2s, background 0.2s;
-}
 /* Only where there is a pointer to hover with: on a phone the hover state
    stuck to the last tab tapped and made it look chosen. */
-@media (hover: hover) {
-  .media-tab:hover:not(.active) {
-    color: var(--text);
-    background: color-mix(in srgb, var(--text) 7%, transparent);
-  }
-}
-.media-tab:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-.media-tab.active {
-  background: var(--accent);
-  color: #fff;
-  box-shadow: 0 6px 16px -8px color-mix(in srgb, var(--accent) 70%, transparent);
-}
-@media (max-width: 560px) {
-  .media-tabs {
-    gap: 6px;
-    padding: 7px;
-    border-radius: 18px;
-  }
-  .media-tab {
-    font-size: 14px;
-    padding: 11px 6px;
-    border-radius: 11px;
-  }
-}
-
-/* Secondary category filter — light underline chips (clearly subordinate) */
-.filter-bar {
-  display: flex;
-  gap: 8px 22px;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-bottom: 30px;
-}
-.filter-pill {
-  background: transparent;
-  border: 0;
-  color: var(--sub);
-  padding: 4px 2px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  position: relative;
-  transition: color 0.2s;
-}
-.filter-pill::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -3px;
-  height: 2px;
-  background: var(--accent);
-  transform: scaleX(0);
-  transition: transform 0.2s;
-}
-.filter-pill:hover {
-  color: var(--text);
-}
-.filter-pill.active {
-  color: var(--text);
-}
-.filter-pill.active::after {
-  transform: scaleX(1);
-}
 .project-grid {
   display: grid;
   grid-template-columns: repeat(var(--cols-d, 3), 1fr);
@@ -1085,28 +441,6 @@ html:not([data-theme='light']) .hg-on-light {
 .project-card:hover img {
   transform: scale(1.05);
 }
-.project-ov {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 16px;
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.8), transparent 60%);
-  opacity: 0;
-  transition: opacity 0.25s ease;
-}
-.project-card:hover .project-ov {
-  opacity: 1;
-}
-.project-ov h4 {
-  margin: 0;
-  font-size: 15px;
-}
-.project-ov span {
-  color: var(--accent);
-  font-size: 12px;
-}
 @media (max-width: 900px) {
   .project-grid {
     grid-template-columns: repeat(var(--cols-t, 2), 1fr);
@@ -1124,50 +458,6 @@ button.project-card {
   color: inherit;
   text-align: start;
 }
-.reels-grid {
-  grid-template-columns: repeat(var(--cols-d, 4), 1fr);
-}
-.reels-grid .project-card {
-  aspect-ratio: 9 / 16;
-}
-.videos-grid {
-  grid-template-columns: repeat(var(--cols-d, 3), 1fr);
-}
-.videos-grid .project-card {
-  aspect-ratio: 16 / 9;
-}
-@media (max-width: 900px) {
-  .reels-grid {
-    grid-template-columns: repeat(var(--cols-t, 3), 1fr);
-  }
-  .videos-grid {
-    grid-template-columns: repeat(var(--cols-t, 2), 1fr);
-  }
-}
-@media (max-width: 540px) {
-  .reels-grid {
-    grid-template-columns: repeat(var(--cols-m, 2), 1fr);
-  }
-  .videos-grid {
-    grid-template-columns: repeat(var(--cols-m, 1), 1fr);
-  }
-}
-.play-badge {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.5);
-  color: #fff;
-  display: grid;
-  place-items: center;
-  font-size: 16px;
-  z-index: 2;
-  pointer-events: none;
-}
 
 /* ─── Instagram-style post viewer (designs grid) ────────────────────────── */
 .pv {
@@ -1177,102 +467,6 @@ button.project-card {
   background: rgba(0, 0, 0, 0.94);
   display: grid;
   place-items: center;
-}
-.pv-btn {
-  position: absolute;
-  z-index: 2;
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
-  border: none;
-  border-radius: 50%;
-  width: 44px;
-  height: 44px;
-  font-size: 20px;
-  line-height: 1;
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-}
-.pv-btn:hover {
-  background: rgba(255, 255, 255, 0.24);
-}
-.pv-close {
-  top: 18px;
-  inset-inline-end: 18px;
-}
-.pv-up {
-  top: 18px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-.pv-down {
-  bottom: 18px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-.pv-stage {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-width: min(92vw, 560px);
-}
-.pv-img {
-  max-width: 100%;
-  max-height: 80vh;
-  object-fit: contain;
-  border-radius: 12px;
-  user-select: none;
-}
-.pv-arrow {
-  position: absolute;
-  top: 40%;
-  transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.5);
-  color: #fff;
-  border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  font-size: 26px;
-  line-height: 1;
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-}
-.pv-prev {
-  inset-inline-start: 8px;
-}
-.pv-next {
-  inset-inline-end: 8px;
-}
-.pv-dots {
-  display: flex;
-  gap: 6px;
-  margin-top: 12px;
-}
-.pv-dots span {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.35);
-  transition: background 0.2s;
-}
-.pv-dots span.on {
-  background: var(--accent);
-}
-.pv-cap {
-  text-align: center;
-  margin-top: 10px;
-  color: #fff;
-}
-.pv-cap strong {
-  display: block;
-  font-size: 15px;
-}
-.pv-cap span {
-  color: var(--accent);
-  font-size: 13px;
 }
 
 /* ─── Reels / video player ──────────────────────────────────────────────── */
@@ -1291,82 +485,6 @@ html:has(.story-viewer) {
   background: rgba(0, 0, 0, 0.95);
   display: grid;
   place-items: center;
-}
-.reels-stage {
-  position: relative;
-  width: min(440px, 96vw);
-  aspect-ratio: 9 / 16;
-  max-height: 92vh;
-  background: #000;
-  border-radius: 12px;
-  overflow: hidden;
-}
-.reels-media {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border: 0;
-}
-.reels-title {
-  position: absolute;
-  inset-inline: 0;
-  bottom: 0;
-  padding: 14px;
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.7), transparent);
-  color: #fff;
-  font-weight: 700;
-}
-.reels-close {
-  position: absolute;
-  top: 20px;
-  inset-inline-end: 20px;
-  z-index: 3;
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
-  border: none;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  font-size: 18px;
-  cursor: pointer;
-}
-/* Shown only when the browser refused to start the clip with sound. */
-.reels-unmute {
-  position: absolute;
-  bottom: 74px;
-  inset-inline-start: 50%;
-  transform: translateX(-50%);
-  z-index: 5;
-  padding: 9px 16px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  background: rgba(0, 0, 0, 0.62);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  color: #fff;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.reels-nav {
-  position: absolute;
-  inset-inline-end: 20px;
-  z-index: 3;
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
-  border: none;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  font-size: 18px;
-  cursor: pointer;
-}
-.reels-nav.up {
-  top: calc(50% - 54px);
-}
-.reels-nav.down {
-  top: calc(50% + 10px);
 }
 
 /* ─── WhatsApp float (desktop) ───────────────────────────────────────────── */
@@ -1436,32 +554,6 @@ html:has(.story-viewer) {
     backdrop-filter: blur(12px);
     border-top: 1px solid var(--border);
     padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
-  }
-  .mb-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    font-size: 11px;
-    color: var(--sub);
-    flex: 1;
-  }
-  .mb-icon {
-    font-size: 20px;
-  }
-  .mb-btn.center {
-    color: #fff;
-  }
-  .mb-btn.center .mb-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    background: var(--accent);
-    display: grid;
-    place-items: center;
-    margin-top: -26px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
-    font-size: 22px;
   }
 }
 body {
@@ -1647,34 +739,6 @@ body {
     grid-template-columns: repeat(2, 1fr);
   }
 }
-
-/* ─── Logos ─────────────────────────────────────────────────────────────── */
-.logo-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: center;
-  align-items: center;
-}
-.logo-strip .logo-box {
-  background: #fff;
-  border-radius: var(--radius-card);
-  padding: 16px 22px;
-  height: 84px;
-  display: grid;
-  place-items: center;
-}
-.logo-strip img {
-  max-height: 52px;
-  width: auto;
-}
-
-/* ─── Testimonials ──────────────────────────────────────────────────────── */
-.tst-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
-}
 .tst {
   position: relative;
   display: flex;
@@ -1683,125 +747,6 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
   padding: 22px;
-}
-.tst-head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.tst-head strong {
-  font-size: 14px;
-}
-.tst-role {
-  color: var(--sub);
-  font-size: 12px;
-}
-.tst-stars {
-  color: var(--accent);
-  letter-spacing: 2px;
-  margin-top: 10px;
-}
-/* Clamped so every card is the same height whatever the length of the review;
-   a longer one offers to open rather than stretching its column. */
-.tst-body {
-  color: var(--text);
-  line-height: 1.8;
-  margin: 10px 0 0;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 5;
-  line-clamp: 5;
-  overflow: hidden;
-}
-.tst.open .tst-body {
-  -webkit-line-clamp: unset;
-  line-clamp: unset;
-  overflow: visible;
-}
-.tst-more {
-  align-self: flex-start;
-  margin-top: 10px;
-  padding: 0;
-  background: none;
-  border: 0;
-  color: var(--accent);
-  font: inherit;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.tst-more:hover {
-  text-decoration: underline;
-}
-.tst-add {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 44px;
-  border: 1px solid var(--accent);
-  color: var(--accent);
-  border-radius: 12px;
-  padding: 6px 22px;
-  font-weight: 700;
-  line-height: 1.2;
-  text-align: center;
-  text-decoration: none;
-}
-
-/* Centred by the numbers still reads high in Arabic: the ink of an alef or a
-   hamza reaches far above the baseline and little below it, while the line box
-   the browser centres reserves room for both. Half that difference, put back
-   as padding, so the label sits where the eye expects it. */
-html[lang='ar'] .tst-add {
-  padding-block: 12px 6px;
-}
-
-/* A review opened on its own, for screens with room for it. */
-.tst-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 120;
-  background: rgba(0, 0, 0, 0.72);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  display: grid;
-  place-items: center;
-  padding: 24px;
-}
-.tst-modal-card {
-  position: relative;
-  width: 100%;
-  max-width: 620px;
-  max-height: 82vh;
-  overflow-y: auto;
-  padding: 26px;
-  border-radius: var(--radius-card);
-  border: 1px solid var(--border);
-  background: var(--bg-2);
-}
-.tst-modal-x {
-  position: absolute;
-  top: 12px;
-  inset-inline-end: 12px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid var(--border);
-  background: var(--bg);
-  color: var(--text);
-  cursor: pointer;
-}
-.tst-modal-body {
-  color: var(--text);
-  line-height: 1.9;
-  margin: 12px 0 0;
-  white-space: pre-wrap;
-}
-.tst-head img {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  object-fit: cover;
 }
 
 /* ─── Contact ───────────────────────────────────────────────────────────── */
@@ -1814,127 +759,10 @@ html[lang='ar'] .tst-add {
   max-width: 1000px;
   margin-inline: auto;
 }
-.contact-eyebrow {
-  display: inline-block;
-  font-family: var(--font-display);
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
-  border-radius: var(--radius-pill);
-  padding: 5px 14px;
-  margin-bottom: 18px;
-}
-.contact-title {
-  font-family: var(--font-display);
-  font-size: clamp(30px, 4vw, 46px);
-  font-weight: 900;
-  line-height: 1.1;
-  margin: 0 0 16px;
-}
-.contact-lead {
-  color: var(--sub);
-  line-height: 1.9;
-  margin: 0 0 30px;
-  max-width: 440px;
-}
-.contact-lines {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.contact-line {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  color: inherit;
-}
-.contact-ic {
-  flex: none;
-  width: 46px;
-  height: 46px;
-  display: grid;
-  place-items: center;
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  color: var(--accent);
-  transition: background 0.2s, transform 0.2s;
-}
-.contact-line:hover .contact-ic {
-  background: var(--accent);
-  color: #fff;
-  transform: translateY(-2px);
-}
-.contact-line-txt {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.contact-line-txt strong {
-  font-size: 14px;
-}
-.contact-line-txt em {
-  font-style: normal;
-  color: var(--sub);
-  font-size: 14px;
-}
-
-.contact-card {
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  padding: 30px;
-  display: grid;
-  gap: 14px;
-}
-.contact-card-title {
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 800;
-  margin: 0;
-}
-.contact-card-sub {
-  color: var(--sub);
-  font-size: 14px;
-  margin: -6px 0 6px;
-}
-.contact-card input,
-.contact-card textarea {
-  background: var(--bg-3);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 13px 16px;
-  color: var(--text);
-  font-family: inherit;
-  font-size: 15px;
-  width: 100%;
-  transition: border-color 0.2s;
-}
-.contact-card input:focus,
-.contact-card textarea:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-.contact-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-.contact-note {
-  text-align: center;
-  font-size: 14px;
-  margin: 0;
-}
 @media (max-width: 820px) {
   .contact-grid {
     grid-template-columns: 1fr;
     gap: 30px;
-  }
-  .contact-row {
-    grid-template-columns: 1fr;
   }
 }
 
@@ -1945,20 +773,6 @@ html[lang='ar'] .tst-add {
   text-align: center;
   color: var(--sub);
   font-size: 14px;
-}
-.footer .footer-logo {
-  font-family: var(--font-display);
-  font-weight: 900;
-  font-size: 26px;
-  color: var(--accent);
-  margin-bottom: 8px;
-}
-
-/* ─── Expertise / cards grid ────────────────────────────────────────────── */
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
 }
 .card {
   background: var(--bg-2);
@@ -1981,151 +795,6 @@ html[lang='ar'] .tst-add {
   line-height: 1.7;
   margin: 0;
 }
-/* ─── Beyond the image (digital products) ─────────────────────────────────
-   Two cards a row: a picture of the product on a soft panel, then the tag,
-   the name, a line about it, details that open in place, and a button to the
-   live product. One card alone keeps a readable width instead of stretching. */
-.prod-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
-  gap: 26px;
-}
-.prod-grid.one {
-  max-width: 720px;
-  margin-inline: auto;
-}
-.prod-card {
-  display: flex;
-  flex-direction: column;
-  background: var(--card-bg);
-  border: 1px solid var(--card-border, var(--border));
-  border-radius: var(--radius-card, 18px);
-  overflow: hidden;
-}
-.prod-shot {
-  aspect-ratio: 16 / 9;
-  display: grid;
-  place-items: center;
-  padding: 22px;
-  background: color-mix(in srgb, var(--accent) 16%, var(--bg-2));
-  overflow: hidden;
-}
-.prod-shot img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  border-radius: 12px;
-  box-shadow: 0 14px 34px -18px rgba(0, 0, 0, 0.55);
-  transition: transform 0.4s ease;
-}
-.prod-card:hover .prod-shot img {
-  transform: translateY(-4px) scale(1.015);
-}
-.prod-shot > span {
-  font-size: 56px;
-  font-weight: 800;
-  color: var(--accent);
-  opacity: 0.6;
-}
-.prod-body {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 14px;
-  padding: 26px 26px 28px;
-  flex: 1;
-}
-.prod-tag {
-  display: inline-block;
-  padding: 5px 14px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  font-size: 13px;
-  color: var(--sub);
-}
-.prod-title {
-  margin: 0;
-  font-size: clamp(20px, 2.2vw, 26px);
-  font-weight: 800;
-  line-height: 1.35;
-  color: var(--text);
-}
-.prod-desc {
-  margin: 0;
-  color: var(--sub);
-  line-height: 1.8;
-  font-size: 15px;
-}
-.prod-more {
-  width: 100%;
-  border-top: 1px solid var(--border);
-  padding-top: 14px;
-}
-.prod-more summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  cursor: pointer;
-  list-style: none;
-  font-weight: 700;
-  font-size: 15px;
-  color: var(--text);
-}
-.prod-more summary::-webkit-details-marker {
-  display: none;
-}
-.prod-more summary i {
-  font-style: normal;
-  color: var(--sub);
-  transition: transform 0.2s;
-}
-.prod-more[open] summary i {
-  transform: rotate(180deg);
-}
-.prod-more p {
-  margin: 12px 0 0;
-  color: var(--sub);
-  line-height: 1.8;
-  font-size: 14.5px;
-  white-space: pre-line;
-}
-.prod-btn {
-  margin-top: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 11px 22px;
-  border-radius: 999px;
-  background: var(--accent);
-  color: #fff;
-  font-weight: 700;
-  font-size: 15px;
-  text-decoration: none;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.prod-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 24px -12px color-mix(in srgb, var(--accent) 85%, transparent);
-}
-.prod-btn i {
-  font-style: normal;
-}
-@media (max-width: 560px) {
-  .prod-body {
-    padding: 20px 18px 22px;
-  }
-}
-
-/* ── The team ───────────────────────────────────────────────────────────
-   Four portraits and four short paragraphs. The photograph leads because a
-   client reading this is deciding whether they are dealing with people, and
-   the cards are the same height whatever the length of the lines under them. */
-.team-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
-  gap: 22px;
-}
 .team-card {
   background: var(--card-bg);
   border: 1px solid var(--card-border, var(--border));
@@ -2133,42 +802,10 @@ html[lang='ar'] .tst-add {
   padding: 26px 20px 24px;
   text-align: center;
 }
-.team-photo {
-  width: 104px;
-  height: 104px;
-  margin: 0 auto 16px;
-  border-radius: 50%;
-  overflow: hidden;
-  display: grid;
-  place-items: center;
-  background: color-mix(in srgb, var(--accent) 16%, transparent);
-  color: var(--accent);
-  font-size: 34px;
-  font-weight: 900;
-  box-shadow: 0 0 0 3px var(--bg), 0 0 0 4px color-mix(in srgb, var(--accent) 45%, transparent);
-}
-.team-photo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
 .team-card h3 {
   margin: 0;
   font-size: 18px;
   font-weight: 800;
-}
-.team-role {
-  margin: 6px 0 0;
-  color: var(--accent);
-  font-size: 13.5px;
-  font-weight: 700;
-}
-.team-bio {
-  margin: 12px 0 0;
-  color: var(--sub);
-  font-size: 14px;
-  line-height: 1.8;
 }
 
 /* A card carrying a background picture: the image sits behind, dimmed, and the
@@ -2178,21 +815,6 @@ html[lang='ar'] .tst-add {
   overflow: hidden;
   isolation: isolate;
 }
-.card-bg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: -2;
-}
-.card-dim {
-  position: absolute;
-  inset: 0;
-  background: #000;
-  opacity: var(--dim, 0.45);
-  z-index: -1;
-}
 .card.has-bg .card-body h4,
 .card.has-bg .card-body p {
   color: #fff;
@@ -2200,13 +822,6 @@ html[lang='ar'] .tst-add {
 .card.has-bg .ic {
   background: rgba(255, 255, 255, 0.18);
   color: #fff;
-}
-/* On the light theme the veil is white, exactly as a section backdrop's is —
-   otherwise a card with a picture stayed a dark rectangle among pale ones. The
-   text over it follows the veil it sits on, or white would be left on white. */
-html[data-theme='light'] .card-dim {
-  background: #fff;
-  opacity: var(--dim-light, var(--dim, 0.45));
 }
 html[data-theme='light'] .card.has-bg .card-body h4,
 html[data-theme='light'] .card.has-bg .card-body p {
@@ -2225,169 +840,6 @@ html[data-theme='light'] .card.has-bg .ic {
   display: grid;
   place-items: center;
   color: var(--accent);
-}
-@media (max-width: 820px) {
-  .card-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ─── Card stack (services deck) ────────────────────────────────────────── */
-.cs-wrap {
-  max-width: 620px;
-  margin: 0 auto;
-}
-.cs-stack {
-  position: relative;
-  height: 460px;
-  margin-top: 150px; /* room for the fan of cards peeking above the front one */
-  perspective: 1400px;
-}
-.cs-card {
-  position: absolute;
-  inset: 0;
-  border-radius: 18px;
-  overflow: hidden;
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.7);
-  /* Anchor at the top so scaled-down behind cards keep their top edge visible
-     and each one peeks above the front card. */
-  transform-origin: center top;
-  will-change: transform, opacity, filter;
-}
-.cs-card.top {
-  cursor: grab;
-}
-.cs-card.top:active {
-  cursor: grabbing;
-}
-.cs-bg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  user-select: none;
-}
-.cs-bg-fallback {
-  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 30%, #000));
-}
-.cs-dim {
-  position: absolute;
-  inset: 0;
-  background: #000;
-  pointer-events: none;
-}
-.cs-shade {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.9) 8%, rgba(0, 0, 0, 0.35) 45%, rgba(0, 0, 0, 0.15));
-}
-.cs-body {
-  position: absolute;
-  inset-inline: 0;
-  bottom: 0;
-  padding: 24px;
-  text-align: start;
-}
-.cs-body h4 {
-  margin: 0 0 8px;
-  font-size: 21px;
-  font-weight: 800;
-  color: #fff;
-}
-.cs-body p {
-  margin: 0;
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 14px;
-  line-height: 1.7;
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.cs-controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  margin-top: 26px;
-}
-.cs-arrow {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-size: 24px;
-  line-height: 1;
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-  transition: border-color 0.2s, color 0.2s;
-}
-.cs-arrow:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-.cs-dots {
-  display: flex;
-  gap: 7px;
-}
-.cs-dots span {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(150, 150, 150, 0.3);
-  transition: background 0.2s;
-}
-.cs-dots span.on {
-  background: var(--accent);
-}
-.cs-hint {
-  text-align: center;
-  color: var(--sub);
-  font-size: 12px;
-  margin: 12px 0 0;
-}
-
-/* ─── Experience / Education — editorial timeline rows ──────────────────── */
-.exp-item {
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-inline-start: 3px solid var(--accent);
-  border-radius: 0 var(--radius-card) var(--radius-card) 0;
-  padding: 20px 24px;
-  margin-bottom: 12px;
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: center;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s;
-  max-width: 900px;
-  margin-inline: auto;
-}
-.exp-item:hover {
-  transform: translateX(4px);
-  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
-}
-.exp-item .role {
-  color: var(--sub);
-  font-size: 13px;
-  margin-top: 4px;
-}
-.exp-item .period {
-  color: var(--accent);
-  font-size: 12px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-  padding: 5px 11px;
-  border-radius: var(--radius-pill);
-  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
 /* ─── Tools — editorial numbered tiles ──────────────────────────────────── */
@@ -2434,22 +886,10 @@ html[data-theme='light'] .card.has-bg .ic {
 .tool:hover::before {
   transform: scaleY(1);
 }
-.tool-idx {
-  font-family: var(--font-display);
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--accent);
-  letter-spacing: 0.5px;
-}
 .tool-ic {
   width: 26px;
   height: 26px;
   object-fit: contain;
-}
-.tool-name {
-  font-weight: 700;
-  font-size: 15px;
-  color: var(--text);
 }
 @media (prefers-reduced-motion: reduce) {
   .card,
@@ -2462,14 +902,6 @@ html[data-theme='light'] .card.has-bg .ic {
   .tool:hover {
     transform: none;
   }
-}
-
-/* ─── Skills / chips center ─────────────────────────────────────────────── */
-.chips-center {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
 }
 
 /* ─── Project detail page ───────────────────────────────────────────────── */
@@ -2803,25 +1235,6 @@ html[data-theme='light'] .card.has-bg .ic {
   aspect-ratio: 16 / 9;
   margin-inline: auto;
 }
-.about-visual .about-tags {
-  justify-content: center;
-}
-/* The heading follows the text under it: beside the picture it starts where
-   the text starts; in the centred layouts — and on a phone, where every
-   layout centres — it sits in the middle with it. */
-.about .about-title {
-  text-align: start;
-  margin-bottom: 16px;
-}
-.about-visual .about-title,
-.about-simple .about-title {
-  text-align: center;
-}
-@media (max-width: 720px) {
-  .about .about-title {
-    text-align: center;
-  }
-}
 .about-simple {
   grid-template-columns: 1fr;
   text-align: center;
@@ -2830,42 +1243,6 @@ html[data-theme='light'] .card.has-bg .ic {
 }
 .about-simple .about-photo {
   display: none;
-}
-.about-simple .about-tags {
-  justify-content: center;
-}
-
-/* ── Projects: grid (default) · masonry · list · freegrid ── */
-.pg-masonry {
-  display: block;
-  column-count: var(--cols-d, 3);
-  column-gap: 16px;
-}
-.pg-masonry .project-card {
-  aspect-ratio: auto;
-  height: auto;
-  display: block;
-  break-inside: avoid;
-  margin-bottom: 16px;
-}
-.pg-masonry .project-card img {
-  height: auto;
-}
-.pg-list {
-  grid-template-columns: 1fr;
-  max-width: 820px;
-  margin-inline: auto;
-  gap: 12px;
-}
-.pg-list .project-card {
-  aspect-ratio: 16 / 6;
-}
-.pg-list .project-ov {
-  opacity: 1;
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.82), transparent 75%);
-}
-.pg-freegrid {
-  grid-template-columns: repeat(2, 1fr);
 }
 
 /* ── Contact: classic (default) · split (stacked) ── */
@@ -2920,9 +1297,6 @@ html[data-theme='light'] .card.has-bg .ic {
   padding: 10px 12px;
   gap: 8px;
 }
-.tools-compact .tool-idx {
-  display: none;
-}
 
 /* ── Experience: classic (default) · timeline ── */
 .exp-timeline {
@@ -2940,78 +1314,6 @@ html[data-theme='light'] .card.has-bg .ic {
   width: 2px;
   background: color-mix(in srgb, var(--accent) 40%, var(--border));
 }
-.exp-timeline .exp-item {
-  position: relative;
-  max-width: none;
-  margin-inline: 0;
-  border-inline-start: 1px solid var(--border);
-  border-radius: var(--radius-card);
-}
-.exp-timeline .exp-item::before {
-  content: '';
-  position: absolute;
-  inset-inline-start: -30px;
-  top: 24px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--accent);
-  border: 3px solid var(--bg);
-}
-
-/* ═══ Fonts picker ════════════════════════════════════════════════════════
-   Each preset sets BOTH the body face (--font-cairo) and the heading stack
-   (--font-display) here on .pf-root.
-
-   --font-display can't be composed once on :root from --font-montserrat: a
-   custom property's var() is substituted where it is *declared*, so a copy
-   living on :root froze with the default Montserrat and no preset could ever
-   change the headings. Naming the Latin family literally also keeps Next's
-   metric-fallback (a system font with Arabic coverage) out of the stack, so
-   Arabic headings reach this preset's Arabic face instead of always landing
-   on Tajawal. */
-.pf-root {
-  --font-display: 'Montserrat', var(--font-cairo), system-ui, sans-serif;
-}
-
-/* Arabic / body face. Tajawal is what --font-cairo already holds, so it needs
-   no rule of its own. */
-.pf-root[data-font-ar='cairo'] {
-  --font-cairo: var(--f-cairo);
-}
-.pf-root[data-font-ar='almarai'] {
-  --font-cairo: var(--f-almarai);
-}
-.pf-root[data-font-ar='markazi'] {
-  --font-cairo: var(--f-markazi);
-}
-.pf-root[data-font-ar='kufam'] {
-  --font-cairo: var(--f-kufam);
-}
-
-/* Latin / heading face. Naming the family literally keeps Next's metric
-   fallback (a system font with Arabic coverage) out of the stack, so Arabic
-   headings reach the chosen Arabic face instead of always landing on Tajawal.
-   Both declarations sit on .pf-root, so the var() below resolves against
-   whichever --font-cairo this element ends up with. */
-.pf-root[data-font-latin='inter'] {
-  --font-display: 'Inter', var(--font-cairo), system-ui, sans-serif;
-}
-.pf-root[data-font-latin='playfair'] {
-  --font-display: 'Playfair Display', var(--font-cairo), system-ui, sans-serif;
-}
-.pf-root[data-font-latin='cormorant'] {
-  --font-display: 'Cormorant', var(--font-cairo), system-ui, sans-serif;
-}
-.pf-root[data-font-latin='bebas'] {
-  --font-display: 'Bebas Neue', var(--font-cairo), system-ui, sans-serif;
-}
-.pf-root[data-font-latin='poppins'] {
-  --font-display: 'Poppins', var(--font-cairo), system-ui, sans-serif;
-}
-.pf-root[data-font-latin='manrope'] {
-  --font-display: 'Manrope', var(--font-cairo), system-ui, sans-serif;
-}
 
 /* ═══ Optical centring ═══════════════════════════════════════════════════
    A browser centres the LINE box, which reserves descender space whether or
@@ -3025,37 +1327,6 @@ html[data-theme='light'] .card.has-bg .ic {
    box no selector can reach — hence .btn-label around the words.
 
    Ignored where unsupported: the text simply stays where it was. */
-@supports (text-box: trim-both cap alphabetic) {
-  .pf-root .btn-label,
-  .pf-root .period,
-  .pf-root .tool-name,
-  .pf-root .tool-idx,
-  .pf-root .filter-pill,
-  .pf-root .chip-label,
-  .pf-root .hero-eyebrow,
-  .pf-root .detail-cat {
-    text-box: trim-both cap alphabetic;
-  }
-  /* Trimming shortens the box, so anything whose size came from the line box
-     gets it back. Buttons take a min-height rather than more padding: it holds
-     the 44px they had whatever face the tenant picks, and the flex centring
-     then places the trimmed label in the middle of it. */
-  .pf-root .btn {
-    min-height: 44px;
-    justify-content: center;
-  }
-  .pf-root .period {
-    padding-block: 8px 9px;
-  }
-  .pf-root .filter-pill {
-    padding-block: 8px;
-  }
-  /* Same as the buttons: a pill keeps its size through a min-height, and the
-     flex centring puts the trimmed label in the middle of it. */
-  .pf-root .chip {
-    min-height: 35px;
-  }
-}
 
 /* ═══ Motion — entrance animations (pure CSS, play on load) ═══════════════ */
 @keyframes pfUp {
@@ -3075,51 +1346,6 @@ html[data-theme='light'] .card.has-bg .ic {
   to {
     opacity: 1;
   }
-}
-/* Sections fade/slide in; the first few are staggered so it reads as a cascade. */
-.pf-root[data-anim='fade-up'] .section {
-  animation: pfUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-.pf-root[data-anim='fade'] .section {
-  animation: pfFade 0.7s ease both;
-}
-.pf-root[data-anim='fade-up'] .section:nth-of-type(2),
-.pf-root[data-anim='fade'] .section:nth-of-type(2) {
-  animation-delay: 0.08s;
-}
-.pf-root[data-anim='fade-up'] .section:nth-of-type(3),
-.pf-root[data-anim='fade'] .section:nth-of-type(3) {
-  animation-delay: 0.16s;
-}
-/* Hero content entrance (staggered). Split keeps its own image/text entrance. */
-.pf-root[data-anim='fade-up'] .hero:not(.hero-split) .hero-name,
-.pf-root[data-anim='fade'] .hero:not(.hero-split) .hero-name {
-  animation: pfUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-.pf-root[data-anim='fade-up'] .hero:not(.hero-split) .hero-eyebrow,
-.pf-root[data-anim='fade'] .hero:not(.hero-split) .hero-eyebrow {
-  animation: pfUp 0.85s 0.12s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-.pf-root[data-anim='fade-up'] .hero:not(.hero-split) .hero-btns,
-.pf-root[data-anim='fade'] .hero:not(.hero-split) .hero-btns {
-  animation: pfUp 0.85s 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-@media (prefers-reduced-motion: reduce) {
-  .pf-root[data-anim] .section,
-  .pf-root[data-anim] .hero-name,
-  .pf-root[data-anim] .hero-eyebrow,
-  .pf-root[data-anim] .hero-btns {
-    animation: none;
-  }
-}
-
-/* ═══ Motion — custom dot-ring cursor ═════════════════════════════════════ */
-.pf-root[data-cursor='dot-ring'] {
-  cursor: none;
-}
-.pf-root[data-cursor='dot-ring'] a,
-.pf-root[data-cursor='dot-ring'] button {
-  cursor: none;
 }
 .cursor-dot,
 .cursor-ring {
@@ -3152,44 +1378,6 @@ html[data-theme='light'] .card.has-bg .ic {
   width: 52px;
   height: 52px;
 }
-
-/* ═══ Backgrounds — decorative page tint layer (behind all content) ════════ */
-.pf-bg-layer {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-}
-/* "Scrolls with the page": the layer covers the whole document instead of
-   being pinned to the viewport. Pinning IS the parallax look, so this can't be
-   done with background-attachment — the element itself has to stop being fixed. */
-.pf-bg-layer.scrolls {
-  position: absolute;
-  inset: 0 0 auto;
-  height: 100%;
-}
-/* Both themes' backdrops are in the markup; only the active one is shown,
-   because the theme switch happens in the browser after render. */
-.pf-bg-layer.for-light {
-  display: none;
-}
-html[data-theme='light'] .pf-bg-layer.for-dark {
-  display: none;
-}
-html[data-theme='light'] .pf-bg-layer.for-light {
-  display: block;
-}
-/* Drift the layer with a transform rather than animating background-position.
-   Position is a paint property: animating it repainted the whole viewport
-   every frame and made scrolling feel rough. A transform is composited. */
-.pf-bg-layer.animated {
-  inset: -20%;
-  width: 140%;
-  height: 140%;
-  background-size: 100% 100% !important;
-  animation: pfBgDrift 20s ease-in-out infinite alternate;
-  will-change: transform;
-}
 @keyframes pfBgDrift {
   from {
     transform: translate3d(-7%, -5%, 0) scale(1.05);
@@ -3197,15 +1385,6 @@ html[data-theme='light'] .pf-bg-layer.for-light {
   to {
     transform: translate3d(7%, 5%, 0) scale(1.05);
   }
-}
-/* Dim over an image backdrop so body copy stays readable. */
-.pf-bg-dim {
-  position: absolute;
-  inset: 0;
-  background: #000;
-}
-.pf-bg-dim.light {
-  background: #fff;
 }
 
 /* ─── Per-section backgrounds ───────────────────────────────────────────── */
@@ -3389,207 +1568,6 @@ html[data-theme='light'] .pf-sec-dim {
 
 /* ═══ Unified mobile hero — every layout becomes one clean full-bleed cover ══
    (the framed/split & massive variants broke on phones). */
-@media (max-width: 768px) {
-  .pf-root .hero {
-    /* 80vh made the cover feel endless on tall phones, so a phone keeps a
-       ceiling — but a shorter hero than that is still honoured. */
-    min-height: min(var(--hero-h, 66vh), 78vh) !important;
-    max-height: 78vh !important;
-    align-items: center !important;
-  }
-  .pf-root .hero .hero-bg {
-    inset: 0 !important;
-    margin: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    aspect-ratio: auto !important;
-    object-fit: cover !important;
-    border: none !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    animation: none !important;
-    transform: none !important;
-  }
-  /* The veil the hero text is read against once the picture is behind the
-     words rather than beside them.
-
-     The old gradient was thinnest at 0.4 across the middle of the screen —
-     which is exactly where the heading, the name and the job sit. Over a
-     brightly lit photo they were barely legible. It now never drops below
-     0.74, and is heaviest at the bottom where the buttons are.
-
-     The owner's cover overlay is layered on top instead of being ignored, so
-     the control still darkens the hero further; it just can no longer take the
-     veil below the floor the text needs. */
-  .pf-root .hero .hero-overlay {
-    inset: 0 !important;
-    margin: 0 !important;
-    width: 100% !important;
-    /* The desktop "split" veil is a square panel (aspect-ratio: 1/1, height
-       auto). An aspect ratio with a definite width wins over `bottom`, so
-       `inset: 0` alone left the veil exactly one screen-width tall: the top of
-       the hero was covered and the bottom — the name, the job, the buttons —
-       had no veil at all. Both have to be cleared for the veil to reach the
-       bottom of the hero. */
-    aspect-ratio: auto !important;
-    height: auto !important;
-    border-radius: 0 !important;
-    background:
-      linear-gradient(
-        to bottom,
-        rgba(var(--hero-veil-rgb, 0, 0, 0), 0.8),
-        rgba(var(--hero-veil-rgb, 0, 0, 0), 0.74) 45%,
-        rgba(var(--hero-veil-rgb, 0, 0, 0), 0.9)
-      ),
-      rgba(var(--hero-veil-rgb, 0, 0, 0), var(--hero-overlay, 0)) !important;
-  }
-  .pf-root .hero .hero-inner {
-    max-width: none !important;
-    margin: 0 !important;
-    width: 100% !important;
-    text-align: center !important;
-    padding: 22px !important;
-    animation: none !important;
-    display: block !important;
-  }
-  /* Must survive a two-word name on a 390-430px phone: shrink it and let it
-     wrap instead of running off the edge. Declared on the hero so the eyebrow
-     and the description — siblings of the heading, not children — come down
-     with it. */
-  .pf-root .hero {
-    --hero-title-size: clamp(28px, 8.4vw, 44px);
-    --hero-lh: 1.12;
-    /* The phone's own sizes from the Design tab, the computer's when unset. */
-    --hero-title: calc(var(--hero-title-size) * var(--hero-title-scale-m, var(--hero-title-scale, 1)));
-    --hero-desc-scale-now: var(--hero-desc-scale-m, var(--hero-desc-scale, 1));
-  }
-  .pf-root .hero .hero-name {
-    letter-spacing: -0.5px !important;
-    white-space: normal !important;
-    overflow-wrap: break-word !important;
-    max-width: 100% !important;
-    order: 0 !important;
-  }
-  .pf-root .hero .hero-eyebrow {
-    order: 0 !important;
-    margin: 8px 0 20px !important;
-  }
-  /* …except on the panel layout, where the eyebrow is a label introducing the
-     heading. Below it, it reads as a stray line between heading and blurb. */
-  .pf-root .hero-panel .hero-eyebrow {
-    order: -1 !important;
-    margin: 0 0 10px !important;
-  }
-  .pf-root .hero .hero-btns {
-    flex-wrap: wrap !important;
-    justify-content: center !important;
-  }
-}
-
-/* Arabic headings need a taller line. The heading line-height is tuned for
-   Latin capitals, which sit neatly inside their box; Arabic hangs below the
-   baseline (ق ج ي) and stacks hamzas and shadda above it, so at 1.04 the
-   descenders of one line land on the marks of the next. Set on the hero rather
-   than the heading so it beats every layout AND the phone rule, both of which
-   set the variable at a lower specificity. */
-.pf-root[lang='ar'] .hero,
-.pf-root[dir='rtl'] .hero {
-  --hero-lh: 1.32;
-}
-
-/* Arabic is cursive: letter-spacing prises the joins apart and the word reads
-   as loose disconnected glyphs. Uppercasing does nothing for it either. These
-   are the tracked-out "eyebrow" styles, so neutralise both for Arabic. */
-.pf-root[lang='ar'] .eyebrow,
-.pf-root[lang='ar'] .hero-eyebrow,
-.pf-root[lang='ar'] .contact-eyebrow,
-.pf-root[lang='ar'] .detail-cat,
-.pf-root[dir='rtl'] .eyebrow,
-.pf-root[dir='rtl'] .hero-eyebrow,
-.pf-root[dir='rtl'] .contact-eyebrow,
-.pf-root[dir='rtl'] .detail-cat {
-  letter-spacing: normal;
-  text-transform: none;
-}
-
-/* Deck depth: a dimming veil driven by the card's (fractional) rank, instead
-   of animating `filter` on the card itself — that repainted the whole card
-   every frame. The value is continuous so the veil eases as the deck slides. */
-.cs-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: #000;
-  opacity: var(--veil, 0);
-  pointer-events: none;
-}
-
-/* Nav links jump between sections, so ease the jump — and keep the landing
-   spot clear of the sticky navbar. Respects a reduced-motion preference. */
-html:has(.pf-root) {
-  scroll-behavior: smooth;
-  scroll-padding-top: 88px;
-}
-@media (prefers-reduced-motion: reduce) {
-  html:has(.pf-root) {
-    scroll-behavior: auto;
-  }
-}
-
-/* ═══ Component styles (Design → Theme → General → Components) ═══════════ */
-
-/* Cards. `--card-bg` / `--card-border` are what every panel surface reads. */
-.pf-root {
-  --card-bg: var(--bg-2);
-  --card-border: var(--border);
-  --card-blur: none;
-}
-.pf-root[data-card='glass'] {
-  --card-bg: color-mix(in srgb, var(--bg-2) 55%, transparent);
-  --card-border: color-mix(in srgb, var(--text) 14%, transparent);
-  --card-blur: blur(14px);
-}
-.pf-root[data-card='outline'] {
-  --card-bg: transparent;
-  --card-border: color-mix(in srgb, var(--text) 22%, transparent);
-}
-.pf-root[data-card] .card,
-.pf-root[data-card] .project-card,
-.pf-root[data-card] .cs-card,
-.pf-root[data-card] .counter,
-.pf-root[data-card] .exp-item,
-.pf-root[data-card] .tool-item,
-.pf-root[data-card] .edu-item,
-.pf-root[data-card] .testimonial,
-.pf-root[data-card] .contact-card,
-.pf-root[data-card] .chip {
-  background: var(--card-bg);
-  border-color: var(--card-border);
-  backdrop-filter: var(--card-blur);
-}
-
-/* Navbar */
-.pf-root[data-navbar='solid'] .nav {
-  background: var(--bg);
-  backdrop-filter: none;
-}
-.pf-root[data-navbar='transparent'] .nav {
-  background: transparent;
-  backdrop-filter: none;
-  border-bottom-color: transparent;
-}
-
-/* Buttons — one radius token drives every button and pill. */
-.pf-root[data-btn='pill'] {
-  --radius-btn: 999px;
-}
-.pf-root[data-btn='sharp'] {
-  --radius-btn: 2px;
-}
-.pf-root[data-btn='rounded'] {
-  --radius-btn: 10px;
-}
 
 /* Rich-text module output (headings, lists, links from the editor). */
 .mod-rich h1,

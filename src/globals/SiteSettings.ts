@@ -412,9 +412,8 @@ export const SiteSettings: CollectionConfig = {
                 {
                   type: 'row',
                   fields: [
-                    // The site's overall look: 'classic' is the original;
-                    // 'studio' is the warm editorial one new portfolios start in.
-                    { name: 'skin', type: 'text', defaultValue: 'classic', admin: { description: 'classic | studio' } },
+                    // Retained for saved settings; every site now uses studio.
+                    { name: 'skin', type: 'text', defaultValue: 'studio', admin: { description: 'studio' } },
                     // Studio only: three of the latest designs fanned out under the hero.
                     { name: 'heroGallery', type: 'checkbox', defaultValue: true },
                     // …and whether they show on phones too.

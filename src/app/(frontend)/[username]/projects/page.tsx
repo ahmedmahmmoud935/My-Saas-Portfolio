@@ -14,8 +14,7 @@ import ScrollMemory from '@/components/portfolio/ScrollMemory'
  *
  * The home page shows two rows of work and a button here; this is the whole
  * section — the type tabs, the categories, the grid and the project window —
- * inside the same bar and footer. A classic site has no such page: its home
- * page already shows every project, so it is sent there.
+ * inside the same bar and footer.
  */
 
 type Params = { params: Promise<{ username: string }>; searchParams?: Promise<{ lang?: string }> }
@@ -48,8 +47,6 @@ export default async function ProjectsPage({ params, searchParams }: Params) {
   // A suspended client's whole site is off, not just its home page.
   if (!data || (data.tenant as { suspended?: boolean }).suspended) notFound()
   const q = await langQuery(locale)
-  const style = (data.settings?.style ?? {}) as { skin?: string; cursor?: string }
-  if (style.skin !== 'studio') redirect(`/${username}${q}#projects`)
 
   const d = buildStudioData(data, locale, q)
   if (!d.work) redirect(`/${username}${q}`)

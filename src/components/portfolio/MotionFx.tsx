@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from 'react'
 
 /**
  * The tenant's dot-ring custom cursor (a fast dot + a trailing ring).
- * Entrance/scroll motion is done in CSS (data-anim on .pf-root) so it never
+ * Entrance/scroll motion is done in studio CSS so it never
  * depends on JS timing. No-op unless cursor === 'dot-ring'.
  */
 export default function MotionFx({ cursor }: { anim?: string; cursor?: string }) {

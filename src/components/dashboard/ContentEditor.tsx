@@ -343,7 +343,7 @@ export default function ContentEditor({
               onChange={(v) => patch({ about: { ...f.about, tags: v } })}
             />
             <label className="lbl" style={{ marginTop: 14, display: 'block' }}>
-              {t('رقم على الصورة (شكل ستوديو)', 'A number on the photo (studio look)')}
+              {t('رقم على الصورة', 'A number on the photo')}
             </label>
             <input
               className="field"
@@ -495,8 +495,8 @@ export default function ContentEditor({
           <>
             <p className="cover-note" style={{ marginBottom: 14 }}>
               {t(
-                'النصوص دي بتظهر بس لما شكل الموقع يكون «ستوديو» (التصميم ← إعدادات عامة ← الشكل).',
-                'These lines show only with the Studio look (Design → General → Look).',
+                'النصوص دي بتظهر في أقسام موقعك.',
+                'These lines appear throughout your site’s sections.',
               )}
             </p>
             {STUDIO_TEXTS.map((it) => (

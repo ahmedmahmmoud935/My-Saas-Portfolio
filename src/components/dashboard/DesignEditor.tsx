@@ -5,7 +5,6 @@ import { studioHeroStyle } from '@/lib/studio-background'
 import { studioRootVars } from '@/lib/studio-look'
 import { useUnsaved } from './useUnsaved'
 import LandingPreview from './LandingPreview'
-import { tenantCssVars } from '@/lib/tenant-vars'
 import { pageBackground } from '@/lib/background'
 import PageHeader from './PageHeader'
 import MediaUploader from './MediaUploader'
@@ -213,7 +212,7 @@ function ColorRow({ label, hint, value, onChange, reset }: { label: string; hint
  */
 function applyDesign(doc: Document, f: DesignForm, theme: 'dark' | 'light') {
   doc.documentElement.dataset.theme = theme
-  /* A studio site: the same settings, through the same function the page
+  /* The same settings, through the same function the page
      itself uses, so the preview and the published page agree. */
   const studio = doc.querySelector<HTMLElement>('.st-root')
   if (studio) {
@@ -307,119 +306,6 @@ function applyDesign(doc: Document, f: DesignForm, theme: 'dark' | 'light') {
       if (row.colorLight) wrap.style.setProperty('--sec-bg-light', row.colorLight)
     }
     return
-  }
-  const root = doc.querySelector<HTMLElement>('.pf-root')
-  if (!root) return
-  root.style.removeProperty('--heading-dark')
-  root.style.removeProperty('--heading-light')
-  for (const [k, v] of Object.entries(tenantCssVars({ colors: f.colors } as never))) root.style.setProperty(k, v)
-  root.dataset.fontAr = f.style.fontAr
-  root.dataset.fontLatin = f.style.fontLatin
-  root.dataset.anim = f.style.anim
-  root.dataset.cursor = f.style.cursor
-  root.dataset.card = f.components.card
-  root.dataset.navbar = f.components.navbar
-  root.dataset.btn = f.components.button
-  root.dataset.skin = f.style.skin === 'studio' ? 'studio' : 'classic'
-  root.dir = f.style.direction === 'ltr' || f.style.direction === 'rtl' ? f.style.direction : root.lang === 'en' ? 'ltr' : 'rtl'
-
-  /* The page backdrop is rebuilt only when it changed. Rebuilt on every paint,
-     a slider anywhere on this screen tore down and re-decoded a full-page
-     picture sixty times a second, which is what made dragging one stutter. */
-  // The dim is left out of the key and set on its own below, so its slider
-  // never rebuilds the picture either.
-  const bgKey = JSON.stringify([{ ...f.background, dim: 0 }, { ...f.backgroundLight, dim: 0 }])
-  if (root.dataset.bgKey !== bgKey) {
-    root.dataset.bgKey = bgKey
-    root.querySelectorAll(':scope > .pf-bg-layer').forEach((el) => el.remove())
-    for (const [b, light] of [
-      [f.background, false],
-      [f.backgroundLight, true],
-    ] as const) {
-      const look = pageBackground(b)
-      if (!look) continue
-      const layer = doc.createElement('div')
-      layer.className = `pf-bg-layer ${light ? 'for-light' : 'for-dark'}${look.animated ? ' animated' : ''}${look.scrolls ? ' scrolls' : ''}`
-      Object.assign(layer.style, look.style)
-      if (b.type === 'image' && b.imageUrl) {
-        const dim = doc.createElement('span')
-        dim.className = `pf-bg-dim${light ? ' light' : ''}`
-        dim.style.opacity = String(b.dim / 100)
-        layer.appendChild(dim)
-      }
-      root.prepend(layer)
-    }
-  }
-  for (const [b, light] of [
-    [f.background, false],
-    [f.backgroundLight, true],
-  ] as const) {
-    const dim = root.querySelector<HTMLElement>(`:scope > .pf-bg-layer.${light ? 'for-light' : 'for-dark'} > .pf-bg-dim`)
-    if (dim) dim.style.opacity = String(b.dim / 100)
-  }
-
-  /* A section's own backdrop: the dim, the framing, held or scrolling, and
-     its colours, on the section already on the page. One added since the
-     last save has no wrapper here yet and shows after saving. */
-  for (const r of f.sectionBg) {
-    const wrap = doc.getElementById(r.section)?.closest<HTMLElement>('.pf-sec-bg')
-    if (!wrap) continue
-    if (r.mode === 'color') {
-      if (r.color) wrap.style.setProperty('--sec-bg', r.color)
-      else wrap.style.removeProperty('--sec-bg')
-      if (r.colorLight) wrap.style.setProperty('--sec-bg-light', r.colorLight)
-      else wrap.style.removeProperty('--sec-bg-light')
-      continue
-    }
-    const layer = wrap.querySelector<HTMLElement>(':scope > .pf-sec-layer')
-    if (!layer) continue
-    const dim = layer.querySelector<HTMLElement>('.pf-sec-dim')
-    if (dim) dim.style.opacity = String(Math.min(100, Math.max(0, r.dim)) / 100)
-    const media = layer.querySelector<HTMLElement>('.pf-sec-media')
-    if (!media) continue
-    const pos = `${r.posX}% ${r.posY}%`
-    if (media.tagName === 'VIDEO') {
-      media.style.objectPosition = pos
-    } else {
-      media.style.backgroundPosition = pos
-      const url = r.imageUrl ? `url(${JSON.stringify(r.imageUrl)})` : ''
-      if (url && media.style.backgroundImage !== url) media.style.backgroundImage = url
-      layer.classList.toggle('pinned', !!r.fixed)
-    }
-  }
-
-  const about = doc.querySelector<HTMLImageElement>('#about .about-photo')
-  if (about) {
-    if (f.aboutPhotoUrl && about.getAttribute('src') !== f.aboutPhotoUrl) about.src = f.aboutPhotoUrl
-    about.style.display = f.aboutPhotoUrl ? '' : 'none'
-    about.style.objectFit = f.aboutPhoto.size === 'contain' ? 'contain' : 'cover'
-    about.style.objectPosition = `${f.aboutPhoto.posX}% ${f.aboutPhoto.posY}%`
-  }
-
-  const hero = doc.getElementById('hero')
-  if (hero) {
-    const c = f.heroCover
-    hero.style.setProperty('--hero-h', `${c.height}vh`)
-    hero.style.setProperty('--hero-title-scale', String(c.titleScale / 100))
-    hero.style.setProperty('--hero-desc-scale', String(c.descScale / 100))
-    if (c.titleScaleMobile) hero.style.setProperty('--hero-title-scale-m', String(c.titleScaleMobile / 100))
-    else hero.style.removeProperty('--hero-title-scale-m')
-    if (c.descScaleMobile) hero.style.setProperty('--hero-desc-scale-m', String(c.descScaleMobile / 100))
-    else hero.style.removeProperty('--hero-desc-scale-m')
-    hero.style.setProperty('--hero-veil-dark', String(c.overlay / 100))
-    hero.style.setProperty('--hero-veil-light', String(c.overlayLight / 100))
-    if (c.align !== 'auto') hero.dataset.ha = c.align
-    else delete hero.dataset.ha
-    if (c.valign !== 'auto') hero.dataset.va = c.valign
-    else delete hero.dataset.va
-    hero.querySelectorAll<HTMLImageElement>('img.hero-bg').forEach((img) => {
-      img.style.objectPosition = `${c.posX}% ${c.posY}%`
-      img.style.objectFit = c.size
-    })
-    if (c.gradient !== 'none') {
-      hero.querySelector('.hg-on-light')?.setAttribute('class', `hero-bg hero-grad hg-${c.gradient} hg-on-light`)
-      hero.querySelector('.hg-on-dark')?.setAttribute('class', `hero-bg hero-grad hg-${c.gradientDark || c.gradient} hg-on-dark`)
-    }
   }
 }
 
@@ -528,49 +414,33 @@ function GeneralPanel({
           <>
             <p className="hx-lead">{tr('الشكل العام للموقع، وشكل الكروت والشريط العلوي والأزرار.', 'The overall look of the site, and how cards, the navbar and buttons look.')}</p>
             <div className="hx-block">
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                style={{ justifySelf: 'start' }}
+                onClick={() =>
+                  set({
+                    colors: { ...f.colors, ...STUDIO_LOOK.colors },
+                    style: { ...f.style, fontAr: STUDIO_LOOK.fontAr, fontLatin: STUDIO_LOOK.fontLatin },
+                    components: { ...STUDIO_LOOK.components },
+                  })
+                }
+              >
+                {tr('🎨 استخدم ألوان وخطوط الستوديو', '🎨 Use the studio colours and fonts')}
+              </button>
               <Opt
-                label={tr('شكل الموقع', 'Site look')}
-                value={f.style.skin === 'studio' ? 'studio' : 'classic'}
-                options={opts(tr, [['studio', 'ستوديو', 'Studio'], ['classic', 'كلاسيك', 'Classic']])}
-                onChange={(v) => setStyle({ skin: v })}
+                label={tr('صور الأعمال تحت العنوان الرئيسي', 'Your work under the hero')}
+                value={f.style.heroGallery === false ? 'off' : 'on'}
+                options={opts(tr, [['on', 'تظهر', 'Shown'], ['off', 'مخفية', 'Hidden']])}
+                onChange={(v) => setStyle({ heroGallery: v === 'on' })}
               />
-              {f.style.skin === 'studio' && (
-                <>
-                  <p className="hx-note">
-                    {tr(
-                      'ستوديو: قالب كامل بتصميم مختلف، وبيتملي من نفس محتواك. الرقم اللي على صورتك بيتكتب من المحتوى ← عن النفس، والجمل الخاصة بيه من المحتوى ← نصوص ستوديو. المعاينة بتتحدّث بعد الحفظ.',
-                      'Studio: a whole template of its own, filled from the same content. The number on your photo is in Content → About, and its own lines in Content → Studio texts. The preview updates after saving.',
-                    )}
-                  </p>
-                  <button
-                    type="button"
-                    className="btn btn-ghost btn-sm"
-                    style={{ justifySelf: 'start' }}
-                    onClick={() =>
-                      set({
-                        colors: { ...f.colors, ...STUDIO_LOOK.colors },
-                        style: { ...f.style, fontAr: STUDIO_LOOK.fontAr, fontLatin: STUDIO_LOOK.fontLatin },
-                        components: { ...STUDIO_LOOK.components },
-                      })
-                    }
-                  >
-                    {tr('🎨 استخدم ألوان وخطوط الستوديو', '🎨 Use the studio colours and fonts')}
-                  </button>
-                  <Opt
-                    label={tr('صور الأعمال تحت العنوان الرئيسي', 'Your work under the hero')}
-                    value={f.style.heroGallery === false ? 'off' : 'on'}
-                    options={opts(tr, [['on', 'تظهر', 'Shown'], ['off', 'مخفية', 'Hidden']])}
-                    onChange={(v) => setStyle({ heroGallery: v === 'on' })}
-                  />
-                  {f.style.heroGallery !== false && (
-                    <Opt
-                      label={tr('الصور دي على الموبايل', 'Those photos on phones')}
-                      value={f.style.heroGalleryMobile === false ? 'off' : 'on'}
-                      options={opts(tr, [['on', 'تظهر', 'Shown'], ['off', 'مخفية', 'Hidden']])}
-                      onChange={(v) => setStyle({ heroGalleryMobile: v === 'on' })}
-                    />
-                  )}
-                </>
+              {f.style.heroGallery !== false && (
+                <Opt
+                  label={tr('الصور دي على الموبايل', 'Those photos on phones')}
+                  value={f.style.heroGalleryMobile === false ? 'off' : 'on'}
+                  options={opts(tr, [['on', 'تظهر', 'Shown'], ['off', 'مخفية', 'Hidden']])}
+                  onChange={(v) => setStyle({ heroGalleryMobile: v === 'on' })}
+                />
               )}
             </div>
             <div className="hx-block">
@@ -1030,17 +900,6 @@ export default function DesignEditor({ initial, sitePath }: { initial: DesignFor
           </button>
         }
       />
-
-      {/* On the studio look, say plainly which controls reach it. */}
-      {f.style.skin === 'studio' && (
-        <div className="panel" style={{ marginBottom: 14, fontSize: 13.5, lineHeight: 1.9, color: 'var(--sub)' }}>
-          <strong style={{ color: 'var(--text)' }}>{tr('موقعك على شكل «ستوديو».', 'Your site uses the Studio look.')}</strong>{' '}
-          {tr(
-            'بيشتغل عليه: الألوان في الثيمين ولون العناوين، الخطوط، شكل الكروت والأزرار والشريط العلوي، الحركة والماوس واتجاه الصفحة، صورة الغلاف وتعتيمها، أحجام العنوان والوصف (كمبيوتر وموبايل)، صورة «عن النفس» ومكانها، خلفيات الأقسام، وأعمدة شبكة المشاريع. خلفية الصفحة ومحاذاة وطول الرئيسية والتدرجات بتشتغل على ستوديو كمان. تخطيطات الأقسام فقط خاصة بالشكل الكلاسيك.',
-            'It applies: colours in both themes and the heading colour, fonts, card / button / top-bar shapes, motion, cursor and direction, the cover picture and its veil, heading and line sizes (computer and phone), the About photo and its framing, section backgrounds and the project grid columns. Page backgrounds, hero alignment, height and gradients also apply to Studio. Only section layouts belong to the Classic look.',
-          )}
-        </div>
-      )}
 
       {/* Top-level tabs: Theme + one per section */}
       <div className="design-tabs de-toptabs">

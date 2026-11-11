@@ -179,7 +179,7 @@ export function starterContent(field: StarterField, name: string): ContentForm {
 export async function seedStarter(payload: Payload, tenantId: number, field: StarterField, name: string) {
   const found = await payload.find({ collection: 'site-settings', where: { tenant: { equals: tenantId } }, limit: 1, depth: 0 })
   /* A new portfolio starts in the studio look: its colours in both themes, its
-     fonts and its shapes. The owner can switch to classic from Design. */
+     fonts and its shapes. */
   const settings =
     found.docs[0] ??
     (await payload.create({

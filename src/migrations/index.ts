@@ -1,3 +1,4 @@
+import * as migration_20261111_050000_studio_only from './20261111_050000_studio_only';
 import * as migration_20260709_062018_initial from './20260709_062018_initial';
 import * as migration_20260709_171646_add_r2_storage from './20260709_171646_add_r2_storage';
 import * as migration_20260710_093433_add_project_published from './20260710_093433_add_project_published';
@@ -425,5 +426,10 @@ export const migrations = [
     up: migration_20261111_040000_viralpx_product_image.up,
     down: migration_20261111_040000_viralpx_product_image.down,
     name: '20261111_040000_viralpx_product_image'
+  },
+  {
+    up: migration_20261111_050000_studio_only.up,
+    down: migration_20261111_050000_studio_only.down,
+    name: '20261111_050000_studio_only'
   },
 ];
