@@ -62,6 +62,8 @@ export const STUDIO_UI = {
     more: 'المزيد على Behance',
     allWork: 'عرض كل المشاريع',
     backHome: 'الرئيسية',
+    backWork: 'كل المشاريع',
+    articles: 'المقالات',
     previewLabel: 'معاينة تصميمية للواجهة',
     previewIdea: 'معاينة تصميمية لفكرة الصفحة',
     details: 'التفاصيل',
@@ -114,6 +116,8 @@ export const STUDIO_UI = {
     more: 'More on Behance',
     allWork: 'View all projects',
     backHome: 'Home',
+    backWork: 'All projects',
+    articles: 'Articles',
     previewLabel: 'Illustrative interface preview',
     previewIdea: 'Illustrative layout of the design concept',
     details: 'Details',
@@ -149,6 +153,8 @@ export type StudioProject = {
 export type StudioSection = 'hero' | 'about' | 'work' | 'digital' | 'services' | 'reviews' | 'team' | 'clients' | 'experience' | 'tools' | 'education' | 'skills' | 'contact'
 
 export type StudioData = {
+  tenantId: number
+  articlesHref: string
   lang: Lang
   dir: 'rtl' | 'ltr'
   order: StudioSection[]
@@ -339,6 +345,20 @@ const host = (u: string) => {
   } catch {
     return ''
   }
+}
+
+/* A bar link left unnamed in this language reads as its section, not its id. */
+const NAV_FALLBACK: Record<Lang, Record<string, string>> = {
+  ar: {
+    hero: 'الرئيسية', about: 'عنّي', projects: 'الأعمال', products: 'مواقع وأنظمة', expertise: 'الخدمات',
+    testimonials: 'آراء العملاء', team: 'الفريق', logos: 'العملاء', achievements: 'الإنجازات',
+    experience: 'الخبرات', tools: 'الأدوات', education: 'التعليم', skills: 'المهارات', contact: 'تواصل',
+  },
+  en: {
+    hero: 'Home', about: 'About', projects: 'Work', products: 'Web & systems', expertise: 'Services',
+    testimonials: 'Reviews', team: 'Team', logos: 'Clients', achievements: 'Achievements',
+    experience: 'Experience', tools: 'Tools', education: 'Education', skills: 'Skills', contact: 'Contact',
+  },
 }
 
 export function buildStudioData(data: PortfolioData, lang: Lang, q: string): StudioData {
@@ -544,6 +564,8 @@ export function buildStudioData(data: PortfolioData, lang: Lang, q: string): Stu
     ui,
     ...studioRootVars(settings as unknown as StudioLookInput),
     name,
+    tenantId: tenant.id,
+    articlesHref: `${base}/articles${q}`,
     homeHref: `${base}${q}`,
     workHref: `${base}/projects${q}`,
     monogram: { text: monoText, logoUrl: mediaUrl(brand.brandLogo as never, 'thumb') },
@@ -725,7 +747,7 @@ export function buildStudioData(data: PortfolioData, lang: Lang, q: string): Stu
       if (!all.length) return null
       return all
         .filter((l) => l.visible !== false && l.linkId)
-        .map((l) => ({ id: String(l.linkId), label: trim(l.label) || String(l.linkId) }))
+        .map((l) => ({ id: String(l.linkId), label: trim(l.label) || NAV_FALLBACK[lang][String(l.linkId)] || String(l.linkId) }))
     })(),
     footer: trim(studio.footer),
     call: tel ? `tel:${tel}` : wa && visibleSocial.has('whatsapp') ? `https://wa.me/${wa}` : null,

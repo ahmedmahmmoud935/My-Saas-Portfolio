@@ -112,14 +112,14 @@ export default function TestimonialForm({ username, t }: { username: string; t: 
             className="tf-star"
             aria-pressed={n <= rating}
             onClick={() => setRating(n)}
-            style={{ color: n <= rating ? 'var(--accent)' : 'var(--sub)' }}
+            style={{ color: n <= rating ? 'var(--accent)' : 'var(--muted, var(--sub))' }}
           >
             ★
           </button>
         ))}
       </div>
       {state === 'err' && <p className="tf-err">{t.error}</p>}
-      <button className="tf-btn" type="submit" disabled={state === 'sending'}>
+      <button className="tf-btn st-button st-primary" type="submit" disabled={state === 'sending'}>
         {state === 'sending' ? t.sending : t.submit}
       </button>
     </form>

@@ -1,15 +1,15 @@
+import StudioShell from '@/components/studio/StudioShell'
+import { buildStudioData } from '@/lib/studio-data'
+import Analytics from '@/components/portfolio/Analytics'
 import React from 'react'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { mediaUrl } from '@/lib/portfolio'
+import { getPortfolio, mediaUrl } from '@/lib/portfolio'
 import { alternatesFor, langQuery, pageLocale } from '@/lib/seo'
 import { liveWhere } from '@/lib/publish'
 import { readingMinutes } from '@/lib/reading-time'
-import Navbar from '@/components/portfolio/Navbar'
-import PageShell from '@/components/portfolio/PageShell'
-import Footer from '@/components/portfolio/Footer'
 
 type Params = { params: Promise<{ username: string }>; searchParams?: Promise<{ lang?: string }> }
 
@@ -67,37 +67,37 @@ export default async function ArticlesListPage({ params, searchParams }: Params)
   const data = await load(username, locale)
   if (!data) notFound()
   const { tenant, settings, articles } = data
-  const logo = tenant.name?.[0]?.toUpperCase() || 'V'
   const q = await langQuery(locale)
+  const portfolio = await getPortfolio(username, locale)
+  if (!portfolio) notFound()
+  const d = buildStudioData(portfolio, locale, q)
+
   return (
-    <PageShell settings={settings} locale={locale}>
-      <Navbar
-        logo={logo}
-        links={[{ label: locale === 'en' ? 'Home' : 'الرئيسية', href: `/${tenant.slug}${q}` }]}
-        langHref={`?lang=${locale === 'en' ? 'ar' : 'en'}`}
-        langLabel={locale === 'en' ? 'ع' : 'EN'}
-      />
-      <section className="section">
-        <div className="container">
-          <div className="section-head">
-            <h1 className="section-title">{locale === 'en' ? 'Articles' : 'المقالات'}</h1>
+    <StudioShell d={d} base={d.homeHref} hasArticles={articles.length > 0} langHref={`?lang=${locale === 'en' ? 'ar' : 'en'}`}>
+      <Analytics id={settings?.seoTools?.analyticsId} />
+
+      <section className="st-section">
+        <div className="st-shell">
+          <div className="st-page-heading">
+            <h1 className="st-page-title">{locale === 'en' ? 'Articles' : 'المقالات'}</h1>
           </div>
           {articles.length === 0 ? (
-            <p style={{ textAlign: 'center', color: 'var(--sub)' }}>
+            <p className="st-empty">
               {locale === 'en' ? 'No articles yet.' : 'لا توجد مقالات بعد.'}
             </p>
           ) : (
-            <div className="tst-grid">
+            <div className="st-article-grid">
               {articles.map((a) => (
-                <a key={a.id} href={`/${tenant.slug}/articles/${a.slug}${q}`} className="tst" style={{ padding: 0, overflow: 'hidden', display: 'block' }}>
+                <a key={a.id} href={`/${tenant.slug}/articles/${a.slug}${q}`} className="st-article-card">
                   {mediaUrl(a.cover, 'card') && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={mediaUrl(a.cover, 'card')!} alt={a.title} style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover' }} />
                   )}
-                  <div style={{ padding: 18 }}>
+                  <div className="st-article-card-body">
                     <h3 style={{ margin: '0 0 8px', fontSize: 18 }}>{a.title}</h3>
-                    {a.excerpt && <p style={{ color: 'var(--sub)', fontSize: 14, margin: 0 }}>{a.excerpt}</p>}
+                    {a.excerpt && <p style={{ color: 'var(--muted)', fontSize: 14, margin: 0 }}>{a.excerpt}</p>}
                     <div style={{ color: 'var(--accent)', fontSize: 12, marginTop: 10 }}>
+                      <time dateTime={a.createdAt}>{new Date(a.createdAt).toLocaleDateString(locale === 'en' ? 'en-GB' : 'ar')}</time>{' · '}
                       {(() => {
                         const min = readingMinutes(a.contentHtml, locale)
                         return min ? (locale === 'en' ? `${min} min read` : `${min} دقيقة قراءة`) : ''
@@ -110,7 +110,6 @@ export default async function ArticlesListPage({ params, searchParams }: Params)
           )}
         </div>
       </section>
-      <Footer logo={logo} name={tenant.name} />
-    </PageShell>
+    </StudioShell>
   )
 }

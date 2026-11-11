@@ -131,7 +131,7 @@ const CloseIcon = (
   <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M18 6L6 18M6 6l12 12" /></svg>
 )
 
-export default function ProjectView({ project }: { project: SerializedProject }) {
+export default function ProjectView({ project, backHref, backLabel }: { project: SerializedProject; backHref?: string; backLabel?: string }) {
   /* What each picture is, in words, for search engines and AI assistants,
      which read the text of a page and not its images. The owner's own
      description of a picture when there is one; otherwise the project, its
@@ -180,11 +180,11 @@ export default function ProjectView({ project }: { project: SerializedProject })
   }, [lb])
 
   return (
-    <div className="detail">
+    <div className={`detail${backHref ? ' st-shell st-section' : ''}`}>
       <div className="detail-nav">
-        <button className="detail-back" onClick={() => history.back()}>
+        {backHref ? <a className="st-button st-outline" href={backHref}>{backLabel}</a> : <button className="detail-back" onClick={() => history.back()}>
           ← Back
-        </button>
+        </button>}
       </div>
 
       {project.projectType === 'stacked' && project.cover && (
@@ -198,7 +198,7 @@ export default function ProjectView({ project }: { project: SerializedProject })
         {project.description && (
           <div
             className="mod-rich"
-            style={{ color: 'var(--sub)', lineHeight: 1.9 }}
+            style={{ color: 'var(--muted, var(--sub))', lineHeight: 1.9 }}
             // Same rich editor as the text modules — HTML, or legacy plain text.
             // eslint-disable-next-line react/no-danger
             dangerouslySetInnerHTML={{
@@ -311,7 +311,7 @@ export default function ProjectView({ project }: { project: SerializedProject })
                   </div>
                 )
               case 'carousel':
-                return <Carousel key={i} images={m.items} ratio={m.ratio} onOpen={open} />
+                return <Carousel className="st-project-carousel" key={i} images={m.items} ratio={m.ratio} onOpen={open} />
               case 'video': {
                 const v = resolveVideoUrl(m.embedUrl)
                 if (!v) return null

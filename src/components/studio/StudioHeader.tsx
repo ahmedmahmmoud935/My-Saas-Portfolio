@@ -22,6 +22,7 @@ export default function StudioHeader({
   isEn,
   ltr,
   base = '',
+  articlesHref,
 }: {
   ui: StudioUI
   name: string
@@ -34,6 +35,7 @@ export default function StudioHeader({
   isEn: boolean
   ltr: boolean
   /** Where the section links point: '' on the home page, its address elsewhere. */
+  articlesHref?: string
   base?: string
 }) {
   const [dark, setDark] = useState(false)
@@ -91,6 +93,7 @@ export default function StudioHeader({
                 <Icon name="code-xml" size={16} />
               </a>
             )}
+            {articlesHref && <a href={articlesHref}>{ui.articles}</a>}
           </nav>
           <div className="st-header-actions">
             <button className="st-icon-button st-theme-switch" onClick={toggleTheme} aria-label={ui.theme}>
@@ -131,6 +134,7 @@ export default function StudioHeader({
               <Icon name="code-xml" />
             </a>
           )}
+          {articlesHref && <a href={articlesHref} onClick={() => setOpen(false)}>{ui.articles}<Icon name={Arrow} /></a>}
         </nav>
       )}
     </>

@@ -489,9 +489,7 @@ export default async function PortfolioPage({ params, searchParams }: Params) {
       <>
         {!isPreview && <Analytics id={settings?.seoTools?.analyticsId} />}
         {!isPreview && <TrackVisit tenant={tenant.id} page="home" />}
-        <MotionFx anim="none" cursor={(settings?.style as { cursor?: string } | undefined)?.cursor || 'default'} />
         {sharedHead}
-      <ScrollMemory />
         <ScrollMemory />
         <StudioPortfolio d={buildStudioData(data, locale, q)} />
       </>

@@ -7,7 +7,6 @@ import { buildStudioData } from '@/lib/studio-data'
 import StudioPortfolio from '@/components/studio/StudioPortfolio'
 import Analytics from '@/components/portfolio/Analytics'
 import TrackVisit from '@/components/portfolio/TrackVisit'
-import MotionFx from '@/components/portfolio/MotionFx'
 import ScrollMemory from '@/components/portfolio/ScrollMemory'
 
 /**
@@ -58,7 +57,6 @@ export default async function ProjectsPage({ params, searchParams }: Params) {
     <>
       <Analytics id={data.settings?.seoTools?.analyticsId} />
       <TrackVisit tenant={data.tenant.id} page="projects" />
-      <MotionFx anim="none" cursor={style.cursor || 'default'} />
       <ScrollMemory />
       <StudioPortfolio d={d} page="work" />
     </>

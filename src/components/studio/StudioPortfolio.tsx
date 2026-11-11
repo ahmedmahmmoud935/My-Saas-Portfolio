@@ -1,13 +1,12 @@
 import React from 'react'
 import { Icon } from './icons'
-import StudioHeader, { Monogram } from './StudioHeader'
+import StudioShell from './StudioShell'
 import StudioWork from './StudioWork'
 import StudioContactForm from './StudioContactForm'
 import StudioReviewText from './StudioReviewText'
 import StudioServices from './StudioServices'
 import SectionBg from '@/components/portfolio/SectionBg'
 import type { Heading, StudioData, StudioSection } from '@/lib/studio-data'
-import '@/app/(frontend)/studio.css'
 
 /**
  * The studio template: the owner's reference design, section for section,
@@ -63,7 +62,6 @@ function HeroTitle({ lines }: { lines: string[] }) {
  */
 export default function StudioPortfolio({ d, page = 'home' }: { d: StudioData; page?: 'home' | 'work' }) {
   const onHome = page === 'home'
-  const isEn = d.lang === 'en'
   const ui = d.ui
   /* Which sections are on the page: a link, a button or a card arrow only
      points at a section that is there. */
@@ -93,16 +91,6 @@ export default function StudioPortfolio({ d, page = 'home' }: { d: StudioData; p
     skills: d.skills, contact: d.contact,
   }
   const shown = (id: StudioSection) => !!SHOWN[id]
-  const defaultLinks = [
-    d.work && { id: 'projects', label: ui.nav.work },
-    d.about && { id: 'about', label: ui.nav.about },
-    d.services && { id: 'expertise', label: ui.nav.services },
-    d.experience && { id: 'experience', label: ui.nav.experience },
-    d.contact && { id: 'contact', label: ui.nav.contact },
-  ].filter((l): l is { id: string; label: string } => !!l)
-  // The bar editor's own links and labels, when the client has set them.
-  const links = d.nav ? d.nav.filter((l) => present.has(l.id)) : defaultLinks
-
   // The product the client marked to show large, else the first; the rest smaller.
   const prodList = d.digital?.items ?? []
   const feature = prodList.find((p) => p.featured) ?? prodList[0]
@@ -611,70 +599,33 @@ export default function StudioPortfolio({ d, page = 'home' }: { d: StudioData; p
   }
 
   return (
-    <div id="top" className={`st-root st-portfolio st-lang-${d.lang}`} style={d.vars as React.CSSProperties} dir={d.dir} lang={d.lang} {...d.attrs}>
-      <a className="st-skip-link" href={d.work ? '#projects' : '#main'}>
-        {ui.seeWork}
-      </a>
-      <StudioHeader
-        ui={ui}
-        name={d.name}
-        monogram={d.monogram}
-        links={links}
-        digital={!d.nav && !!d.digital}
-        contact={hasContact}
-        langHref={onHome ? d.langHref : `${d.langHref.replace(/\?.*$/, '')}/projects${d.langHref.match(/\?.*$/)?.[0] ?? ''}`}
-        isEn={isEn}
-        ltr={d.dir === 'ltr'}
-        base={onHome ? '' : d.homeHref}
-      />
+    <StudioShell
+      d={d}
+      base={onHome ? '' : d.homeHref}
+      langHref={onHome ? d.langHref : `${d.langHref.replace(/\?.*$/, '')}/projects${d.langHref.match(/\?.*$/)?.[0] ?? ''}`}
+    >
 
-      <main id="main">
-        {!onHome && d.work && (
-          <div className="st-work-page">
-            <StudioWork work={d.work} ui={ui} ltr={d.dir === 'ltr'} />
-          </div>
-        )}
-        {onHome && d.order.filter(shown).map((id) =>
-          d.sectionBg[id] ? (
-            <SectionBg key={id} config={d.sectionBg[id]}>
-              {blocks[id]}
-            </SectionBg>
-          ) : (
-            <React.Fragment key={id}>{blocks[id]}</React.Fragment>
-          ),
-        )}
-      </main>
-
-      <footer className="st-site-footer">
-        <div className="st-shell">
-          <div className="st-footer-main">
-            <Monogram monogram={d.monogram} as="a" href="#top" />
-            {d.footer && <p>{d.footer}</p>}
-            <a href="#top">
-              {ui.top}
-              <Icon name="arrow-up-right" size={16} />
-            </a>
-          </div>
-          <div className="st-footer-bottom">
-            <span>
-              © {new Date().getFullYear()} {d.name}
-            </span>
-          </div>
+      {!onHome && d.work && (
+        <div className="st-work-page">
+          <StudioWork work={d.work} ui={ui} ltr={d.dir === 'ltr'} />
         </div>
-      </footer>
-
-      {d.call && (
-        <a className="st-floating-call" href={d.call} aria-label={`${ui.call} ${d.name}`}>
-          <Icon name="phone" size={20} />
-        </a>
       )}
-    </div>
+      {onHome && d.order.filter(shown).map((id) =>
+        d.sectionBg[id] ? (
+          <SectionBg key={id} config={d.sectionBg[id]}>
+            {blocks[id]}
+          </SectionBg>
+        ) : (
+          <React.Fragment key={id}>{blocks[id]}</React.Fragment>
+        ),
+      )}
+
+    </StudioShell>
   )
 }
 
 type Product = NonNullable<StudioData['digital']>['items'][number]
 
-/** A product's picture, drawn the way the reference draws its three. */
 /** The product's picture: the one uploaded, else the live site's own share
  *  picture, filling the card. With neither, its name on a plain stage. */
 function ProductStage({ p }: { p: Product }) {

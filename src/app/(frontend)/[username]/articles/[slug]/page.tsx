@@ -1,15 +1,15 @@
+import StudioShell from '@/components/studio/StudioShell'
+import { buildStudioData } from '@/lib/studio-data'
+import Analytics from '@/components/portfolio/Analytics'
 import React from 'react'
 import { notFound, permanentRedirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { mediaUrl } from '@/lib/portfolio'
+import { getPortfolio, mediaUrl } from '@/lib/portfolio'
 import { alternatesFor, langQuery, pageLocale, plainText } from '@/lib/seo'
 import { isLive, liveWhere } from '@/lib/publish'
 import { readingMinutes } from '@/lib/reading-time'
-import Navbar from '@/components/portfolio/Navbar'
-import PageShell from '@/components/portfolio/PageShell'
-import Footer from '@/components/portfolio/Footer'
 import { cleanHtml } from '@/lib/clean-html'
 
 type Params = {
@@ -182,7 +182,6 @@ export default async function ArticlePage({ params, searchParams }: Params) {
   const minutes = readingMinutes(article.contentHtml, locale)
   const tags = (article.tags ?? []).map((t) => (t.tag ?? '').trim()).filter(Boolean)
   const more = await related(await getPayload({ config }), tenant.id, article, locale)
-  const logo = tenant.name?.[0]?.toUpperCase() || 'V'
   const cover = mediaUrl(article.cover)
 
   const jsonLd = {
@@ -198,22 +197,19 @@ export default async function ArticlePage({ params, searchParams }: Params) {
 
   const q = await langQuery(locale)
 
+  const portfolio = await getPortfolio(username, locale)
+  if (!portfolio) notFound()
+  const d = buildStudioData(portfolio, locale, q)
+
   return (
-    <PageShell settings={settings} locale={locale}>
+    <StudioShell d={d} base={d.homeHref} hasArticles langHref={`?lang=${locale === 'en' ? 'ar' : 'en'}`}>
+      <Analytics id={settings?.seoTools?.analyticsId} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <Navbar
-        logo={logo}
-        links={[
-          { label: locale === 'en' ? 'Articles' : 'المقالات', href: `/${tenant.slug}/articles${q}` },
-          { label: locale === 'en' ? 'Home' : 'الرئيسية', href: `/${tenant.slug}${q}` },
-        ]}
-        langHref={`?lang=${locale === 'en' ? 'ar' : 'en'}`}
-        langLabel={locale === 'en' ? 'ع' : 'EN'}
-      />
-      <article className="section">
-        <div className="container" style={{ maxWidth: 760 }}>
-          <h1 style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 900, lineHeight: 1.2 }}>{article.title}</h1>
-          <div style={{ color: 'var(--sub)', fontSize: 13, marginBottom: 20 }}>
+
+      <article className="st-section">
+        <div className="st-shell st-article">
+          <h1 className="st-page-title">{article.title}</h1>
+          <div style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 20 }}>
             {new Date(article.createdAt).toLocaleDateString(locale === 'en' ? 'en-GB' : 'ar')}{minutes ? ` · ${minutes} ${locale === 'en' ? 'min read' : 'دقيقة قراءة'}` : ''}
           </div>
           {cover && (
@@ -221,8 +217,8 @@ export default async function ArticlePage({ params, searchParams }: Params) {
             <img src={cover} alt={article.title} style={{ width: '100%', borderRadius: 12, marginBottom: 24 }} />
           )}
           <div
-            className="article-body"
-            style={{ lineHeight: 1.9, color: 'var(--text)' }}
+            className="st-rich"
+            style={{ lineHeight: 1.9, color: 'var(--ink)' }}
             // The client's own HTML, with anything that would run taken out.
             dangerouslySetInnerHTML={{ __html: cleanHtml(article.contentHtml) }}
           />
@@ -231,9 +227,9 @@ export default async function ArticlePage({ params, searchParams }: Params) {
               a tag page with two articles on it is a thin page, and a blog
               this size is better off without a dozen of them. */}
           {tags.length > 0 && (
-            <div className="art-tags">
+            <div className="st-tags">
               {tags.map((tag) => (
-                <span className="art-tag" key={tag}>
+                <span className="st-tag" key={tag}>
                   {tag}
                 </span>
               ))}
@@ -244,8 +240,8 @@ export default async function ArticlePage({ params, searchParams }: Params) {
               or is given somewhere to go, and a link from one piece to another
               is the one kind of link this site can make for itself. */}
           {more.items.length > 0 && (
-            <section className="rel">
-              <h2 className="rel-title">
+            <section className="st-related">
+              <h2 className="st-related-title">
                 {more.related
                   ? locale === 'en'
                     ? 'Related reading'
@@ -254,18 +250,20 @@ export default async function ArticlePage({ params, searchParams }: Params) {
                     ? 'More to read'
                     : 'اقرأ كمان'}
               </h2>
-              <div className="rel-grid">
+              <div className="st-article-grid">
                 {more.items.map((r) => {
                   const img = mediaUrl(r.cover, 'card')
                   return (
-                    <a className="rel-card" key={r.id} href={`/${tenant.slug}/articles/${r.slug}${q}`}>
+                    <a className="st-article-card" key={r.id} href={`/${tenant.slug}/articles/${r.slug}${q}`}>
                       {img && (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={img} alt="" loading="lazy" />
                       )}
-                      <div className="rel-body">
+                      <div className="st-article-card-body">
                         <strong>{r.title}</strong>
+                        {r.excerpt && <p>{r.excerpt}</p>}
                         <span>
+                          <time dateTime={r.createdAt}>{new Date(r.createdAt).toLocaleDateString(locale === 'en' ? 'en-GB' : 'ar')}</time>{' · '}
                           {readingMinutes(r.contentHtml, locale)}{' '}
                           {locale === 'en' ? 'min read' : 'دقيقة قراءة'}
                         </span>
@@ -278,7 +276,6 @@ export default async function ArticlePage({ params, searchParams }: Params) {
           )}
         </div>
       </article>
-      <Footer logo={logo} name={tenant.name} />
-    </PageShell>
+    </StudioShell>
   )
 }

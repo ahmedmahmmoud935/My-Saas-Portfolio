@@ -1,16 +1,17 @@
+import StudioShell from '@/components/studio/StudioShell'
+import { buildStudioData } from '@/lib/studio-data'
+import Analytics from '@/components/portfolio/Analytics'
 import React from 'react'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { mediaUrl } from '@/lib/portfolio'
+import { getPortfolio, mediaUrl } from '@/lib/portfolio'
 import { altOf } from '@/lib/project-types'
 import { cleanHtml } from '@/lib/clean-html'
 import { isEmbeddablePage, recoverEscapedHtml, splitHtmlDocument } from '@/lib/html-embed'
 import { alternatesFor, absoluteUrl, creativeWorkJsonLd, langQuery, pageLocale, plainText } from '@/lib/seo'
 import ProjectView, { type Mod, type SerializedProject } from '@/components/project/ProjectView'
-import Navbar from '@/components/portfolio/Navbar'
-import PageShell from '@/components/portfolio/PageShell'
 import TrackVisit from '@/components/portfolio/TrackVisit'
 
 type Params = {
@@ -278,39 +279,19 @@ export default async function ProjectDetailPage({ params, searchParams }: Params
 
   const settings = settingsRes.docs[0] ?? null
 
-  // The portfolio's own navbar, kept on the project page — leaving the visitor
-  // with nothing but a Back button meant no way to reach any other section.
-  // The links are anchors on the portfolio page, so they need its path here.
-  const qs = await langQuery(locale)
-  const navLinks = [
-    ...((settings as { navbarLinks?: { linkId?: string; label?: string; visible?: boolean }[] } | null)
-      ?.navbarLinks ?? [])
-      .filter((l) => l.visible !== false)
-      .map((l) => ({
-        label: l.label || l.linkId || '',
-        href: `/${tenant.slug}${qs}#${l.linkId ?? ''}`,
-      })),
-    {
-      label: locale === 'en' ? 'Articles' : 'المقالات',
-      href: `/${tenant.slug}/articles${qs}`,
-    },
-  ]
+  const q = await langQuery(locale)
 
+  const portfolio = await getPortfolio(username, locale)
+  if (!portfolio) notFound()
+  const d = buildStudioData(portfolio, locale, q)
 
   return (
-    <PageShell settings={settings} locale={locale}>
+    <StudioShell d={d} base={d.homeHref} langHref={`?lang=${locale === 'en' ? 'ar' : 'en'}`}>
+      <Analytics id={settings?.seoTools?.analyticsId} />
       {/* Opening a project was never recorded, so "most viewed projects" had
           nothing to count and sat empty however much traffic came through. */}
       <TrackVisit tenant={tenant.id} page="project" project={project.id} />
-      <Navbar
-        logo={tenant.name?.[0]?.toUpperCase() || 'V'}
-        logoUrl={mediaUrl((settings as { brand?: { brandLogo?: unknown } } | null)?.brand?.brandLogo as never, 'thumb')}
-        homeHref={`/${tenant.slug}${qs}`}
-        links={navLinks}
-        // The toggle stays on this project instead of being a dead control.
-        langHref={`?lang=${locale === 'en' ? 'ar' : 'en'}`}
-        langLabel={locale === 'en' ? 'ع' : 'EN'}
-      />
+
       {/* eslint-disable-next-line react/no-danger */}
       <script
         type="application/ld+json"
@@ -337,7 +318,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Params
           ),
         }}
       />
-      <ProjectView project={serialized} />
-    </PageShell>
+      <ProjectView project={serialized} backHref={d.workHref} backLabel={d.ui.backWork} />
+    </StudioShell>
   )
 }
