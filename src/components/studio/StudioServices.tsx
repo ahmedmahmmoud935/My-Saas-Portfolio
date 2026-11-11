@@ -52,6 +52,14 @@ export default function StudioServices({
     )
   const message = (title: string) => encodeURIComponent(`${ui.serviceAsk} ${title}`)
 
+  const picture = (s: (typeof services.items)[number]) => s.image ? (
+    <span className="st-service-picture" aria-hidden="true" style={{ '--st-service-dark': s.dark / 100, '--st-service-light': s.light / 100 } as React.CSSProperties}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={s.image} alt="" loading="lazy" style={{ objectPosition: `${s.x}% ${s.y}%`, transform: `scale(${s.zoom / 100})`, transformOrigin: `${s.x}% ${s.y}%` }} />
+      <span />
+    </span>
+  ) : null
+
   return (
     <>
       <div className="st-services-grid">
@@ -74,6 +82,7 @@ export default function StudioServices({
               }
             }}
           >
+            {picture(s)}
             <div className="st-service-top">{icon(s)}</div>
             <h3>{s.title}</h3>
             {s.desc && <p>{s.desc}</p>}
@@ -96,7 +105,8 @@ export default function StudioServices({
             <button className="st-dialog-close st-icon-button" onClick={close} aria-label={ui.close}>
               <Icon name="x" size={23} />
             </button>
-            <div className="st-dialog-body">
+            <div className="st-dialog-body st-service-detail">
+              {picture(item)}
               <div className="st-service-top">{icon(item)}</div>
               <h2 id="st-service-title">{item.title}</h2>
               {item.desc && <p className="st-service-full">{item.desc}</p>}

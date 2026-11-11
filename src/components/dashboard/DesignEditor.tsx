@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useCallback, useState } from 'react'
+import { studioHeroStyle } from '@/lib/studio-background'
 import { studioRootVars } from '@/lib/studio-look'
 import { useUnsaved } from './useUnsaved'
 import LandingPreview from './LandingPreview'
@@ -228,7 +229,7 @@ function applyDesign(doc: Document, f: DesignForm, theme: 'dark' | 'light') {
     const lang = studio.getAttribute('lang')
     studio.dir = f.style.direction === 'ltr' || f.style.direction === 'rtl' ? f.style.direction : lang === 'en' ? 'ltr' : 'rtl'
     /* Pictures replaced or removed before saving show here too; a picture
-       added where there was none, and section backgrounds, show after the
+       added where there was none shows after the
        save that reloads the preview. */
     const photo = studio.querySelector<HTMLImageElement>('.st-about-photo > img')
     if (photo) {
@@ -249,6 +250,61 @@ function applyDesign(doc: Document, f: DesignForm, theme: 'dark' | 'light') {
       veil.style.display = f.heroCoverUrl ? '' : 'none'
       veil.style.setProperty('--veil-d', String(f.heroCover.overlay / 100))
       veil.style.setProperty('--veil-l', String(f.heroCover.overlayLight / 100))
+    }
+    const hero = studio.querySelector<HTMLElement>('.st-hero')
+    if (hero) {
+      for (const [key, value] of Object.entries(studioHeroStyle(f.heroCover))) hero.style.setProperty(key, String(value))
+      hero.dataset.ha = f.heroCover.align || 'auto'
+      hero.dataset.va = f.heroCover.valign || 'auto'
+      hero.dataset.gradient = f.heroCover.gradient && f.heroCover.gradient !== 'none' ? 'on' : ''
+    }
+    for (const [themeName, bg] of [['dark', f.background], ['light', f.backgroundLight]] as const) {
+      const layer = studio.querySelector<HTMLElement>(`.st-bg-${themeName}`)
+      const paint = layer?.querySelector<HTMLElement>('.st-page-paint')
+      if (!layer || !paint) continue
+      const look = pageBackground(bg)
+      paint.removeAttribute('style')
+      if (look) Object.assign(paint.style, look.style)
+      paint.classList.toggle('st-animated', !!look?.animated)
+      layer.classList.toggle('st-scrolls', !!look?.scrolls)
+      layer.querySelector('.st-page-dim')?.remove()
+      if (look && bg.type === 'image') {
+        const dim = doc.createElement('span')
+        dim.className = 'st-page-dim'
+        dim.style.opacity = String(Math.min(100, Math.max(0, bg.dim)) / 100)
+        layer.append(dim)
+      }
+    }
+    // A new colour needs no reload, even if the section had no wrapper yet.
+    studio.querySelectorAll<HTMLElement>('.pf-sec-bg').forEach((wrap) => {
+      const section = wrap.querySelector<HTMLElement>('section[id]')
+      if (section && !f.sectionBg.some((row) => row.section === section.id)) {
+        const inner = wrap.querySelector<HTMLElement>(':scope > .pf-sec-inner')
+        wrap.querySelector(':scope > .pf-sec-layer')?.remove()
+        wrap.replaceWith(...Array.from((inner || wrap).childNodes))
+        return
+      }
+      wrap.style.removeProperty('--sec-bg')
+      wrap.style.removeProperty('--sec-bg-light')
+    })
+    const seen = new Set<string>()
+    for (const row of f.sectionBg) {
+      if (seen.has(row.section)) continue
+      seen.add(row.section)
+      const section = doc.getElementById(row.section)
+      if (!section || !studio.contains(section)) continue
+      let wrap = section.closest<HTMLElement>('.pf-sec-bg')
+      if (row.mode !== 'color') continue
+      if (!wrap) {
+        wrap = doc.createElement('div')
+        wrap.className = 'pf-sec-bg'
+        section.before(wrap)
+        wrap.append(section)
+      }
+      wrap.classList.remove('media')
+      wrap.querySelector<HTMLElement>(':scope > .pf-sec-layer')?.remove()
+      if (row.color) wrap.style.setProperty('--sec-bg', row.color)
+      if (row.colorLight) wrap.style.setProperty('--sec-bg-light', row.colorLight)
     }
     return
   }
@@ -982,8 +1038,8 @@ export default function DesignEditor({ initial, sitePath }: { initial: DesignFor
         <div className="panel" style={{ marginBottom: 14, fontSize: 13.5, lineHeight: 1.9, color: 'var(--sub)' }}>
           <strong style={{ color: 'var(--text)' }}>{tr('موقعك على شكل «ستوديو».', 'Your site uses the Studio look.')}</strong>{' '}
           {tr(
-            'بيشتغل عليه: الألوان في الثيمين ولون العناوين، الخطوط، شكل الكروت والأزرار والشريط العلوي، الحركة والماوس واتجاه الصفحة، صورة الغلاف وتعتيمها، أحجام العنوان والوصف (كمبيوتر وموبايل)، صورة «عن النفس» ومكانها، خلفيات الأقسام، وأعمدة شبكة المشاريع. تخطيطات الأقسام وخلفية الصفحة ومحاذاة وطول الرئيسية والتدرجات خاصة بالشكل الكلاسيك.',
-            'It applies: colours in both themes and the heading colour, fonts, card / button / top-bar shapes, motion, cursor and direction, the cover picture and its veil, heading and line sizes (computer and phone), the About photo and its framing, section backgrounds and the project grid columns. Section layouts, the page background, the hero alignment and height, and the gradients belong to the Classic look.',
+            'بيشتغل عليه: الألوان في الثيمين ولون العناوين، الخطوط، شكل الكروت والأزرار والشريط العلوي، الحركة والماوس واتجاه الصفحة، صورة الغلاف وتعتيمها، أحجام العنوان والوصف (كمبيوتر وموبايل)، صورة «عن النفس» ومكانها، خلفيات الأقسام، وأعمدة شبكة المشاريع. خلفية الصفحة ومحاذاة وطول الرئيسية والتدرجات بتشتغل على ستوديو كمان. تخطيطات الأقسام فقط خاصة بالشكل الكلاسيك.',
+            'It applies: colours in both themes and the heading colour, fonts, card / button / top-bar shapes, motion, cursor and direction, the cover picture and its veil, heading and line sizes (computer and phone), the About photo and its framing, section backgrounds and the project grid columns. Page backgrounds, hero alignment, height and gradients also apply to Studio. Only section layouts belong to the Classic look.',
           )}
         </div>
       )}

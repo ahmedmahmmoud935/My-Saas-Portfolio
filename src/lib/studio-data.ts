@@ -1,5 +1,8 @@
+import type { BgConfig } from './background'
+import type { Story } from '@/components/portfolio/StoryHighlights'
+import { lightDim } from './content-types'
 import type { PortfolioData } from './portfolio'
-import { mediaUrl } from './portfolio'
+import { mediaUrl, isVideoSrc } from './portfolio'
 import { resolveVideoUrl } from './video'
 import { telTarget, waNumber } from './phone'
 import { safeHref } from './safe-url'
@@ -150,9 +153,11 @@ export type StudioProject = {
 }
 
 /** The template's sections, in the order they can be arranged. */
-export type StudioSection = 'hero' | 'about' | 'work' | 'digital' | 'services' | 'reviews' | 'team' | 'clients' | 'experience' | 'tools' | 'education' | 'skills' | 'contact'
+export type StudioSection = 'hero' | 'about' | 'work' | 'digital' | 'services' | 'reviews' | 'team' | 'clients' | 'achievements' | 'experience' | 'tools' | 'education' | 'skills' | 'contact'
 
 export type StudioData = {
+  background: { dark: BgConfig | null; light: BgConfig | null }
+  mobileBar: { pos: string; icon: string; label: string; href: string }[]
   tenantId: number
   articlesHref: string
   lang: Lang
@@ -169,6 +174,7 @@ export type StudioData = {
   monogram: { text: string; logoUrl: string | null }
   langHref: string
   hero: {
+    appearance: { height?: number | null; align?: string | null; valign?: string | null; gradient?: string | null; gradientDark?: string | null }
     kicker: string
     title: string[]
     desc: string
@@ -196,6 +202,7 @@ export type StudioData = {
   work: {
     title: string
     subtitle: string
+    highlights: Story[]
     tabs: { id: WorkType; label: string }[]
     categories: Record<WorkType, { id: string; label: string }[]>
     projects: StudioProject[]
@@ -228,7 +235,7 @@ export type StudioData = {
   services: {
     heading: Heading
     subtitle: string
-    items: { title: string; desc: string; iconUrl: string | null; icon: string }[]
+    items: { title: string; desc: string; iconUrl: string | null; icon: string; image: string | null; zoom: number; dark: number; light: number; x: number; y: number }[]
   } | null
   reviews: {
     title: string
@@ -371,8 +378,7 @@ export function buildStudioData(data: PortfolioData, lang: Lang, q: string): Stu
   const social = (settings?.social ?? {}) as Record<string, string | null | undefined>
   const visibleSocial = new Set(((social as { visible?: string[] }).visible ?? ['behance', 'instagram', 'linkedin', 'vimeo']) as string[])
 
-  /* Hidden in the section order stays hidden here; the order itself is the
-     reference's, which is what makes it the reference. */
+  // Hidden in the section editor stays hidden here.
   const hidden = new Set(
     (settings?.sections ?? []).filter((s) => s.visible === false).map((s) => String(s.sectionId)),
   )
@@ -416,7 +422,8 @@ export function buildStudioData(data: PortfolioData, lang: Lang, q: string): Stu
   const catsFor = (type: WorkType) => {
     const used = Array.from(new Set(studioProjects.filter((p) => p.type === type).map((p) => p.category).filter(Boolean)))
     const rows = type === 'designs' ? catRows.image : catRows.video
-    return used.map((id) => {
+    const ordered = [...rows.map((r) => r.name).filter((id) => used.includes(id)), ...used.filter((id) => !rows.some((r) => r.name === id))]
+    return ordered.map((id) => {
       const row = rows.find((r) => r.name === id)
       return { id, label: row ? catLabel(row, lang) : id }
     })
@@ -509,6 +516,10 @@ export function buildStudioData(data: PortfolioData, lang: Lang, q: string): Stu
       desc: trim(it.description),
       iconUrl: mediaUrl(it.icon as never, 'thumb'),
       icon: serviceIcon(trim(it.title), i),
+      image: mediaUrl(it.image as never, 'card'),
+      zoom: Number(it.bgZoom ?? 100), dark: Number(it.bgOverlay ?? 45),
+      light: Number(it.bgOverlayLight ?? lightDim(Number(it.bgOverlay ?? 45))),
+      x: Number(it.bgPosX ?? 50), y: Number(it.bgPosY ?? 50),
     }))
     .filter((s) => s.title)
 
@@ -534,29 +545,37 @@ export function buildStudioData(data: PortfolioData, lang: Lang, q: string): Stu
   const tools = ((c.tools ?? {}) as { title?: string; items?: Record<string, unknown>[] })
 
   /* The sections in the client's own order. The template's ids map onto
-     the section editor's; clients and numbers share one section, placed
-     where the first of the two is. */
+     the section editor's; logos and achievements stay independent. */
   const SECTION_OF: Record<string, StudioSection> = {
     hero: 'hero', about: 'about', projects: 'work', products: 'digital', expertise: 'services',
-    testimonials: 'reviews', team: 'team', logos: 'clients', achievements: 'clients', experience: 'experience',
+    testimonials: 'reviews', team: 'team', logos: 'clients', achievements: 'achievements', experience: 'experience',
     tools: 'tools', education: 'education', skills: 'skills', contact: 'contact',
   }
-  const DEFAULT_ORDER: StudioSection[] = ['hero', 'about', 'work', 'digital', 'services', 'reviews', 'team', 'clients', 'experience', 'tools', 'education', 'skills', 'contact']
+  const DEFAULT_ORDER: StudioSection[] = ['hero', 'about', 'work', 'digital', 'services', 'reviews', 'team', 'clients', 'achievements', 'experience', 'tools', 'education', 'skills', 'contact']
   const savedOrder = [...(settings?.sections ?? [])]
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
     .map((s) => SECTION_OF[String(s.sectionId)])
     .filter((x): x is StudioSection => !!x)
   const order: StudioSection[] = []
   for (const id of savedOrder) if (!order.includes(id)) order.push(id)
-  DEFAULT_ORDER.forEach((id, i) => {
+  const missingOrder: StudioSection[] = savedOrder.length ? ['hero', 'about', 'work', 'digital', 'achievements', 'services', 'reviews', 'team', 'clients', 'experience', 'tools', 'education', 'skills', 'contact'] : DEFAULT_ORDER
+  missingOrder.forEach((id, i) => {
     if (order.includes(id)) return
-    const prev = DEFAULT_ORDER.slice(0, i).reverse().find((p) => order.includes(p))
+    const prev = missingOrder.slice(0, i).reverse().find((p) => order.includes(p))
     order.splice(prev ? order.indexOf(prev) + 1 : 0, 0, id)
   })
-  // The hero leads the page whatever the order says, as in the classic look.
-  const ordered: StudioSection[] = [...(on('hero') ? (['hero'] as StudioSection[]) : []), ...order.filter((x) => x !== 'hero')]
+  // Keep the saved order, including the hero, just as classic does.
+  const ordered = order.filter((id) => id !== 'hero' || on('hero'))
 
   return {
+    background: {
+      dark: settings?.background ? { ...settings.background, imageUrl: mediaUrl(settings.background.image, 'card') } : null,
+      light: settings?.backgroundLight ? { ...settings.backgroundLight, imageUrl: mediaUrl(settings.backgroundLight.image, 'card') } : null,
+    },
+    mobileBar: settings?.mobileBar?.enabled === false ? [] : (settings?.mobileBar?.buttons ?? []).map((b) => ({
+      pos: b.pos || 'left', icon: b.icon || (b.type === 'whatsapp' ? 'whatsapp' : b.type === 'articles' ? 'book-open' : b.type === 'section' ? 'layer-group' : 'link'), label: b.label || '',
+      href: b.type === 'articles' ? `${base}/articles${q}` : b.type === 'whatsapp' ? (wa ? `https://wa.me/${wa}` : `${base}${q}#contact`) : b.type === 'link' ? safeHref(b.target || '') : `${base}${q}#${b.target || ''}`,
+    })),
     lang,
     dir: style.direction === 'ltr' ? 'ltr' : style.direction === 'rtl' ? 'rtl' : lang === 'en' ? 'ltr' : 'rtl',
     order: ordered,
@@ -571,6 +590,7 @@ export function buildStudioData(data: PortfolioData, lang: Lang, q: string): Stu
     monogram: { text: monoText, logoUrl: mediaUrl(brand.brandLogo as never, 'thumb') },
     langHref: `${base}?lang=${lang === 'en' ? 'ar' : 'en'}`,
     hero: {
+      appearance: settings?.heroCover ?? {},
       kicker: trim(hero.title),
       title: lines(hero.name).length ? lines(hero.name) : [name],
       desc: trim(hero.desc),
@@ -597,16 +617,17 @@ export function buildStudioData(data: PortfolioData, lang: Lang, q: string): Stu
     strip: on('hero') ? words(studio.strip) : [],
     about: aboutData,
     work:
-      on('projects') && studioProjects.length
+      on('projects') && (studioProjects.length || settings?.highlights?.length)
         ? {
             title: trim(c.projects?.title) || (lang === 'en' ? 'Selected work.' : 'أعمال مختارة.'),
             subtitle: trim(c.projects?.subtitle),
+            highlights: (settings?.highlights ?? []).map((h) => ({ title: h.title || '', coverUrl: mediaUrl(h.cover, 'thumb'), items: (h.items ?? []).map((it) => ({ type: isVideoSrc(mediaUrl(it.media, 'card'), typeof it.media === 'object' ? it.media?.mimeType : null) ? 'video' : it.type || 'image', url: mediaUrl(it.media, 'card') })) })),
             tabs,
             categories: { designs: catsFor('designs'), reels: catsFor('reels'), videos: catsFor('videos') },
             projects: studioProjects,
             more: trim(social.behance) && visibleSocial.has('behance') ? { href: safeHref(trim(social.behance)), label: ui.more } : null,
             cols: (() => {
-              /* The grid keeps the reference's own columns until the client
+              /* The grid keeps the template's own columns until the client
                  picks others: the stored defaults (4 / 3 / 2) are what every
                  site has without choosing, so they read as "not chosen". */
               const g = (settings?.gridCols ?? {}) as Record<string, number | null | undefined>

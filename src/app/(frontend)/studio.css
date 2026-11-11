@@ -538,8 +538,8 @@ html[data-theme=dark] .st-root .st-creative-strip{color:#eee8df;background:#1417
    Unset, each one leaves the reference exactly as it is. */
 
 /* Heading colour, per theme. */
-.st-root h1,.st-root h2{color:var(--t-heading,inherit)}
-html[data-theme=dark] .st-root h1,html[data-theme=dark] .st-root h2{color:var(--t-heading-d,inherit)}
+.st-root h2{color:var(--t-heading,inherit)}
+html[data-theme=dark] .st-root h2{color:var(--t-heading-d,inherit)}
 
 /* The hero's heading and line sizes. */
 .st-root .st-hero h1{font-size:calc(clamp(44px,6.3vw,86px) * var(--t-h1,1))}
@@ -815,3 +815,58 @@ html[data-theme=dark] .st-root .st-hero-veil{opacity:var(--veil-d,.45)}
    its footer at the bottom, rather than ending above the browser's backdrop. */
 .st-root{min-height:100dvh;display:flex;flex-direction:column}
 .st-root>main{flex:1 0 auto}
+
+/* Page layers are composited, so an image never uses background-attachment. */
+.st-root{position:relative;isolation:isolate}
+.st-root .st-page-bg{position:absolute;inset:0;z-index:-1;pointer-events:none;clip-path:inset(0)}
+.st-root .st-page-paint,.st-root .st-page-dim{position:sticky;top:0;display:block;height:100vh;width:100%}
+.st-root .st-page-dim{margin-top:-100vh;background:#fff}
+.st-root .st-scrolls .st-page-paint,.st-root .st-scrolls .st-page-dim{position:absolute;inset:0;height:100%;margin:0}
+.st-root .st-bg-dark{display:none}
+html[data-theme=dark] .st-root .st-bg-dark{display:block}
+html[data-theme=dark] .st-root .st-bg-light{display:none}
+html[data-theme=dark] .st-root .st-page-dim{background:#000}
+.st-root .st-animated{animation:stBgDrift 16s ease-in-out infinite alternate;scale:1.25}
+@keyframes stBgDrift{from{transform:translate(-5%,-5%) rotate(-3deg)}to{transform:translate(5%,5%) rotate(3deg)}}
+.st-root .st-hero{min-height:var(--st-hero-height,auto);display:flex;flex-direction:column;justify-content:center}
+.st-root .st-hero[data-va=top]{justify-content:flex-start}
+.st-root .st-hero[data-va=bottom]{justify-content:flex-end}
+.st-root .st-hero[data-ha=start]{text-align:start}
+.st-root .st-hero[data-ha=end]{text-align:end}
+.st-root .st-hero[data-ha=start] :is(h1,.st-hero-description){margin-inline:0 auto}
+.st-root .st-hero[data-ha=end] :is(h1,.st-hero-description){margin-inline:auto 0}
+.st-root .st-hero[data-ha=start] .st-hero-buttons{justify-content:flex-start}
+.st-root .st-hero[data-ha=end] .st-hero-buttons{justify-content:flex-end}
+.st-root .st-hero-gradient{display:none}
+.st-root .st-hero[data-gradient=on]{isolation:isolate;background:none}
+.st-root .st-hero[data-gradient=on] .st-hero-gradient{display:block;position:absolute;inset:0;z-index:-1;background-image:var(--st-hero-gradient)}
+html[data-theme=dark] .st-root .st-hero[data-gradient=on] .st-hero-gradient{background-image:var(--st-hero-gradient-dark)}
+.st-root .st-hero[data-gradient=on] :is(.st-hero-cover,.st-hero-veil){display:none!important}
+.st-root .st-service-card,.st-root .st-service-detail{isolation:isolate;overflow:hidden;position:relative}
+.st-root .st-service-picture{position:absolute;inset:0;z-index:-1;overflow:hidden;border-radius:inherit;pointer-events:none}
+.st-root .st-service-picture img{width:100%;height:100%;object-fit:cover}
+.st-root .st-service-picture>span{position:absolute;inset:0;background:#fff;opacity:var(--st-service-light)}
+html[data-theme=dark] .st-root .st-service-picture>span{background:#000;opacity:var(--st-service-dark)}
+.st-root .st-highlights:has(.story-row){margin-bottom:32px}
+.st-root .st-highlights .story-row{justify-content:center}
+.st-root .st-highlights .story-ring{background:var(--accent);border-color:var(--accent)}
+.st-root .st-highlights .story-title{color:var(--ink);font-family:inherit}
+.st-root .st-mobile-bar{display:none}
+@media(max-width:600px){
+  .st-root[data-mobile-bar=on]{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+  .st-root[data-mobile-bar=on] .st-floating-call{display:none}
+  .st-root .st-mobile-bar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));position:fixed;bottom:0;inset-inline:0;z-index:45;background:var(--surface);border-top:1px solid var(--line);padding:12px 8px calc(12px + env(safe-area-inset-bottom));direction:ltr}
+  .st-root .st-mobile-bar a{grid-row:1;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;text-align:center;font-size:12px;overflow-wrap:anywhere}
+  .st-root .st-mobile-bar a[data-pos=left]{grid-column:1}
+  .st-root .st-mobile-bar a[data-pos=center]{grid-column:2;color:var(--accent)}
+  .st-root .st-mobile-bar a[data-pos=right]{grid-column:3}
+}
+/* Studio starts light even before a theme preference has been saved. */
+html:not([data-theme=dark]) .st-root .pf-sec-bg{background:var(--sec-bg-light,var(--sec-bg,transparent))}
+html:not([data-theme=dark]) .st-root .pf-sec-bg.media{background:none}
+html:not([data-theme=dark]) .st-root .pf-sec-dim{background:#fff}
+@media(prefers-reduced-motion:reduce){.st-root .st-animated{animation:none}}
+
+.st-root .st-highlights>.container{width:100%;max-width:none;padding-inline:0}
+.st-root .st-highlights .story-row{justify-content:flex-start;margin-top:0}
+.st-root .st-mobile-bar span{max-width:100%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}

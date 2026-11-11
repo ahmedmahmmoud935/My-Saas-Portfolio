@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
+import StoryHighlights from '@/components/portfolio/StoryHighlights'
 import { Icon } from './icons'
 import type { StudioData, StudioProject, WorkType } from '@/lib/studio-data'
 
@@ -81,6 +82,7 @@ export default function StudioWork({
   return (
     <section className="st-work-section st-section" id="projects">
       <div className="st-shell">
+        <div className="st-highlights"><StoryHighlights stories={work.highlights} /></div>
         <div className="st-work-heading">
           <div className="st-section-title">
             <h2>{work.title}</h2>

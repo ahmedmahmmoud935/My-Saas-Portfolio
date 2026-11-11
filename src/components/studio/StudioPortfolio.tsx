@@ -1,4 +1,5 @@
 import React from 'react'
+import { studioHeroStyle } from '@/lib/studio-background'
 import { Icon } from './icons'
 import StudioShell from './StudioShell'
 import StudioWork from './StudioWork'
@@ -74,7 +75,7 @@ export default function StudioPortfolio({ d, page = 'home' }: { d: StudioData; p
       d.services && 'expertise',
       d.reviews && 'testimonials',
       d.team && 'team',
-      d.clients && 'logos',
+      d.clients?.logos.length && 'logos',
       d.clients && d.clients.stats.length > 0 && 'achievements',
       d.experience && 'experience',
       d.tools && 'tools',
@@ -87,7 +88,7 @@ export default function StudioPortfolio({ d, page = 'home' }: { d: StudioData; p
   // A section with nothing to show is left out, background and all.
   const SHOWN: Record<StudioSection, unknown> = {
     hero: true, about: d.about, work: d.work, digital: d.digital, services: d.services, reviews: d.reviews,
-    team: d.team, clients: d.clients, experience: d.experience, tools: d.tools, education: d.education,
+    team: d.team, clients: d.clients?.logos.length, achievements: d.clients?.stats.length, experience: d.experience, tools: d.tools, education: d.education,
     skills: d.skills, contact: d.contact,
   }
   const shown = (id: StudioSection) => !!SHOWN[id]
@@ -100,7 +101,8 @@ export default function StudioPortfolio({ d, page = 'home' }: { d: StudioData; p
   const blocks: Record<StudioSection, React.ReactNode> = {
     hero: (
       <>
-        <section className={`st-hero${d.hero.cover ? ' st-has-cover' : ''}`} id="hero">
+        <section className={`st-hero${d.hero.cover ? ' st-has-cover' : ''}`} id="hero" style={studioHeroStyle(d.hero.appearance)} data-ha={d.hero.appearance.align || 'auto'} data-va={d.hero.appearance.valign || 'auto'} data-gradient={d.hero.appearance.gradient && d.hero.appearance.gradient !== 'none' ? 'on' : undefined}>
+          <span className="st-hero-gradient" aria-hidden="true" />
           {d.hero.cover && (
             <>
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -385,20 +387,19 @@ export default function StudioPortfolio({ d, page = 'home' }: { d: StudioData; p
                 )}
               </div>
             )}
-            {d.clients.stats.length > 0 && (
-              <div className="st-stats-grid" id="achievements">
-                {d.clients.stats.map((s, i) => (
-                  <div className="st-stat" key={i}>
-                    <strong dir="ltr">{s.value}</strong>
-                    <span>{s.label}</span>
-                  </div>
-                ))}
-              </div>
-            )}
           </section>
         )}
       </>
     ),
+    achievements: d.clients?.stats.length ? (
+      <section className="st-clients-section st-shell st-section" id="achievements">
+        <div className="st-stats-grid">
+          {d.clients.stats.map((s, i) => (
+            <div className="st-stat" key={i}><strong dir="ltr">{s.value}</strong><span>{s.label}</span></div>
+          ))}
+        </div>
+      </section>
+    ) : null,
     experience: (
       <>
         {d.experience && (
@@ -607,7 +608,7 @@ export default function StudioPortfolio({ d, page = 'home' }: { d: StudioData; p
 
       {!onHome && d.work && (
         <div className="st-work-page">
-          <StudioWork work={d.work} ui={ui} ltr={d.dir === 'ltr'} />
+          <SectionBg config={d.sectionBg.work}><StudioWork work={d.work} ui={ui} ltr={d.dir === 'ltr'} /></SectionBg>
         </div>
       )}
       {onHome && d.order.filter(shown).map((id) =>

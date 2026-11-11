@@ -1,3 +1,4 @@
+import { pageBackground, dimOpacity } from '@/lib/background'
 import React from 'react'
 import { getPayload } from 'payload'
 import config from '@payload-config'
@@ -33,7 +34,7 @@ export default async function StudioShell({ d, langHref, base, children, hasArti
       d.services && 'expertise',
       d.reviews && 'testimonials',
       d.team && 'team',
-      d.clients && 'logos',
+      d.clients?.logos.length && 'logos',
       d.clients && d.clients.stats.length > 0 && 'achievements',
       d.experience && 'experience',
       d.tools && 'tools',
@@ -54,7 +55,15 @@ export default async function StudioShell({ d, langHref, base, children, hasArti
   const links = d.nav ? d.nav.filter((l) => present.has(l.id)) : defaultLinks
 
   return (
-    <div id="top" className={`st-root st-portfolio st-lang-${d.lang}`} style={d.vars as React.CSSProperties} dir={d.dir} lang={d.lang} {...d.attrs}>
+    <div id="top" className={`st-root st-portfolio st-lang-${d.lang}`} data-mobile-bar={d.mobileBar.length ? 'on' : undefined} style={d.vars as React.CSSProperties} dir={d.dir} lang={d.lang} {...d.attrs}>
+      {(['light', 'dark'] as const).map((theme) => {
+        const bg = d.background[theme]
+        const look = pageBackground(bg)
+        return <div key={theme} className={`st-page-bg st-bg-${theme}${look?.scrolls ? ' st-scrolls' : ''}`} aria-hidden="true">
+          <div className={`st-page-paint${look?.animated ? ' st-animated' : ''}`} style={look?.style} />
+          {bg?.type === 'image' && look && <span className="st-page-dim" style={{ opacity: dimOpacity(bg) }} />}
+        </div>
+      })}
       <a className="st-skip-link" href={base === '' && d.work ? '#projects' : '#main'}>
         {ui.seeWork}
       </a>
@@ -95,6 +104,17 @@ export default async function StudioShell({ d, langHref, base, children, hasArti
       {/* The custom cursor, on every page: the root hides the native one. */}
       <MotionFx cursor={(d.attrs as Record<string, string>)['data-cursor']} />
 
+      {d.mobileBar.length > 0 && (
+        <>
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+          <nav className="st-mobile-bar" aria-label={ui.navLabel}>
+            {d.mobileBar.map((b, i) => <a key={i} href={b.href} data-pos={b.pos}>
+              <i aria-hidden="true" className={/\s/.test(b.icon) ? b.icon : `${b.icon.replace(/^fa-/, '') === 'whatsapp' ? 'fa-brands' : 'fa-solid'} fa-${b.icon.replace(/^fa-/, '') || 'link'}`} />
+              <span>{b.label}</span>
+            </a>)}
+          </nav>
+        </>
+      )}
       {d.call && (
         <a className="st-floating-call" href={d.call} aria-label={`${ui.call} ${d.name}`}>
           <Icon name="phone" size={20} />
