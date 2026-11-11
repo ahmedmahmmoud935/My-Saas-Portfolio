@@ -1,3 +1,4 @@
+import { LAYOUT_OPTIONS } from './design-types'
 import type { BgConfig } from './background'
 import type { Story } from '@/components/portfolio/StoryHighlights'
 import { lightDim } from './content-types'
@@ -146,6 +147,7 @@ export type StudioProject = {
   category: string
   type: WorkType
   coverUrl: string
+  naturalCoverUrl: string
   /** An embeddable player, or a video file. */
   video: { kind: 'iframe' | 'file'; url: string } | null
   pageHref: string
@@ -156,6 +158,7 @@ export type StudioProject = {
 export type StudioSection = 'hero' | 'about' | 'work' | 'digital' | 'services' | 'reviews' | 'team' | 'clients' | 'achievements' | 'experience' | 'tools' | 'education' | 'skills' | 'contact'
 
 export type StudioData = {
+  layouts: { [K in keyof typeof LAYOUT_OPTIONS]: (typeof LAYOUT_OPTIONS)[K][number] }
   background: { dark: BgConfig | null; light: BgConfig | null }
   mobileBar: { pos: string; icon: string; label: string; href: string }[]
   tenantId: number
@@ -409,6 +412,8 @@ export function buildStudioData(data: PortfolioData, lang: Lang, q: string): Stu
         category: trim(p.category),
         type,
         coverUrl: cover || '',
+        // Masonry needs the original ratio, not a potentially cropped card rendition.
+        naturalCoverUrl: mediaUrl(p.cover) || (p.images ?? []).map((im) => mediaUrl(im.image as never)).find(Boolean) || cover || '',
         video,
         pageHref: `${base}/project/${p.id}${q}`,
         videoHref: type === 'designs' ? null : trim(p.videoUrl) || null,
@@ -567,7 +572,13 @@ export function buildStudioData(data: PortfolioData, lang: Lang, q: string): Stu
   // Keep the saved order, including the hero, just as classic does.
   const ordered = order.filter((id) => id !== 'hero' || on('hero'))
 
+  // The first option is each editor default. Null and old values keep studio unchanged.
+  const layouts = Object.fromEntries(Object.entries(LAYOUT_OPTIONS).map(([key, options]) => [
+    key, (options as readonly unknown[]).includes(style[key]) ? style[key] : options[0],
+  ])) as StudioData['layouts']
+
   return {
+    layouts,
     background: {
       dark: settings?.background ? { ...settings.background, imageUrl: mediaUrl(settings.background.image, 'card') } : null,
       light: settings?.backgroundLight ? { ...settings.backgroundLight, imageUrl: mediaUrl(settings.backgroundLight.image, 'card') } : null,

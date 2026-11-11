@@ -870,3 +870,82 @@ html:not([data-theme=dark]) .st-root .pf-sec-dim{background:#fff}
 .st-root .st-highlights>.container{width:100%;max-width:none;padding-inline:0}
 .st-root .st-highlights .story-row{justify-content:flex-start;margin-top:0}
 .st-root .st-mobile-bar span{max-width:100%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* Layout defaults deliberately have no overrides: existing studio sites keep their look. */
+.st-root .st-hero:not([data-layout=centered]) .st-hero-content{min-width:0}
+.st-root .st-hero:not([data-layout=centered]) h1{max-width:100%;overflow-wrap:anywhere}
+.st-root .st-hero[data-layout=massive] h1{font-size:calc(clamp(58px,10vw,140px) * var(--t-h1,1));line-height:1.2}
+.st-root .st-hero[data-layout=minimal] h1{font-size:calc(clamp(36px,4.5vw,64px) * var(--t-h1,1))}
+.st-root .st-hero[data-layout=minimal] .st-hero-gallery{max-width:760px;gap:18px;margin-top:40px}
+.st-root .st-hero[data-layout=cover-full]{min-height:var(--st-hero-height,85svh)}
+.st-root .st-hero[data-layout=cover-full][data-va=auto]{justify-content:flex-end}
+.st-root .st-hero[data-layout=cover-full] .st-hero-content{padding-bottom:64px}
+/* Explicit placement wins; split placement applies within the text column. */
+.st-root .st-hero:is([data-layout=split],[data-layout=panel])[data-ha=auto]{text-align:start}
+.st-root .st-hero:is([data-layout=split],[data-layout=panel])[data-ha=auto] :is(h1,.st-hero-description){margin-inline:0 auto}
+.st-root .st-hero:is([data-layout=split],[data-layout=panel])[data-ha=auto] .st-hero-buttons{justify-content:flex-start}
+@media (min-width:801px){
+  .st-root .st-hero[data-layout=split] .st-hero-content:has(.st-hero-gallery){display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);column-gap:48px}
+  .st-root .st-hero[data-layout=split] .st-hero-content>*{grid-column:1;min-width:0}
+  .st-root .st-hero[data-layout=split] .st-hero-gallery{grid-column:2;grid-row:1 / span 4;align-self:center;width:100%;margin:0;padding:10px;gap:12px;grid-template-columns:1fr 1fr}
+  .st-root .st-hero[data-layout=split] .st-hero-gallery .st-hero-tile:last-child{grid-column:1 / -1;max-width:65%;justify-self:center}
+  .st-root .st-hero[data-layout=split] h1{font-size:calc(clamp(36px,4.5vw,68px) * var(--t-h1,1))}
+  .st-root .st-hero[data-layout=panel].st-has-cover:not([data-gradient=on]) .st-hero-content{padding-inline-end:52%}
+  .st-root .st-hero[data-layout=panel].st-has-cover:not([data-gradient=on]) :is(.st-hero-cover,.st-hero-veil){inset-block:8%;inset-inline:auto 4%;width:42%;height:84%;border-radius:24px}
+  .st-root .st-hero[data-layout=panel] h1{font-size:calc(clamp(34px,4vw,60px) * var(--t-h1,1))}
+}
+.st-root .st-hero[data-layout=panel] .st-hero-gallery{padding:20px;background:var(--surface);border:1px solid var(--line);border-radius:24px;gap:14px}
+.st-root .st-about-section:is([data-layout=visual],[data-layout=simple]){grid-template-columns:minmax(0,1fr);max-width:780px;text-align:center;gap:36px}
+.st-root .st-about-section[data-layout=visual] .st-about-photo{width:min(100%,460px);max-width:460px;margin-inline:auto}
+.st-root .st-about-section:is([data-layout=visual],[data-layout=simple]) .st-about-chips{justify-content:center}
+/* Simple drops the portrait, but the client's stat still has a place. */
+.st-root .st-about-section[data-layout=simple] .st-about-photo{padding:0;width:auto;margin-inline:auto}
+.st-root .st-about-section[data-layout=simple] .st-about-photo>img,.st-root .st-about-section[data-layout=simple] .st-about-photo:before{display:none}
+.st-root .st-about-section[data-layout=simple] .st-photo-note{position:relative;inset:auto;transform:none}
+.st-root .st-project-grid[data-layout=masonry]{display:block;column-count:var(--c-d,var(--rd));column-gap:22px}
+.st-root .st-project-grid[data-layout=masonry] .st-project-card{break-inside:avoid;margin-bottom:22px}
+.st-root .st-project-grid[data-layout=masonry] .st-project-cover:has(img){aspect-ratio:auto}
+.st-root .st-project-grid[data-layout=masonry] .st-project-cover img{display:block;height:auto}
+.st-root .st-project-grid[data-layout=list]{grid-template-columns:minmax(0,1fr);max-width:900px;margin-inline:auto;gap:14px}
+.st-root .st-project-grid[data-layout=list] .st-project-cover{aspect-ratio:auto;min-height:120px;display:grid;grid-template-columns:140px minmax(0,1fr);align-items:center;text-align:start;border:1px solid var(--line)}
+.st-root .st-project-grid[data-layout=list] .st-project-cover img{height:120px;grid-column:1;grid-row:1;object-fit:cover}
+.st-root .st-project-grid[data-layout=list] .st-project-hover{position:static;grid-column:2;grid-row:1;display:flex;flex-direction:column;align-items:flex-start;gap:6px;opacity:1;transform:none;background:none;color:var(--ink);padding:18px;padding-inline-end:64px;overflow-wrap:anywhere}
+.st-root .st-project-grid[data-layout=list] .st-project-hover small{color:var(--muted);font-size:12px}
+.st-root .st-project-grid[data-layout=list] .st-play-mark{inset-inline-start:48px;inset-inline-end:auto}
+/* Sticky cards build a deck as the page scrolls; every card remains keyboard reachable. */
+.st-root .st-services-grid[data-layout=stack]{display:flex;flex-direction:column;gap:28px;max-width:720px;margin-inline:auto;padding-bottom:32px}
+.st-root .st-services-grid[data-layout=stack] .st-service-card{position:sticky;top:110px;min-height:300px;box-shadow:0 -12px 0 -5px var(--soft),0 16px 36px color-mix(in srgb,var(--ink) 10%,transparent)}
+.st-root .st-services-grid[data-layout=stack] .st-service-card:focus-visible{outline:3px solid var(--accent);outline-offset:4px;z-index:1}
+.st-root .st-experience-section[data-layout=timeline] .st-experience-grid{grid-template-columns:minmax(0,1fr);max-width:860px;gap:36px}
+.st-root .st-experience-section[data-layout=timeline] .st-job{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:24px;margin-bottom:24px}
+.st-root .st-experience-section[data-layout=timeline] .st-timeline-dot{top:30px}
+.st-root .st-tools-section[data-layout=compact] .st-tools-grid{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.st-root .st-tools-section[data-layout=compact] .st-tool{flex-direction:row;justify-content:flex-start;padding:12px;gap:10px;min-width:0;font-size:13px;overflow-wrap:anywhere}
+.st-root .st-tools-section[data-layout=compact] .st-tool-icon{width:32px;height:32px;flex-shrink:0;font-size:17px;border-radius:9px}
+.st-root .st-tools-section[data-layout=compact] .st-tool-icon img{max-width:24px;max-height:24px}
+.st-root [data-layout=inline] .st-skills-chips{gap:4px 0}
+.st-root [data-layout=inline] .st-skills-chips span{border:0;border-radius:0;padding:6px 10px;background:none}
+.st-root [data-layout=inline] .st-skills-chips span:not(:last-child):after{content:'·';color:var(--accent);margin-inline-start:20px}
+/* Skills are plain strings in the CMS, so an unfilled track avoids inventing a level. */
+.st-root [data-layout=bars] .st-skills-chips{flex-direction:column;align-items:stretch;max-width:640px;margin-inline:auto;gap:18px}
+.st-root [data-layout=bars] .st-skills-chips span{border:0;border-radius:0;background:none;padding:0 0 14px;text-align:start;position:relative;overflow-wrap:anywhere}
+.st-root [data-layout=bars] .st-skills-chips span:after{content:'';position:absolute;inset-inline:0;bottom:0;height:4px;background:var(--line);border-radius:4px}
+.st-root .st-contact-section[data-layout=split] .st-contact-grid{grid-template-columns:minmax(0,1fr);max-width:720px;gap:36px}
+@media (max-width:800px){
+  .st-root .st-project-grid[data-layout=masonry]{column-count:var(--c-t,var(--rt))}
+  .st-root .st-hero[data-layout=massive] h1{font-size:calc(clamp(44px,9vw,76px) * var(--t-h1-m,var(--t-h1,1)))}
+  .st-root .st-hero[data-layout=minimal] h1{font-size:calc(clamp(30px,6vw,48px) * var(--t-h1-m,var(--t-h1,1)))}
+}
+@media (max-width:600px){
+  .st-root .st-project-grid[data-layout=masonry]{column-count:var(--c-m,var(--rm));column-gap:12px}
+  .st-root .st-project-grid[data-layout=list] .st-project-cover{grid-template-columns:92px minmax(0,1fr);min-height:104px}
+  .st-root .st-project-grid[data-layout=list] .st-project-cover img{height:104px}
+  .st-root .st-project-grid[data-layout=list] .st-project-hover{padding:12px;padding-inline-end:42px;font-size:14px}
+  .st-root .st-project-grid[data-layout=list] .st-play-mark{inset-inline-start:28px}
+  .st-root .st-services-grid[data-layout=stack] .st-service-card{top:90px;min-height:260px}
+  .st-root .st-hero[data-layout=panel] .st-hero-gallery{padding:12px}
+  .st-root .st-contact-section[data-layout=split] .st-contact-grid>*{min-width:0}
+}
+@media (prefers-reduced-motion:reduce){
+  .st-root .st-services-grid[data-layout=stack] .st-service-card{position:relative;top:auto}
+}

@@ -13,10 +13,12 @@ import type { StudioData, StudioProject, WorkType } from '@/lib/studio-data'
  */
 export default function StudioWork({
   work,
+  layout,
   ui,
   ltr,
   allHref,
 }: {
+  layout: StudioData['layouts']['projects']
   work: NonNullable<StudioData['work']>
   ui: StudioData['ui']
   ltr: boolean
@@ -45,15 +47,16 @@ export default function StudioWork({
     const el = grid.current
     if (!el || !allHref) return
     const read = () => {
-      const n = getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length
+      const css = getComputedStyle(el)
+      const n = layout === 'masonry' ? Number(css.columnCount) : css.gridTemplateColumns.split(' ').filter(Boolean).length
       if (n > 0) setCols(n)
     }
     read()
     const ro = new ResizeObserver(read)
     ro.observe(el)
     return () => ro.disconnect()
-  }, [allHref, type])
-  const shownList = allHref ? list.slice(0, cols * 2) : list
+  }, [allHref, type, layout])
+  const shownList = allHref ? list.slice(0, layout === 'list' ? 6 : cols * 2) : list
 
   useEffect(() => {
     if (open) dialog.current?.showModal()
@@ -119,6 +122,7 @@ export default function StudioWork({
         )}
         <div
           ref={grid}
+          data-layout={layout}
           className={`st-project-grid st-grid-${type}`}
           aria-live="polite"
           style={
@@ -138,7 +142,7 @@ export default function StudioWork({
               <>
                 {p.coverUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={p.coverUrl} alt={p.title} loading="lazy" width={600} height={600} />
+                  <img src={layout === 'masonry' ? p.naturalCoverUrl : p.coverUrl} alt={p.title} loading="lazy" width={600} height={600} />
                 ) : null}
                 {p.type !== 'designs' && (
                   <span className="st-play-mark">
@@ -147,6 +151,7 @@ export default function StudioWork({
                 )}
                 <span className="st-project-hover">
                   <span>{p.title}</span>
+                  {layout === 'list' && <small>{work.categories[p.type].find((c) => c.id === p.category)?.label || p.category}</small>}
                 </span>
                 <span className="st-project-open">
                   <Icon name="arrow-up-right" size={23} />

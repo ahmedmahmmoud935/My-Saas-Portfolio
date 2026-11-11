@@ -1004,11 +1004,9 @@ export default function DesignEditor({ initial, sitePath }: { initial: DesignFor
     const key = SECTION_STYLE_KEY[id]
     return (
       <>
-      {f.style.skin === 'studio' && (
-        <p className="hx-note" style={{ marginTop: 0 }}>
-          {tr('التخطيطات دي للشكل الكلاسيك؛ في «ستوديو» القسم ده له تصميم واحد.', 'These layouts are for the Classic look; in Studio this section has one design.')}
-        </p>
-      )}
+      <p className="hx-note" style={{ marginTop: 0 }}>
+        {tr('احفظ التصميم لتطبيق التخطيط وإعادة تحميل المعاينة.', 'Save design to apply the layout and reload the preview.')}
+      </p>
       <LayoutPicker
         section={id}
         label={label}

@@ -101,7 +101,7 @@ export default function StudioPortfolio({ d, page = 'home' }: { d: StudioData; p
   const blocks: Record<StudioSection, React.ReactNode> = {
     hero: (
       <>
-        <section className={`st-hero${d.hero.cover ? ' st-has-cover' : ''}`} id="hero" style={studioHeroStyle(d.hero.appearance)} data-ha={d.hero.appearance.align || 'auto'} data-va={d.hero.appearance.valign || 'auto'} data-gradient={d.hero.appearance.gradient && d.hero.appearance.gradient !== 'none' ? 'on' : undefined}>
+        <section className={`st-hero${d.hero.cover ? ' st-has-cover' : ''}`} id="hero" data-layout={d.layouts.hero} style={studioHeroStyle(d.hero.appearance)} data-ha={d.hero.appearance.align || 'auto'} data-va={d.hero.appearance.valign || 'auto'} data-gradient={d.hero.appearance.gradient && d.hero.appearance.gradient !== 'none' ? 'on' : undefined}>
           <span className="st-hero-gradient" aria-hidden="true" />
           {d.hero.cover && (
             <>
@@ -197,10 +197,11 @@ export default function StudioPortfolio({ d, page = 'home' }: { d: StudioData; p
     about: (
       <>
         {d.about && (
-          <section className="st-about-section st-shell st-section" id="about">
-            {d.about.photo && (
+          <section className="st-about-section st-shell st-section" id="about" data-layout={d.layouts.about}>
+            {(d.about.photo || (d.layouts.about === 'simple' && d.about.stat)) && (
               <div className="st-about-photo">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                {d.about.photo && (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={d.about.photo}
                   alt={d.name}
@@ -209,6 +210,7 @@ export default function StudioPortfolio({ d, page = 'home' }: { d: StudioData; p
                   loading="lazy"
                   style={{ objectFit: d.about.frame.fit as React.CSSProperties['objectFit'], objectPosition: `${d.about.frame.posX}% ${d.about.frame.posY}%` }}
                 />
+                )}
                 {d.about.stat && (
                   <div className="st-photo-note">
                     <span dir="ltr">
@@ -242,7 +244,7 @@ export default function StudioPortfolio({ d, page = 'home' }: { d: StudioData; p
     ),
     work: (
       <>
-        {d.work && <StudioWork work={d.work} ui={ui} ltr={d.dir === 'ltr'} allHref={d.workHref} />}
+        {d.work && <StudioWork layout={d.layouts.projects} work={d.work} ui={ui} ltr={d.dir === 'ltr'} allHref={d.workHref} />}
       </>
     ),
     digital: (
@@ -307,6 +309,7 @@ export default function StudioPortfolio({ d, page = 'home' }: { d: StudioData; p
               {d.services.subtitle && <p>{d.services.subtitle}</p>}
             </div>
             <StudioServices
+              layout={d.layouts.expertise}
               services={d.services}
               ui={ui}
               ltr={d.dir === 'ltr'}
@@ -403,7 +406,7 @@ export default function StudioPortfolio({ d, page = 'home' }: { d: StudioData; p
     experience: (
       <>
         {d.experience && (
-          <section className="st-experience-section st-section" id="experience">
+          <section className="st-experience-section st-section" id="experience" data-layout={d.layouts.exp}>
             <div className="st-shell st-experience-grid">
               <div className="st-section-title">
                 <h2>{d.experience.title}</h2>
@@ -432,7 +435,7 @@ export default function StudioPortfolio({ d, page = 'home' }: { d: StudioData; p
     tools: (
       <>
         {d.tools && (
-          <section className="st-tools-section st-shell st-section" id="tools">
+          <section className="st-tools-section st-shell st-section" id="tools" data-layout={d.layouts.tools}>
             <div className="st-section-title">
               <h2>{d.tools.title}</h2>
             </div>
@@ -522,7 +525,7 @@ export default function StudioPortfolio({ d, page = 'home' }: { d: StudioData; p
     skills: (
       <>
         {d.skills && (
-          <section className="st-tools-section st-shell st-section" id="skills">
+          <section className="st-tools-section st-shell st-section" id="skills" data-layout={d.layouts.skills}>
             <div className="st-section-title">
               <h2>{d.skills.title}</h2>
             </div>
@@ -538,7 +541,7 @@ export default function StudioPortfolio({ d, page = 'home' }: { d: StudioData; p
     contact: (
       <>
         {d.contact && (
-          <section className="st-contact-section st-section" id="contact">
+          <section className="st-contact-section st-section" id="contact" data-layout={d.layouts.contact}>
             <div className="st-shell st-contact-grid">
               <div className="st-contact-copy">
                 <h2>
@@ -608,7 +611,7 @@ export default function StudioPortfolio({ d, page = 'home' }: { d: StudioData; p
 
       {!onHome && d.work && (
         <div className="st-work-page">
-          <SectionBg config={d.sectionBg.work}><StudioWork work={d.work} ui={ui} ltr={d.dir === 'ltr'} /></SectionBg>
+          <SectionBg config={d.sectionBg.work}><StudioWork layout={d.layouts.projects} work={d.work} ui={ui} ltr={d.dir === 'ltr'} /></SectionBg>
         </div>
       )}
       {onHome && d.order.filter(shown).map((id) =>

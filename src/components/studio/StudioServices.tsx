@@ -12,12 +12,14 @@ import type { StudioData } from '@/lib/studio-data'
  */
 export default function StudioServices({
   services,
+  layout,
   ui,
   ltr,
   whatsapp,
   phone,
   hasContact,
 }: {
+  layout: StudioData['layouts']['expertise']
   services: NonNullable<StudioData['services']>
   ui: StudioData['ui']
   ltr: boolean
@@ -62,7 +64,7 @@ export default function StudioServices({
 
   return (
     <>
-      <div className="st-services-grid">
+      <div className="st-services-grid" data-layout={layout}>
         {services.items.map((s, i) => (
           <article
             className="st-service-card st-service-open"
