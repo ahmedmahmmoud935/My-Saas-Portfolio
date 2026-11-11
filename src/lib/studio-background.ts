@@ -6,7 +6,8 @@ const gradients: Record<string, string> = {"aurora": "linear-gradient(120deg, #0
 export function studioHeroStyle(h: { height?: number | null; gradient?: string | null; gradientDark?: string | null }): CSSProperties {
   return {
     // 82 is the editor's historical default; keep studio's natural height there.
-    '--st-hero-height': h.height && h.height !== 82 ? `${h.height}vh` : 'auto',
+    // Unset unless chosen, so each layout keeps its own height (cover-full: tall).
+    ...(h.height && h.height !== 82 ? { '--st-hero-height': `${h.height}vh` } : {}),
     '--st-hero-gradient': gradients[h.gradient || ''] || 'none',
     '--st-hero-gradient-dark': gradients[h.gradientDark || h.gradient || ''] || 'none',
   } as CSSProperties

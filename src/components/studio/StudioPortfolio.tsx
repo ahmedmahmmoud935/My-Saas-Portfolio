@@ -118,6 +118,13 @@ export default function StudioPortfolio({ d, page = 'home' }: { d: StudioData; p
               />
             </>
           )}
+          {/* A gradient hero takes the same dim as a picture would. */}
+          {!d.hero.cover && d.hero.appearance.gradient && d.hero.appearance.gradient !== 'none' && (
+            <span
+              className="st-hero-veil"
+              style={{ ['--veil-d' as string]: (d.hero.appearance.overlay ?? 45) / 100, ['--veil-l' as string]: (d.hero.appearance.overlayLight ?? 25) / 100 } as React.CSSProperties}
+            />
+          )}
           <div className="st-hero-content st-shell">
             {d.hero.kicker && (
               <div className="st-creator-label">

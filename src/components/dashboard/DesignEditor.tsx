@@ -252,6 +252,7 @@ function applyDesign(doc: Document, f: DesignForm, theme: 'dark' | 'light') {
     }
     const hero = studio.querySelector<HTMLElement>('.st-hero')
     if (hero) {
+      hero.style.removeProperty('--st-hero-height')
       for (const [key, value] of Object.entries(studioHeroStyle(f.heroCover))) hero.style.setProperty(key, String(value))
       hero.dataset.ha = f.heroCover.align || 'auto'
       hero.dataset.va = f.heroCover.valign || 'auto'
@@ -293,7 +294,26 @@ function applyDesign(doc: Document, f: DesignForm, theme: 'dark' | 'light') {
       const section = doc.getElementById(row.section)
       if (!section || !studio.contains(section)) continue
       let wrap = section.closest<HTMLElement>('.pf-sec-bg')
-      if (row.mode !== 'color') continue
+      if (row.mode !== 'color') {
+        /* A picture or video already on the page follows its dim, framing and
+           hold live; a new one shows after saving. */
+        const layer = wrap?.querySelector<HTMLElement>(':scope > .pf-sec-layer')
+        if (!layer) continue
+        const dim = layer.querySelector<HTMLElement>('.pf-sec-dim')
+        if (dim) dim.style.opacity = String(Math.min(100, Math.max(0, row.dim)) / 100)
+        const media = layer.querySelector<HTMLElement>('.pf-sec-media')
+        if (!media) continue
+        const pos = `${row.posX}% ${row.posY}%`
+        if (media.tagName === 'VIDEO') {
+          media.style.objectPosition = pos
+        } else {
+          media.style.backgroundPosition = pos
+          const url = row.imageUrl ? `url(${JSON.stringify(row.imageUrl)})` : ''
+          if (url && media.style.backgroundImage !== url) media.style.backgroundImage = url
+          layer.classList.toggle('pinned', !!row.fixed)
+        }
+        continue
+      }
       if (!wrap) {
         wrap = doc.createElement('div')
         wrap.className = 'pf-sec-bg'

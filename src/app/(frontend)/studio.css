@@ -537,8 +537,8 @@ html[data-theme=dark] .st-root .st-creative-strip{color:#eee8df;background:#1417
    Unset, each one leaves the reference exactly as it is. */
 
 /* Heading colour, per theme. */
-.st-root h2{color:var(--t-heading,inherit)}
-html[data-theme=dark] .st-root h2{color:var(--t-heading-d,inherit)}
+.st-root h1,.st-root h2{color:var(--t-heading,inherit)}
+html[data-theme=dark] .st-root h1,html[data-theme=dark] .st-root h2{color:var(--t-heading-d,inherit)}
 
 /* The hero's heading and line sizes. */
 .st-root .st-hero h1{font-size:calc(clamp(44px,6.3vw,86px) * var(--t-h1,1))}
@@ -840,7 +840,7 @@ html[data-theme=dark] .st-root .st-page-dim{background:#000}
 .st-root .st-hero[data-gradient=on]{isolation:isolate;background:none}
 .st-root .st-hero[data-gradient=on] .st-hero-gradient{display:block;position:absolute;inset:0;z-index:-1;background-image:var(--st-hero-gradient)}
 html[data-theme=dark] .st-root .st-hero[data-gradient=on] .st-hero-gradient{background-image:var(--st-hero-gradient-dark)}
-.st-root .st-hero[data-gradient=on] :is(.st-hero-cover,.st-hero-veil){display:none!important}
+.st-root .st-hero[data-gradient=on] .st-hero-cover{display:none!important}
 .st-root .st-service-card,.st-root .st-service-detail{isolation:isolate;overflow:hidden;position:relative}
 .st-root .st-service-picture{position:absolute;inset:0;z-index:-1;overflow:hidden;border-radius:inherit;pointer-events:none}
 .st-root .st-service-picture img{width:100%;height:100%;object-fit:cover}
@@ -948,3 +948,11 @@ html:not([data-theme=dark]) .st-root .pf-sec-dim{background:#fff}
 @media (prefers-reduced-motion:reduce){
   .st-root .st-services-grid[data-layout=stack] .st-service-card{position:relative;top:auto}
 }
+
+/* A project with no picture yet: its name on a quiet card. */
+.st-root .st-project-blank{position:absolute;inset:0;display:grid;place-items:center;padding:20px;text-align:center;background:var(--soft);color:var(--muted);font-weight:600;line-height:1.7}
+/* Logos and numbers next to each other read as one block, as they did. */
+.st-root #logos:has(+ #achievements){padding-bottom:0}
+.st-root #logos + #achievements{padding-top:0}
+/* Arabic project categories drop the Latin letter spacing. */
+.st-root.st-lang-ar .detail-cat,.st-root[dir=rtl] .detail-cat{letter-spacing:normal}

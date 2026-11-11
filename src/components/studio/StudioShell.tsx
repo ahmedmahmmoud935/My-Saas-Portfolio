@@ -73,7 +73,8 @@ export default async function StudioShell({ d, langHref, base, children, hasArti
         monogram={d.monogram}
         links={links}
         digital={!d.nav && !!d.digital}
-        contact={hasContact}
+        // A configured bar that leaves contact out drops the "let's talk" button too.
+        contact={hasContact && (!d.nav || d.nav.some((l) => l.id === 'contact'))}
         langHref={langHref}
         isEn={isEn}
         ltr={d.dir === 'ltr'}

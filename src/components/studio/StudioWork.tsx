@@ -143,7 +143,9 @@ export default function StudioWork({
                 {p.coverUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={layout === 'masonry' ? p.naturalCoverUrl : p.coverUrl} alt={p.title} loading="lazy" width={600} height={600} />
-                ) : null}
+                ) : (
+                  <span className="st-project-blank" aria-hidden="true">{p.title}</span>
+                )}
                 {p.type !== 'designs' && (
                   <span className="st-play-mark">
                     <Icon name="play" size={22} fill="currentColor" />

@@ -177,7 +177,7 @@ export type StudioData = {
   monogram: { text: string; logoUrl: string | null }
   langHref: string
   hero: {
-    appearance: { height?: number | null; align?: string | null; valign?: string | null; gradient?: string | null; gradientDark?: string | null }
+    appearance: { height?: number | null; align?: string | null; valign?: string | null; gradient?: string | null; gradientDark?: string | null; overlay?: number | null; overlayLight?: number | null }
     kicker: string
     title: string[]
     desc: string
@@ -419,7 +419,7 @@ export function buildStudioData(data: PortfolioData, lang: Lang, q: string): Stu
         videoHref: type === 'designs' ? null : trim(p.videoUrl) || null,
       }
     })
-    .filter((p) => p.coverUrl || p.video)
+  // A published project with no picture yet still has its card (its name stands in).
   const catRows = {
     image: toCategoryRows(settings?.categories?.image ?? []),
     video: toCategoryRows(settings?.categories?.video ?? []),
@@ -671,7 +671,7 @@ export function buildStudioData(data: PortfolioData, lang: Lang, q: string): Stu
         ? {
             title: trim(c.testimonials?.title) || (lang === 'en' ? 'Words I value.' : 'كلمات أعتز بها.'),
             subtitle: trim(studio.reviewsSub),
-            addHref: `/testimonial/${tenant.slug}${lang === 'en' ? '?lang=en' : ''}`,
+            addHref: `/testimonial/${tenant.slug}${q}`,
             items: testimonials.map((t) => ({
               id: t.id,
               text: trim(t.content),
