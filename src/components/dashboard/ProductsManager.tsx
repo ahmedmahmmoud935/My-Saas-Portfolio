@@ -326,46 +326,6 @@ export default function ProductsManager({ items }: { items: ProductItem[] }) {
                 phEn: 'Default: Details',
               })}
 
-              <label className="lbl" style={{ marginTop: 18, display: 'block' }}>{t('شكل المعاينة (في شكل ستوديو)', 'Preview style (studio look)')}</label>
-              <div className="grid-2" style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}>
-                {(
-                  [
-                    ['image', 'صورة', 'Image'],
-                    ['site', 'موقع', 'Website'],
-                    ['landing', 'صفحة هبوط', 'Landing page'],
-                    ['chart', 'لوحة بيانات', 'Dashboard'],
-                  ] as const
-                ).map(([v, ar, en]) => (
-                  <button key={v} type="button" className={`btn btn-sm ${edit.preview === v ? 'btn-primary' : 'btn-ghost'}`} onClick={() => set({ preview: v })}>
-                    {t(ar, en)}
-                  </button>
-                ))}
-              </div>
-              <p style={{ color: 'var(--sub)', fontSize: 12.5, margin: '6px 0 0' }}>
-                {edit.preview === 'site'
-                  ? t('شاشة موقع مرسومة: الاسم وسطر وعنوان، وتحتهم آخر 4 تصميمات من أعمالك.', 'A drawn website: the name, a line and a headline, over your latest four designs.')
-                  : edit.preview === 'landing'
-                    ? t('صفحة هبوط مرسومة: الاسم وسطر وعنوان وزرار، وجنبهم صورة المنتج.', 'A drawn landing page: the name, a line, a headline and a button, beside the product picture.')
-                    : edit.preview === 'chart'
-                      ? t('لوحة بيانات تجريبية بأعمدة بتتغيّر بين شهرين.', 'A demo dashboard whose bars switch between two months.')
-                      : t('صورة المنتج جوه إطار متصفح.', 'The product picture inside a browser frame.')}
-              </p>
-              {edit.preview !== 'image' && (
-                <>
-                  <label className="lbl" style={{ marginTop: 12, display: 'block' }}>
-                    {edit.preview === 'chart' ? t('عنوان اللوحة', 'Dashboard title') : t('الاسم اللي في المعاينة', 'Name in the preview')}
-                  </label>
-                  <input className="field" dir="auto" value={edit.mockBrand} onChange={(e) => set({ mockBrand: e.target.value })} />
-                </>
-              )}
-              {(edit.preview === 'site' || edit.preview === 'landing') && (
-                <>
-                  {pair(t('سطر صغير', 'Small line'), edit.mockTaglineAr, edit.mockTaglineEn, (v) => set({ mockTaglineAr: v }), (v) => set({ mockTaglineEn: v }))}
-                  {pair(t('العنوان الكبير (سطرين)', 'Headline (two lines)'), edit.mockHeadlineAr, edit.mockHeadlineEn, (v) => set({ mockHeadlineAr: v }), (v) => set({ mockHeadlineEn: v }), { rows: 2 })}
-                </>
-              )}
-              {edit.preview === 'landing' &&
-                pair(t('زرار المعاينة', 'Preview button'), edit.mockCtaAr, edit.mockCtaEn, (v) => set({ mockCtaAr: v }), (v) => set({ mockCtaEn: v }))}
             </div>
             <div className="modal-foot">
               <button className="btn btn-primary" onClick={save} disabled={busy}>

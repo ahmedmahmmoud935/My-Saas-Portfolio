@@ -4,7 +4,6 @@ import StudioHeader, { Monogram } from './StudioHeader'
 import StudioWork from './StudioWork'
 import StudioContactForm from './StudioContactForm'
 import StudioReviewText from './StudioReviewText'
-import StudioChart from './StudioChart'
 import StudioServices from './StudioServices'
 import SectionBg from '@/components/portfolio/SectionBg'
 import type { Heading, StudioData, StudioSection } from '@/lib/studio-data'
@@ -57,7 +56,6 @@ function HeroTitle({ lines }: { lines: string[] }) {
   )
 }
 
-const STAGES = ['st-viral-stage', 'st-learning-stage', 'st-dashboard-stage']
 
 /**
  * `page` is 'home' for the portfolio itself, or 'work' for the page with
@@ -274,16 +272,16 @@ export default function StudioPortfolio({ d, page = 'home' }: { d: StudioData; p
 
               {feature && (
                 <article className="st-digital-feature">
-                  <ProductStage p={feature} i={0} ui={ui} isEn={isEn} />
+                  <ProductStage p={feature} />
                   <ProductCopy p={feature} ui={ui} feature />
                 </article>
               )}
 
               {pair.length > 0 && (
                 <div className="st-digital-pair">
-                  {pair.map((p, i) => (
+                  {pair.map((p) => (
                     <article className="st-digital-project" key={p.id}>
-                      <ProductStage p={p} i={i + 1} ui={ui} isEn={isEn} />
+                      <ProductStage p={p} />
                       <ProductCopy p={p} ui={ui} />
                     </article>
                   ))}
@@ -677,86 +675,17 @@ export default function StudioPortfolio({ d, page = 'home' }: { d: StudioData; p
 type Product = NonNullable<StudioData['digital']>['items'][number]
 
 /** A product's picture, drawn the way the reference draws its three. */
-function ProductStage({ p, i, ui, isEn }: { p: Product; i: number; ui: StudioData['ui']; isEn: boolean }) {
-  const headline = p.mock.headline.join('\n')
-  if (p.preview === 'chart') {
-    return (
-      <div className="st-product-stage st-dashboard-stage">
-        <StudioChart title={p.mock.brand} isEn={isEn} />
-      </div>
-    )
-  }
-  if (p.preview === 'landing') {
-    return (
-      <div className="st-product-stage st-learning-stage">
-        <div className="st-learning-preview">
-          <div className="st-learning-nav">
-            <strong dir="auto">{p.mock.brand || p.title}</strong>
-            {p.mock.tagline && <span>{p.mock.tagline}</span>}
-          </div>
-          <div className="st-learning-content">
-            <div>
-              {headline && <h3>{headline}</h3>}
-              {p.mock.cta && (
-                <span className="st-preview-cta">
-                  {p.mock.cta}
-                  <Icon name="arrow-up-right" size={15} />
-                </span>
-              )}
-            </div>
-            {p.image && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={p.image} alt={p.title} loading="lazy" />
-            )}
-          </div>
-        </div>
-        <span className="st-preview-label">{ui.previewIdea}</span>
-      </div>
-    )
-  }
-  if (p.preview === 'site') {
-    return (
-      <div className="st-product-stage st-viral-stage">
-        <div className="st-browser-frame">
-          <div className="st-browser-bar">
-            <span aria-hidden="true">● ● ●</span>
-            <strong dir="auto">{p.title}</strong>
-            <Icon name="code-xml" />
-          </div>
-          <div className="st-viral-preview">
-            <div className="st-viral-preview-head">
-              <strong dir="ltr">{p.mock.brand || p.host || p.title}</strong>
-              {p.mock.tagline && <span>{p.mock.tagline}</span>}
-            </div>
-            {headline && <h3>{headline}</h3>}
-            {p.mock.imgs.length > 0 && (
-              <div className="st-preview-image-grid">
-                {p.mock.imgs.map((src, j) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img key={j} src={src} alt="" loading="lazy" />
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-        <span className="st-preview-label">{ui.previewLabel}</span>
-      </div>
-    )
-  }
+/** The product's picture: the one uploaded, else the live site's own share
+ *  picture, filling the card. With neither, its name on a plain stage. */
+function ProductStage({ p }: { p: Product }) {
   return (
-    <div className={`st-product-stage ${STAGES[i % STAGES.length]}`}>
-      <div className={`st-browser-frame${i ? ' st-tilt' : ''}`}>
-        <div className="st-browser-bar">
-          <span aria-hidden="true">● ● ●</span>
-          <strong dir="auto">{p.host || p.title}</strong>
-          <Icon name="code-xml" />
-        </div>
-        {p.image && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img className="st-stage-shot" src={p.image} alt={p.title} loading="lazy" />
-        )}
-      </div>
-      <span className="st-preview-label">{ui.previewLabel}</span>
+    <div className={`st-product-stage st-shot-stage${p.image ? '' : ' st-no-shot'}`}>
+      {p.image ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={p.image} alt={p.title} loading="lazy" />
+      ) : (
+        <span dir="auto">{p.host || p.title}</span>
+      )}
     </div>
   )
 }
