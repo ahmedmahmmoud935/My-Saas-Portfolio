@@ -676,3 +676,15 @@ html[data-theme=dark] .st-root .st-hero-veil{opacity:var(--veil-d,.45)}
 .st-root .st-digital-link{color:#fff;background:var(--accent)}
 .st-root .st-digital-link:hover{background:var(--accent-hover)}
 .st-root .st-digital-end .st-outline{color:var(--ink);border-color:var(--line)}
+
+/* The contact band follows the theme as "Beyond the image" does: the surface
+   colour behind, the form on the page's colour, its fields on the surface.
+   (A tint of the accent read brown with an orange accent on dark.) */
+.st-root .st-contact-section{background:var(--surface)}
+.st-root .st-contact-form{background:var(--bg)}
+.st-root .st-contact-form :is(input,select,textarea){background-color:var(--surface)}
+.st-root .st-contact-details>a{border-bottom-color:var(--line)}
+/* Safari draws a bare select flat and short; this one is drawn like the
+   other fields, with its own arrow at the far end. */
+.st-root .st-contact-form select{-webkit-appearance:none;appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%238a8f99' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-size:16px;background-position:left 14px center;padding-inline-end:40px}
+.st-root[dir=ltr] .st-contact-form select{background-position:right 14px center}
