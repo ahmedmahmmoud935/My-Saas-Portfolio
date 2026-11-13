@@ -489,6 +489,9 @@ function GeneralPanel({
                 options={opts(tr, [['auto', 'تلقائي', 'Auto'], ['400', 'عادي', 'Regular'], ['500', 'متوسط', 'Medium'], ['600', 'نصف عريض', 'Semibold']])}
                 onChange={(v) => setStyle({ bodyWeight: v })}
               />
+              <p className="hx-note" style={{ margin: '4px 0 10px' }}>
+                {tr('بعض الخطوط مفيهاش كل الأوزان (زي «تجوّل» و«المراعي»)، وساعتها بيظهر أقرب وزن ليها.', 'Some fonts lack some weights (e.g. Tajawal, Almarai); the nearest one is used.')}
+              </p>
               <Opt
                 label={tr('المسافة بين حروف العناوين الإنجليزي', 'Latin heading letter spacing')}
                 value={f.style.headingSpacing || 'auto'}

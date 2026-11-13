@@ -32,7 +32,7 @@ const cairo = Tajawal({
 // matter which font was picked.
 const montserrat = Montserrat({
   subsets: ['latin'],
-  weight: ['600', '700', '800', '900'],
+  weight: ['400', '500', '600', '700', '800', '900'],
   variable: '--font-montserrat',
   display: 'swap',
   adjustFontFallback: false,
@@ -42,16 +42,16 @@ const montserrat = Montserrat({
 })
 
 // Extra font families for the Fonts picker (switched via [data-font] in CSS).
-const cairoReal = Cairo({ subsets: ['arabic', 'latin'], weight: ['400', '600', '700', '900'], variable: '--f-cairo', display: 'swap' })
+const cairoReal = Cairo({ subsets: ['arabic', 'latin'], weight: ['400', '500', '600', '700', '800', '900'], variable: '--f-cairo', display: 'swap' })
 const almarai = Almarai({ subsets: ['arabic'], weight: ['400', '700', '800'], variable: '--f-almarai', display: 'swap' })
-const markazi = Markazi_Text({ subsets: ['arabic', 'latin'], weight: ['400', '500', '700'], variable: '--f-markazi', display: 'swap' })
-const inter = Inter({ subsets: ['latin'], weight: ['400', '600', '700', '900'], variable: '--f-inter', display: 'swap', adjustFontFallback: false, fallback: ['Tajawal', 'Cairo', 'system-ui', 'sans-serif'] })
-const playfair = Playfair_Display({ subsets: ['latin'], weight: ['500', '700', '800'], variable: '--f-playfair', display: 'swap', adjustFontFallback: false, fallback: ['Tajawal', 'Cairo', 'system-ui', 'sans-serif'] })
-const cormorant = Cormorant({ subsets: ['latin'], weight: ['500', '600', '700'], variable: '--f-cormorant', display: 'swap', adjustFontFallback: false, fallback: ['Tajawal', 'Cairo', 'system-ui', 'sans-serif'] })
-const poppins = Poppins({ subsets: ['latin'], weight: ['400', '600', '700', '800', '900'], variable: '--f-poppins', display: 'swap', adjustFontFallback: false, fallback: ['Tajawal', 'Cairo', 'system-ui', 'sans-serif'] })
+const markazi = Markazi_Text({ subsets: ['arabic', 'latin'], weight: ['400', '500', '600', '700'], variable: '--f-markazi', display: 'swap' })
+const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '600', '700', '800', '900'], variable: '--f-inter', display: 'swap', adjustFontFallback: false, fallback: ['Tajawal', 'Cairo', 'system-ui', 'sans-serif'] })
+const playfair = Playfair_Display({ subsets: ['latin'], weight: ['400', '500', '600', '700', '800'], variable: '--f-playfair', display: 'swap', adjustFontFallback: false, fallback: ['Tajawal', 'Cairo', 'system-ui', 'sans-serif'] })
+const cormorant = Cormorant({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--f-cormorant', display: 'swap', adjustFontFallback: false, fallback: ['Tajawal', 'Cairo', 'system-ui', 'sans-serif'] })
+const poppins = Poppins({ subsets: ['latin'], weight: ['400', '500', '600', '700', '800', '900'], variable: '--f-poppins', display: 'swap', adjustFontFallback: false, fallback: ['Tajawal', 'Cairo', 'system-ui', 'sans-serif'] })
 // The studio look's pair: Kufam carries the Arabic, Manrope the Latin.
-const kufam = Kufam({ subsets: ['arabic', 'latin'], weight: ['400', '500', '600', '700'], variable: '--f-kufam', display: 'swap' })
-const manrope = Manrope({ subsets: ['latin'], weight: ['400', '600', '700', '800'], variable: '--f-manrope', display: 'swap', adjustFontFallback: false, fallback: ['Kufam', 'Tajawal', 'system-ui', 'sans-serif'] })
+const kufam = Kufam({ subsets: ['arabic', 'latin'], weight: ['400', '500', '600', '700', '800'], variable: '--f-kufam', display: 'swap' })
+const manrope = Manrope({ subsets: ['latin'], weight: ['400', '500', '600', '700', '800'], variable: '--f-manrope', display: 'swap', adjustFontFallback: false, fallback: ['Kufam', 'Tajawal', 'system-ui', 'sans-serif'] })
 const bebas = Bebas_Neue({ subsets: ['latin'], weight: ['400'], variable: '--f-bebas', display: 'swap', adjustFontFallback: false, fallback: ['Tajawal', 'Cairo', 'system-ui', 'sans-serif'] })
 
 const fontVars = [
@@ -84,8 +84,9 @@ export default async function FrontendLayout({ children }: { children: React.Rea
   // It was hard-coded to English, which declared every Arabic portfolio on the
   // platform to be an English page.
   const lang = (await headers()).get('x-pf-lang') === 'ar' ? 'ar' : 'en'
+  // The theme boot scripts set data-theme before React hydrates, on purpose.
   return (
-    <html lang={lang} dir={lang === 'ar' ? 'rtl' : 'ltr'} className={fontVars}>
+    <html lang={lang} dir={lang === 'ar' ? 'rtl' : 'ltr'} className={fontVars} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeBoot }} />
       </head>
