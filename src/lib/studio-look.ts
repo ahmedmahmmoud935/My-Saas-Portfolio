@@ -114,6 +114,13 @@ export function studioRootVars(settings: StudioLookInput): { vars: Record<string
   if (d) vars['--t-desc'] = d
   if (tm) vars['--t-h1-m'] = tm
   if (dm) vars['--t-desc-m'] = dm
+  // Font weights and Latin heading spacing, only when the client chose them.
+  const hw = trim(style.headingWeight)
+  const bw = trim(style.bodyWeight)
+  if (/^[4-8]00$/.test(hw)) vars['--t-hw'] = hw
+  if (/^[4-6]00$/.test(bw)) vars['--t-bw'] = bw
+  const ls = ({ tight: '-2px', normal: '0px', wide: '1px' } as Record<string, string>)[trim(style.headingSpacing)]
+  if (ls) vars['--t-ls'] = ls
 
   return {
     vars,
@@ -123,6 +130,7 @@ export function studioRootVars(settings: StudioLookInput): { vars: Record<string
       'data-btn': ['rounded', 'sharp'].includes(trim(comp.button)) ? trim(comp.button) : 'pill',
       'data-anim': ['fade-up', 'fade'].includes(trim(style.anim)) ? trim(style.anim) : 'none',
       'data-cursor': trim(style.cursor) === 'dot-ring' ? 'dot-ring' : 'default',
+      'data-underline': style.heroUnderline === true ? 'on' : 'off',
     },
   }
 }

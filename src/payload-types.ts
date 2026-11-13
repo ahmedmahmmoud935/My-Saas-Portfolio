@@ -813,7 +813,20 @@ export interface SiteSetting {
      */
     fontLatin?: string | null;
     /**
-     * classic | studio
+     * auto | 400 | 500 | 600 | 700 | 800
+     */
+    headingWeight?: string | null;
+    /**
+     * auto | 400 | 500 | 600
+     */
+    bodyWeight?: string | null;
+    /**
+     * auto | tight | normal | wide
+     */
+    headingSpacing?: string | null;
+    heroUnderline?: boolean | null;
+    /**
+     * studio
      */
     skin?: string | null;
     heroGallery?: boolean | null;
@@ -1789,6 +1802,10 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         font?: T;
         fontAr?: T;
         fontLatin?: T;
+        headingWeight?: T;
+        bodyWeight?: T;
+        headingSpacing?: T;
+        heroUnderline?: T;
         skin?: T;
         heroGallery?: T;
         heroGalleryMobile?: T;

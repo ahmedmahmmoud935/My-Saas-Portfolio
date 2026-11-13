@@ -1,4 +1,5 @@
 import * as migration_20261111_050000_studio_only from './20261111_050000_studio_only';
+import * as migration_20261113_010000_font_weights from './20261113_010000_font_weights';
 import * as migration_20260709_062018_initial from './20260709_062018_initial';
 import * as migration_20260709_171646_add_r2_storage from './20260709_171646_add_r2_storage';
 import * as migration_20260710_093433_add_project_published from './20260710_093433_add_project_published';
@@ -431,5 +432,10 @@ export const migrations = [
     up: migration_20261111_050000_studio_only.up,
     down: migration_20261111_050000_studio_only.down,
     name: '20261111_050000_studio_only'
+  },
+  {
+    up: migration_20261113_010000_font_weights.up,
+    down: migration_20261113_010000_font_weights.down,
+    name: '20261113_010000_font_weights'
   },
 ];

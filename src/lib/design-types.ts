@@ -162,6 +162,13 @@ export type DesignForm = {
     font: string
     fontAr: string
     fontLatin: string
+    /** 'auto' or a weight: headings and body text. */
+    headingWeight: string
+    bodyWeight: string
+    /** Latin headings' letter spacing: auto | tight | normal | wide. */
+    headingSpacing: string
+    /** The curved line under the hero's coloured word. */
+    heroUnderline: boolean
     direction: string
     cursor: string
     anim: string
@@ -371,6 +378,10 @@ export const emptyDesign = (): DesignForm => ({
     font: 'default',
     fontAr: 'tajawal',
     fontLatin: 'montserrat',
+    headingWeight: 'auto',
+    bodyWeight: 'auto',
+    headingSpacing: 'auto',
+    heroUnderline: false,
     direction: 'auto',
     cursor: 'default',
     anim: 'fade-up',

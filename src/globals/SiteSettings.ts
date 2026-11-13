@@ -412,6 +412,18 @@ export const SiteSettings: CollectionConfig = {
                 {
                   type: 'row',
                   fields: [
+                    // How heavy the headings and the body text are; 'auto' keeps the template's own.
+                    { name: 'headingWeight', type: 'text', defaultValue: 'auto', admin: { description: 'auto | 400 | 500 | 600 | 700 | 800' } },
+                    { name: 'bodyWeight', type: 'text', defaultValue: 'auto', admin: { description: 'auto | 400 | 500 | 600' } },
+                    // The space between the letters of Latin headings.
+                    { name: 'headingSpacing', type: 'text', defaultValue: 'auto', admin: { description: 'auto | tight | normal | wide' } },
+                    // The curved line under the coloured word of the hero heading.
+                    { name: 'heroUnderline', type: 'checkbox', defaultValue: false },
+                  ],
+                },
+                {
+                  type: 'row',
+                  fields: [
                     // Retained for saved settings; every site now uses studio.
                     { name: 'skin', type: 'text', defaultValue: 'studio', admin: { description: 'studio' } },
                     // Studio only: three of the latest designs fanned out under the hero.

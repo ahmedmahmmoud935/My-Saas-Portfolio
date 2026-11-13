@@ -974,3 +974,17 @@ html:not([data-theme=dark]) .st-root .pf-sec-dim{background:#fff}
    modules, the review form), were written with these; left to the
    platform's dark defaults they drew black boxes on a light page. */
 .st-root{--bg-2:var(--surface);--bg-3:var(--soft);--text:var(--ink);--sub:var(--muted);--border:var(--line);--accent-2:var(--accent-hover)}
+
+/* Font weights and Latin heading spacing from the design editor. The
+   template's own Latin hero was set very tight (-3px), which crowded the
+   letters; its default is now a gentler -1px. */
+/* Only when chosen (the variable is on the root's style), and after every
+   template rule so the section titles and the hero follow it too. */
+.st-root[style*="--t-hw"] :is(h1,h2,.st-hero h1,.st-section-title h2,.st-digital-copy h3,.st-service-card h3){font-weight:var(--t-hw)}
+.st-root[style*="--t-bw"]{font-weight:var(--t-bw)}
+.st-root[style*="--t-bw"] :is(p,li,.st-hero-description,.st-section-subtitle){font-weight:var(--t-bw)}
+.st-root.st-lang-en h1,.st-root.st-lang-en .st-hero h1{letter-spacing:var(--t-ls,-1px)}
+.st-root.st-lang-en h2{letter-spacing:var(--t-ls,0px)}
+@media (max-width:600px){.st-root.st-lang-en .st-hero h1{letter-spacing:var(--t-ls,-.5px)}}
+/* The curved line under the hero's coloured word, only when switched on. */
+.st-root:not([data-underline=on]) .st-hero h1 em:after{display:none}

@@ -477,6 +477,30 @@ function GeneralPanel({
             <div className="hx-block">
               <Opt label={tr('الخط العربي', 'Arabic font')} value={f.style.fontAr} options={FONT_AR_OPTIONS} onChange={(v) => setStyle({ fontAr: v })} />
               <Opt label={tr('الخط الإنجليزي', 'Latin font')} value={f.style.fontLatin} options={FONT_LATIN_OPTIONS} onChange={(v) => setStyle({ fontLatin: v })} />
+              <Opt
+                label={tr('سُمك العناوين', 'Heading weight')}
+                value={f.style.headingWeight || 'auto'}
+                options={opts(tr, [['auto', 'تلقائي', 'Auto'], ['400', 'عادي', 'Regular'], ['500', 'متوسط', 'Medium'], ['600', 'نصف عريض', 'Semibold'], ['700', 'عريض', 'Bold'], ['800', 'عريض جدًا', 'Extra bold']])}
+                onChange={(v) => setStyle({ headingWeight: v })}
+              />
+              <Opt
+                label={tr('سُمك الكلام', 'Body text weight')}
+                value={f.style.bodyWeight || 'auto'}
+                options={opts(tr, [['auto', 'تلقائي', 'Auto'], ['400', 'عادي', 'Regular'], ['500', 'متوسط', 'Medium'], ['600', 'نصف عريض', 'Semibold']])}
+                onChange={(v) => setStyle({ bodyWeight: v })}
+              />
+              <Opt
+                label={tr('المسافة بين حروف العناوين الإنجليزي', 'Latin heading letter spacing')}
+                value={f.style.headingSpacing || 'auto'}
+                options={opts(tr, [['auto', 'تلقائي', 'Auto'], ['tight', 'متقاربة', 'Tight'], ['normal', 'عادية', 'Normal'], ['wide', 'واسعة', 'Wide']])}
+                onChange={(v) => setStyle({ headingSpacing: v })}
+              />
+              <Opt
+                label={tr('الخط المنحني تحت الكلمة الملوّنة في العنوان الرئيسي', 'Curved line under the hero’s coloured word')}
+                value={f.style.heroUnderline ? 'on' : 'off'}
+                options={opts(tr, [['off', 'مخفي', 'Hidden'], ['on', 'يظهر', 'Shown']])}
+                onChange={(v) => setStyle({ heroUnderline: v === 'on' })}
+              />
             </div>
           </>
         )}
