@@ -968,3 +968,9 @@ html:not([data-theme=dark]) .st-root .pf-sec-dim{background:#fff}
   .st-root .st-services-grid::-webkit-scrollbar{display:none}
   .st-root .st-services-grid .st-service-card,.st-root .st-services-grid[data-layout=stack] .st-service-card{flex:0 0 82%;scroll-snap-align:start;position:relative;top:auto;min-height:0;box-shadow:none}
 }
+
+/* The older colour names, spoken in studio's palette. A project's or an
+   article's own HTML design, and the shared pieces (stories, project
+   modules, the review form), were written with these; left to the
+   platform's dark defaults they drew black boxes on a light page. */
+.st-root{--bg-2:var(--surface);--bg-3:var(--soft);--text:var(--ink);--sub:var(--muted);--border:var(--line);--accent-2:var(--accent-hover)}

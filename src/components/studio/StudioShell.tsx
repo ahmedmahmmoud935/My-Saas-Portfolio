@@ -64,6 +64,16 @@ export default async function StudioShell({ d, langHref, base, children, hasArti
           {bg?.type === 'image' && look && <span className="st-page-dim" style={{ opacity: dimOpacity(bg) }} />}
         </div>
       })}
+      {/* A client site opens light unless the visitor chose dark. Saying so on
+          <html> matters beyond studio's own rules: a project's own HTML design
+          and the section backdrops read the attribute, and without it they
+          fell back to their dark colours on a light page.
+          eslint-disable-next-line react/no-danger */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `(function(){try{if(!localStorage.getItem('pf-theme'))document.documentElement.setAttribute('data-theme','light')}catch(e){document.documentElement.setAttribute('data-theme','light')}})();`,
+        }}
+      />
       <a className="st-skip-link" href={base === '' && d.work ? '#projects' : '#main'}>
         {ui.seeWork}
       </a>
