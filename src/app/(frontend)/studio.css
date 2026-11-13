@@ -956,3 +956,15 @@ html:not([data-theme=dark]) .st-root .pf-sec-dim{background:#fff}
 .st-root #logos + #achievements{padding-top:0}
 /* Arabic project categories drop the Latin letter spacing. */
 .st-root.st-lang-ar .detail-cat,.st-root[dir=rtl] .detail-cat{letter-spacing:normal}
+
+/* Review cards share one height in every row and in the phone slider: a
+   percentage height stopped the slider stretching them. */
+.st-root .st-review-card{height:auto;align-self:stretch}
+
+/* On a phone the services slide sideways, like the reviews, whatever layout
+   is chosen — one card and a peek of the next, all the same height. */
+@media (max-width:600px){
+  .st-root .st-services-grid,.st-root .st-services-grid[data-layout=stack]{display:flex;flex-direction:row;align-items:stretch;gap:14px;max-width:none;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin-inline:-18px;padding:2px 18px 6px;scroll-padding-inline:18px}
+  .st-root .st-services-grid::-webkit-scrollbar{display:none}
+  .st-root .st-services-grid .st-service-card,.st-root .st-services-grid[data-layout=stack] .st-service-card{flex:0 0 82%;scroll-snap-align:start;position:relative;top:auto;min-height:0;box-shadow:none}
+}
