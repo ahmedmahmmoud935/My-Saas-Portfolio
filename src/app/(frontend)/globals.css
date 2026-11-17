@@ -1742,3 +1742,16 @@ html[data-theme='light'] .pf-sec-dim {
   font-size: 12px;
   opacity: 0.65;
 }
+
+/* Story viewer: the bar fills by transform (no layout work each frame), a
+   slide fades in once loaded, a spinner shows while it loads, and the next
+   clip buffers out of sight. */
+.story-bar-fill{width:100%;transform-origin:left center;transform:scaleX(0);will-change:transform}
+[dir=rtl] .story-bar-fill,.story-viewer:dir(rtl) .story-bar-fill{transform-origin:right center}
+.story-media{opacity:0;transition:opacity .2s ease}
+.story-media.is-ready{opacity:1}
+.story-loading{position:absolute;inset:0;margin:auto;width:34px;height:34px;border-radius:50%;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;animation:storySpin .8s linear infinite;pointer-events:none}
+@keyframes storySpin{to{transform:rotate(360deg)}}
+.story-preload{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.story-stage{touch-action:none;user-select:none;-webkit-user-select:none}
+@media (prefers-reduced-motion:reduce){.story-media{transition:none}.story-loading{animation-duration:2s}}
