@@ -52,6 +52,7 @@ const SECTION_GROUPS = [
     en: 'Content',
     items: [
       { id: 'hero', ar: 'القسم الرئيسي', en: 'Hero' },
+      { id: 'reference', ar: 'نصوص التصميم والمعاينة', en: 'Design and preview copy' },
       { id: 'compare', ar: 'الفرق', en: 'Comparison' },
       { id: 'panel', ar: 'فيديو الشرح', en: 'Explainer video' },
       { id: 'features', ar: 'المميزات', en: 'Features' },
@@ -95,6 +96,7 @@ type SectionId = (typeof SECTION_GROUPS)[number]['items'][number]['id']
  * id its band carries, or one of the page's two ends.
  */
 const SPOT: Record<SectionId, string> = {
+  reference: "studio",
   hero: 'top',
   compare: 'compare',
   panel: 'panel',
@@ -1039,6 +1041,31 @@ export default function LandingEditor({
             </header>
 
             <div className="panel lx-body">
+        {sec === 'audience' && <Note>{t('تم حذف شريط الجمهور من التصميم المعتمد. الحقول محفوظة ولا تُعرض على الصفحة.', 'The approved design removes the audience strip. These fields remain saved but are not rendered.')}</Note>}
+        {sec === 'reference' && <>
+          <Note>{t('النصوص الجديدة مرتبة حسب القسم. نصوص العناوين والأزرار والقوائم الأصلية في تبويباتها المعتادة. روابط واتساب تتضمن نص الرسالة ويمكن تعديلها كاملة.', 'New copy is grouped by section. Existing headings, buttons and lists remain in their usual tabs. WhatsApp links include editable message text.')}</Note>
+          {([['compareAccent','المقارنة'], ['featuresAccent','المميزات'], ['showcaseAccent','النماذج'], ['howAccent','الخطوات'], ['pricingAccent','الأسعار'], ['faqAccent','الأسئلة'], ['ctaAccent','البانر الختامي']] as const).map(([key,label]) => <React.Fragment key={key}>{scalar(key, t('الجزء المميز — ' + label, key))}</React.Fragment>)}
+          {([
+            ['hero','نموذج البورتفوليو والهاتف','Hero portfolio and phone'],
+            ['studio','المعاينة التفاعلية','Interactive preview'],
+            ['compare','المقارنة','Comparison'],
+            ['features','بانر المدونة','Blog banner'],
+            ['showcase','النماذج','Showcase'],
+            ['pricing','ملاحظة الدفع','Payment note'],
+            ['faq','التواصل بعد الأسئلة','FAQ contact'],
+            ['cta','البانر الختامي','Closing banner'],
+            ['mobile','زر الهاتف الثابت','Mobile trial'],
+            ['other','القائمة والفوتر والتواصل','Navigation, footer and contact'],
+          ] as const).map(([prefix,ar,en]) => <details key={prefix} style={{marginBlock:16}}><summary>{t(ar,en)}</summary>
+            {Object.keys(LANDING_COPY.ar.design).filter(key => prefix === 'other' ? !/^(hero|studio|compare|features|showcase|pricing|faq|cta|mobile)/.test(key) : key.startsWith(prefix)).map(key => {
+              const k = key as keyof Copy['design']
+              const value = LANDING_COPY.ar.design[k]
+              const label = /[\u0600-\u06ff]/.test(value) ? value : t('نص أو رابط — ' + ar + ' (' + key + ')', key)
+              return <Field key={k} label={label} ar={f.ar.design[k]} en={f.en.design[k]} onAr={v => setF(p => ({...p, ar:{...p.ar, design:{...p.ar.design,[k]:v}}}))} onEn={v => setF(p => ({...p, en:{...p.en, design:{...p.en.design,[k]:v}}}))}/>
+            })}
+          </details>)}
+        </>}
+
         {sec === 'header' && (
           <>
             <Field label={t('رابط: المميزات', 'Nav: Features')} ar={f.ar.nav.features} en={f.en.nav.features} onAr={(v) => setNav('features', v, 'ar')} onEn={(v) => setNav('features', v, 'en')} />

@@ -4,7 +4,6 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { LANDING_COPY, landingSeo, mergeCopy, resolveLink, type ShowcaseLook } from '@/lib/landing-copy'
 import { orderShowcase, showcasePictures } from '@/lib/showcase'
-import { frameStyle } from '@/lib/frame-style'
 import { resolveVideoUrl } from '@/lib/video'
 import { mediaUrl } from '@/lib/portfolio'
 import SectionBg, { type SectionBgConfig } from '@/components/portfolio/SectionBg'
@@ -13,14 +12,15 @@ import VideoFacade from '@/components/portfolio/VideoFacade'
 import PlayVideoButton from '@/components/portfolio/PlayVideoButton'
 import DashShowcase from '@/components/portfolio/DashShowcase'
 import { LandingNav, LandingFooter } from '@/components/portfolio/LandingChrome'
-import { DEFAULT_LOOK, landingTokensCss, onAccent, setOnly, type LandingLook } from '@/lib/landing-look'
+import { DEFAULT_LOOK, landingTokensCss, setOnly, type LandingLook } from '@/lib/landing-look'
 import { tenantUrl } from '@/lib/tenant-url'
 import { resolveLandingOrder } from '@/lib/landing-order'
 import ContactFabs from '@/components/portfolio/ContactFabs'
-import { LineIcon, lineIconName } from '@/lib/line-icons'
 import { DASH_RATIOS } from '@/lib/landing-copy'
 import { platformLocale } from '@/lib/seo'
 import './landing.css'
+import './landing-reference.css'
+import { landingSections, LandingMobileTrial } from '@/components/portfolio/LandingSections'
 
 
 /** Copy plus the owner-set colours and imagery, merged over the code defaults. */
@@ -261,7 +261,6 @@ export default async function HomePage({ searchParams }: Params) {
   const isPreview = preview === '1'
   const { copy, look, sections, tools, order } = await getLanding(locale)
   const c = copy as (typeof LANDING_COPY)['ar']
-  const q = locale === 'en' ? '?lang=en' : ''
   const [showcase, stats] = await Promise.all([getShowcase(c.showcaseHidden ?? [], c.showcaseOrder, c.showcaseLook), getStats()])
   const n = new Intl.NumberFormat(locale === 'en' ? 'en' : 'ar-EG')
   // Every "start" button on the page asks for the same thing, so they all go
@@ -273,14 +272,7 @@ export default async function HomePage({ searchParams }: Params) {
      repeating that address in the other five. */
   const to = (v?: string) => resolveLink(v, start)
   /* The second hero button: its own address, or the first portfolio on show. */
-  const heroBtn2Href = (c.heroBtn2Url ?? '').trim()
-    ? resolveLink(c.heroBtn2Url)
-    : (showcase[0]?.url ?? null)
-  const showcaseStyle = look.showcaseStyle
-  const showcaseRail = look.showcaseLayout !== 'grid'
   const cardStyle = look.cardStyle
-  const audience = (c.audience ?? []).filter((t) => t.trim())
-  const included = (c.pricingIncluded ?? []).filter((t) => t.trim())
   const testimonials = (c.testimonials ?? []).filter((t) => t.quote?.trim())
   const dash = (c.dash ?? []).filter((d) => d.t?.trim())
 
@@ -312,7 +304,7 @@ export default async function HomePage({ searchParams }: Params) {
   const faqJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: c.faqs.map((f) => ({
+    mainEntity: (order.some(b => b.id === "faq" && b.on) ? c.faqs : []).map((f) => ({
       '@type': 'Question',
       name: f.q,
       acceptedAnswer: { '@type': 'Answer', text: f.a },
@@ -322,89 +314,12 @@ export default async function HomePage({ searchParams }: Params) {
   /* Every band the page can show, by name. Which of them appear and in what
      order is the owner's, so the sequence lives in the data rather than in
      the shape of this file. */
+  const panelCustomized = (['panelEyebrow', 'panelHeading', 'panelSub', 'panelTitle', 'panelBtn', 'panelNote', 'panelBtnUrl', 'mock'] as const)
+    .some(key => JSON.stringify(c[key]) !== JSON.stringify(LANDING_COPY[locale][key]))
+  const dashboardCustomized = (['dash', 'dashEyebrow', 'dashTitle', 'dashSub'] as const)
+    .some(key => JSON.stringify(c[key]) !== JSON.stringify(LANDING_COPY[locale][key]))
   const bands: Record<string, React.ReactNode> = {
-    hero: (
-      <SectionBg config={sections.hero}>
-              <section className={`lp-hero${look.heroUrl ? ' has-image' : ''}`}>
-                {look.heroUrl ? (
-                  <>
-                    <span className="lp-hero-img" style={{ backgroundImage: `url(${JSON.stringify(look.heroUrl)})` }} />
-                    <span className="lp-hero-dim" style={{ opacity: look.heroDim / 100 }} />
-                  </>
-                ) : (
-                  <div className="lp-hero-glow" />
-                )}
-                {c.heroEyebrow && <span className="lp-eyebrow">{c.heroEyebrow}</span>}
-                <h1
-                  /* Its own width once the lines are decided here rather than by
-                     where the box runs out — a 15ch cap would wrap a line the owner
-                     meant to keep whole and put the count back up. */
-                  className={`lp-h1${
-                    c.heroTitleBreak || /\n/.test(`${c.heroTitle}${c.heroTitleAccent}`) ? ' has-breaks' : ''
-                  }`}
-                  style={
-                    {
-                      '--lp-h1-scale': (c.heroScale ?? 100) / 100,
-                      '--lp-h1-leading': (c.heroLeading ?? 100) / 100,
-                    } as React.CSSProperties
-                  }
-                >
-                  {c.heroTitle}
-                  {c.heroTitleBreak ? <br /> : ' '}
-                  <span className="lp-accent">{c.heroTitleAccent}</span>
-                </h1>
-                <p className="lp-lead">{c.heroSub}</p>
-                <div className="lp-hero-btns">
-                  <a className="lp-btn lp-btn-primary lp-btn-lg lp-arrow" href={to(c.heroBtn1Url)}>
-                    <span className="lp-btn-label">{c.heroBtn1}</span>
-                  </a>
-                  {heroBtn2Href && (
-                    <a className="lp-btn lp-btn-ghost lp-btn-lg" href={heroBtn2Href}>
-                      <span className="lp-btn-label">{c.heroBtn2}</span>
-                    </a>
-                  )}
-                </div>
-                {/* The three doubts that stop a click, answered where the click is. */}
-                {c.heroNote && <p className="lp-hero-note">{c.heroNote}</p>}
-              </section>
-            </SectionBg>
-    ),
-    compare: (
-      /* The problem straight after the promise: the reader has to recognise
-                their Drive link before a video about the fix means anything. */
-            <SectionBg config={sections.compare}>
-              <section className="lp-sec" id="compare">
-                <Head eyebrow={c.compareEyebrow} title={c.compareTitle} sub={c.compareSub} />
-                <div className="lp-vs">
-                  <div className="lp-vs-col lp-vs-good">
-                    <span className="lp-vs-tag">ViralPX</span>
-                    <h3>✓ {c.compareNewTitle}</h3>
-                    <ul>
-                      {c.compareNew.map((t) => (
-                        <li key={t}>{t}</li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="lp-vs-col lp-vs-bad">
-                    <h3>✕ {c.compareOldTitle}</h3>
-                    <ul>
-                      {c.compareOld.map((t) => (
-                        <li key={t}>{t}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-                {c.compareLink && (
-                  <div className="lp-sec-foot">
-                    <a className="lp-textlink lp-arrow" href={to(c.compareLinkUrl)}>
-                      {c.compareLink}
-                    </a>
-                  </div>
-                )}
-              </section>
-            </SectionBg>
-    ),
-    panel: (
+    panel: (media || panelCustomized) && (
       <SectionBg config={sections.panel}>
               <section className="lp-panel-sec" id="panel">
                 <Head eyebrow={c.panelEyebrow} title={c.panelHeading} sub={c.panelSub} />
@@ -422,8 +337,8 @@ export default async function HomePage({ searchParams }: Params) {
                       poster={poster}
                       title={c.panelTitle}
                       duration={c.panelDuration}
-                      playLabel={locale === 'en' ? 'Play the video' : 'شغّل الفيديو'}
-                    closeLabel={locale === 'en' ? 'Close the video' : 'اقفل الفيديو'}
+                      playLabel={c.design.playVideo}
+                    closeLabel={c.design.closeVideo}
                       playEvent="lp-play-panel"
                     />
                   ) : media?.type === 'image' ? (
@@ -437,7 +352,7 @@ export default async function HomePage({ searchParams }: Params) {
                         {c.mock.items.map((it, i) => (
                           <li className={i === 0 ? 'on' : undefined} key={it}>
                             <span>{it}</span>
-                            {i === 0 && <b>12</b>}
+
                           </li>
                         ))}
                       </ul>
@@ -454,7 +369,7 @@ export default async function HomePage({ searchParams }: Params) {
                       <div className="lp-mock-cards">
                         {c.mock.cards.map((t, i) => (
                           <span className="lp-mock-card" key={t}>
-                            <em>{i === 2 ? 'Brand' : 'Reel 9:16'}</em>
+                            <em>{i === 2 ? c.design.studio31 : c.design.studio36}</em>
                             <b>{t}</b>
                           </span>
                         ))}
@@ -483,44 +398,8 @@ export default async function HomePage({ searchParams }: Params) {
               </section>
             </SectionBg>
     ),
-    features: (
-      <SectionBg config={sections.features}>
-              <section className="lp-sec" id="features">
-                <Head eyebrow={c.featuresEyebrow} title={c.featuresTitle} sub={c.featuresSub} />
-                <div className="lp-grid lp-grid-3">
-                  {c.features.map((f) => (
-                    <div
-                      className={`lp-card${f.bgUrl ? ' has-bg' : ''}`}
-                      key={f.t}
-                      style={f.bgUrl ? { backgroundImage: `url(${JSON.stringify(f.bgUrl)})` } : undefined}
-                    >
-                      <div className="lp-card-icon">
-                        {f.iconUrl ? (
-                          f.iconTint !== false ? (
-                            /* Painted through the upload's own transparency, so an
-                               SVG or a transparent PNG takes the page's colour and
-                               follows it between the themes, like the built-in set. */
-                            <span className="lp-ic-tint" style={{ ['--ic' as string]: `url(${JSON.stringify(f.iconUrl)})` }} />
-                          ) : (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={f.iconUrl} alt="" />
-                          )
-                        ) : lineIconName(f.icon) ? (
-                          <LineIcon name={lineIconName(f.icon)!} />
-                        ) : (
-                          f.icon
-                        )}
-                      </div>
-                      <h3>{f.t}</h3>
-                      <p>{f.d}</p>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            </SectionBg>
-    ),
     dashboard: (
-      dash.length > 0 && (
+      (dash.some(d => d.imageUrl || d.videoUrl) || dashboardCustomized) && (
               <SectionBg config={sections.dashboard}>
                 <section
                   className={[
@@ -544,55 +423,11 @@ export default async function HomePage({ searchParams }: Params) {
                   }
                 >
                   <Head eyebrow={c.dashEyebrow} title={c.dashTitle} sub={c.dashSub} />
-                  <DashShowcase items={dash} playLabel={locale === 'en' ? 'Play the video' : 'شغّل الفيديو'}
-                    closeLabel={locale === 'en' ? 'Close the video' : 'اقفل الفيديو'} />
+                  <DashShowcase items={dash} playLabel={c.design.playVideo}
+                    closeLabel={c.design.closeVideo} />
                 </section>
               </SectionBg>
             )
-    ),
-    audience: (
-      audience.length > 0 && (
-              <SectionBg config={sections.audience}>
-                <section className="lp-sec lp-sec-tight" id="audience">
-                  <Head eyebrow={c.audienceEyebrow} title={c.audienceTitle} sub={c.audienceSub} />
-                  <ul className="lp-chips">
-                    {audience.map((t) => (
-                      <li key={t}>{t}</li>
-                    ))}
-                  </ul>
-                </section>
-              </SectionBg>
-            )
-    ),
-    how: (
-      <SectionBg config={sections.how}>
-              <section className="lp-sec" id="how">
-                <Head eyebrow={c.howEyebrow} title={c.howTitle} />
-                <div className="lp-grid lp-grid-3">
-                  {c.how.map((s) => (
-                    <div className="lp-step" key={s.n}>
-                      <div className="lp-step-n">
-                        {s.iconUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={s.iconUrl} alt="" />
-                        ) : (
-                          s.n
-                        )}
-                      </div>
-                      <h3>{s.t}</h3>
-                      <p>{s.d}</p>
-                    </div>
-                  ))}
-                </div>
-                {c.howBtn && (
-                  <div className="lp-sec-foot">
-                    <a className="lp-btn lp-btn-primary lp-btn-lg lp-arrow" href={to(c.howBtnUrl)}>
-                      <span className="lp-btn-label">{c.howBtn}</span>
-                    </a>
-                  </div>
-                )}
-              </section>
-            </SectionBg>
     ),
     metrics: (
       stats && (
@@ -613,99 +448,6 @@ export default async function HomePage({ searchParams }: Params) {
                 </div>
               </section>
             )
-    ),
-    showcase: (
-      <SectionBg config={sections.showcase}>
-              <section className="lp-sec" id="showcase">
-                <Head eyebrow={c.showcaseEyebrow} title={c.showcaseTitle} sub={c.showcaseSub} />
-                {showcase.length === 0 ? (
-                  <p className="lp-empty">{c.showcaseEmpty}</p>
-                ) : (
-                  <div
-                    className={
-                      showcaseRail
-                        ? `lp-rail lp-showcase sc-${showcaseStyle}`
-                        : `lp-grid lp-grid-3 lp-showcase sc-${showcaseStyle}`
-                    }
-                  >
-                    {showcase.map((s) => (
-                      <a className="lp-tenant" href={s.url} key={s.slug}>
-                        <span className="lp-tenant-badge">
-                          {(showcaseStyle === 'cover' ? s.coverUrl : s.avatarUrl) ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={(showcaseStyle === 'cover' ? s.coverUrl : s.avatarUrl) as string}
-                              alt={s.name}
-                              style={frameStyle(s.frame)}
-                            />
-                          ) : (
-                            // No picture set — the initial, as before.
-                            s.name?.[0]?.toUpperCase() || 'V'
-                          )}
-                        </span>
-                        <span className="lp-tenant-body">
-                          <strong>{s.name}</strong>
-                          <span>{s.title || `/${s.slug}`}</span>
-                        </span>
-                        <span className="lp-tenant-go lp-arrow">{c.visit}</span>
-                      </a>
-                    ))}
-                  </div>
-                )}
-              </section>
-            </SectionBg>
-    ),
-    pricing: (
-      <SectionBg config={sections.pricing}>
-              <section className="lp-sec" id="pricing">
-                <Head eyebrow={c.pricingEyebrow} title={c.pricingTitle} sub={c.pricingSub} />
-                <div className={`lp-grid lp-pricing${c.plans.length > 2 ? '' : ' lp-grid-2'}`}>
-                  {c.plans.map((p) => (
-                    <div
-                      className={`lp-plan${p.hi ? ' lp-plan-hi' : ''}`}
-                      key={p.name}
-                      /* A plan's own colour replaces the page accent inside its card
-                         only. Everything in there — the name, the ticks, the border,
-                         the button — is already written against --o, so one variable
-                         repaints the whole card. Its label follows, or a pale accent
-                         would take white text into an unreadable button. */
-                      style={
-                        p.color
-                          ? ({ '--o': p.color, '--lp-on-o': onAccent(p.color) } as React.CSSProperties)
-                          : undefined
-                      }
-                    >
-                      {p.badge && <span className="lp-plan-tag">{p.badge}</span>}
-                      <div className="lp-plan-name">{p.name}</div>
-                      <div className="lp-plan-price">
-                        <span>{p.price}</span>
-                        <small>{p.per}</small>
-                      </div>
-                      {p.note && <p className="lp-plan-note">{p.note}</p>}
-                      {p.feats.some((f) => f.trim()) && (
-                        <ul>
-                          {p.feats.filter((f) => f.trim()).map((f) => (
-                            <li key={f}>{f}</li>
-                          ))}
-                        </ul>
-                      )}
-                      <a className={`lp-btn lp-btn-lg ${p.hi ? 'lp-btn-primary lp-arrow' : 'lp-btn-ghost'}`} href={to(p.url)}>
-                        <span className="lp-btn-label">{p.cta}</span>
-                      </a>
-                    </div>
-                  ))}
-                </div>
-                {(included.length > 0 || c.pricingIncludedTitle) && (
-                  <div className="lp-included">
-                    {c.pricingIncludedTitle && <strong>{c.pricingIncludedTitle}</strong>}
-                    {included.map((t) => (
-                      <span key={t}>{t}</span>
-                    ))}
-                  </div>
-                )}
-                {c.pricingNote && <p className="lp-pricing-note">{c.pricingNote}</p>}
-              </section>
-            </SectionBg>
     ),
     testimonials: (
       /* Off the page until the first real quote is in. */
@@ -747,39 +489,12 @@ export default async function HomePage({ searchParams }: Params) {
               </SectionBg>
       )
     ),
-    faq: (
-      <SectionBg config={sections.faq}>
-              <section className="lp-sec" id="faq">
-                <Head eyebrow={c.faqEyebrow} title={c.faqTitle} />
-                <div className="lp-faq">
-                  {c.faqs.map((f) => (
-                    <details className="lp-faq-item" key={f.q}>
-                      <summary>{f.q}</summary>
-                      <p>{f.a}</p>
-                    </details>
-                  ))}
-                </div>
-              </section>
-            </SectionBg>
-    ),
-    cta: (
-      <SectionBg config={sections.cta}>
-              <section className="lp-cta" id="cta">
-                <div className="lp-cta-inner">
-                  <h2 className="lp-h2">{c.ctaTitle}</h2>
-                  <p>{c.ctaSub}</p>
-                  <a className="lp-btn lp-btn-primary lp-btn-lg lp-arrow" href={to(c.ctaBtnUrl)}>
-                    <span className="lp-btn-label">{c.ctaBtn}</span>
-                  </a>
-                </div>
-              </section>
-            </SectionBg>
-    ),
+    ...Object.fromEntries(Object.entries(landingSections(c, look, showcase, locale)).map(([id, node]) => [id, <SectionBg key={id} config={sections[id === "studio" ? "panel" : id]}>{node}</SectionBg>])),
   }
 
   return (
     <div
-      className="lp"
+      className="lp vpx"
       data-card={cardStyle}
       data-font-ar={look.fontAr}
       data-font-latin={look.fontLatin}
@@ -789,6 +504,7 @@ export default async function HomePage({ searchParams }: Params) {
       {/* eslint-disable-next-line react/no-danger */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
 
+      <a className="skip" href="#main">{c.design.skipLabel}</a>
       {!isPreview && <Analytics id={tools?.analyticsId} />}
       <SectionBg config={sections.header}>
         <LandingNav
@@ -800,12 +516,15 @@ export default async function HomePage({ searchParams }: Params) {
         />
       </SectionBg>
 
+      <main id="main">
       {order
         .filter((b) => b.on)
         .map((b) => (
           <React.Fragment key={b.id}>{bands[b.id]}</React.Fragment>
         ))}
 
+      </main>
+      <LandingMobileTrial c={c}/>
       <SectionBg config={sections.footer}>
         <LandingFooter look={look} copy={c} locale={locale} atHome />
       </SectionBg>
@@ -814,9 +533,7 @@ export default async function HomePage({ searchParams }: Params) {
         whatsapp={c.waNumber}
         phone={c.phone}
         labels={
-          locale === 'en'
-            ? { whatsapp: 'Message us on WhatsApp', call: 'Call us' }
-            : { whatsapp: 'كلّمنا على واتساب', call: 'اتصل بينا' }
+          { whatsapp: c.design.footerWhatsapp, call: c.design.callLabel }
         }
       />
 

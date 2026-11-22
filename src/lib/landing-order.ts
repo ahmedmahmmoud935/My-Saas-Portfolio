@@ -20,18 +20,18 @@ export type LandingOrderItem = { id: string; on: boolean }
  */
 export const LANDING_BANDS: LandingBand[] = [
   { id: 'hero', ar: 'القسم الرئيسي', en: 'Hero' },
-  { id: 'compare', ar: 'الفرق', en: 'The difference' },
-  { id: 'panel', ar: 'فيديو الشرح', en: 'Explainer video' },
-  { id: 'features', ar: 'المميزات', en: 'Features' },
-  { id: 'dashboard', ar: 'قسم لوحة التحكم', en: 'Dashboard tour' },
-  { id: 'audience', ar: 'لمين؟', en: 'Who it is for' },
-  { id: 'how', ar: 'الخطوات', en: 'Steps' },
-  { id: 'metrics', ar: 'شريط الأرقام', en: 'The numbers bar' },
+  { id: 'compare', ar: 'الفرق', en: 'Comparison' },
+  { id: 'studio', ar: 'المعاينة التفاعلية', en: 'Interactive preview' },
+  { id: 'panel', ar: 'فيديو الشرح (عند إضافة وسائط)', en: 'Explainer media (when configured)' },
+  { id: 'dashboard', ar: 'لوحة التحكم (عند إضافة وسائط)', en: 'Dashboard tour (when configured)' },
+  { id: 'features', ar: 'المميزات والمدونة', en: 'Features and blog' },
   { id: 'showcase', ar: 'الأمثلة', en: 'Showcase' },
+  { id: 'how', ar: 'الخطوات', en: 'Steps' },
   { id: 'pricing', ar: 'الأسعار', en: 'Pricing' },
+  { id: 'metrics', ar: 'الأرقام الحقيقية', en: 'Real metrics' },
   { id: 'testimonials', ar: 'آراء العملاء', en: 'Testimonials' },
   { id: 'faq', ar: 'الأسئلة', en: 'FAQ' },
-  { id: 'cta', ar: 'دعوة الفعل الأخيرة', en: 'Closing call' },
+  { id: 'cta', ar: 'البانر الختامي', en: 'Closing banner' },
 ]
 
 const DEFAULT_ORDER: LandingOrderItem[] = LANDING_BANDS.map((b) => ({ id: b.id, on: true }))
@@ -47,6 +47,10 @@ const DEFAULT_ORDER: LandingOrderItem[] = LANDING_BANDS.map((b) => ({ id: b.id, 
  */
 export function resolveLandingOrder(saved: unknown): LandingOrderItem[] {
   if (!Array.isArray(saved) || !saved.length) return DEFAULT_ORDER
+  const legacyIds = ['hero', 'compare', 'panel', 'features', 'dashboard', 'audience', 'how', 'metrics', 'showcase', 'pricing', 'testimonials', 'faq', 'cta']
+  if (JSON.stringify(saved.map(row => typeof row === 'string' ? row : row?.id)) === JSON.stringify(legacyIds)) {
+    return DEFAULT_ORDER.map(row => ({...row, on: saved.find(item => (typeof item === 'string' ? item : item?.id) === row.id)?.on !== false}))
+  }
   const known = new Map(LANDING_BANDS.map((b) => [b.id, b]))
   const seen = new Set<string>()
   const out: LandingOrderItem[] = []
@@ -57,6 +61,9 @@ export function resolveLandingOrder(saved: unknown): LandingOrderItem[] {
     seen.add(id)
     out.push({ id, on: typeof row === 'string' ? true : (row as LandingOrderItem).on !== false })
   }
-  for (const b of LANDING_BANDS) if (!seen.has(b.id)) out.push({ id: b.id, on: true })
+  for (const b of LANDING_BANDS) if (!seen.has(b.id)) {
+    const after = b.id === 'studio' ? out.findIndex(x => x.id === 'compare') + 1 : out.length
+    out.splice(after, 0, { id: b.id, on: true })
+  }
   return out
 }

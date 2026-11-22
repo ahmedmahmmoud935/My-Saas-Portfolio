@@ -58,16 +58,8 @@ export type LandingImages = {
 // Not exported: a 'use server' module may only export async functions.
 /** Falls back to the colours the page ships with. */
 const DEFAULT_LANDING_THEME: LandingTheme = {
-  accent: '#F97316',
-  bg: '#0A0A0A',
-  bg2: '#111111',
-  text: '#FFFFFF',
-  subtext: '#9AA0AA',
-  accentLight: '#F97316',
-  bgLight: '#FFFFFF',
-  bg2Light: '#F3F5F8',
-  textLight: '#0C0F16',
-  subtextLight: '#495265',
+  accent: '#b84b24', bg: '#f8f5ef', bg2: '#fffdfa', text: '#252520', subtext: '#706c64',
+  accentLight: '#b84b24', bgLight: '#f8f5ef', bg2Light: '#fffdfa', textLight: '#252520', subtextLight: '#706c64',
 }
 
 
@@ -82,9 +74,9 @@ function setOnly<T extends object>(o: unknown): Partial<T> {
 const DEFAULT_LANDING_STYLE: LandingStyle = {
   showcase: 'portrait',
   card: 'solid',
-  showcaseLayout: 'slider',
-  fontAr: 'tajawal',
-  fontLatin: 'montserrat',
+  showcaseLayout: 'grid',
+  fontAr: 'kufam',
+  fontLatin: 'manrope',
 }
 
 /** A portfolio as the showcase editor sees it: who, and the pictures it supplies. */
@@ -196,8 +188,8 @@ export async function saveLanding(
 ) {
   const ctx = await ownerCtx()
   // Locale-specific copy first, then the shared look in one non-localized pass.
-  await ctx.payload.updateGlobal({ slug: 'landing', data: { content: ar } as never, locale: 'ar' })
-  await ctx.payload.updateGlobal({ slug: 'landing', data: { content: en } as never, locale: 'en' })
+  await ctx.payload.updateGlobal({ slug: 'landing', data: { content: { ...ar, _designVersion: 2 } } as never, locale: 'ar' })
+  await ctx.payload.updateGlobal({ slug: 'landing', data: { content: { ...en, _designVersion: 2 } } as never, locale: 'en' })
   if (theme || images || sectionBg || style || tools || order) {
     await ctx.payload.updateGlobal({
       slug: 'landing',

@@ -39,7 +39,7 @@ export default async function BlogIndex({ searchParams }: Params) {
 
   return (
     <div
-      className="lp blog"
+      className="lp vpx blog"
       data-card={look.cardStyle}
       data-font-ar={look.fontAr}
       data-font-latin={look.fontLatin}

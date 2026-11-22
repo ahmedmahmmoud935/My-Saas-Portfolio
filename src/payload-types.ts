@@ -2210,11 +2210,11 @@ export interface Landing {
      */
     showcaseLayout?: string | null;
     /**
-     * tajawal | cairo | almarai | markazi
+     * kufam | tajawal | cairo | almarai | markazi
      */
     fontAr?: string | null;
     /**
-     * montserrat | inter | playfair | cormorant | bebas | poppins
+     * manrope | montserrat | inter | playfair | cormorant | bebas | poppins
      */
     fontLatin?: string | null;
   };

@@ -1,3 +1,4 @@
+import { REFERENCE_COPY } from "./landing-reference-copy"
 // Landing-page default copy (AR/EN). The owner can override any of these
 // from the dashboard; saved values are merged over these defaults.
 
@@ -36,7 +37,7 @@ export type ShowcaseLook = { imageUrl?: string; zoom?: number; x?: number; y?: n
 /** One of the pages the footer links to under its legal heading. */
 export type LandingLegalPage = { slug: string; title: string; body: string }
 
-export const LANDING_COPY = {
+export const LEGACY_LANDING_COPY = {
   ar: {
     nav: { features: 'المميزات', how: 'الطريقة', showcase: 'أمثلة', compare: 'ليه إحنا؟', pricing: 'الأسعار', faq: 'الأسئلة' },
     cta: 'ابدأ مجانًا',
@@ -430,6 +431,12 @@ export const LANDING_COPY = {
   },
 }
 
+/** Untouched defaults adopt the approved design; explicit owner edits still win. */
+export const LANDING_COPY = {
+  ar: { ...LEGACY_LANDING_COPY.ar, ...REFERENCE_COPY.ar },
+  en: { ...LEGACY_LANDING_COPY.en, ...REFERENCE_COPY.en },
+}
+
 export type LandingCopy = (typeof LANDING_COPY)['ar']
 
 /** The shapes the dashboard tour's frame can take, widest first. */
@@ -474,8 +481,29 @@ export const LEGAL_SLUGS = ['privacy', 'terms', 'refund'] as const
  */
 export function mergeCopy(base: LandingCopy, saved: unknown): LandingCopy {
   if (!saved || typeof saved !== 'object') return base
-  const s = saved as Partial<LandingCopy>
-  const group = <K extends 'nav' | 'mock' | 'metricsLabels'>(k: K): LandingCopy[K] =>
+  const legacy = base === LANDING_COPY.en ? LEGACY_LANDING_COPY.en : LEGACY_LANDING_COPY.ar
+  // The previous editor persisted complete default objects. Upgrade only
+  // unchanged leaves; keep edited lists atomic when their shape/order changed.
+  const upgrade = (value: unknown, old: unknown, next: unknown): unknown => {
+    if (JSON.stringify(value) === JSON.stringify(old)) return next
+    if (Array.isArray(value) && Array.isArray(old) && Array.isArray(next)) {
+      if (value.length !== old.length || old.length !== next.length) return value
+      // Feature/step titles may represent different concepts in the redesign.
+      // Preserve an edited editorial list instead of mixing an old title
+      // with a new item's unrelated description.
+      if (value.some(item => item && typeof item === 'object' && 't' in item)) return value
+      const moved = value.some((item, i) => old.some((candidate, j) => j !== i && JSON.stringify(item) === JSON.stringify(candidate)))
+      return moved ? value : value.map((item, i) => upgrade(item, old[i], next[i]))
+    }
+    if (value && old && next && typeof value === 'object' && typeof old === 'object' && typeof next === 'object' && !Array.isArray(value)) {
+      const before = old as Record<string, unknown>
+      const after = next as Record<string, unknown>
+      return Object.fromEntries(Object.entries(value).map(([key, v]) => [key, key in before ? upgrade(v, before[key], after[key]) : v]))
+    }
+    return value
+  }
+  const s = ((saved as { _designVersion?: number })._designVersion === 2 ? saved : upgrade(saved, legacy, base)) as Partial<LandingCopy>
+  const group = <K extends 'nav' | 'mock' | 'metricsLabels' | 'design'>(k: K): LandingCopy[K] =>
     s[k] && typeof s[k] === 'object' ? { ...base[k], ...(s[k] as object) } : base[k]
   return {
     ...base,
@@ -483,6 +511,7 @@ export function mergeCopy(base: LandingCopy, saved: unknown): LandingCopy {
     nav: group('nav'),
     mock: group('mock'),
     metricsLabels: group('metricsLabels'),
+    design: group('design'),
     // The three pages are fixed; only their words are the owner's. Matched by
     // slug so a saved list from before a page existed still gets that page.
     legal: base.legal.map((p) => {

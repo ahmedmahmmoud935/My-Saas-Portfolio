@@ -84,7 +84,7 @@ export const LANDING_BG_SECTIONS: { id: string; ar: string; en: string }[] = [
   { id: 'hero', ar: 'القسم الرئيسي', en: 'Hero' },
   { id: 'features', ar: 'المميزات', en: 'Features' },
   { id: 'how', ar: 'طريقة العمل', en: 'How it works' },
-  { id: 'panel', ar: 'فيديو الشرح', en: 'Explainer video' },
+  { id: 'panel', ar: 'المعاينة وفيديو الشرح', en: 'Preview and explainer' },
   { id: 'audience', ar: 'لمين؟', en: 'Who it is for' },
   { id: 'dashboard', ar: 'لوحة التحكم', en: 'The dashboard' },
   { id: 'showcase', ar: 'الأمثلة', en: 'Showcase' },

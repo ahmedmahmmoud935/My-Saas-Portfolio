@@ -91,7 +91,7 @@ export default async function LegalPage({ params, searchParams }: Params) {
 
   return (
     <div
-      className="lp blog"
+      className="lp vpx blog"
       data-card={look.cardStyle}
       data-font-ar={look.fontAr}
       data-font-latin={look.fontLatin}
