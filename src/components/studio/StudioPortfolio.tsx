@@ -277,7 +277,7 @@ export default function StudioPortfolio({ d, page = 'home' }: { d: StudioData; p
               )}
 
               {pair.length > 0 && (
-                <div className="st-digital-pair">
+                <div className="st-digital-pair" data-count={pair.length}>
                   {pair.map((p) => (
                     <article className="st-digital-project" key={p.id}>
                       <ProductStage p={p} />

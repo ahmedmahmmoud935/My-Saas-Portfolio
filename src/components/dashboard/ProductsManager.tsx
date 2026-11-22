@@ -46,6 +46,8 @@ export type ProductItem = {
   previewUrl?: string | null
   /** Shown on the large card. */
   featured?: boolean
+  /** Off the public site, kept here. */
+  hidden?: boolean
   sortOrder: number
 }
 
@@ -159,6 +161,15 @@ export default function ProductsManager({ items }: { items: ProductItem[] }) {
     router.refresh()
   }
 
+  /** Hide a product from the site, or show it again, without deleting it. */
+  async function toggleHidden(m: ProductItem) {
+    if (busy || !m.id) return
+    setBusy(true)
+    await saveDoc('products', m.id, { hidden: !m.hidden }, 'ar')
+    setBusy(false)
+    router.refresh()
+  }
+
   /** The one product on the large card: marking one unmarks the other. */
   async function feature(m: ProductItem) {
     if (busy || !m.id) return
@@ -252,7 +263,12 @@ export default function ProductsManager({ items }: { items: ProductItem[] }) {
               </div>
               <div style={{ flex: '1 1 200px', textAlign: 'start', minWidth: 0 }}>
                 <strong>{m.titleAr || m.titleEn}</strong>
-                {(m.featured || (!items.some((o) => o.featured) && i === 0)) && (
+                {m.hidden && (
+                  <span className="pill" style={{ marginInlineStart: 8, fontSize: 12, color: 'var(--sub)' }}>
+                    {t('🙈 مخفي من الموقع', '🙈 Hidden from the site')}
+                  </span>
+                )}
+                {!m.hidden && (m.featured || (!items.some((o) => o.featured && !o.hidden) && items.findIndex((o) => !o.hidden) === i)) && (
                   <span className="pill" style={{ marginInlineStart: 8, fontSize: 12 }}>
                     {t('⭐ المعروض بالكبير', '⭐ Shown large')}
                   </span>
@@ -267,6 +283,9 @@ export default function ProductsManager({ items }: { items: ProductItem[] }) {
               </div>
               <button className={`btn ${m.featured ? 'btn-primary' : 'btn-ghost'}`} disabled={busy} onClick={() => feature(m)} title={t('يظهر بالعرض الكبير والباقي أصغر تحته', 'Shown on the large card, the rest smaller below')}>
                 {m.featured ? t('⭐ إلغاء العرض الكبير', '⭐ Unfeature') : t('☆ اعرضه بالكبير', '☆ Show large')}
+              </button>
+              <button className="btn btn-ghost" disabled={busy} onClick={() => toggleHidden(m)}>
+                {m.hidden ? t('👁 إظهار', '👁 Show') : t('🙈 إخفاء', '🙈 Hide')}
               </button>
               <button className="btn btn-ghost" onClick={() => setEdit(m)}>
                 {t('تعديل', 'Edit')}

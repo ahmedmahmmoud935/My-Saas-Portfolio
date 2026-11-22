@@ -583,6 +583,7 @@ export interface Product {
   mockHeadline?: string | null;
   mockCta?: string | null;
   featured?: boolean | null;
+  hidden?: boolean | null;
   sortOrder?: number | null;
   updatedAt: string;
   createdAt: string;
@@ -1629,6 +1630,7 @@ export interface ProductsSelect<T extends boolean = true> {
   mockHeadline?: T;
   mockCta?: T;
   featured?: T;
+  hidden?: T;
   sortOrder?: T;
   updatedAt?: T;
   createdAt?: T;

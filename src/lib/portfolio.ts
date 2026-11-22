@@ -124,7 +124,8 @@ async function loadPortfolio(
       }),
       payload.find({
         collection: 'products',
-        where: tenantFilter,
+        // A hidden product stays in the dashboard, off the site.
+        where: { and: [tenantFilter, { hidden: { not_equals: true } }] },
         sort: ['sortOrder', 'createdAt'],
         limit: 60,
         depth: 1,

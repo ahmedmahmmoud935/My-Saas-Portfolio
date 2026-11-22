@@ -988,3 +988,11 @@ html:not([data-theme=dark]) .st-root .pf-sec-dim{background:#fff}
 @media (max-width:600px){.st-root.st-lang-en .st-hero h1{letter-spacing:var(--t-ls,-.5px)}}
 /* The curved line under the hero's coloured word, only when switched on. */
 .st-root:not([data-underline=on]) .st-hero h1 em:after{display:none}
+
+/* The products under the large one fill their row: two share the width,
+   one takes all of it, and a last row of one or two stretches too, so no
+   empty slot suggests something is missing. */
+@media (min-width:1101px){
+  .st-root .st-digital-pair{display:flex;flex-wrap:wrap}
+  .st-root .st-digital-pair>.st-digital-project{flex:1 1 calc((100% - 48px) / 3);min-width:0}
+}

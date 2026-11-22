@@ -53,6 +53,8 @@ export const Products: CollectionConfig = {
     { name: 'mockCta', type: 'text', localized: true },
     // The one shown on the large card in the studio look.
     { name: 'featured', type: 'checkbox', defaultValue: false },
+    // Kept in the dashboard but left off the public site.
+    { name: 'hidden', type: 'checkbox', defaultValue: false },
     { name: 'sortOrder', type: 'number', defaultValue: 0, admin: { position: 'sidebar' } },
   ],
 }
